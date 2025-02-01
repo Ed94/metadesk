@@ -1,10 +1,10 @@
-// Copyright (c) 2024 Epic Games Tools
-// Licensed under the MIT license (https://opensource.org/license/mit/)
-
 #if MD_INTELLISENSE_DIRECTIVES
 #pragma once
-#include "dependencies/base_types.h"
+#include "dependencies/string.h"
 #endif
+
+// Copyright (c) 2024 Epic Games Tools
+// Licensed under the MIT license (https://opensource.org/license/mit/)
 
 ////////////////////////////////
 //~ rjf: Messages

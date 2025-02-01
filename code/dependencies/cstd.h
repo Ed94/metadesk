@@ -1,4 +1,5 @@
 #if MD_INTELLISENSE_DIRECTIVES
+#pragma once
 #include "arch.h"
 #include "os.h"
 #include "compiler.h"

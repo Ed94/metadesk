@@ -1,6 +1,7 @@
 #if MD_INTELLISENSE_DIRECTIVES
 #pragma once
-#include "dependencies/string.h"
+#include "base/string.h"
+#include "base/math.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools

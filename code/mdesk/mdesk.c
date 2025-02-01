@@ -1,17 +1,24 @@
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
 
+#ifdef MD_INTELLISENSE_DIRECTIVES
+#include "mdesk.h"
+#endif
+
 ////////////////////////////////
 //~ rjf: Message Type Functions
 
 internal void
 md_msg_list_push(Arena *arena, MD_MsgList *msgs, MD_Node *node, MD_MsgKind kind, String8 string)
 {
-  MD_Msg *msg = push_array(arena, MD_Msg, 1);
-  msg->node = node;
-  msg->kind = kind;
+  MD_Msg*
+  msg = push_array(arena, MD_Msg, 1);
+  msg->node   = node;
+  msg->kind   = kind;
   msg->string = string;
+
   SLLQueuePush(msgs->first, msgs->last, msg);
+
   msgs->count += 1;
   msgs->worst_message_kind = Max(kind, msgs->worst_message_kind);
 }

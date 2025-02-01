@@ -15,6 +15,24 @@
 
 // base module
 
+word global,        md_global
+word internal,      md_internal
+word local_persist, md_local_persist
+word thread_static, md_thread_static
+
+word likely,        md_likely
+word unlikely,      md_unlikely
+
+word ccast, word md_ccast
+word pcast, word md_pcast
+word rcast, word md_rcast 
+word scast, word md_scast
+
+word typeof, word md_typeof
+
+word enum_underlying, md_enum_underlying
+word nullptr,         md_nullptr
+
 word U8,   MD_U8
 word U16,  MD_U16
 word U32,  MD_U32
@@ -40,9 +58,39 @@ word B32, MD_B32
 
 word swap, md_swap
 
+word readonly, md_readonly
+
+word AllocType,     MD_AllocType
+word AllocatorProc, MD_AllocatorProc
+word AllocatorInfo, MD_AllocatorInfo
+word AllocFlag,     MD_AllocFlag
+
+word alloc,        md_alloc
+word alloc_align,  md_alloc_align
+word free_mem,     md_free_mem
+word free_all,     md_free_all
+word resize,       md_resize
+word resize_align, md_resize_align
+
+word default_resize_align, md_default_resize_align
+
+word alloc_item,  md_alloc_item
+word alloc_array, md_alloc_array
+
+word heap_stats_init,        md_heap_stats_init
+word heap_stats_used_mem,    md_heap_stats_used_mem
+word heap_stats_alloc_count, md_heap_stats_alloc_count
+word heap_stats_check,       md_heap_stats_check
+word heap_allocator_proc,    md_heap_allocator_proc
+word heap,                   md_heap
+
+word malloc, md_malloc
+word mfree,  md_mfree
+
 word Rng1U64, MD_Rng1U64
 
 word String8, MD_String8
+
 
 // metadesk module
 

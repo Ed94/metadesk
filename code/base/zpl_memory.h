@@ -71,7 +71,7 @@ void* alloc( AllocatorInfo a, SSIZE size );
 void* alloc_align( AllocatorInfo a, SSIZE size, SSIZE alignment );
 
 //! Free allocated memory.
-void allocator_free( AllocatorInfo a, void* ptr );
+void alloc_free( AllocatorInfo a, void* ptr );
 
 //! Free all memory allocated by an allocator.
 void free_all( AllocatorInfo a );

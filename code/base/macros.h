@@ -1,4 +1,5 @@
 #if MD_INTELLISENSE_DIRECTIVES
+#pragma once
 #include "cstd.h"
 #endif
 
@@ -21,6 +22,14 @@
 #	endif
 #endif
 #endif // GEN_API
+
+#ifndef global // Global variables
+#	ifdef MD_DYN_EXPORT
+#		define global         
+#	else
+#		define global static
+#	endif
+#endif
 
 #ifndef internal
 #define internal static

@@ -1,7 +1,9 @@
 #if MD_INTELLISENSE_DIRECTIVES
 #pragma once
-#include "base/string.h"
+#include "base/base_types.h"
 #include "base/math.h"
+#include "base/rarena.h"
+#include "base/string.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools
@@ -10,158 +12,152 @@
 ////////////////////////////////
 //~ rjf: Messages
 
-typedef enum MD_MsgKind
+typedef enum MsgKind
 {
-  MD_MsgKind_Null,
-  MD_MsgKind_Note,
-  MD_MsgKind_Warning,
-  MD_MsgKind_Error,
-  MD_MsgKind_FatalError,
+  MsgKind_Null,
+  MsgKind_Note,
+  MsgKind_Warning,
+  MsgKind_Error,
+  MsgKind_FatalError,
 }
-MD_MsgKind;
+MsgKind;
 
-typedef struct MD_Msg MD_Msg;
-struct MD_Msg
+typedef struct Node Node;
+typedef struct Msg Msg;
+struct Msg
 {
-  MD_Msg *next;
-  struct MD_Node *node;
-  MD_MsgKind kind;
+  Msg*    next;
+  Node*   node;
+  MsgKind kind;
   String8 string;
 };
 
-typedef struct MD_MsgList MD_MsgList;
-struct MD_MsgList
+typedef struct MsgList MsgList;
+struct MsgList
 {
-  MD_Msg *first;
-  MD_Msg *last;
-  U64 count;
-  MD_MsgKind worst_message_kind;
+  Msg*    first;
+  Msg*    last;
+  U64     count;
+  MsgKind worst_message_kind;
 };
 
 ////////////////////////////////
 //~ rjf: Token Types
 
-typedef U32 MD_TokenFlags;
+typedef U32 TokenFlags;
 enum
 {
   // rjf: base kind info
-  MD_TokenFlag_Identifier          = (1<<0),
-  MD_TokenFlag_Numeric             = (1<<1),
-  MD_TokenFlag_StringLiteral       = (1<<2),
-  MD_TokenFlag_Symbol              = (1<<3),
-  MD_TokenFlag_Reserved            = (1<<4),
-  MD_TokenFlag_Comment             = (1<<5),
-  MD_TokenFlag_Whitespace          = (1<<6),
-  MD_TokenFlag_Newline             = (1<<7),
+  TokenFlag_Identifier          = (1<<0),
+  TokenFlag_Numeric             = (1<<1),
+  TokenFlag_StringLiteral       = (1<<2),
+  TokenFlag_Symbol              = (1<<3),
+  TokenFlag_Reserved            = (1<<4),
+  TokenFlag_Comment             = (1<<5),
+  TokenFlag_Whitespace          = (1<<6),
+  TokenFlag_Newline             = (1<<7),
   
   // rjf: decoration info
-  MD_TokenFlag_StringSingleQuote   = (1<<8),
-  MD_TokenFlag_StringDoubleQuote   = (1<<9),
-  MD_TokenFlag_StringTick          = (1<<10),
-  MD_TokenFlag_StringTriplet       = (1<<11),
+  TokenFlag_StringSingleQuote   = (1<<8),
+  TokenFlag_StringDoubleQuote   = (1<<9),
+  TokenFlag_StringTick          = (1<<10),
+  TokenFlag_StringTriplet       = (1<<11),
   
   // rjf: error info
-  MD_TokenFlag_BrokenComment       = (1<<12),
-  MD_TokenFlag_BrokenStringLiteral = (1<<13),
-  MD_TokenFlag_BadCharacter        = (1<<14),
+  TokenFlag_BrokenComment       = (1<<12),
+  TokenFlag_BrokenStringLiteral = (1<<13),
+  TokenFlag_BadCharacter        = (1<<14),
 };
 
-typedef U32 MD_TokenGroups;
+typedef U32 TokenGroups;
 enum
 {
-  MD_TokenGroup_Comment    = MD_TokenFlag_Comment,
-  MD_TokenGroup_Whitespace = (MD_TokenFlag_Whitespace|
-                              MD_TokenFlag_Newline),
-  MD_TokenGroup_Irregular  = (MD_TokenGroup_Comment|
-                              MD_TokenGroup_Whitespace),
-  MD_TokenGroup_Regular    = ~MD_TokenGroup_Irregular,
-  MD_TokenGroup_Label      = (MD_TokenFlag_Identifier|
-                              MD_TokenFlag_Numeric|
-                              MD_TokenFlag_StringLiteral|
-                              MD_TokenFlag_Symbol),
-  MD_TokenGroup_Error      = (MD_TokenFlag_BrokenComment|
-                              MD_TokenFlag_BrokenStringLiteral|
-                              MD_TokenFlag_BadCharacter),
+  TokenGroup_Comment    = TokenFlag_Comment,
+  TokenGroup_Whitespace = (TokenFlag_Whitespace| TokenFlag_Newline),
+  TokenGroup_Irregular  = (TokenGroup_Comment  | TokenGroup_Whitespace),
+  TokenGroup_Regular    = ~TokenGroup_Irregular,
+  TokenGroup_Label      = (TokenFlag_Identifier | TokenFlag_Numeric | TokenFlag_StringLiteral | TokenFlag_Symbol),
+  TokenGroup_Error      = (TokenFlag_BrokenComment | TokenFlag_BrokenStringLiteral | TokenFlag_BadCharacter),
 };
 
-typedef struct MD_Token MD_Token;
-struct MD_Token
+typedef struct Token Token;
+struct Token
 {
   Rng1U64 range;
-  MD_TokenFlags flags;
+  TokenFlags flags;
 };
 
-typedef struct MD_TokenChunkNode MD_TokenChunkNode;
-struct MD_TokenChunkNode
+typedef struct TokenChunkNode TokenChunkNode;
+struct TokenChunkNode
 {
-  MD_TokenChunkNode *next;
-  MD_Token *v;
+  TokenChunkNode *next;
+  Token *v;
   U64 count;
   U64 cap;
 };
 
-typedef struct MD_TokenChunkList MD_TokenChunkList;
-struct MD_TokenChunkList
+typedef struct TokenChunkList TokenChunkList;
+struct TokenChunkList
 {
-  MD_TokenChunkNode *first;
-  MD_TokenChunkNode *last;
+  TokenChunkNode* first;
+  TokenChunkNode* last;
   U64 chunk_count;
   U64 total_token_count;
 };
 
-typedef struct MD_TokenArray MD_TokenArray;
-struct MD_TokenArray
+typedef struct TokenArray TokenArray;
+struct TokenArray
 {
-  MD_Token *v;
-  U64 count;
+  Token* v;
+  U64    count;
 };
 
 ////////////////////////////////
 //~ rjf: Node Types
 
-typedef enum MD_NodeKind
+typedef enum NodeKind
 {
-  MD_NodeKind_Nil,
-  MD_NodeKind_File,
-  MD_NodeKind_ErrorMarker,
-  MD_NodeKind_Main,
-  MD_NodeKind_Tag,
-  MD_NodeKind_List,
-  MD_NodeKind_Reference,
-  MD_NodeKind_COUNT
+  NodeKind_Nil,
+  NodeKind_File,
+  NodeKind_ErrorMarker,
+  NodeKind_Main,
+  NodeKind_Tag,
+  NodeKind_List,
+  NodeKind_Reference,
+  NodeKind_COUNT
 }
-MD_NodeKind;
+NodeKind;
 
-typedef U32 MD_NodeFlags;
+typedef U32 NodeFlags;
 enum
 {
-  MD_NodeFlag_MaskSetDelimiters          = (0x3F<<0),
-  MD_NodeFlag_HasParenLeft               = (1<<0),
-  MD_NodeFlag_HasParenRight              = (1<<1),
-  MD_NodeFlag_HasBracketLeft             = (1<<2),
-  MD_NodeFlag_HasBracketRight            = (1<<3),
-  MD_NodeFlag_HasBraceLeft               = (1<<4),
-  MD_NodeFlag_HasBraceRight              = (1<<5),
+  NodeFlag_MaskSetDelimiters          = (0x3F<<0),
+  NodeFlag_HasParenLeft               = (1<<0),
+  NodeFlag_HasParenRight              = (1<<1),
+  NodeFlag_HasBracketLeft             = (1<<2),
+  NodeFlag_HasBracketRight            = (1<<3),
+  NodeFlag_HasBraceLeft               = (1<<4),
+  NodeFlag_HasBraceRight              = (1<<5),
   
-  MD_NodeFlag_MaskSeparators             = (0xF<<6),
-  MD_NodeFlag_IsBeforeSemicolon          = (1<<6),
-  MD_NodeFlag_IsAfterSemicolon           = (1<<7),
-  MD_NodeFlag_IsBeforeComma              = (1<<8),
-  MD_NodeFlag_IsAfterComma               = (1<<9),
+  NodeFlag_MaskSeparators             = (0xF<<6),
+  NodeFlag_IsBeforeSemicolon          = (1<<6),
+  NodeFlag_IsAfterSemicolon           = (1<<7),
+  NodeFlag_IsBeforeComma              = (1<<8),
+  NodeFlag_IsAfterComma               = (1<<9),
   
-  MD_NodeFlag_MaskStringDelimiters       = (0xF<<10),
-  MD_NodeFlag_StringSingleQuote          = (1<<10),
-  MD_NodeFlag_StringDoubleQuote          = (1<<11),
-  MD_NodeFlag_StringTick                 = (1<<12),
-  MD_NodeFlag_StringTriplet              = (1<<13),
+  NodeFlag_MaskStringDelimiters       = (0xF<<10),
+  NodeFlag_StringSingleQuote          = (1<<10),
+  NodeFlag_StringDoubleQuote          = (1<<11),
+  NodeFlag_StringTick                 = (1<<12),
+  NodeFlag_StringTriplet              = (1<<13),
   
-  MD_NodeFlag_MaskLabelKind              = (0xF<<14),
-  MD_NodeFlag_Numeric                    = (1<<14),
-  MD_NodeFlag_Identifier                 = (1<<15),
-  MD_NodeFlag_StringLiteral              = (1<<16),
-  MD_NodeFlag_Symbol                     = (1<<17),
+  NodeFlag_MaskLabelKind              = (0xF<<14),
+  NodeFlag_Numeric                    = (1<<14),
+  NodeFlag_Identifier                 = (1<<15),
+  NodeFlag_StringLiteral              = (1<<16),
+  NodeFlag_Symbol                     = (1<<17),
 };
-#define MD_NodeFlag_AfterFromBefore(f) ((f) << 1)
+#define NodeFlag_AfterFromBefore(f) ((f) << 1)
 
 typedef struct MD_Node MD_Node;
 struct MD_Node
@@ -249,18 +245,18 @@ internal void md_msg_list_concat_in_place(MD_MsgList *dst, MD_MsgList *to_push);
 ////////////////////////////////
 //~ rjf: Token Type Functions
 
-internal MD_Token      md_token_make(Rng1U64 range, MD_TokenFlags flags);
+internal MD_Token      md_token_make(Rng1U64 range, TokenFlags flags);
 internal B32           md_token_match(MD_Token a, MD_Token b);
-internal String8List   md_string_list_from_token_flags(Arena *arena, MD_TokenFlags flags);
+internal String8List   md_string_list_from_token_flags(Arena *arena, TokenFlags flags);
 internal void          md_token_chunk_list_push(Arena *arena, MD_TokenChunkList *list, U64 cap, MD_Token token);
 internal MD_TokenArray md_token_array_from_chunk_list(Arena *arena, MD_TokenChunkList *chunks);
-internal String8       md_content_string_from_token_flags_str8(MD_TokenFlags flags, String8 string);
+internal String8       md_content_string_from_token_flags_str8(TokenFlags flags, String8 string);
 
 ////////////////////////////////
 //~ rjf: Node Type Functions
 
 //- rjf: flag conversions
-internal MD_NodeFlags md_node_flags_from_token_flags(MD_TokenFlags flags);
+internal MD_NodeFlags md_node_flags_from_token_flags(TokenFlags flags);
 
 //- rjf: nil
 internal B32 md_node_is_nil(MD_Node *node);

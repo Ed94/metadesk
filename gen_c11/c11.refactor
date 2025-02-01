@@ -1,0 +1,74 @@
+ __VERSION 1
+
+// not       : Ignore
+// include   : #includes
+// word      : Alphanumeric or underscore
+// namespace : Prefix search and replace (c-namspaces).
+// regex     : Unavailable in __VERSION 1.
+
+// Precedence (highest to lowest):
+// word, namespace, regex
+
+// Metadesk namespaces
+// namespace MD_, new_namespace_
+// namespace md_, new_namespace_
+
+// base module
+
+word U8,   MD_U8
+word U16,  MD_U16
+word U32,  MD_U32
+word U64,  MD_U64
+word S8,   MD_S8
+word S16,  MD_S16
+word S32,  MD_S32
+word S64,  MD_S64
+word S128, MD_S128
+
+word USIZE, MD_USIZE
+word SSIZE, MD_SSIZE
+
+word SPTR, MD_SPTR
+word UPTR, MD_UPTR
+
+word F32, MD_F32
+word F64, MD_F64
+
+word B8, MD_B8
+word B16, MD_B16
+word B32, MD_B32
+
+word swap, md_swap
+
+word Rng1U64, MD_Rng1U64
+
+word String8, MD_String8
+
+// metadesk module
+
+// word MsgKind,            MD_MsgKind
+// word MsgKind_Null,       MD_MsgKind_Null
+// word MsgKind_Note,       MD_MsgKind_Note
+// word MsgKind_Warning,    MD_MsgKind_Warning
+// word MsgKind_Error,      MD_MsgKind_Error
+// word MsgKind_FatalError, MD_MsgKind_FatalError
+namespace MsgKind, MD_MsgKind
+
+word Msg,     MD_Msg
+word MsgList, MD_MsgList
+
+word      TokenFlags,     MD_MsgFlags
+namespace TokenFlag,      MD_TokenFlag
+word      TokenGroups,    MD_TokenGroups
+namespace TokenGroup,     MD_TokenGroup
+word      Token,          MD_Token
+word      TokenChunkNode, MD_TokenChunkNode
+word      TokenChunkList, MD_TokenChunkList
+word      TokenArray,     MD_TokenArray
+
+namespace NodeKind, MD_NodeKind
+word      Node,     MD_Node
+
+// metagen module
+
+

@@ -13,6 +13,7 @@
 		"type_traits": "cpp",
 		"xtr1common": "cpp",
 		"cstddef": "cpp",
-		"xmemory": "cpp"
+		"xmemory": "cpp",
+		"memory.h": "c"
 	}
 }

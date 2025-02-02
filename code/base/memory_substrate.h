@@ -1,8 +1,10 @@
 #ifdef MD_INTELLISENSE_DIRECTIVES
-#pragma once
-#include "base_types.h"
-#include "macros.h"
-#include "linkage.h"
+#	pragma once
+#	include "context_cracking.h"
+#	include "linkage.h"
+#	include "macros.h"
+#	include "linkage.h"
+#	include "base_types.h"
 #endif
 
 // This provides an alterntive memory strategy to HMH/Casey Muratori/RJF styled arenas

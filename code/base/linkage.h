@@ -1,7 +1,6 @@
 #ifdef MD_INTELLISENSE_DIRECTIVES
 #	pragma once
-#	include "cracking_arch.h"
-#	include "cracking_compiler.h"
+#	include "context_cracking.h"
 #endif
 
 #ifndef MD_API

@@ -1,8 +1,9 @@
+#ifdef MD_INTELLISENSE_DIRECTIVES
+#	pragma once
+#endif
+
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
-
-#ifndef BASE_PROFILE_H
-#define BASE_PROFILE_H
 
 ////////////////////////////////
 //~ rjf: Zero Settings
@@ -70,5 +71,3 @@
 
 #define ProfBeginFunction(...) ProfBegin(this_function_name)
 #define ProfScope(...) DeferLoop(ProfBeginDynamic(__VA_ARGS__), ProfEnd())
-
-#endif // BASE_PROFILE_H

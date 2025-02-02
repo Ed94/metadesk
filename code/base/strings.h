@@ -1,12 +1,11 @@
 #ifdef MD_INTELLISENSE_DIRECTIVES
-#pragma once
-#include "cracking_arch.h"
-#include "cracking_compiler.h"
-#include "cracking_os.h"
-#include "macros.h"
-#include "linkage.h"
-#include "base_types.h"
-#include "memory.h"
+#	pragma once
+#	include "context_cracking.h"
+#	include "linkage.h"
+#	include "platform.h"
+#	include "macros.h"
+#	include "base_types.h"
+#	include "memory.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools

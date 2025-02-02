@@ -1,7 +1,7 @@
 #ifdef MD_INTELLISENSE_DIRECTIVES
-#pragma once
-#include "macros.h"
-#include "base_types.h"
+#	pragma once
+#	include "macros.h"
+#	include "base_types.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools

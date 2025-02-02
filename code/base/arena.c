@@ -1,6 +1,6 @@
 #ifdef MD_INTELLISENSE_DIRECTIVES
-#pragma once
-#include "rarena.h"
+#	pragma once
+#	include "arena.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools

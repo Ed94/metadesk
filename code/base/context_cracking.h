@@ -206,46 +206,46 @@
 //~ rjf: Zero All Undefined Options
 
 #if !defined(MD_ARCH_32BIT)
-# define MD_ARCH_32BIT 0
+#	define MD_ARCH_32BIT 0
 #endif
 #if !defined(MD_ARCH_64BIT)
-# define MD_ARCH_64BIT 0
+#	define MD_ARCH_64BIT 0
 #endif
 #if !defined(MD_ARCH_X64)
-# define MD_ARCH_X64 0
+#	define MD_ARCH_X64 0
 #endif
 #if !defined(MD_ARCH_X86)
-# define MD_ARCH_X86 0
+#	define MD_ARCH_X86 0
 #endif
 #if !defined(MD_ARCH_ARM64)
-# define MD_ARCH_ARM64 0
+#	define MD_ARCH_ARM64 0
 #endif
 #if !defined(MD_ARCH_ARM32)
-# define MD_ARCH_ARM32 0
+#	define MD_ARCH_ARM32 0
 #endif
 #if !defined(MD_COMPILER_MSVC)
-# define MD_COMPILER_MSVC 0
+#	define MD_COMPILER_MSVC 0
 #endif
-#if !defined(MD-COMPILER_GCC)
-# define MD_COMPILER_GCC 0
+#if !defined(MD_COMPILER_GCC)
+#	define MD_COMPILER_GCC 0
 #endif
 #if !defined(MD_COMPILER_CLANG)
-# define MD_COMPILER_CLANG 0
+#	define MD_COMPILER_CLANG 0
 #endif
 #if !defined(MD_OS_WINDOWS)
-# define MD_OS_WINDOWS 0
+#	define MD_OS_WINDOWS 0
 #endif
 #if !defined(MD_OS_LINUX)
-# define MD_OS_LINUX 0
+#	define MD_OS_LINUX 0
 #endif
 #if !defined(MD_OS_MAC)
-# define MD_OS_MAC 0
+#	define MD_OS_MAC 0
 #endif
 #if !defined(MD_LANG_CPP)
-# define MD_LANG_CPP 0
+#	define MD_LANG_CPP 0
 #endif
 #if !defined(MD_LANG_C)
-# define MD_LANG_C 0
+#	define MD_LANG_C 0
 #endif
 
 ////////////////////////////////

@@ -1,7 +1,10 @@
 #ifdef MD_INTELLISENSE_DIRECTIVES
-#pragma once
-#include "cracking_arch.h"
-#include "macros.h"
+#	pragma once
+#	include "context_cracking.h"
+#	include "linkage.h"
+#	include "macros.h"
+#	include "platform.h"
+#	include "memory_substrate.h"
 #endif
 
 ////////////////////////////////
@@ -278,26 +281,27 @@ MD_C_API void __asan_unpoison_memory_region(void const volatile *addr, size_t si
 ////////////////////////////////
 //~ rjf: Misc. Helper Macros
 
-#define Stringify_(S) #S
-#define Stringify(S) Stringify_(S)
+#define stringify_(S) #S
+#define stringify(S)  Stringify_(S)
 
-#define Glue_(A,B) A##B
-#define Glue(A,B) Glue_(A,B)
+#define glue_(A,B) A ## B
+#define glue(A,B)  glue_(A,B)
 
-#define ArrayCount(a) (sizeof(a) / sizeof((a)[0]))
+#define array_count(a) (sizeof(a) / sizeof((a)[0]))
 
-#define CeilIntegerDiv(a,b) (((a) + (b) - 1)/(b))
+#define ceil_integer_div(a,b) (((a) + (b) - 1) / (b))
 
-#define Swap(T,a,b) do{T t__ = a; a = b; b = t__;}while(0)
+#define swap(T, a, b) do { T t__ = a; a = b; b = t__; } while(0)
 
-#if ARCH_64BIT
-# define IntFromPtr(ptr) ((U64)(ptr))
-#elif ARCH_32BIT
-# define IntFromPtr(ptr) ((U32)(ptr))
+#if MD_ARCH_64BIT
+#	define int_from_ptr(ptr) ((U64)(ptr))
+#elif MD_ARCH_32BIT
+#	define int_from_ptr(ptr) ((U32)(ptr))
 #else
-# error Missing pointer-to-integer cast for this architecture.
+#	error Missing pointer-to-integer cast for this architecture.
 #endif
-#define PtrFromInt(i) (void*)((U8*)0 + (i))
+
+#define ptr_from_int(i) (void*)((U8*)0 + (i))
 
 #define Compose64Bit(a,b)  ((((U64)a) << 32) | ((U64)b));
 #define AlignPow2(x,b)     (((x) + (b) - 1)&(~((b) - 1)))
@@ -319,5 +323,3 @@ MD_C_API void __asan_unpoison_memory_region(void const volatile *addr, size_t si
 #else
 # define this_function_name __func__
 #endif
-
-

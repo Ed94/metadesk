@@ -1,6 +1,9 @@
 #ifdef MD_INTELLISENSE_DIRECTIVES
 #	pragma once
+#	include "context_cracking.h"
+#	include "linkage.h"
 #	include "macros.h"
+#	include "platform.h"
 #endif
 
 #if defined( MD_COMPILER_MSVC )

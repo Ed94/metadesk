@@ -1,10 +1,10 @@
 #ifdef MD_INTELLISENSE_DIRECTIVES
 #	pragma once
-#	include "cracking_compiler.h"
+#	include "context_cracking.h"
 #endif
 
 // C++ namespace support
-#if MD_DONT_USE_NAMESPACE || MD_COMPILER_C
+#if MD_DONT_USE_NAMESPACE || MD_LANG_C
 #	if MD_COMPILER_C
 #		define MD_NS
 #		define MD_NS_BEGIN

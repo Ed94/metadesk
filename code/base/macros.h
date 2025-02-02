@@ -1,6 +1,7 @@
 #if MD_INTELLISENSE_DIRECTIVES
 #	pragma once
-#	include "platform.h"
+#	include "context_cracking.h"
+#	include "linkage.h"
 #endif
 
 #ifndef local_persist

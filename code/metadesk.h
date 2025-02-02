@@ -9,8 +9,8 @@
 #include "base/context_cracking.h"
 #include "base/linkage.h"
 #include "base/macros.h"
-#include "base/namespace.h"
 #include "base/platform.h"
+#include "base/namespace.h"
 
 MD_NS_BEGIN
 

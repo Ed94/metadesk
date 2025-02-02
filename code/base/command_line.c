@@ -1,6 +1,6 @@
 #ifdef MD_INTELLISENSE_DIRECTIVES
-#pragma once
-#include "command_line.h"
+#	pragma once
+#	include "command_line.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools

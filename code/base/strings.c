@@ -9,11 +9,11 @@
 ////////////////////////////////
 //~ rjf: Third Party Includes
 
-#if !BUILD_SUPPLEMENTARY_UNIT
-# define STB_SPRINTF_IMPLEMENTATION
-# define STB_SPRINTF_STATIC
-# include "third_party/stb/stb_sprintf.h"
-#endif
+// #if !BUILD_SUPPLEMENTARY_UNIT
+// # define STB_SPRINTF_IMPLEMENTATION
+// # define STB_SPRINTF_STATIC
+// # include "third_party/stb/stb_sprintf.h"
+// #endif
 
 ////////////////////////////////
 //~ NOTE(allen): String <-> Integer Tables

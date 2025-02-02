@@ -3,38 +3,6 @@
 #include "platform.h"
 #endif
 
-#ifndef MD_API
-#if MD_COMPILER_MSVC
-#	ifdef MD_DYN_LINK
-#		ifdef MD_DYN_EXPORT
-#			define MD_API __declspec(dllexport)
-#		else
-#			define MD_API __declspec(dllimport)
-#		endif
-#	else
-#		define MD_API  // Empty for static builds
-#	endif
-#else
-#	ifdef MD_DYN_LINK
-#		define MD_API __attribute__((visibility("default")))
-#	else
-#		define MD_API  // Empty for static builds
-#	endif
-#endif
-#endif // GEN_API
-
-#ifndef global // Global variables
-#	ifdef MD_DYN_EXPORT
-#		define global         
-#	else
-#		define global static
-#	endif
-#endif
-
-#ifndef internal
-#define internal static
-#endif
-
 #ifndef local_persist
 #define local_persist static
 #endif
@@ -56,6 +24,9 @@
 
 #define likely(expr)            expect(expr,1)
 #define unlikely(expr)          expect(expr,0)
+
+////////////////////////////////
+//~ erg: type casting
 
 #if MD_COMPILER_CPP
 #	ifndef ccast
@@ -134,12 +105,12 @@
 #endif
 
 #if MD_COMPILER_C
-#ifndef static_assert
-#undef  static_assert
-    #if MD_COMPILER_C && __STDC_VERSION__ >= 201112L
-        #define static_assert(condition, message) _Static_assert(condition, message)
-    #else
-        #define static_assert(condition, message) typedef char static_assertion_##__LINE__[(condition)?1:-1]
-	#endif
-#endif
+#	ifndef static_assert
+#	undef  static_assert
+#		if MD_COMPILER_C && __STDC_VERSION__ >= 201112L
+#			define static_assert(condition, message) _Static_assert(condition, message)
+#		else
+#			define static_assert(condition, message) typedef char static_assertion_##__LINE__[(condition)?1:-1]
+#		endif
+#	endif
 #endif

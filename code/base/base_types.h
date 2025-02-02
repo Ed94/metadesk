@@ -1,48 +1,7 @@
 #ifdef MD_INTELLISENSE_DIRECTIVES
-#pragma once
-#include "macros.h"
+#	pragma once
+#	include "macros.h"
 #endif
-
-#pragma region Basic Types
-
-#define MD_U8_MIN 0u
-#define MD_U8_MAX 0xffu
-#define MD_I8_MIN ( -0x7f - 1 )
-#define MD_I8_MAX 0x7f
-
-#define MD_U16_MIN 0u
-#define MD_U16_MAX 0xffffu
-#define MD_I16_MIN ( -0x7fff - 1 )
-#define MD_I16_MAX 0x7fff
-
-#define MD_U32_MIN 0u
-#define MD_U32_MAX 0xffffffffu
-#define MD_I32_MIN ( -0x7fffffff - 1 )
-#define MD_I32_MAX 0x7fffffff
-
-#define MD_U64_MIN 0ull
-#define MD_U64_MAX 0xffffffffffffffffull
-#define MD_I64_MIN ( -0x7fffffffffffffffll - 1 )
-#define MD_I64_MAX 0x7fffffffffffffffll
-
-#if defined( MD_ARCH_32_BIT )
-#	define MD_USIZE_MIN GEN_U32_MIN
-#	define MD_USIZE_MAX GEN_U32_MAX
-#	define MD_ISIZE_MIN GEN_S32_MIN
-#	define MD_ISIZE_MAX GEN_S32_MAX
-#elif defined( MD_ARCH_64_BIT )
-#	define MD_USIZE_MIN GEN_U64_MIN
-#	define MD_USIZE_MAX GEN_U64_MAX
-#	define MD_ISIZE_MIN GEN_I64_MIN
-#	define MD_ISIZE_MAX GEN_I64_MAX
-#else
-#	error Unknown architecture size. This library only supports 32 bit and 64 bit architectures.
-#endif
-
-#define MD_F32_MIN 1.17549435e-38f
-#define MD_F32_MAX 3.40282347e+38f
-#define MD_F64_MIN 2.2250738585072014e-308
-#define MD_F64_MAX 1.7976931348623157e+308
 
 #if defined( MD_COMPILER_MSVC )
 #	if _MSC_VER < 1300
@@ -107,7 +66,7 @@ typedef unsigned __int64 UPTR;
 #		else
 #			define _W64
 #		endif
-#	endifk
+#	endif
 typedef _W64 signed int   SPTR;
 typedef _W64 unsigned int UPTR;
 #else

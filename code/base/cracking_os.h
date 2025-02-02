@@ -2,8 +2,6 @@
 #pragma once
 #endif
 
-#pragma region Platform OS
-
 #if defined( _WIN32 ) || defined( _WIN64 )
 #	ifndef     MD_OS_WINDOWS
 #		define MD_OS_WINDOWS 1
@@ -52,5 +50,3 @@
 #else
 #	error This operating system is not supported
 #endif
-
-#pragma endregion Platform OS

@@ -2,8 +2,6 @@
 #pragma once
 #endif
 
-#pragma region Platform Compiler
-
 #if defined( _MSC_VER )
 #	pragma message("Detected MSVC")
 // #	define MD_COMPILER_CLANG 0
@@ -61,5 +59,3 @@
 #if MD_COMPILER_CPP
 #pragma message("MD: Detected CPP")
 #endif
-
-#pragma endregion Platform Compiler

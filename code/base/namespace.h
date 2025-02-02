@@ -1,3 +1,7 @@
+#ifdef MD_INTELLISENSE_DIRECTIVES
+#pragma once
+#include "cracking_arch.h"
+#endif
 
 // C++ namespace support
 #if MD_DONT_USE_NAMESPACE || MD_COMPILER_C

@@ -1,3 +1,8 @@
+#ifdef MD_INTELLISENSE_DIRECTIVES
+#pragma once
+#include "command_line.h"
+#endif
+
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
 
@@ -7,40 +12,40 @@
 internal U64
 cmd_line_hash_from_string(String8 string)
 {
-  U64 result = 5381;
-  for(U64 i = 0; i < string.size; i += 1)
-  {
-    result = ((result << 5) + result) + string.str[i];
-  }
-  return result;
+	U64 result = 5381;
+	for(U64 i = 0; i < string.size; i += 1)
+	{
+		result = ((result << 5) + result) + string.str[i];
+	}
+	return result;
 }
 
 internal CmdLineOpt **
 cmd_line_slot_from_string(CmdLine *cmd_line, String8 string)
 {
-  CmdLineOpt **slot = 0;
-  if(cmd_line->option_table_size != 0)
-  {
-    U64 hash = cmd_line_hash_from_string(string);
-    U64 bucket = hash % cmd_line->option_table_size;
-    slot = &cmd_line->option_table[bucket];
-  }
-  return slot;
+	CmdLineOpt **slot = 0;
+	if(cmd_line->option_table_size != 0)
+	{
+		U64 hash   = cmd_line_hash_from_string(string);
+		U64 bucket = hash % cmd_line->option_table_size;
+		slot = &cmd_line->option_table[bucket];
+	}
+	return slot;
 }
 
 internal CmdLineOpt *
 cmd_line_opt_from_slot(CmdLineOpt **slot, String8 string)
 {
-  CmdLineOpt *result = 0;
-  for(CmdLineOpt *var = *slot; var; var = var->hash_next)
-  {
-    if(str8_match(string, var->string, 0))
-    {
-      result = var;
-      break;
-    }
-  }
-  return result;
+	CmdLineOpt *result = 0;
+	for(CmdLineOpt *var = *slot; var; var = var->hash_next)
+	{
+		if(str8_match(string, var->string, 0))
+		{
+			result = var;
+			break;
+		}
+	}
+	return result;
 }
 
 internal void

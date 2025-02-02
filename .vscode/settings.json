@@ -3,6 +3,14 @@
 		"*.rmd": "markdown",
 		"xutility": "cpp",
 		"initializer_list": "cpp",
-		"utility": "cpp"
+		"utility": "cpp",
+		"strings.h": "c",
+		"cracking_os.h": "c",
+		"cracking_compiler.h": "c",
+		"cracking_arch.h": "c",
+		"algorithm": "cpp",
+		"optional": "cpp",
+		"type_traits": "cpp",
+		"xtr1common": "cpp"
 	}
 }

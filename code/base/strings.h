@@ -1,8 +1,11 @@
+#ifdef MD_INTELLISENSE_DIRECTIVES
+#pragma once
+#include "macros.h"
+#include "base_types.h"
+#endif
+
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
-
-#ifndef BASE_STRINGS_H
-#define BASE_STRINGS_H
 
 ////////////////////////////////
 //~ rjf: Third Party Includes

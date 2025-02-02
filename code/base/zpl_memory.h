@@ -3,6 +3,11 @@
 #include "base_types.h"
 #endif
 
+// This provides an alterntive memory strategy to HMH/Casey Muratori/RJF styled arenas
+// The library is derived from zpl-c which in-turn 
+// is related to the gb headers an thus the Odin-lang memory strategy
+// Users can override the underlying memory allocator used, even for the HMH arena memory strategy.
+
 #define MD_KILOBYTES( x ) (             ( x ) * ( S64 )( 1024 ) )
 #define MD_MEGABYTES( x ) ( MD_KILOBYTES( x ) * ( S64 )( 1024 ) )
 #define MD_GIGABYTES( x ) ( MD_MEGABYTES( x ) * ( S64 )( 1024 ) )

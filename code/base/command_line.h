@@ -1,8 +1,12 @@
+#ifdef MD_INTELLISENSE_DIRECTIVES
+#pragma once
+#include "base_types.h"
+#include 
+#include "strings.h"
+#endif
+
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
-
-#ifndef BASE_COMMAND_LINE_H
-#define BASE_COMMAND_LINE_H
 
 ////////////////////////////////
 //~ rjf: Parsed Command Line Types

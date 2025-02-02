@@ -1,8 +1,10 @@
+#ifdef MD_INTELLISENSE_DIRECTIVES
+#pragma once
+#include "base/base_types.h"
+#endif
+
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
-
-#ifndef OS_CORE_H
-#define OS_CORE_H
 
 ////////////////////////////////
 //~ rjf: System Info
@@ -332,5 +334,3 @@ internal OS_Guid os_make_guid(void);
 #if BUILD_ENTRY_DEFINING_UNIT
 internal void entry_point(CmdLine *cmdline);
 #endif
-
-#endif // OS_CORE_H

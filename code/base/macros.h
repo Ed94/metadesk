@@ -29,7 +29,7 @@
 ////////////////////////////////
 //~ erg: type casting
 
-#if MD_COMPILER_CPP
+#if MD_LANG_CPP
 #	ifndef ccast
 #	define ccast( type, value ) ( const_cast< type >( (value) ) )
 #	endif
@@ -57,8 +57,8 @@
 #	endif
 #endif
 
-#if ! defined(typeof) && ( ! MD_COMPILER_C || __STDC_VERSION__ < 202311L)
-#	if ! MD_COMPILER_C
+#if ! defined(typeof) && ( ! MD_LANG_C || __STDC_VERSION__ < 202311L)
+#	if ! MD_LANG_C
 #		define typeof decltype
 #	elif defined(_MSC_VER)
 #		define typeof __typeof__
@@ -69,17 +69,7 @@
 #	endif
 #endif
 
-#ifndef MD_API_C_BEGIN
-#	if MD_COMPILER_C
-#		define MD_API_C_BEGIN
-#		define MD_API_C_END
-#	else
-#		define MD_API_C_BEGIN extern "C" {
-#		define MD_API_C_END   }
-#	endif
-#endif
-
-#if MD_COMPILER_C
+#if MD_LANG_C
 #	if __STDC_VERSION__ >= 202311L
 #		define enum_underlying(type) : type
 #	else
@@ -89,7 +79,7 @@
 #	define enum_underlying(type) : type
 #endif
 
-#if MD_COMPILER_C
+#if MD_LANG_C
 #	ifndef nullptr
 #		define nullptr NULL
 #	endif
@@ -99,16 +89,16 @@
 #	endif
 #endif
 
-#if ! defined(MD_PARAM_DEFAULT) && MD_COMPILER_CPP
+#if ! defined(MD_PARAM_DEFAULT) && MD_LANG_CPP
 #	define MD_PARAM_DEFAULT = {}
 #else
 #	define MD_PARAM_DEFAULT
 #endif
 
-#if MD_COMPILER_C
+#if MD_LANG_C
 #	ifndef static_assert
 #	undef  static_assert
-#		if MD_COMPILER_C && __STDC_VERSION__ >= 201112L
+#		if __STDC_VERSION__ >= 201112L
 #			define static_assert(condition, message) _Static_assert(condition, message)
 #		else
 #			define static_assert(condition, message) typedef char static_assertion_##__LINE__[(condition)?1:-1]

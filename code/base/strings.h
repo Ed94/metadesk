@@ -5,7 +5,11 @@
 #	include "platform.h"
 #	include "macros.h"
 #	include "base_types.h"
+#	include "constants.h"
+#	include "math.h"
+#	include "thread_context.h"
 #	include "memory.h"
+#	include "arena.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools
@@ -113,16 +117,6 @@ struct StringJoin
   String8 pre;
   String8 sep;
   String8 post;
-};
-
-////////////////////////////////
-//~ rjf: String Pair Types
-
-typedef struct String8TxtPtPair String8TxtPtPair;
-struct String8TxtPtPair
-{
-  String8 string;
-  TxtPt   pt;
 };
 
 ////////////////////////////////
@@ -298,8 +292,6 @@ internal String8List str8_split_path                     (Arena *arena, String8 
 internal void        str8_path_list_resolve_dots_in_place(String8List *path, PathStyle style);
 internal String8     str8_path_list_join_by_style        (Arena *arena, String8List *path, PathStyle style);
 
-internal String8TxtPtPair str8_txt_pt_pair_from_string(String8 string);
-
 ////////////////////////////////
 //~ rjf: UTF-8 & UTF-16 Decoding/Encoding
 
@@ -339,10 +331,7 @@ internal String8 string_from_elapsed_time       (Arena* arena, DateTime dt);
 
 internal String8 indented_from_string(Arena *arena, String8 string);
 
-////////////////////////////////
-//~ rjf: Text Wrapping
 
-internal String8List wrapped_lines_from_string(Arena *arena, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent);
 
 ////////////////////////////////
 //~ rjf: String <-> Color

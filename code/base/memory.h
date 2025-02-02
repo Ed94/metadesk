@@ -267,15 +267,16 @@
 # define NO_ASAN
 #endif
 
-#if ASAN_ENABLED
-#pragma comment(lib, "clang_rt.asan-x86_64.lib")
-MD_C_API void __asan_poison_memory_region(void const volatile *addr, size_t size);
-MD_C_API void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
-# define AsanPoisonMemoryRegion(addr, size)   __asan_poison_memory_region((addr), (size))
-# define AsanUnpoisonMemoryRegion(addr, size) __asan_unpoison_memory_region((addr), (size))
+#if MD_ASAN_ENABLED
+#	pragma comment(lib, "clang_rt.asan-x86_64.lib")
+	MD_C_API void __asan_poison_memory_region(void const volatile *addr, size_t size);
+	MD_C_API void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
+
+#	define AsanPoisonMemoryRegion(addr, size)   __asan_poison_memory_region((addr), (size))
+#	define AsanUnpoisonMemoryRegion(addr, size) __asan_unpoison_memory_region((addr), (size))
 #else
-# define AsanPoisonMemoryRegion(addr, size)   ((void)(addr), (void)(size))
-# define AsanUnpoisonMemoryRegion(addr, size) ((void)(addr), (void)(size))
+#	define AsanPoisonMemoryRegion(addr, size)   ((void)(addr), (void)(size))
+#	define AsanUnpoisonMemoryRegion(addr, size) ((void)(addr), (void)(size))
 #endif
 
 ////////////////////////////////

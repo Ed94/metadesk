@@ -1,5 +1,4 @@
 #ifdef MD_INTELLISENSE_DIRECTIVES
-#	pragma once
 #	include "command_line.h"
 #endif
 

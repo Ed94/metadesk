@@ -1,3 +1,9 @@
+#ifdef MD_INTELLISENSE_DIRECTIVES
+#	include "entry_point.h"
+#	include "arena.h"
+#	include "thread_context.h"
+#endif
+
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
 
@@ -11,7 +17,7 @@ main_thread_base_entry_point(void (*entry_point)(CmdLine *cmdline), char **argum
   tmInitialize(sizeof(tm_data), (char *)tm_data);
 #endif
   ThreadNameF("[main thread]");
-  Temp scratch = scratch_begin(0, 0);
+  TempArena scratch = scratch_begin(0, 0);
   String8List command_line_argument_strings = os_string_list_from_argcv(scratch.arena, (int)arguments_count, arguments);
   CmdLine cmdline = cmd_line_from_string_list(scratch.arena, command_line_argument_strings);
   B32 capture = cmd_line_has_flag(&cmdline, str8_lit("capture"));

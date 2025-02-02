@@ -1,3 +1,7 @@
+#ifdef MD_INTELLISENSE_DIRECTIVES
+#	include "markup.h"
+#endif
+
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
 

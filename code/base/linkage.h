@@ -23,6 +23,18 @@
 #endif
 #endif // GEN_API
 
+#ifndef MD_API_C_BEGIN
+#	if MD_LANG_C
+#		define MD_API_C_BEGIN
+#		define MD_API_C_END
+#		define MD_API_C
+#	else
+#		define MD_API_C_BEGIN extern "C" {
+#		define MD_API_C_END   }
+#		define MD_API_C_END   extern "C"
+#	endif
+#endif
+
 #ifndef global // Global variables
 #	ifdef MD_DYN_EXPORT
 #		define global         

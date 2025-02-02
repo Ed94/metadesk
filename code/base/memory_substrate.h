@@ -21,15 +21,6 @@
 #define MD__HIGHS         ( MD__ONES * ( MD_U8_MAX / 2 + 1 ) )
 #define MD__HAS_ZERO( x ) ( ( ( x ) - MD__ONES ) & ~( x ) & MD__HIGHS )
 
-#define swap(a, b)     \
-do                     \
-{                      \
-	typeof(a) tmp = a; \
-	a = b;             \
-	b = tmp;           \
-}                      \
-while (0)
-
 #if MD_COMPILER_MSVC || (MD_COMPILER_CLANG && MD_OS_WINDOWS)
 # pragma section(".rdata$", read)
 # define read_only __declspec(allocate(".rdata$"))
@@ -44,13 +35,14 @@ while (0)
 # define read_only
 #endif
 
-enum AllocType : u8
+enum AllocType enum_underlying(U32)
 {
 	EAllocType_ALLOC,
 	EAllocType_FREE,
 	EAllocType_FREE_ALL,
 	EAllocType_RESIZE,
 };
+typedef U32 AllocType;
 
 typedef void*(AllocatorProc)( void* allocator_data, AllocType type, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags );
 
@@ -114,7 +106,7 @@ void* default_resize_align( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE ne
 MD_API void* heap_allocator_proc( void* allocator_data, AllocType type, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags );
 
 //! The heap allocator backed by operating system's memory manager.
-constexpr AllocatorInfo heap( void ) { AllocatorInfo allocator = { heap_allocator_proc, nullptr }; return allocator; }
+#define heap() (AllocatorInfo){ AllocatorInfo allocator = { heap_allocator_proc, nullptr }; return allocator; }
 
 //! Helper to allocate memory using heap allocator.
 #define malloc( sz ) alloc( heap(), sz )

@@ -1,6 +1,6 @@
 #if MD_INTELLISENSE_DIRECTIVES
 #pragma once
-#include "base/base_types.h"
+#include "base_types.h"
 #endif
 
 typedef union Rng1U64 Rng1U64;

@@ -1,7 +1,6 @@
 #ifdef MD_INTELLISENSE_DIRECTIVES
 #pragma once
 #include "base_types.h"
-#include 
 #include "strings.h"
 #endif
 
@@ -14,12 +13,12 @@
 typedef struct CmdLineOpt CmdLineOpt;
 struct CmdLineOpt
 {
-  CmdLineOpt *next;
-  CmdLineOpt *hash_next;
-  U64 hash;
-  String8 string;
+  CmdLineOpt* next;
+  CmdLineOpt* hash_next;
+  U64         hash;
+  String8     string;
   String8List value_strings;
-  String8 value_string;
+  String8     value_string;
 };
 
 typedef struct CmdLineOptList CmdLineOptList;

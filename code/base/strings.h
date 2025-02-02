@@ -160,9 +160,9 @@ internal B32 char_is_lower(U8 c);
 internal B32 char_is_alpha(U8 c);
 internal B32 char_is_slash(U8 c);
 internal B32 char_is_digit(U8 c, U32 base);
-internal U8 char_to_lower(U8 c);
-internal U8 char_to_upper(U8 c);
-internal U8 char_to_correct_slash(U8 c);
+internal U8  char_to_lower(U8 c);
+internal U8  char_to_upper(U8 c);
+internal U8  char_to_correct_slash(U8 c);
 
 ////////////////////////////////
 //~ rjf: C-String Measurement
@@ -174,9 +174,9 @@ internal U64 cstring32_length(U32 *c);
 ////////////////////////////////
 //~ rjf: String Constructors
 
-#define str8_lit(S)  str8((U8*)(S), sizeof(S) - 1)
-#define str8_lit_comp(S) {(U8*)(S), sizeof(S) - 1,}
-#define str8_varg(S) (int)((S).size), ((S).str)
+#define str8_lit(S)      str8((U8*)(S), sizeof(S) - 1)
+#define str8_lit_comp(S) { (U8*)(S), sizeof(S) - 1, }
+#define str8_varg(S)     (int)((S).size), ((S).str)
 
 #define str8_array(S,C) str8((U8*)(S), sizeof(*(S))*(C))
 #define str8_array_fixed(S) str8((U8*)(S), sizeof(S))
@@ -367,8 +367,9 @@ internal void    str8_serial_push_u16(Arena *arena, String8List *srl, U16 x);
 internal void    str8_serial_push_u8(Arena *arena, String8List *srl, U8 x);
 internal void    str8_serial_push_cstr(Arena *arena, String8List *srl, String8 str);
 internal void    str8_serial_push_string(Arena *arena, String8List *srl, String8 str);
+
 #define str8_serial_push_array(arena, srl, ptr, count) str8_serial_push_data(arena, srl, ptr, sizeof(*(ptr)) * (count))
-#define str8_serial_push_struct(arena, srl, ptr) str8_serial_push_array(arena, srl, ptr, 1)
+#define str8_serial_push_struct(arena, srl, ptr)       str8_serial_push_array(arena, srl, ptr, 1)
 
 ////////////////////////////////
 //~ rjf: Deserialization Helpers
@@ -378,7 +379,8 @@ internal U64    str8_deserial_find_first_match(String8 string, U64 off, U16 scan
 internal void * str8_deserial_get_raw_ptr(String8 string, U64 off, U64 size);internal U64 str8_deserial_read_cstr(String8 string, U64 off, String8 *cstr_out);
 internal U64    str8_deserial_read_windows_utf16_string16(String8 string, U64 off, String16 *str_out);
 internal U64    str8_deserial_read_block(String8 string, U64 off, U64 size, String8 *block_out);
-#define str8_deserial_read_array(string, off, ptr, count) str8_deserial_read((string), (off), (ptr), sizeof(*(ptr))*(count), sizeof(*(ptr)))
-#define str8_deserial_read_struct(string, off, ptr) str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)), sizeof(*(ptr)))
+
+#define str8_deserial_read_array(string, off, ptr, count) str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)) * (count), sizeof( *(ptr)))
+#define str8_deserial_read_struct(string, off, ptr)       str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)), sizeof( *(ptr)))
 
 #endif // BASE_STRINGS_H

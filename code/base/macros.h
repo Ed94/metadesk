@@ -1,6 +1,6 @@
 #if MD_INTELLISENSE_DIRECTIVES
-#pragma once
-#include "platform.h"
+#	pragma once
+#	include "platform.h"
 #endif
 
 #ifndef local_persist
@@ -8,22 +8,22 @@
 #endif
 
 #if MD_COMPILER_MSVC
-# define thread_static __declspec(thread)
+#	define thread_static __declspec(thread)
 #elif MD_COMPILER_CLANG || MD_COMPILER_GCC
-# define thread_static __thread
+#	define thread_static __thread
 #endif
 
 ////////////////////////////////
 //~ rjf: Branch Predictor Hints
 
-#if defined(__clang__)
+#if MD_COMPILER_CLANG
 # define expect(expr, val) __builtin_expect((expr), (val))
 #else
 # define expect(expr, val) (expr)
 #endif
 
-#define likely(expr)            expect(expr,1)
-#define unlikely(expr)          expect(expr,0)
+#define likely(expr)   expect(expr,1)
+#define unlikely(expr) expect(expr,0)
 
 ////////////////////////////////
 //~ erg: type casting
@@ -56,7 +56,7 @@
 #	endif
 #endif
 
-#if ! defined(typeof) && (!MD_COMPILER_C || __STDC_VERSION__ < 202311L)
+#if ! defined(typeof) && ( ! MD_COMPILER_C || __STDC_VERSION__ < 202311L)
 #	if ! MD_COMPILER_C
 #		define typeof decltype
 #	elif defined(_MSC_VER)

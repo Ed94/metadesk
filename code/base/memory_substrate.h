@@ -119,4 +119,3 @@ constexpr AllocatorInfo heap( void ) { AllocatorInfo allocator = { heap_allocato
 
 //! Helper to free memory allocated by heap allocator.
 #define mfree( ptr ) free( heap(), ptr )
-

@@ -1,11 +1,7 @@
 #if MD_INTELLISENSE_DIRECTIVES
-#pragma once
-#include "cracking_arch.h"
-#include "cracking_os.h"
-#include "cracking_compiler.h"
+#	pragma once
+#	include "context_cracking.h"
 #endif
-
-#pragma region Mandatory Includes
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -18,5 +14,3 @@
 #	include <assert.h>
 #	include <stdbool.h>
 #endif
-
-#pragma endregion Mandatory Includes

@@ -11,6 +11,8 @@
 		"algorithm": "cpp",
 		"optional": "cpp",
 		"type_traits": "cpp",
-		"xtr1common": "cpp"
+		"xtr1common": "cpp",
+		"cstddef": "cpp",
+		"xmemory": "cpp"
 	}
 }

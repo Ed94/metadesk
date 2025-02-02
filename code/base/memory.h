@@ -31,13 +31,13 @@
 //~ rjf: Type -> Alignment
 
 #if MD_COMPILER_MSVC
-# define align_of(T) __alignof(T)
+#	define align_of(T) __alignof(T)
 #elif MD_COMPILER_CLANG
-# define align_of(T) __alignof(T)
+#	define align_of(T) __alignof(T)
 #elif MD_COMPILER_GCC
-# define align_of(T) __alignof__(T)
+#	define align_of(T) __alignof__(T)
 #else
-# error AlignOf not defined for this compiler.
+#	error AlignOf not defined for this compiler.
 #endif
 
 ////////////////////////////////
@@ -51,8 +51,8 @@
 ////////////////////////////////
 //~ rjf: For-Loop Construct Macros
 
-#define defer_loop(begin, end)         for(int _i_ =       ((begin), 0); ! _i_;                           _i_ += 1, (end))
-#define defer_loop_checked(begin, end) for(int _i_ = 2 * ! (begin);       (_i_ == 2 ? ((end), 0) : !_i_); _i_ += 1, (end))
+#define defer_loop(begin, end)           for (int _i_ =       ((begin), 0); ! _i_;                           _i_ += 1, (end))
+#define defer_loop_checked(begin, end)   for (int _i_ = 2 * ! (begin);       (_i_ == 2 ? ((end), 0) : !_i_); _i_ += 1, (end))
 
 #define each_enum_val(type, it)          type it = (type) 0; it < type ## _COUNT; it = (type)( it + 1 )
 #define each_non_zero_enum_val(type, it) type it = (type) 1; it < type ## _COUNT; it = (type)( it + 1 )
@@ -65,21 +65,21 @@
 #define memory_compare(a, b, size)     memcmp((a), (b), (size))
 #define memory_str_len(ptr)            cstr_len(ptr)
 
-#define memory_copy_struct(d,s)   memory_copy((d), (s), sizeof( *(d)))
-#define memory_copy_array(d,s)    memory_copy((d), (s), sizeof( d))
-#define memory_copy_type(d,s,c)   memory_copy((d), (s), sizeof( *(d)) * (c))
+#define memory_copy_struct(d,s)        memory_copy((d), (s), sizeof( *(d)))
+#define memory_copy_array(d,s)         memory_copy((d), (s), sizeof( d))
+#define memory_copy_type(d,s,c)        memory_copy((d), (s), sizeof( *(d)) * (c))
 
-#define memory_zero(s,z)       mem_set((s), 0, (z))
-#define memory_zero_struct(s)  memory_zero((s), sizeof( *(s)))
-#define memory_zero_array(a)   memroy_zero((a), sizeof(a))
-#define memory_zero_type(m,c)  memroy_zero((m), sizeof( *(m)) * (c))
+#define memory_zero(s,z)               mem_set((s), 0, (z))
+#define memory_zero_struct(s)          memory_zero((s), sizeof( *(s)))
+#define memory_zero_array(a)           memroy_zero((a), sizeof(a))
+#define memory_zero_type(m,c)          memroy_zero((m), sizeof( *(m)) * (c))
 
-#define memory_match(a,b,z)      (memory_compare((a), (b), (z)) == 0)
-#define memory_match_struct(a,b) memory_match((a), (b), sizeof(*(a)))
-#define memory_match_array(a,b)  memory_match((a), (b), sizeof(a))
+#define memory_match(a,b,z)            (memory_compare((a), (b), (z)) == 0)
+#define memory_match_struct(a,b)       memory_match((a), (b), sizeof(*(a)))
+#define memory_match_array(a,b)        memory_match((a), (b), sizeof(a))
 
-#define memory_read(T,p,e)    ( ((p) + sizeof(T) <= (e)) ? ( *(T*)(p)) : (0) )
-#define memory_consume(T,p,e) ( ((p) + sizeof(T) <= (e)) ? ((p) += sizeof(T), *(T*)((p) - sizeof(T))) : ((p) = (e),0) )
+#define memory_read(T,p,e)            ( ((p) + sizeof(T) <= (e)) ? ( *(T*)(p)) : (0) )
+#define memory_consume(T,p,e)         ( ((p) + sizeof(T) <= (e)) ? ((p) += sizeof(T), *(T*)((p) - sizeof(T))) : ((p) = (e),0) )
 
 ////////////////////////////////
 //~ rjf: Asserts
@@ -147,17 +147,37 @@
 #define set_nil(nil,p)   ((p) = nil)
 
 //- rjf: doubly-linked-lists
-#define dll_insert_npz(nil, f, l, p, n, next, prev)                                                      \
-(check_nil(nil, f) ?                                                                                     \
-	((f) = (l) = (n), set_nil(nil, (n)->next), set_nil(nil, (n)->prev))                                  \
-:	CheckNil(nil,p) ?                                                                                    \
-		((n)->next = (f), (f)->prev = (n), (f) = (n), SetNil(nil,(n)->prev))                             \
-	:	((p) == (l)) ?                                                                                   \
-			((l)->next = (n), (n)->prev = (l), (l) = (n), SetNil(nil, (n)->next))                        \
-		:   ( ((!CheckNil(nil, p) && CheckNil(nil, (p)->next) ) ?                                        \
-				(0)                                                                                      \
-			:	((p)->next->prev = (n))), ((n)->next = (p)->next), ((p)->next = (n)), ((n)->prev = (p))) \
-) \
+#define dll_insert_npz(nil, f, l, p, n, next, prev) (                      \
+	check_nil(nil, f) ? (                                                  \
+			(f) = (l) = (n),                                               \
+			set_nil(nil, (n)->next),                                       \
+			set_nil(nil, (n)->prev)                                        \
+		)                                                                  \
+	: (                                                                    \
+		check_nil(nil,p) ? (                                               \
+			(n)->next = (f),                                               \
+			(f)->prev = (n),                                               \
+			(f) = (n),                                                     \
+			set_nil(nil,(n)->prev)                                         \
+		)                                                                  \
+		: ((p) == (l)) ? (                                                 \
+					(l)->next = (n),                                       \
+					(n)->prev = (l),                                       \
+					(l) = (n),                                             \
+					set_nil(nil, (n)->next)                                \
+				)                                                          \
+			: (                                                            \
+				( 	                                                       \
+					( ! check_nil(nil, p) && check_nil(nil, (p)->next) ) ? \
+						(0)                                                \
+					:	( (p)->next->prev = (n) )                          \
+				),                                                         \
+				((n)->next = (p)->next),                                   \
+				((p)->next = (n)),                                         \
+				((n)->prev = (p))                                          \
+			)                                                              \
+	)                                                                      \
+)                                                                          \
 
 #define dll_push_back_npz(nil, f, l, n, next, prev)  dll_insert_npz(nil, f, l, l, n, next, prev)
 #define dll_push_front_npz(nil, f, l, n, next, prev) dll_insert_npz(nil, l, f, f, n, prev, next)
@@ -173,13 +193,21 @@
 			(l) = (l)->prev                 \
 		:	(0)                             \
 	),                                      \
-(CheckNil(nil,(n)->prev) ? (0) :\
-((n)->prev->next = (n)->next)),\
-(CheckNil(nil,(n)->next) ? (0) :\
-((n)->next->prev = (n)->prev)))
+	(                                       \
+		CheckNil(nil,(n)->prev) ?           \
+			(0)                             \
+		: 	((n)->prev->next = (n)->next)   \
+	),                                      \
+	(                                       \
+		CheckNil(nil,(n)->next) ?           \
+			(0)                             \
+		:	((n)->next->prev = (n)->prev)   \
+	)                                       \
+)
 
 //- rjf: singly-linked, doubly-headed lists (queues)
-#define SLLQueuePush_NZ(nil,f,l,n,next) (CheckNil(nil,f)?\
+#define SLLQueuePush_NZ(nil,f,l,n,next) ( \
+	CheckNil(nil,f)?\
 ((f)=(l)=(n),SetNil(nil,(n)->next)):\
 ((l)->next=(n),(l)=(n),SetNil(nil,(n)->next)))
 #define SLLQueuePushFront_NZ(nil,f,l,n,next) (CheckNil(nil,f)?\
@@ -238,8 +266,8 @@
 
 #if ASAN_ENABLED
 #pragma comment(lib, "clang_rt.asan-x86_64.lib")
-C_LINKAGE void __asan_poison_memory_region(void const volatile *addr, size_t size);
-C_LINKAGE void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
+MD_C_API void __asan_poison_memory_region(void const volatile *addr, size_t size);
+MD_C_API void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 # define AsanPoisonMemoryRegion(addr, size)   __asan_poison_memory_region((addr), (size))
 # define AsanUnpoisonMemoryRegion(addr, size) __asan_unpoison_memory_region((addr), (size))
 #else

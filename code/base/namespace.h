@@ -1,6 +1,6 @@
 #ifdef MD_INTELLISENSE_DIRECTIVES
-#pragma once
-#include "cracking_arch.h"
+#	pragma once
+#	include "cracking_compiler.h"
 #endif
 
 // C++ namespace support
@@ -10,14 +10,15 @@
 #		define MD_NS_BEGIN
 #		define MD_NS_END
 #	else
-#		define MD_NS              ::
+#		define MD_NS       ::
 #		define MD_NS_BEGIN
 #		define MD_NS_END
 #	endif
 #else
 	namespace MD {}
 	namespace md = MD;
-#	define MD_NS              MD::
-#	define MD_NS_BEGIN        namespace MD {
-#	define MD_NS_END          }
+
+#	define MD_NS       MD::
+#	define MD_NS_BEGIN namespace MD {
+#	define MD_NS_END   }
 #endif

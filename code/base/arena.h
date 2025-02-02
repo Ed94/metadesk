@@ -1,7 +1,7 @@
 #ifdef MD_INTELLISENSE_DIRECTIVES
 #pragma once
-#include "base_types.h"
 #include "macros.h"
+#include "base_types.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools
@@ -18,48 +18,49 @@
 typedef U32 ArenaFlags;
 enum
 {
-  ArenaFlag_NoChain    = (1<<0),
-  ArenaFlag_LargePages = (1<<1),
+	ArenaFlag_NoChain    = ( 1 << 0),
+	ArenaFlag_LargePages = ( 1 << 1),
 };
 
 typedef struct ArenaParams ArenaParams;
 struct ArenaParams
 {
-  ArenaFlags flags;
-  U64 reserve_size;
-  U64 commit_size;
-  void *optional_backing_buffer;
+	ArenaFlags flags;
+	U64        reserve_size;
+	U64        commit_size;
+	void*      optional_backing_buffer;
 };
 
 typedef struct Arena Arena;
 struct Arena
 {
-  Arena *prev;    // previous arena in chain
-  Arena *current; // current arena in chain
-  ArenaFlags flags;
-  U32 cmt_size;
-  U64 res_size;
-  U64 base_pos;
-  U64 pos;
-  U64 cmt;
-  U64 res;
+	Arena*     prev;    // previous arena in chain
+	Arena*     current; // current arena in chain
+	ArenaFlags flags;
+	U32        cmt_size;
+	U64        res_size;
+	U64        base_pos;
+	U64        pos;
+	U64        cmt;
+	U64        res;
 };
 static_assert(sizeof(Arena) <= MD_ARENA_HEADER_SIZE, "sizeof(Arena) <= MD_ARENA_HEADER_SIZE");
 
 typedef struct TempArena TempArena;
 struct TempArena
 {
-  Arena *arena;
-  U64 pos;
+	Arena* arena;
+	U64    pos;
 };
 
 ////////////////////////////////
 //~ rjf: Arena Functions
 
 //- rjf: arena creation/destruction
-internal Arena *arena_alloc_(ArenaParams *params);
-#define arena_alloc(...) arena_alloc_(&(ArenaParams){.reserve_size = MB(64), .commit_size = KB(64), __VA_ARGS__})
-internal void rarena_release(Arena *arena);
+internal Arena* arena_alloc_(ArenaParams *params);
+#define         arena_alloc(...) arena_alloc_( & ( ArenaParams) { .reserve_size = MB(64), .commit_size = KB(64), __VA_ARGS__ } )
+
+internal void arena_release(Arena *arena);
 
 //- rjf: arena push/pop/pos core functions
 internal void *arena_push(Arena *arena, U64 size, U64 align);
@@ -76,6 +77,6 @@ internal void      temp_arena_end(TempArena temp);
 
 //- rjf: push helper macros
 #define push_array_no_zero_aligned(a, T, c, align) (T *)arena_push((a), sizeof(T)*(c), (align))
-#define push_array_aligned(a, T, c, align) (T *)MemoryZero(push_array_no_zero_aligned(a, T, c, align), sizeof(T)*(c))
-#define push_array_no_zero(a, T, c) push_array_no_zero_aligned(a, T, c, Max(8, AlignOf(T)))
-#define push_array(a, T, c) push_array_aligned(a, T, c, Max(8, AlignOf(T)))
+#define push_array_aligned(a, T, c, align)         (T *)memory_zero(push_array_no_zero_aligned(a, T, c, align), sizeof(T)*(c))
+#define push_array_no_zero(a, T, c)                     push_array_no_zero_aligned(a, T, c, max(8, align_of(T)))
+#define push_array(a, T, c)                             push_array_aligned(a, T, c, max(8, align_of(T)))

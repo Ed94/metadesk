@@ -1,6 +1,11 @@
 #ifdef MD_INTELLISENSE_DIRECTIVES
-#pragma once
-#include "base/base_types.h"
+#	pragma once
+#	include "base/cracking_arch.h"
+#	include "base/cracking_compiler.h"
+#	include "base/cracking_os.h"
+#	include "base/linkage.h"
+#	include "base/base_types.h"
+#	include "base/strings.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools
@@ -12,11 +17,11 @@
 typedef struct OS_SystemInfo OS_SystemInfo;
 struct OS_SystemInfo
 {
-  U32 logical_processor_count;
-  U64 page_size;
-  U64 large_page_size;
-  U64 allocation_granularity;
-  String8 machine_name;
+	U32     logical_processor_count;
+	U64     page_size;
+	U64     large_page_size;
+	U64     allocation_granularity;
+	String8 machine_name;
 };
 
 ////////////////////////////////
@@ -25,12 +30,12 @@ struct OS_SystemInfo
 typedef struct OS_ProcessInfo OS_ProcessInfo;
 struct OS_ProcessInfo
 {
-  U32 pid;
-  String8 binary_path;
-  String8 initial_path;
-  String8 user_program_data_path;
-  String8List module_load_paths;
-  String8List environment;
+	U32         pid;
+	String8     binary_path;
+	String8     initial_path;
+	String8     user_program_data_path;
+	String8List module_load_paths;
+	String8List environment;
 };
 
 ////////////////////////////////
@@ -39,12 +44,12 @@ struct OS_ProcessInfo
 typedef U32 OS_AccessFlags;
 enum
 {
-  OS_AccessFlag_Read       = (1<<0),
-  OS_AccessFlag_Write      = (1<<1),
-  OS_AccessFlag_Execute    = (1<<2),
-  OS_AccessFlag_Append     = (1<<3),
-  OS_AccessFlag_ShareRead  = (1<<4),
-  OS_AccessFlag_ShareWrite = (1<<5),
+	OS_AccessFlag_Read       = (1 << 0),
+	OS_AccessFlag_Write      = (1 << 1),
+	OS_AccessFlag_Execute    = (1 << 2),
+	OS_AccessFlag_Append     = (1 << 3),
+	OS_AccessFlag_ShareRead  = (1 << 4),
+	OS_AccessFlag_ShareWrite = (1 << 5),
 };
 
 ////////////////////////////////
@@ -53,23 +58,23 @@ enum
 typedef U32 OS_FileIterFlags;
 enum
 {
-  OS_FileIterFlag_SkipFolders     = (1 << 0),
-  OS_FileIterFlag_SkipFiles       = (1 << 1),
-  OS_FileIterFlag_SkipHiddenFiles = (1 << 2),
-  OS_FileIterFlag_Done            = (1 << 31),
+	OS_FileIterFlag_SkipFolders     = (1 << 0),
+	OS_FileIterFlag_SkipFiles       = (1 << 1),
+	OS_FileIterFlag_SkipHiddenFiles = (1 << 2),
+	OS_FileIterFlag_Done            = (1 << 31),
 };
 
 typedef struct OS_FileIter OS_FileIter;
 struct OS_FileIter
 {
   OS_FileIterFlags flags;
-  U8 memory[800];
+  U8               memory[800];
 };
 
 typedef struct OS_FileInfo OS_FileInfo;
 struct OS_FileInfo
 {
-  String8 name;
+  String8        name;
   FileProperties props;
 };
 

@@ -1,0 +1,8 @@
+{
+	"files.associations": {
+		"*.rmd": "markdown",
+		"xutility": "cpp",
+		"initializer_list": "cpp",
+		"utility": "cpp"
+	}
+}

@@ -1,0 +1,33 @@
+root = true
+
+[*.refactor]
+indent_style = space
+indent_size  = 4
+
+[*.md]
+indent_style = space
+indent_size  = 4
+
+[*.c]
+indent_style = tab
+indent_size  = 4
+
+[*.cpp]
+indent_style = tab
+indent_size  = 4
+
+[*.h]
+indent_style = tab
+indent_size  = 4
+
+[*.hpp]
+indent_style = tab
+indent_size  = 4
+
+[*.ps1]
+indent_style = tab
+indent_size  = 4
+
+[*.natvis]
+indent_style = tab
+indent_size  = 4

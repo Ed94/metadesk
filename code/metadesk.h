@@ -15,9 +15,13 @@
 MD_NS_BEGIN
 
 #include "base/base_types.h"
-#include "base/memory_substrate.h"
 #include "base/memory.h"
+#include "base/memory_substrate.h"
+#include "base/arena.h"
+#include "base/space.h"
+#include "base/toolchain.h"
 #include "base/strings.h"
+#include "base/text.h"
 
 MD_NS_END
 

@@ -1,4 +1,4 @@
-#ifdef MD_INTELLISENSE_DIRECTIVES
+#ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
 #	include "context_cracking.h"
 #	include "linkage.h"
@@ -112,12 +112,6 @@
 //~ rjf: Atomic Operations
 
 #if MD_OS_WINDOWS
-
-// #	include <windows.h>
-// #	include <tmmintrin.h>
-// #	include <wmmintrin.h>
-// #	include <intrin.h>
-
 #	if MD_ARCH_X64
 #		define ins_atomic_u64_eval(x)                 InterlockedAdd64((volatile __int64 *)(x), 0)
 #		define ins_atomic_u64_inc_eval(x)             InterlockedIncrement64((volatile __int64 *)(x))
@@ -146,16 +140,19 @@
 //~ rjf: Linked List Building Macros
 
 //- rjf: linked list macro helpers
+
 #define check_nil(nil,p) ((p) == 0 || (p) == nil)
 #define set_nil(nil,p)   ((p) = nil)
 
 //- rjf: doubly-linked-lists
+
+// insert next-previous with nil
 #define dll_insert_npz(nil, f, l, p, n, next, prev) (                      \
 	check_nil(nil, f) ? (                                                  \
-			(f) = (l) = (n),                                               \
-			set_nil(nil, (n)->next),                                       \
-			set_nil(nil, (n)->prev)                                        \
-		)                                                                  \
+		(f) = (l) = (n),                                                   \
+		set_nil(nil, (n)->next),                                           \
+		set_nil(nil, (n)->prev)                                            \
+	)                                                                      \
 	: (                                                                    \
 		check_nil(nil,p) ? (                                               \
 			(n)->next = (f),                                               \
@@ -164,11 +161,11 @@
 			set_nil(nil,(n)->prev)                                         \
 		)                                                                  \
 		: ((p) == (l)) ? (                                                 \
-					(l)->next = (n),                                       \
-					(n)->prev = (l),                                       \
-					(l) = (n),                                             \
-					set_nil(nil, (n)->next)                                \
-				)                                                          \
+				(l)->next = (n),                                           \
+				(n)->prev = (l),                                           \
+				(l) = (n),                                                 \
+				set_nil(nil, (n)->next)                                    \
+			)                                                              \
 			: (                                                            \
 				( 	                                                       \
 					( ! check_nil(nil, p) && check_nil(nil, (p)->next) ) ? \
@@ -180,83 +177,116 @@
 				((n)->prev = (p))                                          \
 			)                                                              \
 	)                                                                      \
-)                                                                          \
-
+)
+// push-back next-previous with nil
 #define dll_push_back_npz(nil, f, l, n, next, prev)  dll_insert_npz(nil, f, l, l, n, next, prev)
+// push-fornt next-previous with nil
 #define dll_push_front_npz(nil, f, l, n, next, prev) dll_insert_npz(nil, l, f, f, n, prev, next)
-#define dll_remove_npz(nil,f,l,n,next,prev) \
-(                                           \
-	(                                       \
-		(n) == (f) ?                        \
-			(f) = (n)->next                 \
-		: 	(0)                             \
-	),                                      \
-	(                                       \
-		(n) == (l) ?                        \
-			(l) = (l)->prev                 \
-		:	(0)                             \
-	),                                      \
-	(                                       \
-		CheckNil(nil,(n)->prev) ?           \
-			(0)                             \
-		: 	((n)->prev->next = (n)->next)   \
-	),                                      \
-	(                                       \
-		CheckNil(nil,(n)->next) ?           \
-			(0)                             \
-		:	((n)->next->prev = (n)->prev)   \
-	)                                       \
+// remove next-previous with nil
+#define dll_remove_npz(nil, f, l, n, next, prev) \
+(                                                \
+	(                                            \
+		(n) == (f) ?                             \
+			(f) = (n)->next                      \
+		: 	(0)                                  \
+	),                                           \
+	(                                            \
+		(n) == (l) ?                             \
+			(l) = (l)->prev                      \
+		:	(0)                                  \
+	),                                           \
+	(                                            \
+		check_nil(nil,(n)->prev) ?               \
+			(0)                                  \
+		: 	((n)->prev->next = (n)->next)        \
+	),                                           \
+	(                                            \
+		check_nil(nil,(n)->next) ?               \
+			(0)                                  \
+		:	((n)->next->prev = (n)->prev)        \
+	)                                            \
 )
 
 //- rjf: singly-linked, doubly-headed lists (queues)
-#define SLLQueuePush_NZ(nil,f,l,n,next) ( \
-	CheckNil(nil,f)?\
-((f)=(l)=(n),SetNil(nil,(n)->next)):\
-((l)->next=(n),(l)=(n),SetNil(nil,(n)->next)))
-#define SLLQueuePushFront_NZ(nil,f,l,n,next) (CheckNil(nil,f)?\
-((f)=(l)=(n),SetNil(nil,(n)->next)):\
-((n)->next=(f),(f)=(n)))
-#define SLLQueuePop_NZ(nil,f,l,next) ((f)==(l)?\
-(SetNil(nil,f),SetNil(nil,l)):\
-((f)=(f)->next))
+
+// queue-push next with nil
+#define sll_queue_push_nz(nil, f, l, n, next) \
+(                                             \
+	check_nil(nil, f) ? (                     \
+		(f) = (l) = (n),                      \
+		set_nil(nil, (n)->next)               \
+	)                                         \
+	: (                                       \
+		(l)->next=(n),                        \
+		(l) = (n),                            \
+		set_nil(nil,(n)->next)                \
+	)                                         \
+)
+// queue-push-front next with nil
+#define sll_queue_push_front_nz(nil, f, l, n, next) \
+(                                                   \
+	check_nil(nil, f) ? (                           \
+		(f) = (l) = (n),                            \
+		set_nil(nil,(n)->next)                      \
+	)                                               \
+	: (                                             \
+		(n)->next = (f),                            \
+		(f) = (n)                                   \
+	)                                               \
+)
+// queue-pop next with nil
+#define sll_queue_pop_nz(nil, f, l, next) \
+(                                         \
+	(f) == (l) ? (                        \
+		set_nil(nil,f),                   \
+		set_nil(nil,l)                    \
+	)                                     \
+	: (                                   \
+		(f)=(f)->next                     \
+	)                                     \
+)
 
 //- rjf: singly-linked, singly-headed lists (stacks)
+
 #define sll_stack_push_n(f,n,next) ( (n)->next = (f), (f) = (n) )
 #define sll_stack_pop_n(f,next)    ( (f) = (f)->next )
 
 //- rjf: doubly-linked-list helpers
-#define dll_insert_np(f, l, p, n, next, prev)  DLLInsert_NPZ   (0, f, l, p, n,    next, prev)
-#define dll_push_back_np(f, l, n, next, prev)  DLLPushBack_NPZ (0, f, l, n, next,       prev)
-#define dll_push_front_np(f, l, n, next, prev) DLLPushFront_NPZ(0, f, l, n, next,       prev)
-#define dll_remove_np(f, l, n, next, prev)     DLLRemove_NPZ   (0, f, l, n, next,       prev)
-#define dll_insert(f, l, p, n)                 DLLInsert_NPZ   (0, f, l, p, n,    next, prev)
-#define dll_push_back(f, l, n)                 DLLPushBack_NPZ (0, f, l, n, next, prev)
-#define dll_push_front(f, l, n)                DLLPushFront_NPZ(0, f, l, n, next, prev)
-#define dll_remove(f, l, n)                    DLLRemove_NPZ   (0, f, l, n, next, prev)
+
+#define dll_insert_np(f, l, p, n, next, prev)  dll_insert_npz    (0, f, l, p, n,    next, prev)
+#define dll_push_back_np(f, l, n, next, prev)  dll_push_back_npz (0, f, l, n, next,       prev)
+#define dll_push_front_np(f, l, n, next, prev) dll_push_front_npz(0, f, l, n, next,       prev)
+#define dll_remove_np(f, l, n, next, prev)     dll_remove_npz    (0, f, l, n, next,       prev)
+#define dll_insert(f, l, p, n)                 dll_insert_npz    (0, f, l, p, n,    next, prev)
+#define dll_push_back(f, l, n)                 dll_push_back_npz (0, f, l, n, next, prev)
+#define dll_push_front(f, l, n)                dll_push_front_npz(0, f, l, n, next, prev)
+#define dll_remove(f, l, n)                    dll_remove_npz    (0, f, l, n, next, prev)
 
 //- rjf: singly-linked, doubly-headed list helpers
-#define SLLQueuePush_N(f,l,n,next) SLLQueuePush_NZ(0,f,l,n,next)
-#define SLLQueuePushFront_N(f,l,n,next) SLLQueuePushFront_NZ(0,f,l,n,next)
-#define SLLQueuePop_N(f,l,next) SLLQueuePop_NZ(0,f,l,next)
-#define SLLQueuePush(f,l,n) SLLQueuePush_NZ(0,f,l,n,next)
-#define SLLQueuePushFront(f,l,n) SLLQueuePushFront_NZ(0,f,l,n,next)
-#define SLLQueuePop(f,l) SLLQueuePop_NZ(0,f,l,next)
+
+#define sll_queue_push_n(f, l, n, next)       sll_queue_push_nz      (0, f, l, n, next)
+#define sll_queue_push_fornt_n(f, l, n, next) sll_queue_push_front_nz(0, f, l, n, next)
+#define sll_queue_pop_n(f, l, next)           sll_queue_pop_nzs      (0, f, l,    next)
+#define sll_queue_push(f, l, n)               sll_queue_push_nz      (0, f, l, n, next)
+#define sll_queue_push_front(f, l ,n)         sll_queue_push_front_nz(0, f, l, n, next)
+#define sll_queue_pop(f, l)                   sll_queue_pop_nz       (0, f, l,    next)
 
 //- rjf: singly-linked, singly-headed list helpers
-#define SLLStackPush(f,n) SLLStackPush_N(f,n,next)
-#define SLLStackPop(f) SLLStackPop_N(f,next)
+
+#define sll_stack_push(f, n) sll_stack_push_n(f, n, next)
+#define sll_stack_pop(f)     sll_stack_pop_n (f,    next)
 
 ////////////////////////////////
 //~ rjf: Address Sanitizer Markup
 
-#if COMPILER_MSVC
+#if MD_COMPILER_MSVC
 # if defined(__SANITIZE_ADDRESS__)
 #  define ASAN_ENABLED 1
 #  define NO_ASAN __declspec(no_sanitize_address)
 # else
 #  define NO_ASAN
 # endif
-#elif COMPILER_CLANG
+#elif MD_COMPILER_CLANG
 # if defined(__has_feature)
 #  if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
 #   define ASAN_ENABLED 1
@@ -272,18 +302,18 @@
 	MD_C_API void __asan_poison_memory_region(void const volatile *addr, size_t size);
 	MD_C_API void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 
-#	define AsanPoisonMemoryRegion(addr, size)   __asan_poison_memory_region((addr), (size))
-#	define AsanUnpoisonMemoryRegion(addr, size) __asan_unpoison_memory_region((addr), (size))
+#	define asan_poison_memory_region(addr, size)   __asan_poison_memory_region((addr), (size))
+#	define asan_unpoison_memory_region(addr, size) __asan_unpoison_memory_region((addr), (size))
 #else
-#	define AsanPoisonMemoryRegion(addr, size)   ((void)(addr), (void)(size))
-#	define AsanUnpoisonMemoryRegion(addr, size) ((void)(addr), (void)(size))
+#	define asan_poison_memory_region(addr, size)   ((void)(addr), (void)(size))
+#	define asan_unpoison_memory_region(addr, size) ((void)(addr), (void)(size))
 #endif
 
 ////////////////////////////////
 //~ rjf: Misc. Helper Macros
 
 #define stringify_(S) #S
-#define stringify(S)  Stringify_(S)
+#define stringify(S)  stringify_(S)
 
 #define glue_(A,B) A ## B
 #define glue(A,B)  glue_(A,B)
@@ -304,22 +334,22 @@
 
 #define ptr_from_int(i) (void*)((U8*)0 + (i))
 
-#define Compose64Bit(a,b)  ((((U64)a) << 32) | ((U64)b));
-#define AlignPow2(x,b)     (((x) + (b) - 1)&(~((b) - 1)))
-#define AlignDownPow2(x,b) ((x)&(~((b) - 1)))
-#define AlignPadPow2(x,b)  ((0-(x)) & ((b) - 1))
-#define IsPow2(x)          ((x)!=0 && ((x)&((x)-1))==0)
-#define IsPow2OrZero(x)    ((((x) - 1)&(x)) == 0)
+#define compose_64bit(a,b)    ((((U64)a) << 32) | ((U64)b));
+#define align_pow_2(x,b)      (((x) + (b) - 1)&( ~((b) - 1)))
+#define align_down_pow_2(x,b) ((x) & (~((b) - 1)))
+#define align_pad_pow_2(x,b)  ((0-(x)) & ((b) - 1))
+#define is_pow_2(x)           ((x) != 0 && ((x )& ((x) - 1)) == 0)
+#define is_pow_2_or_zero(x)   ((((x) - 1) & (x)) == 0)
 
-#define ExtractBit(word, idx) (((word) >> (idx)) & 1)
+#define extract_bit(word, idx) (((word) >> (idx)) & 1)
 
-#if LANG_CPP
+#if MD_LANG_CPP
 # define zero_struct {}
 #else
 # define zero_struct {0}
 #endif
 
-#if COMPILER_MSVC && COMPILER_MSVC_YEAR < 2015
+#if MD_COMPILER_MSVC && MD_COMPILER_MSVC_YEAR < 2015
 # define this_function_name "unknown"
 #else
 # define this_function_name __func__

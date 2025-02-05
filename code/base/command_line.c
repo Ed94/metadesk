@@ -1,4 +1,4 @@
-#ifdef MD_INTELLISENSE_DIRECTIVES
+#ifdef INTELLISENSE_DIRECTIVES
 #	include "command_line.h"
 #endif
 

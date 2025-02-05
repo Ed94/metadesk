@@ -1,4 +1,4 @@
-#if MD_INTELLISENSE_DIRECTIVES
+#if INTELLISENSE_DIRECTIVES
 #pragma once
 #include "base/base_types.h"
 #include "base/math.h"

@@ -1,4 +1,4 @@
-#ifdef MD_INTELLISENSE_DIRECTIVES
+#ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
 #	include "linkage.h"
 #	include "base_types.h"

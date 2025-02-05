@@ -1,4 +1,4 @@
-#ifdef MD_INTELLISENSE_DIRECTIVES
+#ifdef INTELLISENSE_DIRECTIVES
 #	include "entry_point.h"
 #	include "arena.h"
 #	include "thread_context.h"

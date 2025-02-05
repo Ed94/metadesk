@@ -1,4 +1,4 @@
-#ifdef MD_INTELLISENSE_DIRECTIVES
+#ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
 #	include "context_cracking.h"
 #endif
@@ -36,7 +36,7 @@
 #endif
 
 #ifndef global // Global variables
-#	ifdef MD_DYN_EXPORT
+#	if defined(MD_DYN_EXPORT) || defined(MD_STATIC_LINK)
 #		define global         
 #	else
 #		define global static

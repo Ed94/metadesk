@@ -1,4 +1,4 @@
-#if MD_INTELLISENSE_DIRECTIVES
+#ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
 #endif
 

@@ -1,4 +1,4 @@
-#if MD_INTELLISENSE_DIRECTIVES
+#ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
 #	include "context_cracking.h"
 #	include "linkage.h"
@@ -23,8 +23,8 @@
 # define expect(expr, val) (expr)
 #endif
 
-#define likely(expr)   expect(expr,1)
-#define unlikely(expr) expect(expr,0)
+#define likely(expr)   expect(expr, 1)
+#define unlikely(expr) expect(expr, 0)
 
 ////////////////////////////////
 //~ erg: type casting

@@ -6,7 +6,7 @@ This is a fork that aims to make the latest version of metadesk available from t
 
 The library will be provided in 3 forms:
 
-* As-is: (the way its laid out in this repo)
+* default: (the way its laid out in this repo)
 * c11: Setup ergonomically as a c11 library (both segregtated and as a single-header)
 * cpp17: Setup ergonoically for usage as a C++ 17 library (both segregated and as a single-header)
 

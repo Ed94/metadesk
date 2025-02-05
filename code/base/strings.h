@@ -1,4 +1,4 @@
-#ifdef MD_INTELLISENSE_DIRECTIVES
+#ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
 #	include "context_cracking.h"
 #	include "linkage.h"
@@ -7,6 +7,7 @@
 #	include "base_types.h"
 #	include "constants.h"
 #	include "math.h"
+#	include "space.h"
 #	include "thread_context.h"
 #	include "memory.h"
 #	include "arena.h"
@@ -27,22 +28,22 @@
 typedef struct String8 String8;
 struct String8
 {
-  U8 *str;
-  U64 size;
+	U8 *str;
+	U64 size;
 };
 
 typedef struct String16 String16;
 struct String16
 {
-  U16 *str;
-  U64  size;
+	U16 *str;
+	U64  size;
 };
 
 typedef struct String32 String32;
 struct String32
 {
-  U32 *str;
-  U64  size;
+	U32 *str;
+	U64  size;
 };
 
 ////////////////////////////////
@@ -51,31 +52,31 @@ struct String32
 typedef struct String8Node String8Node;
 struct String8Node
 {
-  String8Node *next;
-  String8      string;
+	String8Node *next;
+	String8      string;
 };
 
 typedef struct String8MetaNode String8MetaNode;
 struct String8MetaNode
 {
-  String8MetaNode *next;
-  String8Node     *node;
+	String8MetaNode *next;
+	String8Node     *node;
 };
 
 typedef struct String8List String8List;
 struct String8List
 {
-  String8Node *first;
-  String8Node *last;
-  U64 node_count;
-  U64 total_size;
+	String8Node *first;
+	String8Node *last;
+	U64 node_count;
+	U64 total_size;
 };
 
 typedef struct String8Array String8Array;
 struct String8Array
 {
-  String8 *v;
-  U64      count;
+	String8 *v;
+	U64      count;
 };
 
 ////////////////////////////////
@@ -114,9 +115,9 @@ PathStyle;
 typedef struct StringJoin StringJoin;
 struct StringJoin
 {
-  String8 pre;
-  String8 sep;
-  String8 post;
+	String8 pre;
+	String8 sep;
+	String8 post;
 };
 
 ////////////////////////////////
@@ -125,8 +126,8 @@ struct StringJoin
 typedef struct UnicodeDecode UnicodeDecode;
 struct UnicodeDecode
 {
-  U32 inc;
-  U32 codepoint;
+	U32 inc;
+	U32 codepoint;
 };
 
 ////////////////////////////////
@@ -135,18 +136,18 @@ struct UnicodeDecode
 typedef struct FuzzyMatchRangeNode FuzzyMatchRangeNode;
 struct FuzzyMatchRangeNode
 {
-  FuzzyMatchRangeNode *next;
-  Rng1U64 range;
+	FuzzyMatchRangeNode *next;
+	Rng1U64 range;
 };
 
 typedef struct FuzzyMatchRangeList FuzzyMatchRangeList;
 struct FuzzyMatchRangeList
 {
-  FuzzyMatchRangeNode *first;
-  FuzzyMatchRangeNode *last;
-  U64 count;
-  U64 needle_part_count;
-  U64 total_dim;
+	FuzzyMatchRangeNode *first;
+	FuzzyMatchRangeNode *last;
+	U64 count;
+	U64 needle_part_count;
+	U64 total_dim;
 };
 
 ////////////////////////////////
@@ -330,8 +331,6 @@ internal String8 string_from_elapsed_time       (Arena* arena, DateTime dt);
 //~ rjf: Basic Text Indentation
 
 internal String8 indented_from_string(Arena *arena, String8 string);
-
-
 
 ////////////////////////////////
 //~ rjf: String <-> Color

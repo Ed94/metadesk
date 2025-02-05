@@ -1,6 +1,5 @@
-#ifdef MD_INTELLISENSE_DIRECTIVES
+#ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
-#	include "math.h"
 #endif
 
 ////////////////////////////////
@@ -58,5 +57,4 @@ typedef enum Dir2
 Dir2;
 
 #define axis2_from_dir2(d) (((d) & 1) ? Axis2_Y : Axis2_X)
-#define side_from_dir2(d) (((d) < Dir2_Right) ? Side_Min : Side_Max)
-
+#define side_from_dir2(d)  (((d) < Dir2_Right) ? Side_Min : Side_Max)

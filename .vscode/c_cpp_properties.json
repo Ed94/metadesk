@@ -9,10 +9,12 @@
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE",
-                "MD_INTELLISENSE_DIRECTIVES"
+                "INTELLISENSE_DIRECTIVES"
             ],
             "windowsSdkVersion": "10.0.22621.0",
-            "compilerPath": "cl.exe"
+            "compilerPath": "cl.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
         }
     ],
     "version": 4

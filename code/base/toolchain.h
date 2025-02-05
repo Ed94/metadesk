@@ -1,4 +1,4 @@
-#ifdef MD_INTELLISENSE_DIRECTIVES
+#ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
 #endif
 
@@ -35,4 +35,3 @@ typedef enum Compiler
   Compiler_COUNT,
 }
 Compiler;
-

@@ -1,6 +1,7 @@
 #ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
 #	include "context_cracking.h"
+#	include "base_types.h"
 #	include "macros.h"
 #endif
 
@@ -9,13 +10,27 @@
 
 #ifndef trap
 #	if COMPILER_MSVC
-#		define trap() __debugbreak()
+#		if _MSC_VER < 1300
+#			define GEN_DEBUG_TRAP() __asm int 3 /* Trap to debugger! */
+#		else
+#			define GEN_DEBUG_TRAP() __debugbreak()
+#		endif
 #	elif COMPILER_CLANG || COMPILER_GCC
 #		define trap() __builtin_trap()
 #	else
 #		error Unknown trap intrinsic for this compiler.
 #	endif
 #endif
+
+#define assert_msg( cond, msg, ... )                                                                  \
+	do                                                                                                \
+	{                                                                                                 \
+		if ( ! ( cond ) )                                                                             \
+		{                                                                                             \
+			assert_handler( #cond, __FILE__, __func__, scast( s64, __LINE__ ), msg, ##__VA_ARGS__ );  \
+			GEN_DEBUG_TRAP();                                                                         \
+		}                                                                                             \
+	} while ( 0 )
 
 #ifndef assert_always
 #define assert_always(x) do { if ( !(x) ) { trap(); } } while(0)
@@ -41,3 +56,5 @@
 #ifndef md_static_assert
 #define md_static_assert(C, ID) global U8 glue(ID, __LINE__)[ (C) ? 1 : -1 ]
 #endif
+
+MD_API void assert_handler( char const* condition, char const* file, char const* function, S32 line, char const* msg, ... );

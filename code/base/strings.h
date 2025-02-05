@@ -5,12 +5,14 @@
 #	include "platform.h"
 #	include "macros.h"
 #	include "base_types.h"
-#	include "constants.h"
-#	include "math.h"
-#	include "space.h"
-#	include "thread_context.h"
 #	include "memory.h"
+#	include "memory_substrate.h"
 #	include "arena.h"
+#	include "constants.h"
+#	include "space.h"
+#	include "math.h"
+#	include "thread_context.h"
+#	include "toolchain.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools
@@ -268,7 +270,13 @@ internal String8List  str8_list_copy                      (Arena *arena, String8
 ////////////////////////////////
 //~ rjf: String Splitting & Joining
 
-internal String8List  str8_split                     (Arena *arena, String8 string, U8 *split_chars, U64 split_char_count, StringSplitFlags flags);
+String8List str8_split_arena(Arena *arena, String8 string, U8 *split_chars, U64 split_char_count, StringSplitFlags flags);
+
+// Example pattern for general allocator variants
+
+// String8List  str8__split_ainfo(String8 string, U8* split_chars, U64 split_char_count, StringSplitFlags flags, AllocatorInfo allocator);
+// #define      str8_split_ainfo(string, split_chars, split_char_count, flags, ...) str8__split_ainfo(string, split_chars, split_char_count, flags, (AllocatorInfo){__VA_ARGS__});
+
 internal String8List  str8_split_by_string_chars     (Arena *arena, String8 string, String8 split_chars, StringSplitFlags flags);
 internal String8List  str8_list_split_by_string_chars(Arena *arena, String8List list, String8 split_chars, StringSplitFlags flags);
 internal String8      str8_list_join                 (Arena *arena, String8List *list, StringJoin *optional_params);
@@ -376,5 +384,3 @@ internal U64    str8_deserial_read_block                 (String8 string, U64 of
 
 #define str8_deserial_read_array(string, off, ptr, count) str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)) * (count), sizeof( *(ptr)))
 #define str8_deserial_read_struct(string, off, ptr)       str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)), sizeof( *(ptr)))
-
-#endif // BASE_STRINGS_H

@@ -99,7 +99,7 @@ void* heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size,
 			_aligned_free( old_memory );
 		break;
 
-		case AllocatorMode_Reisze:
+		case AllocatorMode_Resize:
 		{
 			AllocatorInfo a = heap();
 			ptr             = default_resize_align( a, old_memory, old_size, size, alignment );
@@ -164,7 +164,7 @@ void* heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size,
 
 		case AllocatorMode_QuerySupport:
 			return (void*) (
-				AllocatorQuery_Alloc | AllocatorQuery_Free | AllocatorQuery_Reisze
+				AllocatorQuery_Alloc | AllocatorQuery_Free | AllocatorQuery_Resize
 			);
 	}
 
@@ -220,6 +220,7 @@ VArena varena__alloc(VArenaParams params)
 	#endif
 
 	SPTR header_size = size_of(VArena);
+	asan_unpoison_memory_region(base, header_size);
 
 	VArena* vm = (VArena* ) base;
 	vm->reserve       = reserve_size;
@@ -227,20 +228,69 @@ VArena varena__alloc(VArenaParams params)
 	vm->reserve_start = (SPTR)base + header_size;
 	vm->flags         = params.flags;
 	vm->commit_used   = 0;
-	asan_unpoison_memory_region(vm, header_size);
 }
 
-void Varena_release(VArena* arena)
+void varena_release(VArena* arena)
 {
-
-
+	os_release(arena, arena->reserve);
 	arena = nullptr;
 }
 
 void* varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags)
 {
-	void* result = nullptr;
+	OS_SystemInfo const* info = os_get_system_info();
 
+	SPTR requested_size = size;
+
+	void* result = nullptr;
+	switch (mode)
+	{
+		case AllocatorMode_Alloc:
+		{
+			if (requested_size == 0)
+			assert(requested_size != 0);
+			return result;
+
+
+		}
+		break;
+
+		case AllocatorMode_Free:
+		{
+
+		}
+		break;
+
+		case AllocatorMode_FreeAll:
+		{
+
+		}
+		break;
+
+		case AllocatorMode_Resize:
+		{
+
+		}
+		break;
+
+		case AllocatorMode_QueryType:
+		{
+
+		}
+		break;
+
+		case AllocatorMode_QuerySupport:
+		{
+
+		}
+		break;
+	}
+	return result;
+}
+
+void* farena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags)
+{
+	void* result = nullptr;
 	switch (mode)
 	{
 		case AllocatorMode_Alloc:
@@ -253,7 +303,7 @@ void* varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size
 		case AllocatorMode_FreeAll:
 		break;
 
-		case AllocatorMode_Reisze:
+		case AllocatorMode_Resize:
 		break;
 
 		case AllocatorMode_QueryType:
@@ -262,9 +312,5 @@ void* varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size
 		case AllocatorMode_QuerySupport:
 		break;
 	}
-
-
-
 	return result;
 }
-

@@ -126,6 +126,7 @@ arena_release(Arena* arena)
 inline
 AllocatorInfo default_allocator()
 {
+	// NOTE(Ed): Technically we don't need the backing_vmem var tracked here, but its nice for debug.
 	local_persist thread_local VArena* backing_vmem = nullptr;
 	local_persist thread_local Arena*  arena        = nullptr;
 	if (arena == nullptr) {

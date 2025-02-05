@@ -35,7 +35,7 @@ enum AllocatorMode
 	AllocatorMode_Alloc,
 	AllocatorMode_Free,
 	AllocatorMode_FreeAll,
-	AllocatorMode_Reisze,
+	AllocatorMode_Resize,
 	AllocatorMode_QueryType,
 	AllocatorMode_QuerySupport,
 };
@@ -45,7 +45,7 @@ enum
 	AllocatorQuery_Alloc     = (1 << 0),
 	AllocatorQuery_Free      = (1 << 1),
 	AllocatorQuery_FreeAll   = (1 << 2),
-	AllocatorQuery_Reisze    = (1 << 3),
+	AllocatorQuery_Resize    = (1 << 3),
 };
 
 typedef void*(AllocatorProc)( void* allocator_data, AllocatorMode type, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags );
@@ -125,17 +125,17 @@ MD_API void  heap_stats_check( void );
 MD_API void* heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags );
 
 #ifndef heap
-//! The heap allocator backed by operating system's memory manager.
+// The heap allocator backed by the platform vendor's malloc & free.
 #define heap() (AllocatorInfo){ heap_allocator_proc, nullptr }
 #endif
 
 #ifndef md_malloc
-//! Helper to allocate memory using heap allocator.
+// Helper to allocate memory using heap allocator.
 #define md_malloc( sz ) alloc( heap(), sz )
 #endif
 
 #ifndef md_free
-//! Helper to free memory allocated by heap allocator.
+// Helper to free memory allocated by heap allocator.
 #define md_free( ptr ) alloc_free( heap(), ptr )
 #endif
 
@@ -186,11 +186,11 @@ AllocatorInfo vm_allocator(VArena* vm) {
 	return info;
 }
 
-VArena* varena__alloc(VArenaParams params PARAM_DEFAULT);
+MD_API VArena* varena__alloc(VArenaParams params PARAM_DEFAULT);
 #define varena_alloc(...) varena__alloc( (VArenaParams){__VA_ARGS__} )
 
-void         varena_commit   (VArena vm, SSIZE commit_size);
-VArenaParams varena_release  (VArena vm);
+MD_API void         varena_commit   (VArena vm, SSIZE commit_size);
+MD_API VArenaParams varena_release  (VArena vm);
 
 MD_API void* varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags);
 
@@ -227,7 +227,7 @@ AllocatorQueryFlags allocator_query_support(AllocatorInfo a) {
 
 inline
 void* alloc_align( AllocatorInfo a, SSIZE size, SSIZE alignment ) {
-	return a.proc( a.data, AllocatorMode_ALLOC, size, alignment, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
+	return a.proc( a.data, AllocatorMode_Alloc, size, alignment, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
 
 inline
@@ -236,14 +236,14 @@ void* alloc( AllocatorInfo a, SSIZE size ) {
 }
 
 inline
-void allocator_free( AllocatorInfo a, void* ptr ) {
+void alloc_free( AllocatorInfo a, void* ptr ) {
 	if ( ptr != nullptr )
-		a.proc( a.data, AllocatorMode_FREE, 0, 0, ptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
+		a.proc( a.data, AllocatorMode_Free, 0, 0, ptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
 
 inline
 void free_all( AllocatorInfo a ) {
-	a.proc( a.data, AllocatorMode_FREE_ALL, 0, 0, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
+	a.proc( a.data, AllocatorMode_FreeAll, 0, 0, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
 
 inline
@@ -253,7 +253,7 @@ void* resize( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size ) {
 
 inline
 void* resize_align( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size, SSIZE alignment ) {
-	return a.proc( a.data, AllocatorMode_RESIZE, new_size, alignment, ptr, old_size, MD_DEFAULT_ALLOCATOR_FLAGS );
+	return a.proc( a.data, AllocatorMode_Resize, new_size, alignment, ptr, old_size, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
 
 inline

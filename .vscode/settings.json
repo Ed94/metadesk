@@ -21,6 +21,9 @@
 		"os.h": "c",
 		"os_core.h": "c",
 		"file.h": "c",
-		"xiosbase": "c"
+		"xiosbase": "c",
+		"iterator": "c",
+		"memory": "c",
+		"format": "c"
 	}
 }

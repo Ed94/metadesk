@@ -11,134 +11,35 @@
 
 //- rjf: arena creation/destruction
 
-#if 0
-internal Arena*
-arena_alloc_(ArenaParams *params)
-{
-  // rjf: round up reserve/commit sizes
-  U64 reserve_size = params->reserve_size;
-  U64 commit_size = params->commit_size;
-  if(params->flags & ArenaFlag_LargePages)
-  {
-    reserve_size = AlignPow2(reserve_size, os_get_system_info()->large_page_size);
-    commit_size  = AlignPow2(commit_size,  os_get_system_info()->large_page_size);
-  }
-  else
-  {
-    reserve_size = AlignPow2(reserve_size, os_get_system_info()->page_size);
-    commit_size  = AlignPow2(commit_size,  os_get_system_info()->page_size);
-  }
-  
-  // rjf: reserve/commit initial block
-  void *base = params->optional_backing_buffer;
-  if(base == 0)
-  {
-    if(params->flags & ArenaFlag_LargePages)
-    {
-      base = os_reserve_large(reserve_size);
-      os_commit_large(base, commit_size);
-    }
-    else
-    {
-      base = os_reserve(reserve_size);
-      os_commit(base, commit_size);
-    }
-  }
-  
-  // rjf: panic on arena creation failure
-#if OS_FEATURE_GRAPHICAL
-  if(Unlikely(base == 0))
-  {
-    os_graphical_message(1, str8_lit("Fatal Allocation Failure"), str8_lit("Unexpected memory allocation failure."));
-    os_abort(1);
-  }
-#endif
-  
-  // rjf: extract arena header & fill
-  Arena *arena = (Arena *)base;
-  arena->current = arena;
-  arena->flags = params->flags;
-  arena->cmt_size = (U32)params->commit_size;
-  arena->res_size = params->reserve_size;
-  arena->base_pos = 0;
-  arena->pos = ARENA_HEADER_SIZE;
-  arena->cmt = commit_size;
-  arena->res = reserve_size;
-  AsanPoisonMemoryRegion(base, commit_size);
-  AsanUnpoisonMemoryRegion(base, ARENA_HEADER_SIZE);
-  return arena;
-}
-#endif
-
 Arena*
 arena_alloc_(ArenaParams* params)
 {
-	  // rjf: round up reserve/commit sizes
-	  U64 reserve_size = params->reserve_size;
-	  U64 commit_size  = params->commit_size;
+	B32 is_virtual = false;
 
+	// This composite arena has the ability to decide a default behavior for allocation 
 
-	  if(params->flags & ArenaFlag_LargePages)
-	  {
-		reserve_size = align_pow2(reserve_size, os_get_system_info()->large_page_size);
-		commit_size  = align_pow2(commit_size,  os_get_system_info()->large_page_size);
-	  }
-	  else
-	  {
-		reserve_size = align_pow2(reserve_size, os_get_system_info()->page_size);
-		commit_size  = align_pow2(commit_size,  os_get_system_info()->page_size);
-	  }
+	void* base = alloc(params->backing, params->block_size);
 	  
-	  // rjf: reserve/commit initial block
-	  void *base = params->optional_backing_buffer;
-	  if(base == 0)
-	  {
-		if(params->flags & ArenaFlag_LargePages)
-		{
-		  base = os_reserve_large(reserve_size);
-		  os_commit_large(base, commit_size);
-		}
-		else
-		{
-		  base = os_reserve(reserve_size);
-		  os_commit(base, commit_size);
-		}
-	  }
-	  
-	  // rjf: panic on arena creation failure
+	// rjf: panic on arena creation failure
 	#if OS_FEATURE_GRAPHICAL
-	  if(Unlikely(base == 0))
-	  {
-		os_graphical_message(1, str8_lit("Fatal Allocation Failure"), str8_lit("Unexpected memory allocation failure."));
-		os_abort(1);
-	  }
+		if(unlikely(base == 0))
+		{
+			os_graphical_message(1, str8_lit("Fatal Allocation Failure"), str8_lit("Unexpected memory allocation failure."));
+			os_abort(1);
+		}
 	#endif
 	  
-	  // rjf: extract arena header & fill
-	  Arena *arena = (Arena *)base;
-	  arena->current = arena;
-	  arena->flags = params->flags;
-	  arena->cmt_size = (U32)params->commit_size;
-	  arena->res_size = params->reserve_size;
-	  arena->base_pos = 0;
-	  arena->pos = ARENA_HEADER_SIZE;
-	  arena->cmt = commit_size;
-	  arena->res = reserve_size;
-	  AsanPoisonMemoryRegion(base, commit_size);
-	  AsanUnpoisonMemoryRegion(base, ARENA_HEADER_SIZE);
-	  return arena;
-}
+	// rjf: extract arena header & fill
+	Arena* arena      = (Arena*) base;
+	arena->current    = arena;
+	arena->backing    = params->backing;
+	arena->pos        = size_of(Arena);
+	arena->block_size = params->block_size;
+	arena->flags      = params->flags;
 
-// Note(Ed): INLINED
-// internal void
-// arena_release(Arena *arena)
-// {
-//   for(Arena *n = arena->current, *prev = 0; n != 0; n = prev)
-//   {
-//     prev = n->prev;
-//     os_release(n, n->res);
-//   }
-// }
+	asan_unpoison_memory_region(base, sizeof(Arena));
+	return arena;
+}
 
 //- rjf: arena push/pop core functions
 
@@ -247,16 +148,16 @@ arena_pop(Arena *arena, U64 amt)
 
 //- rjf: temporary arena scopes
 
-internal Temp
+internal TempArena
 temp_begin(Arena *arena)
 {
-  U64 pos = arena_pos(arena);
-  Temp temp = {arena, pos};
+  U64       pos  = arena_pos(arena);
+  TempArena temp = {arena, pos};
   return temp;
 }
 
 internal void
-temp_end(Temp temp)
+temp_end(TempArena temp)
 {
   arena_pop_to(temp.arena, temp.pos);
 }

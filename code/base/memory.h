@@ -4,6 +4,7 @@
 #	include "linkage.h"
 #	include "macros.h"
 #	include "platform.h"
+#	include "base_types.h"
 #endif
 
 
@@ -200,19 +201,19 @@ void* mem_move( void* destination, void const* source, SSIZE byte_count )
 	{
 		if ( to_uptr(src_ptr) % size_of( SSIZE ) == to_uptr(dest_ptr) % size_of( SSIZE ) )
 		{
-			while ( pcast( UPTR, dest_ptr) % size_of( ssize ) )
+			while ( pcast( UPTR, dest_ptr) % size_of( SSIZE ) )
 			{
 				if ( ! byte_count-- )
 					return destination;
 
 				*dest_ptr++ = *src_ptr++;
 			}
-			while ( byte_count >= size_of( ssize ) )
+			while ( byte_count >= size_of( SSIZE ) )
 			{
 				* rcast(SSIZE*, dest_ptr)  = * rcast(SSIZE const*, src_ptr);
-				byte_count -= size_of( ssize );
-				dest_ptr   += size_of( ssize );
-				src_ptr    += size_of( ssize );
+				byte_count -= size_of( SSIZE );
+				dest_ptr   += size_of( SSIZE );
+				src_ptr    += size_of( SSIZE );
 			}
 		}
 		for ( ; byte_count; byte_count-- )
@@ -301,7 +302,7 @@ void* mem_set( void* destination, U8 fill_byte, SSIZE byte_count )
 	byte_count   -= align_offset;
 
 	{
-		u64 fill_doubleword = ( scast( U64, fill_word) << 32 ) | fill_word;
+		U64 fill_doubleword = ( scast( U64, fill_word) << 32 ) | fill_word;
 		while ( byte_count > 31 )
 		{
 			* rcast( U64*, dest_ptr + 0 )  = fill_doubleword;

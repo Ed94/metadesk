@@ -19,18 +19,29 @@
 #define MD__HAS_ZERO( x ) ( ( ( x ) - MD__ONES ) & ~( x ) & MD__HIGHS )
 #endif
 
-typedef U32 AllocType;
-enum AllocType enum_underlying(U32)
+// Return value of allocator_type
+typedef U32 AllocatorType;
+enum
 {
-	EAllocType_ALLOC,
-	EAllocType_FREE,
-	EAllocType_FREE_ALL,
-	EAllocType_RESIZE,
+	AllocatorType_Heap   = 0, // Genreal heap allocator
+	AllocatorType_VArena = 1, // Arena allocator backed by virtual address space
+	AllocatorType_FArena = 2, // Fixed arena backed back by a fixed size block of memory (usually a byte slice)
+	AllocatorType_Arena  = 3, // Composite arena used originally by RAD Debugger & Metadesk
 };
 
-typedef void*(AllocatorProc)( void* allocator_data, AllocType type, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags );
+typedef U32 AllocatorMode;
+enum AllocatorMode enum_underlying(U32)
+{
+	AllocatorMode_ALLOC,
+	AllocatorMode_FREE,
+	AllocatorMode_FREE_ALL,
+	AllocatorMode_RESIZE,
+	AllocatorMode_QueryType,
+};
 
-typedef struct AllocatorInfo;
+typedef void*(AllocatorProc)( void* allocator_data, AllocatorMode type, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags );
+
+typedef struct AllocatorInfo AllocatorInfo;
 struct AllocatorInfo
 {
 	AllocatorProc* proc;
@@ -49,6 +60,9 @@ enum AllocFlag
 #ifndef MD_DEFAULT_ALLOCATOR_FLAGS
 #	define MD_DEFAULT_ALLOCATOR_FLAGS ( ALLOCATOR_FLAG_CLEAR_TO_ZERO )
 #endif
+
+// Allows the user to retrieve which type of allocator is being used.
+AllocatorType allocator_type(AllocatorInfo a);
 
 //! Allocate memory with default alignment.
 void* alloc( AllocatorInfo a, SSIZE size );
@@ -83,6 +97,7 @@ void* resize_align( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size, 
 //! Use this if you don't need a "fancy" resize allocation
 void* default_resize_align( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size, SSIZE alignment );
 
+#ifdef MD_HEAP_ANALYSIS
 /* heap memory analysis tools */
 /* define GEN_HEAP_ANALYSIS to enable this feature */
 /* call zpl_heap_stats_init at the beginning of the entry point */
@@ -91,8 +106,9 @@ MD_API void  heap_stats_init( void );
 MD_API SSIZE heap_stats_used_memory( void );
 MD_API SSIZE heap_stats_alloc_count( void );
 MD_API void  heap_stats_check( void );
+#endif
 
-MD_API void* heap_allocator_proc( void* allocator_data, AllocType type, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags );
+MD_API void* heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags );
 
 #ifndef heap
 //! The heap allocator backed by operating system's memory manager.
@@ -109,44 +125,83 @@ MD_API void* heap_allocator_proc( void* allocator_data, AllocType type, SSIZE si
 #define mfree( ptr ) free( heap(), ptr )
 #endif
 
-typedef U32 VMemoryFlags;
+/* Virtual Memory Arena
+	This is separate from the composite arena used by HMH/Casey Muratori/RJF
+	This arena stricly manages one reservation of the process's virtual address space.
+
+	Segregating this from composite Arena style causes more moremoy to be used for "allocator headers", however it allows
+	users of a library to have greater control over the allocation strategy used from their side instead of the library itself.
+
+	Like with the composite Arena, the VArena has its struct as the header of the reserve of memory.
+*/
+
+typedef U32 VArenaFlags;
 enum
 {
-	VMemoryFlag_NoChain    = (1 << 0),
-	VMemoryFlag_LargePages = (1 << 1),
+	VArenaFlag_LargePages = (1 << 0),
 };
 
-typedef struct VMemory_Params;
-struct VMemory_Params
+typedef struct VArenaParams VArenaParams;
+struct VArenaParams
 {
-	VMemoryFlags flags;
-	U64          reserve_size;
-	U64          commit_size;
-	// void*        optional_backing_buffer;
+	U64         base_addr;
+	VArenaFlags flags;
+	U64         reserve_size;
+	U64         commit_size;
 };
 
-typedef struct VMemory;
-struct VMemory
+typedef struct VArena VArena;
+struct VArena
 {
-	U32 cmt_size;
-	U32 res_size;
+	VArenaFlags flags;
 	U64 base_pos;
 	U64 cmt;
 	U64 res;
+	U64 res_size;
+	U64 cmt_size;
 };
 
-AllocatorInfo vm_allocator(VMemory* vm) {
-	AllocatorInfo info = { vm_allocator_proc, vm }
-	return info
+AllocatorInfo vm_allocator(VArena* vm) {
+	AllocatorInfo info = { vm_allocator_proc, vm };
+	return info;
 }
 
-MD_API void* vm_allocator_proc(void* allocator_data, AllocType type, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags);
+VArena*      varena_alloc    (VArenaParams params);
+void         varena_commit   (VArena vm, SSIZE commit_size);
+VArenaParams varena_free     (VArena vm);
+SSIZE        varena_page_size(SSIZE* alignment_out);
+
+MD_API void* varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags);
+
+typedef struct ByteSlice ByteSlice;
+struct ByteSlice
+{
+	U8*   data;
+	SSIZE len;
+};
+
+// Fixed size arena
+typedef struct FArena FArena;
+struct FArena
+{
+	ByteSlice slice;
+	SSIZE     pos;
+};
+
+FArena farena_from_byteslice(ByteSlice slice);
+
+MD_API void* farena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags);
 
 // Inlines
 
 inline
+AllocatorType allocator_type(AllocatorInfo a) {
+	return (AllocatorType) a.proc(a.data, AllocatorMode_QueryType, 0, 0, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS);
+}
+
+inline
 void* alloc_align( AllocatorInfo a, SSIZE size, SSIZE alignment ) {
-	return a.Proc( a.Data, EAllocType_ALLOC, size, alignment, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
+	return a.proc( a.data, AllocatorMode_ALLOC, size, alignment, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
 
 inline
@@ -157,12 +212,12 @@ void* alloc( AllocatorInfo a, SSIZE size ) {
 inline
 void allocator_free( AllocatorInfo a, void* ptr ) {
 	if ( ptr != nullptr )
-		a.Proc( a.Data, EAllocType_FREE, 0, 0, ptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
+		a.proc( a.data, AllocatorMode_FREE, 0, 0, ptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
 
 inline
 void free_all( AllocatorInfo a ) {
-	a.Proc( a.Data, EAllocType_FREE_ALL, 0, 0, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
+	a.proc( a.data, AllocatorMode_FREE_ALL, 0, 0, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
 
 inline
@@ -172,7 +227,7 @@ void* resize( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size ) {
 
 inline
 void* resize_align( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size, SSIZE alignment ) {
-	return a.Proc( a.Data, EAllocType_RESIZE, new_size, alignment, ptr, old_size, MD_DEFAULT_ALLOCATOR_FLAGS );
+	return a.proc( a.data, AllocatorMode_RESIZE, new_size, alignment, ptr, old_size, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
 
 inline

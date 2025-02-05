@@ -19,17 +19,19 @@
 typedef U32 ArenaFlags;
 enum
 {
-	ArenaFlag_NoChain    = ( 1 << 0),
-	ArenaFlag_LargePages = ( 1 << 1),
+	// Don't chain this arena
+	ArenaFlag_NoChain      = (1 << 0), 
+	// Only works if backing is virtual memory, will allocate a new backing VArena when the current block exhausts
+	// Otherwise will assume backing can chain multiple block_size arenas until failure.
+	ArenaFlag_ChainVirtual = (1 << 1),
 };
 
 typedef struct ArenaParams ArenaParams;
 struct ArenaParams
 {
-	ArenaFlags flags;
-	U64        reserve_size;
-	U64        commit_size;
-	void*      optional_backing_buffer;
+	AllocatorInfo backing;
+	ArenaFlags    flags;
+	U64           block_size; // If chaining VArenas set this to the reserve size
 };
 
 /* NOTE(Ed): This is a combination of several concepts into a single interface:
@@ -44,18 +46,14 @@ struct ArenaParams
 typedef struct Arena Arena;
 struct Arena
 {
-	AllocatorInfo backing;
 	Arena*        prev;    // previous arena in chain
 	Arena*        current; // current arena in chain
-	ArenaFlags    flags;
-	U32           cmt_size;
-	U64           res_size;
-	U64           base_pos;
+	AllocatorInfo backing;
 	U64           pos;
-	U64           cmt;
-	U64           res;
+	U64           block_size;
+	ArenaFlags    flags;
 };
-static_assert(sizeof(Arena) <= ARENA_HEADER_SIZE, "sizeof(Arena) <= MD_ARENA_HEADER_SIZE");
+static_assert(size_of(Arena) <= ARENA_HEADER_SIZE, "sizeof(Arena) <= ARENA_HEADER_SIZE");
 
 typedef struct TempArena TempArena;
 struct TempArena
@@ -67,12 +65,12 @@ struct TempArena
 ////////////////////////////////
 //~ rjf: Arena Functions
 
-MD_API void* arena_allocator_proc(void* allocator_data, AllocType type, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags);
+MD_API void* arena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags);
 
 //- rjf: arena creation/destruction
 
 MD_API Arena* arena_alloc_(ArenaParams *params);
-#define       arena_alloc(...) arena_alloc_( & ( ArenaParams) { .reserve_size = MB(64), .commit_size = KB(64), __VA_ARGS__ } )
+#define       arena_alloc(...) arena_alloc_( & ( ArenaParams) { .backing = {}, .reserve_size = MB(64), .commit_size = KB(64), __VA_ARGS__ } )
 
 void arena_release(Arena *arena);
 
@@ -109,9 +107,6 @@ arena_release(Arena* arena)
 	for (Arena* n = arena->current, *prev = 0; n != 0; n = prev)
 	{
 		prev = n->prev;
-		// os_release(n, n->res);
 		alloc_free(arena->backing, n);
 	}
 }
-
-

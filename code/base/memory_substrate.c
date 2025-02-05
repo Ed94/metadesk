@@ -4,6 +4,7 @@
 #	include "../os/os.h"
 #endif
 
+#ifdef MD_HEAP_ANALYSIS
 #define GEN_HEAP_STATS_MAGIC 0xDEADC0DE
 
 typedef struct _heap_stats _heap_stats;
@@ -47,8 +48,9 @@ struct _heap_alloc_info
 	SSIZE size;
 	void* physical_start;
 };
+#endif
 
-void* heap_allocator_proc( void* allocator_data, AllocType type, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags )
+void* heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags )
 {
 	void* ptr = nullptr;
 	// unused( allocator_data );
@@ -62,7 +64,7 @@ void* heap_allocator_proc( void* allocator_data, AllocType type, SSIZE size, SSI
 	ssize track_size           = max( alloc_info_size, alignment ) + alloc_info_remainder;
 	switch ( type )
 	{
-		case EAllocation_FREE :
+		case EAllocatorMode_FREE :
 			{
 				if ( ! old_memory )
 					break;
@@ -72,7 +74,7 @@ void* heap_allocator_proc( void* allocator_data, AllocType type, SSIZE size, SSI
 				old_memory = alloc_info->physical_start;
 			}
 			break;
-		case EAllocation_ALLOC :
+		case EAllocatorMode_ALLOC :
 			{
 				size += track_size;
 			}
@@ -82,76 +84,83 @@ void* heap_allocator_proc( void* allocator_data, AllocType type, SSIZE size, SSI
 	}
 #endif
 
-	switch ( type )
+	switch ( mode )
 	{
-#if defined( COMPILER_MSVC ) || ( defined( COMPILER_GCC ) && defined( OS_WINDOWS ) ) || ( defined( COMPILER_TINYC ) && defined( OS_WINDOWS ) )
-		case EAllocType_ALLOC :
+	#if defined( COMPILER_MSVC ) || ( defined( COMPILER_GCC ) && defined( OS_WINDOWS ) ) || ( defined( COMPILER_TINYC ) && defined( OS_WINDOWS ) )
+		case AllocatorMode_ALLOC:
+		{
 			ptr = _aligned_malloc( size, alignment );
 			if ( flags & ALLOCATOR_FLAG_CLEAR_TO_ZERO )
 				zero_size( ptr, size );
-			break;
-		case EAllocType_FREE :
+		}
+		break;
+
+		case AllocatorMode_FREE:
 			_aligned_free( old_memory );
-			break;
-		case EAllocType_RESIZE :
-			{
-				AllocatorInfo a = heap();
-				ptr             = default_resize_align( a, old_memory, old_size, size, alignment );
-			}
-			break;
+		break;
 
-#elif defined( OS_LINUX ) && ! defined( CPU_ARM ) && ! defined( COMPILER_TINYC )
+		case AllocatorMode_FREE_ALL:
+		{
+			AllocatorInfo a = heap();
+			ptr             = default_resize_align( a, old_memory, old_size, size, alignment );
+		}
+		break;
+
+	#elif defined( OS_LINUX ) && ! defined( CPU_ARM ) && ! defined( COMPILER_TINYC )
 		case EAllocation_ALLOC :
-			{
-				ptr = aligned_alloc( alignment, ( size + alignment - 1 ) & ~( alignment - 1 ) );
+		{
+			ptr = aligned_alloc( alignment, ( size + alignment - 1 ) & ~( alignment - 1 ) );
 
-				if ( flags & GEN_ALLOCATOR_FLAG_CLEAR_TO_ZERO )
-				{
-					zero_size( ptr, size );
-				}
+			if ( flags & GEN_ALLOCATOR_FLAG_CLEAR_TO_ZERO )
+			{
+				zero_size( ptr, size );
 			}
-			break;
+		}
+		break;
 
 		case EAllocation_FREE :
-			{
-				free( old_memory );
-			}
-			break;
+		{
+			free( old_memory );
+		}
+		break;
 
 		case EAllocation_RESIZE :
-			{
-				AllocatorInfo a = heap();
-				ptr             = default_resize_align( a, old_memory, old_size, size, alignment );
-			}
-			break;
-#else
+		{
+			AllocatorInfo a = heap();
+			ptr             = default_resize_align( a, old_memory, old_size, size, alignment );
+		}
+		break;
+	#else
 		case EAllocType_ALLOC :
-			{
-				posix_memalign( &ptr, alignment, size );
+		{
+			posix_memalign( &ptr, alignment, size );
 
-				if ( flags & ALLOCATOR_FLAG_CLEAR_TO_ZERO )
-				{
-					zero_size( ptr, size );
-				}
+			if ( flags & ALLOCATOR_FLAG_CLEAR_TO_ZERO )
+			{
+				zero_size( ptr, size );
 			}
-			break;
+		}
+		break;
 
 		case EAllocType_FREE :
-			{
-				free( old_memory );
-			}
-			break;
+		{
+			free( old_memory );
+		}
+		break;
 
 		case EAllocType_RESIZE :
-			{
-				AllocatorInfo a = heap();
-				ptr             = default_resize_align( a, old_memory, old_size, size, alignment );
-			}
-			break;
-#endif
+		{
+			AllocatorInfo a = heap();
+			ptr             = default_resize_align( a, old_memory, old_size, size, alignment );
+		}
+		break;
+	#endif
 
-		case EAllocType_FREE_ALL :
+		case AllocatorMode_FREE_ALL:
 			break;
+		
+		case AllocatorMode_QueryType:
+			return (void*) Heap
 	}
 
 #ifdef GEN_HEAP_ANALYSIS
@@ -172,6 +181,44 @@ void* heap_allocator_proc( void* allocator_data, AllocType type, SSIZE size, SSI
 
 void* vm_allocator_proc(void* allocator_data, AllocType type, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags)
 {
+	void* result = nullptr;
 
+			// if(params->flags & ArenaFlag_LargePages)
+			// {
+			// 	base = os_reserve_large(reserve_size);
+			// 	os_commit_large(base, commit_size);
+			// }
+			// else
+			// {
+			// 	base = os_reserve(reserve_size);
+			// 	os_commit(base, commit_size);
+			// }
+
+	return result;
 }
 
+VMemory vm_alloc(VMemoryParams params)
+{
+	// rjf: round up reserve/commit sizes
+	U64 reserve_size = params->reserve_size;
+	U64 commit_size  = params->commit_size;
+
+	if(params->flags & ArenaFlag_LargePages)
+	{
+		reserve_size = align_pow2(reserve_size, os_get_system_info()->large_page_size);
+		commit_size  = align_pow2(commit_size,  os_get_system_info()->large_page_size);
+	}
+	else
+	{
+		reserve_size = align_pow2(reserve_size, os_get_system_info()->page_size);
+		commit_size  = align_pow2(commit_size,  os_get_system_info()->page_size);
+	}
+
+	// Allocate virtual memory
+	is_virtual = true;
+
+	VMemory vm = ;
+
+	// TODO(Ed): Move this to vmem?
+	asan_poison_memory_region(base, params->commit_size);
+}

@@ -20,7 +20,7 @@
 #endif
 
 // Return value of allocator_type
-typedef U32 AllocatorType;
+typedef U64 AllocatorType;
 enum
 {
 	AllocatorType_Heap   = 0, // Genreal heap allocator
@@ -30,13 +30,22 @@ enum
 };
 
 typedef U32 AllocatorMode;
-enum AllocatorMode enum_underlying(U32)
+enum AllocatorMode
 {
-	AllocatorMode_ALLOC,
-	AllocatorMode_FREE,
-	AllocatorMode_FREE_ALL,
-	AllocatorMode_RESIZE,
+	AllocatorMode_Alloc,
+	AllocatorMode_Free,
+	AllocatorMode_FreeAll,
+	AllocatorMode_Reisze,
 	AllocatorMode_QueryType,
+	AllocatorMode_QuerySupport,
+};
+typedef U64 AllocatorQueryFlags;
+enum
+{
+	AllocatorQuery_Alloc     = (1 << 0),
+	AllocatorQuery_Free      = (1 << 1),
+	AllocatorQuery_FreeAll   = (1 << 2),
+	AllocatorQuery_Reisze    = (1 << 3),
 };
 
 typedef void*(AllocatorProc)( void* allocator_data, AllocatorMode type, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags );
@@ -47,6 +56,9 @@ struct AllocatorInfo
 	AllocatorProc* proc;
 	void*          data;
 };
+
+// Overridable by the user by defining MD_OVERRIDE_DEFAULT_ALLOCATOR
+AllocatorInfo default_allocator();
 
 enum AllocFlag
 {
@@ -61,40 +73,42 @@ enum AllocFlag
 #	define MD_DEFAULT_ALLOCATOR_FLAGS ( ALLOCATOR_FLAG_CLEAR_TO_ZERO )
 #endif
 
-// Allows the user to retrieve which type of allocator is being used.
+// Retrieve which type of allocator
 AllocatorType allocator_type(AllocatorInfo a);
+// Retreive which modes the allocator supports
+AllocatorQueryFlags allocator_query_support(AllocatorInfo a);
 
-//! Allocate memory with default alignment.
+// Allocate memory with default alignment.
 void* alloc( AllocatorInfo a, SSIZE size );
 
-//! Allocate memory with specified alignment.
+// Allocate memory with specified alignment.
 void* alloc_align( AllocatorInfo a, SSIZE size, SSIZE alignment );
 
-//! Free allocated memory.
+// Free allocated memory.
 void alloc_free( AllocatorInfo a, void* ptr );
 
-//! Free all memory allocated by an allocator.
+// Free all memory allocated by an allocator.
 void free_all( AllocatorInfo a );
 
-//! Resize an allocated memory.
+// Resize an allocated memory.
 void* resize( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size );
 
-//! Resize an allocated memory with specified alignment.
+// Resize an allocated memory with specified alignment.
 void* resize_align( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size, SSIZE alignment );
 
 #ifndef alloc_item
-//! Allocate memory for an item.
+// Allocate memory for an item.
 #define alloc_item( allocator_, Type ) ( Type* )alloc( allocator_, size_of( Type ) )
 #endif
 
 #ifndef alloc_array
-//! Allocate memory for an array of items.
+// Allocate memory for an array of items.
 #define alloc_array( allocator_, Type, count ) ( Type* )alloc( allocator_, size_of( Type ) * ( count ) )
 #endif
 
-//! Allocate/Resize memory using default options.
+// Allocate/Resize memory using default options.
 
-//! Use this if you don't need a "fancy" resize allocation
+// Use this if you don't need a "fancy" resize allocation
 void* default_resize_align( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size, SSIZE alignment );
 
 #ifdef MD_HEAP_ANALYSIS
@@ -112,17 +126,17 @@ MD_API void* heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZ
 
 #ifndef heap
 //! The heap allocator backed by operating system's memory manager.
-#define heap() (AllocatorInfo){ AllocatorInfo allocator = { heap_allocator_proc, nullptr }; return allocator; }
+#define heap() (AllocatorInfo){ heap_allocator_proc, nullptr }
 #endif
 
-#ifndef malloc
+#ifndef md_malloc
 //! Helper to allocate memory using heap allocator.
-#define malloc( sz ) alloc( heap(), sz )
+#define md_malloc( sz ) alloc( heap(), sz )
 #endif
 
-#ifndef mfree
+#ifndef md_free
 //! Helper to free memory allocated by heap allocator.
-#define mfree( ptr ) free( heap(), ptr )
+#define md_free( ptr ) alloc_free( heap(), ptr )
 #endif
 
 /* Virtual Memory Arena
@@ -134,6 +148,13 @@ MD_API void* heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZ
 
 	Like with the composite Arena, the VArena has its struct as the header of the reserve of memory.
 */
+
+#ifndef VARENA_DEFUALT_RESERVE
+#define VARENA_DEFAULT_RESERVE MB(64)
+#endif
+#ifndef VARENA_DEFUALT_COMMIT
+#define VARENA_DEFAULT_COMMIT  KB(64)
+#endif
 
 typedef U32 VArenaFlags;
 enum
@@ -154,22 +175,22 @@ typedef struct VArena VArena;
 struct VArena
 {
 	VArenaFlags flags;
-	U64 base_pos;
-	U64 cmt;
-	U64 res;
-	U64 res_size;
-	U64 cmt_size;
+	SSIZE reserve_start;
+	SSIZE reserve;
+	SSIZE committed;
+	SSIZE commit_used;
 };
 
 AllocatorInfo vm_allocator(VArena* vm) {
-	AllocatorInfo info = { vm_allocator_proc, vm };
+	AllocatorInfo info = { varena_allocator_proc, vm };
 	return info;
 }
 
-VArena*      varena_alloc    (VArenaParams params);
+VArena* varena__alloc(VArenaParams params PARAM_DEFAULT);
+#define varena_alloc(...) varena__alloc( (VArenaParams){__VA_ARGS__} )
+
 void         varena_commit   (VArena vm, SSIZE commit_size);
-VArenaParams varena_free     (VArena vm);
-SSIZE        varena_page_size(SSIZE* alignment_out);
+VArenaParams varena_release  (VArena vm);
 
 MD_API void* varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags);
 
@@ -185,7 +206,7 @@ typedef struct FArena FArena;
 struct FArena
 {
 	ByteSlice slice;
-	SSIZE     pos;
+	SSIZE     used;
 };
 
 FArena farena_from_byteslice(ByteSlice slice);
@@ -197,6 +218,11 @@ MD_API void* farena_allocator_proc(void* allocator_data, AllocatorMode mode, SSI
 inline
 AllocatorType allocator_type(AllocatorInfo a) {
 	return (AllocatorType) a.proc(a.data, AllocatorMode_QueryType, 0, 0, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS);
+}
+
+inline
+AllocatorQueryFlags allocator_query_support(AllocatorInfo a) {
+	return (AllocatorType) a.proc(a.data, AllocatorMode_QuerySupport, 0, 0, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS);
 }
 
 inline

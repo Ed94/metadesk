@@ -2,7 +2,7 @@
 #pragma once
 #include "base/base_types.h"
 #include "base/math.h"
-#include "base/rarena.h"
+#include "base/arena.h"
 #include "base/string.h"
 #endif
 
@@ -299,6 +299,8 @@ internal B32 md_node_match(MD_Node *a, MD_Node *b, StringMatchFlags flags);
 
 //- rjf: tree duplication
 internal MD_Node *md_tree_copy(Arena *arena, MD_Node *src_root);
+// MD_Node* tree_copy_arena(MD_Node* src_root, Arena* arena);
+// MD_Node* tree_copy_ainfo(MD_Node* src_root, AllocatorInfo info);
 
 ////////////////////////////////
 //~ rjf: Text -> Tokens Functions

@@ -672,3 +672,25 @@ void* mem_set( void* destination, U8 fill_byte, SSIZE byte_count )
 #		define read_only
 #	endif
 #endif
+
+#ifndef local_persist
+#define local_persist static
+#endif
+
+#if COMPILER_MSVC
+#	define thread_static __declspec(thread)
+#elif COMPILER_CLANG || COMPILER_GCC
+#	define thread_static __thread
+#endif
+
+#if COMPILER_CPP
+// Already Defined
+#elif COMPILER_C && __STDC_VERSION__ >= 201112L
+#	define thread_local _Thread_local
+#elif COMPILER_MSVC
+#	define thread_local __declspec(thread)
+#elif COMPILER_CLANG
+#	define thread_local __thread
+#else
+#	error "No thread local support"
+#endif

@@ -14,20 +14,7 @@
 Arena*
 arena_alloc_(ArenaParams* params)
 {
-	B32 is_virtual = false;
-
-	// This composite arena has the ability to decide a default behavior for allocation 
-
 	void* base = alloc(params->backing, params->block_size);
-	  
-	// rjf: panic on arena creation failure
-	#if OS_FEATURE_GRAPHICAL
-		if(unlikely(base == 0))
-		{
-			os_graphical_message(1, str8_lit("Fatal Allocation Failure"), str8_lit("Unexpected memory allocation failure."));
-			os_abort(1);
-		}
-	#endif
 	  
 	// rjf: extract arena header & fill
 	Arena* arena      = (Arena*) base;

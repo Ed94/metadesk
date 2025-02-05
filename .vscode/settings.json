@@ -24,6 +24,31 @@
 		"xiosbase": "c",
 		"iterator": "c",
 		"memory": "c",
-		"format": "c"
-	}
+		"format": "c",
+		"compare": "cpp",
+		"ratio": "cpp",
+		"tuple": "cpp",
+		"system_error": "cpp",
+		"xlocmon": "cpp"
+	},
+	"workbench.colorCustomizations": {
+		"activityBar.activeBackground": "#713fb8",
+		"activityBar.background": "#713fb8",
+		"activityBar.foreground": "#e7e7e7",
+		"activityBar.inactiveForeground": "#e7e7e799",
+		"activityBarBadge.background": "#c68659",
+		"activityBarBadge.foreground": "#15202b",
+		"commandCenter.border": "#e7e7e799",
+		"sash.hoverBorder": "#713fb8",
+		"statusBar.background": "#5a3292",
+		"statusBar.foreground": "#e7e7e7",
+		"statusBarItem.hoverBackground": "#713fb8",
+		"statusBarItem.remoteBackground": "#5a3292",
+		"statusBarItem.remoteForeground": "#e7e7e7",
+		"titleBar.activeBackground": "#5a3292",
+		"titleBar.activeForeground": "#e7e7e7",
+		"titleBar.inactiveBackground": "#5a329299",
+		"titleBar.inactiveForeground": "#e7e7e799"
+	},
+	"peacock.color": "#5a3292"
 }

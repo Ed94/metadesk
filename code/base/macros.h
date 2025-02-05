@@ -4,16 +4,6 @@
 #	include "linkage.h"
 #endif
 
-#ifndef local_persist
-#define local_persist static
-#endif
-
-#if COMPILER_MSVC
-#	define thread_static __declspec(thread)
-#elif COMPILER_CLANG || COMPILER_GCC
-#	define thread_static __thread
-#endif
-
 ////////////////////////////////
 //~ rjf: Branch Predictor Hints
 
@@ -89,10 +79,10 @@
 #	endif
 #endif
 
-#if ! defined(MD_PARAM_DEFAULT) && LANG_CPP
-#	define MD_PARAM_DEFAULT = {}
+#if ! defined(PARAM_DEFAULT) && LANG_CPP
+#	define PARAM_DEFAULT = {}
 #else
-#	define MD_PARAM_DEFAULT
+#	define PARAM_DEFAULT
 #endif
 
 #if LANG_C

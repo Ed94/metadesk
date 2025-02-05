@@ -87,7 +87,7 @@ void* heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size,
 	switch ( mode )
 	{
 	#if defined( COMPILER_MSVC ) || ( defined( COMPILER_GCC ) && defined( OS_WINDOWS ) ) || ( defined( COMPILER_TINYC ) && defined( OS_WINDOWS ) )
-		case AllocatorMode_ALLOC:
+		case AllocatorMode_Alloc:
 		{
 			ptr = _aligned_malloc( size, alignment );
 			if ( flags & ALLOCATOR_FLAG_CLEAR_TO_ZERO )
@@ -95,11 +95,11 @@ void* heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size,
 		}
 		break;
 
-		case AllocatorMode_FREE:
+		case AllocatorMode_Free:
 			_aligned_free( old_memory );
 		break;
 
-		case AllocatorMode_FREE_ALL:
+		case AllocatorMode_Reisze:
 		{
 			AllocatorInfo a = heap();
 			ptr             = default_resize_align( a, old_memory, old_size, size, alignment );
@@ -118,7 +118,7 @@ void* heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size,
 		}
 		break;
 
-		case EAllocation_FREE :
+		case EAllocation_Freee :
 		{
 			free( old_memory );
 		}
@@ -156,15 +156,20 @@ void* heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size,
 		break;
 	#endif
 
-		case AllocatorMode_FREE_ALL:
+		case AllocatorMode_FreeAll:
 			break;
-		
+
 		case AllocatorMode_QueryType:
-			return (void*) Heap
+			return (void*) AllocatorType_Heap;
+
+		case AllocatorMode_QuerySupport:
+			return (void*) (
+				AllocatorQuery_Alloc | AllocatorQuery_Free | AllocatorQuery_Reisze
+			);
 	}
 
 #ifdef GEN_HEAP_ANALYSIS
-	if ( type == EAllocation_ALLOC )
+	if ( type == AllocatorMode_Alloc )
 	{
 		_heap_alloc_info* alloc_info = rcast( _heap_alloc_info*, rcast( char*, ptr) + alloc_info_remainder );
 		zero_item( alloc_info );
@@ -179,46 +184,87 @@ void* heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size,
 	return ptr;
 }
 
-void* vm_allocator_proc(void* allocator_data, AllocType type, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags)
-{
-	void* result = nullptr;
-
-			// if(params->flags & ArenaFlag_LargePages)
-			// {
-			// 	base = os_reserve_large(reserve_size);
-			// 	os_commit_large(base, commit_size);
-			// }
-			// else
-			// {
-			// 	base = os_reserve(reserve_size);
-			// 	os_commit(base, commit_size);
-			// }
-
-	return result;
-}
-
-VMemory vm_alloc(VMemoryParams params)
+VArena varena__alloc(VArenaParams params)
 {
 	// rjf: round up reserve/commit sizes
-	U64 reserve_size = params->reserve_size;
-	U64 commit_size  = params->commit_size;
+	U64 reserve_size = params.reserve_size;
+	U64 commit_size  = params.commit_size;
 
-	if(params->flags & ArenaFlag_LargePages)
+	void* base = nullptr;
+	if (params.flags & VArenaFlag_LargePages)
 	{
 		reserve_size = align_pow2(reserve_size, os_get_system_info()->large_page_size);
 		commit_size  = align_pow2(commit_size,  os_get_system_info()->large_page_size);
+
+		base = os_reserve_large(reserve_size);
+		os_commit_large(base, commit_size);
+		asan_poison_memory_region(base, params.commit_size);
 	}
 	else
 	{
 		reserve_size = align_pow2(reserve_size, os_get_system_info()->page_size);
 		commit_size  = align_pow2(commit_size,  os_get_system_info()->page_size);
+
+		base = os_reserve(reserve_size);
+		os_commit(base, commit_size);
+		asan_poison_memory_region(base, params.commit_size);
 	}
 
-	// Allocate virtual memory
-	is_virtual = true;
+	// NOTE(Ed): Panic on varena creation failure
+	#if OS_FEATURE_GRAPHICAL
+		if(unlikely(base == 0))
+		{
+			os_graphical_message(1, str8_lit("Fatal Allocation Failure"), str8_lit("Unexpected memory allocation failure."));
+			os_abort(1);
+		}
+	#endif
 
-	VMemory vm = ;
+	SPTR header_size = size_of(VArena);
 
-	// TODO(Ed): Move this to vmem?
-	asan_poison_memory_region(base, params->commit_size);
+	VArena* vm = (VArena* ) base;
+	vm->reserve       = reserve_size;
+	vm->committed     = commit_size;
+	vm->reserve_start = (SPTR)base + header_size;
+	vm->flags         = params.flags;
+	vm->commit_used   = 0;
+	asan_unpoison_memory_region(vm, header_size);
 }
+
+void Varena_release(VArena* arena)
+{
+
+
+	arena = nullptr;
+}
+
+void* varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags)
+{
+	void* result = nullptr;
+
+	switch (mode)
+	{
+		case AllocatorMode_Alloc:
+
+		break;
+
+		case AllocatorMode_Free:
+		break;
+
+		case AllocatorMode_FreeAll:
+		break;
+
+		case AllocatorMode_Reisze:
+		break;
+
+		case AllocatorMode_QueryType:
+		break;
+
+		case AllocatorMode_QuerySupport:
+		break;
+	}
+
+
+
+	return result;
+}
+

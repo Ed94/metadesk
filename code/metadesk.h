@@ -4,10 +4,6 @@
 
 // metadesk header: intended for "As-Is" library usage
 
-// os
-
-
-
 // base
 
 #include "base/context_cracking.h"

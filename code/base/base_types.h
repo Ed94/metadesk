@@ -57,6 +57,10 @@ typedef ptrdiff_t SSIZE;
 
 static_assert( sizeof( USIZE ) == sizeof( SSIZE ), "sizeof(USIZE) != sizeof(SSIZE)" );
 
+#ifndef size_of
+#define size_of( x ) ( SSIZE )( sizeof( x ) )
+#endif
+
 // NOTE: (u)zpl_intptr is only here for semantic reasons really as this library will only support 32/64 bit OSes.
 #if defined( _WIN64 )
 typedef signed __int64   SPTR;
@@ -88,3 +92,5 @@ static_assert( sizeof( F64 ) == 8, "sizeof(F64) != 8" );
 typedef S8  B8;
 typedef S16 B16;
 typedef S32 B32;
+
+typedef void VoidProc(void);

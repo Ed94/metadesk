@@ -4,6 +4,10 @@
 
 // metadesk header: intended for "As-Is" library usage
 
+// os
+
+
+
 // base
 
 #include "base/context_cracking.h"
@@ -15,6 +19,7 @@
 MD_NS_BEGIN
 
 #include "base/base_types.h"
+#include "base/debug.h"
 #include "base/memory.h"
 #include "base/memory_substrate.h"
 #include "base/arena.h"

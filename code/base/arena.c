@@ -11,7 +11,8 @@
 
 //- rjf: arena creation/destruction
 
-internal Arena *
+#if 0
+internal Arena*
 arena_alloc_(ArenaParams *params)
 {
   // rjf: round up reserve/commit sizes
@@ -67,16 +68,77 @@ arena_alloc_(ArenaParams *params)
   AsanUnpoisonMemoryRegion(base, ARENA_HEADER_SIZE);
   return arena;
 }
+#endif
 
-internal void
-arena_release(Arena *arena)
+Arena*
+arena_alloc_(ArenaParams* params)
 {
-  for(Arena *n = arena->current, *prev = 0; n != 0; n = prev)
-  {
-    prev = n->prev;
-    os_release(n, n->res);
-  }
+	  // rjf: round up reserve/commit sizes
+	  U64 reserve_size = params->reserve_size;
+	  U64 commit_size  = params->commit_size;
+
+
+	  if(params->flags & ArenaFlag_LargePages)
+	  {
+		reserve_size = align_pow2(reserve_size, os_get_system_info()->large_page_size);
+		commit_size  = align_pow2(commit_size,  os_get_system_info()->large_page_size);
+	  }
+	  else
+	  {
+		reserve_size = align_pow2(reserve_size, os_get_system_info()->page_size);
+		commit_size  = align_pow2(commit_size,  os_get_system_info()->page_size);
+	  }
+	  
+	  // rjf: reserve/commit initial block
+	  void *base = params->optional_backing_buffer;
+	  if(base == 0)
+	  {
+		if(params->flags & ArenaFlag_LargePages)
+		{
+		  base = os_reserve_large(reserve_size);
+		  os_commit_large(base, commit_size);
+		}
+		else
+		{
+		  base = os_reserve(reserve_size);
+		  os_commit(base, commit_size);
+		}
+	  }
+	  
+	  // rjf: panic on arena creation failure
+	#if OS_FEATURE_GRAPHICAL
+	  if(Unlikely(base == 0))
+	  {
+		os_graphical_message(1, str8_lit("Fatal Allocation Failure"), str8_lit("Unexpected memory allocation failure."));
+		os_abort(1);
+	  }
+	#endif
+	  
+	  // rjf: extract arena header & fill
+	  Arena *arena = (Arena *)base;
+	  arena->current = arena;
+	  arena->flags = params->flags;
+	  arena->cmt_size = (U32)params->commit_size;
+	  arena->res_size = params->reserve_size;
+	  arena->base_pos = 0;
+	  arena->pos = ARENA_HEADER_SIZE;
+	  arena->cmt = commit_size;
+	  arena->res = reserve_size;
+	  AsanPoisonMemoryRegion(base, commit_size);
+	  AsanUnpoisonMemoryRegion(base, ARENA_HEADER_SIZE);
+	  return arena;
 }
+
+// Note(Ed): INLINED
+// internal void
+// arena_release(Arena *arena)
+// {
+//   for(Arena *n = arena->current, *prev = 0; n != 0; n = prev)
+//   {
+//     prev = n->prev;
+//     os_release(n, n->res);
+//   }
+// }
 
 //- rjf: arena push/pop core functions
 

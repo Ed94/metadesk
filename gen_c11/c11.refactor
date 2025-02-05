@@ -15,6 +15,8 @@
 
 // base module
 
+// base/context_cracking.h
+
 word HAS_ATTRIBUTE,      MD_HAS_ATTRIBUTE
 
 namespace ARCH_,         MD_ARCH_
@@ -23,8 +25,12 @@ namespace GCC_,          MD_GCC_
 namespace LANG_,         MD_LANG_
 namespace OS_,           MD_OS_
 
+// base/linkage.h
+
 word global,   md_global
 word internal, md_internal
+
+// base/macros.h
 
 word local_persist, md_local_persist
 word thread_static, md_thread_static
@@ -42,6 +48,8 @@ word typeof, word md_typeof
 
 word enum_underlying, md_enum_underlying
 word nullptr,         md_nullptr
+
+// base/base_types.h
 
 word U8,   MD_U8
 word U16,  MD_U16
@@ -62,9 +70,21 @@ word UPTR, MD_UPTR
 word F32, MD_F32
 word F64, MD_F64
 
-word B8, MD_B8
+word B8,  MD_B8
 word B16, MD_B16
 word B32, MD_B32
+
+// base/debug.h
+
+word trap,          md_trap
+word assert_always, md_assert_always
+word assert,        md_asert
+
+word invalid_path,    md_invalid_path
+word not_implemented, md_not_implemented
+word no_op,           md_no_op
+
+// base/memory.h
 
 word KILOBYTES, MD_KILOBYTES
 word MEGABYTES, MD_MEGABYTES
@@ -112,11 +132,71 @@ word memory_zero_struct, md_memory_zero_struct
 word memroy_zero_array,  md_memory_zero_array
 word memory_zero_type,   md_memory_zero_type
 
+word memory_match,        md_memory_match
+word memory_match_struct, md_memory_match_struct
+word memory_match_array,  md_memory_match_array
+word memory_match_type,   md_memory_match_type
 
+word memory_read,    md_memory_read
+word memory_consume, md_memory_consume
+
+word mem_move, md_mem_move
+word mem_set,  md_mem_set
+
+namespace ins_atomic_, md_ins_atomic_
+
+word check_nil, md_check_nil
+word set_nil,   md_set_nil
+
+// word dll_insert_npz,     md_dll_insert_npz, 
+// word dll_push_back_npz,  md_dll_push_back_npz, 
+// word dll_push_front_npz, md_dll_push_front_npz, 
+// word dll_remove_npz,     md_dll_remove_npz
+
+// word sll_queue_push_nz,       md_sll_queue_push_nz
+// word sll_queue_push_front_nz, md_sll_queue_push_front_nz
+// word sll_queue_pop_nz,        md_sll_queue_pop_nz
+
+// word sll_stack_push_n, md_sll_stack_push_n
+// word sll_stack_pop_n,  md_sll_stack_pop_n
+
+namespace dll_, md_dll_
+namespace sll_, md_sll_
+
+word NO_ASAN, MD_NO_ASAN
+
+namespace asan_, md_asan_
+
+word stringify,  md_stringify
+word stringify_, md_stringify_
+
+word glue,  md_glue
+word glue_, md_glue_
+
+word array_count, md_array_count
+
+word ceil_integer_div, md_ceil_integer_div
 
 word swap, md_swap
 
-word readonly, md_readonly
+word int_from_ptr,     md_int_from_ptr
+word ptr_from_int,     md_ptr_from_int
+ 
+word compose_64bit,   md_compose_64bit
+word align_pow2,      md_align_pow2
+word align_down_pow2, md_align_down_pow2
+word align_pad_pow2,  md_align_pad_pow2
+word is_pow2,         md_is_pow2
+word is_pow2_or_zero, md_is_pow2_or_zero
+
+word extract_bit, md_extract_bit
+word zero_struct, md_zero_struct
+
+word this_function_name, md_this_function_name
+
+word read_only, md_read_only
+
+// base/memory_substrate.h
 
 word AllocType,     MD_AllocType
 word AllocatorProc, MD_AllocatorProc
@@ -145,7 +225,16 @@ word heap,                   md_heap
 word malloc, md_malloc
 word mfree,  md_mfree
 
+word      VMem, MD_VMem
+namespace vm_,  md_vm_
+
+
+
+// base/math.h
+
 word Rng1U64, MD_Rng1U64
+
+// base/strings.h
 
 word String8, MD_String8
 

@@ -1,10 +1,11 @@
 #ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
-#	include "base/cracking_arch.h"
-#	include "base/cracking_compiler.h"
-#	include "base/cracking_os.h"
+#	include "base/context_cracking.h"
 #	include "base/linkage.h"
+#	include "base/macros.h"
 #	include "base/base_types.h"
+#	include "base/time.h"
+#	include "base/file.h"
 #	include "base/strings.h"
 #endif
 
@@ -140,7 +141,7 @@ struct OS_Guid
   U16 data3;
   U8  data4[8];
 };
-StaticAssert(sizeof(OS_Guid) == 16, os_guid_check);
+md_static_assert(size_of(OS_Guid) == 16, os_guid_check);
 
 ////////////////////////////////
 //~ rjf: Thread Types

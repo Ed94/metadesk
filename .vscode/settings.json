@@ -16,6 +16,11 @@
 		"xmemory": "cpp",
 		"memory.h": "c",
 		"charconv": "c",
-		"xstring": "c"
+		"xstring": "c",
+		"memory_substrate.h": "c",
+		"os.h": "c",
+		"os_core.h": "c",
+		"file.h": "c",
+		"xiosbase": "c"
 	}
 }

@@ -3,8 +3,9 @@
 #	include "context_cracking.h"
 #	include "linkage.h"
 #	include "macros.h"
-#	include "linkage.h"
+#	include "platform.h"
 #	include "base_types.h"
+#	include "memory.h"
 #endif
 
 // This provides an alterntive memory strategy to HMH/Casey Muratori/RJF styled arenas
@@ -12,28 +13,9 @@
 // is related to the gb headers an thus the Odin-lang memory strategy
 // Users can override the underlying memory allocator used, even for the HMH arena memory strategy.
 
-#define MD_KILOBYTES( x ) (             ( x ) * ( S64 )( 1024 ) )
-#define MD_MEGABYTES( x ) ( MD_KILOBYTES( x ) * ( S64 )( 1024 ) )
-#define MD_GIGABYTES( x ) ( MD_MEGABYTES( x ) * ( S64 )( 1024 ) )
-#define MD_TERABYTES( x ) ( MD_GIGABYTES( x ) * ( S64 )( 1024 ) )
-
 #define MD__ONES          ( scast( GEN_NS usize, - 1) / MD_U8_MAX )
 #define MD__HIGHS         ( MD__ONES * ( MD_U8_MAX / 2 + 1 ) )
 #define MD__HAS_ZERO( x ) ( ( ( x ) - MD__ONES ) & ~( x ) & MD__HIGHS )
-
-#if MD_COMPILER_MSVC || (MD_COMPILER_CLANG && MD_OS_WINDOWS)
-#	pragma section(".rdata$", read)
-#	define read_only __declspec(allocate(".rdata$"))
-#elif (MD_COMPILER_CLANG && MD_OS_LINUX)
-#	define read_only __attribute__((section(".rodata")))
-#else
-// NOTE(rjf): I don't know of a useful way to do this in GCC land.
-// __attribute__((section(".rodata"))) looked promising, but it introduces a
-// strange warning about malformed section attributes, and it doesn't look
-// like writing to that section reliably produces access violations, strangely
-// enough. (It does on Clang)
-#	define read_only
-#endif
 
 typedef U32 AllocType;
 enum AllocType enum_underlying(U32)
@@ -114,3 +96,17 @@ MD_API void* heap_allocator_proc( void* allocator_data, AllocType type, SSIZE si
 
 //! Helper to free memory allocated by heap allocator.
 #define mfree( ptr ) free( heap(), ptr )
+
+typedef struct VMem;
+struct VMem {
+	U32 cmt_size;
+	U32 res_size;
+	U64 base_pos;
+};
+
+AllocatorInfo vm_allocator(VMem* vm) {
+	AllocatorInfo info = { vm_allocator_proc, vm }
+	return info
+}
+
+MD_API void* vm_allocator_proc(void * allocator_data, AllocType type, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags);

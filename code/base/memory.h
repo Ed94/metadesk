@@ -4,40 +4,75 @@
 #	include "linkage.h"
 #	include "macros.h"
 #	include "platform.h"
-#	include "memory_substrate.h"
 #endif
+
 
 ////////////////////////////////
 //~ rjf: Units
 
-#define KB(n)  (((U64)(n)) << 10)
-#define MB(n)  (((U64)(n)) << 20)
-#define GB(n)  (((U64)(n)) << 30)
-#define TB(n)  (((U64)(n)) << 40)
+#ifndef KILOBTYES
+#define KILOBYTES( x ) (             ( x ) * ( S64 )( 1024 ) )
+#endif
+#ifndef MEGABYTES
+#define MEGABYTES( x ) ( MD_KILOBYTES( x ) * ( S64 )( 1024 ) )
+#endif
+#ifndef GIGABYTES
+#define GIGABYTES( x ) ( MD_MEGABYTES( x ) * ( S64 )( 1024 ) )
+#endif
+#ifndef TERABYTES
+#define TERABYTES( x ) ( MD_GIGABYTES( x ) * ( S64 )( 1024 ) )
+#endif
 
+#ifndef KB
+#define KB(n)  (((U64)(n)) << 10)
+#endif
+#ifndef MB
+#define MB(n)  (((U64)(n)) << 20)
+#endif
+#ifndef GB
+#define GB(n)  (((U64)(n)) << 30)
+#endif
+#ifndef TB
+#define TB(n)  (((U64)(n)) << 40)
+#endif
+
+#ifndef thosuand
 #define thousand(n)   ((n) * 1000)
+#endif
+#ifndef million
 #define million(n)    ((n) * 1000000)
+#endif
+#ifndef billion
 #define billion(n)    ((n) * 1000000000)
+#endif
 
 ////////////////////////////////
 //~ rjf: Clamps, Mins, Maxes
 
+#ifndef min
 #define min(A,B) (((A) < (B)) ? (A) : (B))
+#endif
+#ifndef max
 #define max(A,B) (((A) > (B)) ? (A) : (B))
+#endif
 
+#ifndef clamp_top
 #define clamp_top(A,X) Min(A, X)
+#endif
+#ifndef clamp_bot
 #define clamp_bot(X,B) Max(X, B)
+#endif
 
 #define clamp(A,X,B) (((X) < (A)) ? (A) : ((X) > (B)) ? (B) : (X))
 
 ////////////////////////////////
 //~ rjf: Type -> Alignment
 
-#if MD_COMPILER_MSVC
+#if COMPILER_MSVC
 #	define align_of(T) __alignof(T)
-#elif MD_COMPILER_CLANG
+#elif COMPILER_CLANG
 #	define align_of(T) __alignof(T)
-#elif MD_COMPILER_GCC
+#elif COMPILER_GCC
 #	define align_of(T) __alignof__(T)
 #else
 #	error AlignOf not defined for this compiler.
@@ -87,9 +122,9 @@
 ////////////////////////////////
 //~ rjf: Asserts
 
-#if MD_COMPILER_MSVC
+#if COMPILER_MSVC
 #	define trap() __debugbreak()
-#elif MD_COMPILER_CLANG || COMPILER_GCC
+#elif COMPILER_CLANG || COMPILER_GCC
 #	define trap() __builtin_trap()
 #else
 #	error Unknown trap intrinsic for this compiler.
@@ -111,8 +146,8 @@
 ////////////////////////////////
 //~ rjf: Atomic Operations
 
-#if MD_OS_WINDOWS
-#	if MD_ARCH_X64
+#if OS_WINDOWS
+#	if ARCH_X64
 #		define ins_atomic_u64_eval(x)                 InterlockedAdd64((volatile __int64 *)(x), 0)
 #		define ins_atomic_u64_inc_eval(x)             InterlockedIncrement64((volatile __int64 *)(x))
 #		define ins_atomic_u64_dec_eval(x)             InterlockedDecrement64((volatile __int64 *)(x))
@@ -126,8 +161,8 @@
 #	else
 #		error Atomic intrinsics not defined for this operating system / architecture combination.
 #	endif
-#elif MD_OS_LINUX
-#	if MD_ARCH_X64
+#elif OS_LINUX
+#	if ARCH_X64
 #		define ins_atomic_u64_inc_eval(x) __sync_fetch_and_add((volatile U64 *)(x), 1)
 #	else
 #		error Atomic intrinsics not defined for this operating system / architecture combination.
@@ -279,14 +314,14 @@
 ////////////////////////////////
 //~ rjf: Address Sanitizer Markup
 
-#if MD_COMPILER_MSVC
+#if COMPILER_MSVC
 # if defined(__SANITIZE_ADDRESS__)
 #  define ASAN_ENABLED 1
 #  define NO_ASAN __declspec(no_sanitize_address)
 # else
 #  define NO_ASAN
 # endif
-#elif MD_COMPILER_CLANG
+#elif COMPILER_CLANG
 # if defined(__has_feature)
 #  if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
 #   define ASAN_ENABLED 1
@@ -312,24 +347,36 @@
 ////////////////////////////////
 //~ rjf: Misc. Helper Macros
 
+#ifndef stringify
 #define stringify_(S) #S
 #define stringify(S)  stringify_(S)
+#endif
 
+#ifndef glue
 #define glue_(A,B) A ## B
 #define glue(A,B)  glue_(A,B)
+#endif
 
+#ifndef array_count
 #define array_count(a) (sizeof(a) / sizeof((a)[0]))
+#endif
 
+#ifndef ceil_integer_div
 #define ceil_integer_div(a,b) (((a) + (b) - 1) / (b))
+#endif
 
+#ifndef swap
 #define swap(T, a, b) do { T t__ = a; a = b; b = t__; } while(0)
+#endif
 
-#if MD_ARCH_64BIT
-#	define int_from_ptr(ptr) ((U64)(ptr))
-#elif MD_ARCH_32BIT
-#	define int_from_ptr(ptr) ((U32)(ptr))
-#else
-#	error Missing pointer-to-integer cast for this architecture.
+#ifndef int_from_ptr
+#	if ARCH_64BIT
+#		define int_from_ptr(ptr) ((U64)(ptr))
+#	elif ARCH_32BIT
+#		define int_from_ptr(ptr) ((U32)(ptr))
+#	else
+#		error Missing pointer-to-integer cast for this architecture.
+#	endif
 #endif
 
 #define ptr_from_int(i) (void*)((U8*)0 + (i))
@@ -343,14 +390,28 @@
 
 #define extract_bit(word, idx) (((word) >> (idx)) & 1)
 
-#if MD_LANG_CPP
+#if LANG_CPP
 # define zero_struct {}
 #else
 # define zero_struct {0}
 #endif
 
-#if MD_COMPILER_MSVC && MD_COMPILER_MSVC_YEAR < 2015
+#if COMPILER_MSVC && COMPILER_MSVC_YEAR < 2015
 # define this_function_name "unknown"
 #else
 # define this_function_name __func__
+#endif
+
+#if COMPILER_MSVC || (COMPILER_CLANG && OS_WINDOWS)
+#	pragma section(".rdata$", read)
+#	define read_only __declspec(allocate(".rdata$"))
+#elif (COMPILER_CLANG && OS_LINUX)
+#	define read_only __attribute__((section(".rodata")))
+#else
+// NOTE(rjf): I don't know of a useful way to do this in GCC land.
+// __attribute__((section(".rodata"))) looked promising, but it introduces a
+// strange warning about malformed section attributes, and it doesn't look
+// like writing to that section reliably produces access violations, strangely
+// enough. (It does on Clang)
+#	define read_only
 #endif

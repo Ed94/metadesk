@@ -8,16 +8,16 @@
 #define local_persist static
 #endif
 
-#if MD_COMPILER_MSVC
+#if COMPILER_MSVC
 #	define thread_static __declspec(thread)
-#elif MD_COMPILER_CLANG || MD_COMPILER_GCC
+#elif COMPILER_CLANG || COMPILER_GCC
 #	define thread_static __thread
 #endif
 
 ////////////////////////////////
 //~ rjf: Branch Predictor Hints
 
-#if MD_COMPILER_CLANG
+#if COMPILER_CLANG
 # define expect(expr, val) __builtin_expect((expr), (val))
 #else
 # define expect(expr, val) (expr)
@@ -29,7 +29,7 @@
 ////////////////////////////////
 //~ erg: type casting
 
-#if MD_LANG_CPP
+#if LANG_CPP
 #	ifndef ccast
 #	define ccast( type, value ) ( const_cast< type >( (value) ) )
 #	endif
@@ -57,8 +57,8 @@
 #	endif
 #endif
 
-#if ! defined(typeof) && ( ! MD_LANG_C || __STDC_VERSION__ < 202311L)
-#	if ! MD_LANG_C
+#if ! defined(typeof) && ( ! LANG_C || __STDC_VERSION__ < 202311L)
+#	if ! LANG_C
 #		define typeof decltype
 #	elif defined(_MSC_VER)
 #		define typeof __typeof__
@@ -69,7 +69,7 @@
 #	endif
 #endif
 
-#if MD_LANG_C
+#if LANG_C
 #	if __STDC_VERSION__ >= 202311L
 #		define enum_underlying(type) : type
 #	else
@@ -79,7 +79,7 @@
 #	define enum_underlying(type) : type
 #endif
 
-#if MD_LANG_C
+#if LANG_C
 #	ifndef nullptr
 #		define nullptr NULL
 #	endif
@@ -89,13 +89,13 @@
 #	endif
 #endif
 
-#if ! defined(MD_PARAM_DEFAULT) && MD_LANG_CPP
+#if ! defined(MD_PARAM_DEFAULT) && LANG_CPP
 #	define MD_PARAM_DEFAULT = {}
 #else
 #	define MD_PARAM_DEFAULT
 #endif
 
-#if MD_LANG_C
+#if LANG_C
 #	ifndef static_assert
 #	undef  static_assert
 #		if __STDC_VERSION__ >= 201112L

@@ -6,7 +6,7 @@
 #	include "platform.h"
 #endif
 
-#if defined( MD_COMPILER_MSVC )
+#if defined( COMPILER_MSVC )
 #	if _MSC_VER < 1300
 typedef unsigned char  U8;
 typedef signed   char  S8;

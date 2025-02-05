@@ -19,9 +19,9 @@
 #include "md.h"
 #include "md.c"
 
-#if MD_OS_WINDOWS
+#if OS_WINDOWS
 # include <Windows.h>
-#elif MD_OS_MAC || MD_OS_LINUX
+#elif OS_MAC || OS_LINUX
 # include <pthread.h>
 #else
 # error Not implemented for this OS
@@ -34,7 +34,7 @@
 #if MD_COMPILER_CL
 # include <intrin.h>
 # define atomic_inc_then_eval_u64(p) _InterlockedIncrement64((volatile __int64*)p)
-#elif MD_COMPILER_CLANG || MD_COMPILER_GCC
+#elif COMPILER_CLANG || COMPILER_GCC
 # define atomic_inc_then_eval_u64(p) __sync_add_and_fetch(p, 1)
 #else
 # error Not implemented for this compiler
@@ -95,14 +95,14 @@ parse_worker_loop(ThreadData *thread_data)
     atomic_inc_then_eval_u64(&task->thread_counter);
 }
 
-#if MD_OS_WINDOWS
+#if OS_WINDOWS
 DWORD
 parse_worker_win32(LPVOID parameter)
 {
     parse_worker_loop((ThreadData*)parameter);
     return(0);
 }
-#elif MD_OS_MAC || MD_OS_LINUX
+#elif OS_MAC || OS_LINUX
 void *
 parse_worker_pthread(void *parameter)
 {
@@ -143,13 +143,13 @@ main(int argc, char **argv)
     
     // launch the worker threads
     //  (no worker thread 0)
-#if MD_OS_WINDOWS
+#if OS_WINDOWS
     HANDLE handles[THREAD_COUNT];
     for (int i = 1; i < THREAD_COUNT; i += 1)
     {
         handles[i] = CreateThread(0, 0, &parse_worker_win32, threads + i, 0, 0);
     }
-#elif MD_OS_MAC || MD_OS_LINUX
+#elif OS_MAC || OS_LINUX
     pthread_t handles[THREAD_COUNT];
     for (int i = 1; i < THREAD_COUNT; i += 1)
     {
@@ -163,13 +163,13 @@ main(int argc, char **argv)
     parse_worker_loop(&threads[0]);
     
     // wait for all threads to be finished
-#if MD_OS_WINDOWS
+#if OS_WINDOWS
     WaitForMultipleObjects(THREAD_COUNT-1, handles+1, TRUE, INFINITE);
     for (int i = 1; i < THREAD_COUNT; i += 1)
     {
         CloseHandle(handles[i]);
     }
-#elif MD_OS_MAC || MD_OS_LINUX
+#elif OS_MAC || OS_LINUX
     for (int i = 1; i < THREAD_COUNT; i += 1)
     {
         pthread_join(handles[i], 0);

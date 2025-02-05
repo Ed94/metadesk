@@ -15,11 +15,21 @@
 
 // base module
 
-word global,        md_global
-word internal,      md_internal
+word HAS_ATTRIBUTE,      MD_HAS_ATTRIBUTE
+
+namespace ARCH_,         MD_ARCH_
+namespace COMPILER_,     MD_COMPILER_
+namespace GCC_,          MD_GCC_
+namespace LANG_,         MD_LANG_
+namespace OS_,           MD_OS_
+
+word global,   md_global
+word internal, md_internal
+
 word local_persist, md_local_persist
 word thread_static, md_thread_static
 
+word expect,        md_expect
 word likely,        md_likely
 word unlikely,      md_unlikely
 
@@ -55,6 +65,54 @@ word F64, MD_F64
 word B8, MD_B8
 word B16, MD_B16
 word B32, MD_B32
+
+word KILOBYTES, MD_KILOBYTES
+word MEGABYTES, MD_MEGABYTES
+word GIGABYTES, MD_GIGABYTES
+word TERABYTES, MD_TERABYTES
+
+word KB, MD_KB
+word MB, MD_MB
+word GB, MD_GB
+word TB, MD_TB
+
+word thosuand, md_thousand
+word million,  md_million
+word billion,  md_billion
+
+word min, md_min
+word max, md_max
+
+word clamp_top, md_clamp_top
+word clamp_bot, md_clamp_bot
+word clamp,     md_clamp
+
+word align_of,           md_align_of
+word offset_of,          md_offset_of
+word member_from_offset, md_member_from_offset
+word cast_from_member,   md_cast_from_member
+
+word defer_loop,         md_defer_loop
+word defer_loop_checked, md_defer_loop_checked
+
+word each_enum_val,          md_each_enum_val
+word each_non_zero_enum_val, md_each_non_zero_enum_val
+
+word memory_copy,    md_memory_copy
+word memory_set,     md_memory_set
+word memory_compare, md_memory_compare
+word memory_str_len, md_memory_str_len
+
+word memory_copy_struct, md_memory_copy_struct
+word memory_copy_array,  md_memory_copy_array
+word memory_copy_type,   md_memory_copy_type
+
+word memory_zero,        md_memory_zero
+word memory_zero_struct, md_memory_zero_struct
+word memroy_zero_array,  md_memory_zero_array
+word memory_zero_type,   md_memory_zero_type
+
+
 
 word swap, md_swap
 

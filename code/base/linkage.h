@@ -4,7 +4,7 @@
 #endif
 
 #ifndef MD_API
-#if MD_COMPILER_MSVC
+#if COMPILER_MSVC
 #	ifdef MD_DYN_LINK
 #		ifdef MD_DYN_EXPORT
 #			define MD_API __declspec(dllexport)
@@ -24,7 +24,7 @@
 #endif // GEN_API
 
 #ifndef MD_API_C_BEGIN
-#	if MD_LANG_C
+#	if LANG_C
 #		define MD_API_C_BEGIN
 #		define MD_API_C_END
 #		define MD_API_C

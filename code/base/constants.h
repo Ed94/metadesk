@@ -40,12 +40,12 @@
 #define MD_S64_MIN ( -0x7fffffffffffffffll - 1 )
 #define MD_S64_MAX 0x7fffffffffffffffll
 
-#if defined( MD_ARCH_32_BIT )
+#if defined( ARCH_32_BIT )
 #	define MD_USIZE_MIN MD_U32_MIN
 #	define MD_USIZE_MAX MD_U32_MAX
 #	define MD_ISIZE_MIN MD_S32_MIN
 #	define MD_ISIZE_MAX MD_S32_MAX
-#elif defined( MD_ARCH_64_BIT )
+#elif defined( ARCH_64_BIT )
 #	define MD_USIZE_MIN MD_U64_MIN
 #	define MD_USIZE_MAX MD_U64_MAX
 #	define MD_ISIZE_MIN MD_S64_MIN

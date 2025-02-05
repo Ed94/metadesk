@@ -31,6 +31,15 @@ struct ArenaParams
 	void*      optional_backing_buffer;
 };
 
+/* NOTE(Ed): This is a combination of several concepts into a single interface:
+	* A arena 'block' of memory with segmented chaining of the blocks
+	* An OS virtual memory allocation scheme
+	* A push/pop stack allocation interface for the arena
+
+	TODO(Ed): We need to lift the virtual memory tracking to its own data structure 
+	and virtual memory interface utilizing memory_substrate.h
+*/
+
 typedef struct Arena Arena;
 struct Arena
 {

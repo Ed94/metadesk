@@ -8,7 +8,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 
-#if defined( MD_OS_WINDOWS )
+#if defined( OS_WINDOWS )
 #	include <intrin.h>
 #	include <tmmintrin.h>
 #	include <wmmintrin.h>
@@ -28,7 +28,7 @@
 #	undef VC_EXTRALEAN
 #endif
 
-#if MD_LANG_C
+#if LANG_C
 #	include <assert.h>
 #	include <stdbool.h>
 #endif

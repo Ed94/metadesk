@@ -127,13 +127,13 @@ MD_CRT_LoadEntireFile(MD_Arena *arena, MD_String8 filename)
 ////////////////////////////////////////////////////////////////////////////////
 
 //- win32 header
-#if (MD_DEFAULT_FILE_ITER || MD_2DEFAULT_MEMORY) && MD_OS_WINDOWS
+#if (MD_DEFAULT_FILE_ITER || MD_2DEFAULT_MEMORY) && OS_WINDOWS
 # include <Windows.h>
 # pragma comment(lib, "User32.lib")
 #endif
 
 //- win32 "file iteration"
-#if MD_DEFAULT_FILE_ITER && MD_OS_WINDOWS
+#if MD_DEFAULT_FILE_ITER && OS_WINDOWS
 
 #if !defined(MD_IMPL_FileIterBegin)
 # define MD_IMPL_FileIterBegin MD_WIN32_FileIterBegin
@@ -230,7 +230,7 @@ MD_WIN32_FileIterEnd(MD_FileIter *it)
 #endif
 
 //- win32 "low level memory"
-#if MD_DEFAULT_MEMORY && MD_OS_WINDOWS
+#if MD_DEFAULT_MEMORY && OS_WINDOWS
 
 #if !defined(MD_IMPL_Reserve)
 # define MD_IMPL_Reserve MD_WIN32_Reserve
@@ -279,7 +279,7 @@ MD_WIN32_Release(void *ptr, MD_u64 size)
 ////////////////////////////////////////////////////////////////////////////////
 
 //- linux headers
-#if (MD_DEFAULT_FILE_ITER || MD_DEFAULT_MEMORY) && (MD_OS_LINUX || MD_OS_MAC)
+#if (MD_DEFAULT_FILE_ITER || MD_DEFAULT_MEMORY) && (OS_LINUX || OS_MAC)
 # include <dirent.h>
 # include <sys/stat.h>
 # include <fcntl.h>
@@ -300,7 +300,7 @@ MD_WIN32_Release(void *ptr, MD_u64 size)
 #endif
 
 //- linux "file iteration"
-#if MD_DEFAULT_FILE_ITER && MD_OS_LINUX
+#if MD_DEFAULT_FILE_ITER && OS_LINUX
 
 #if !defined(MD_IMPL_FileIterIncrement)
 # define MD_IMPL_FileIterIncrement MD_LINUX_FileIterIncrement
@@ -368,7 +368,7 @@ MD_LINUX_FileIterIncrement(MD_Arena *arena, MD_FileIter *opaque_it, MD_String8 p
 #endif
 
 //- linux "low level memory"
-#if MD_DEFAULT_MEMORY && (MD_OS_LINUX || MD_OS_MAC)
+#if MD_DEFAULT_MEMORY && (OS_LINUX || OS_MAC)
 
 #if !defined(MD_IMPL_Reserve)
 # define MD_IMPL_Reserve MD_LINUX_Reserve

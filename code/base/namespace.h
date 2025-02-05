@@ -4,8 +4,8 @@
 #endif
 
 // C++ namespace support
-#if defined(MD_DONT_USE_NAMESPACE) || MD_LANG_C
-#	if MD_LANG_C
+#if defined(MD_DONT_USE_NAMESPACE) || LANG_C
+#	if LANG_C
 #		define MD_NS
 #		define MD_NS_BEGIN
 #		define MD_NS_END

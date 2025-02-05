@@ -92,26 +92,26 @@
 
 #if defined(__clang__)
 
-# define MD_COMPILER_CLANG 1
+# define COMPILER_CLANG 1
 
 # if defined(__APPLE__) && defined(__MACH__)
-#  define MD_OS_MAC 1
+#  define OS_MAC 1
 # elif defined(__gnu_linux__)
-#  define MD_OS_LINUX 1
+#  define OS_LINUX 1
 # elif defined(_WIN32)
-#  define MD_OS_WINDOWS 1
+#  define OS_WINDOWS 1
 # else
 #  error This compiler/platform combo is not supported yet
 # endif
 
 # if defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
-#  define MD_ARCH_X64 1
+#  define ARCH_X64 1
 # elif defined(i386) || defined(__i386) || defined(__i386__)
-#  define MD_ARCH_X86 1
+#  define ARCH_X86 1
 # elif defined(__aarch64__)
-#  define MD_ARCH_ARM64 1
+#  define ARCH_ARM64 1
 # elif defined(__arm__)
-#  define MD_ARCH_ARM32 1
+#  define ARCH_ARM32 1
 # else
 #  error architecture not supported yet
 # endif
@@ -121,19 +121,19 @@
 # define MD_COMPILER_CL 1
 
 # if defined(_WIN32)
-#  define MD_OS_WINDOWS 1
+#  define OS_WINDOWS 1
 # else
 #  error This compiler/platform combo is not supported yet
 # endif
 
 # if defined(_M_AMD64)
-#  define MD_ARCH_X64 1
+#  define ARCH_X64 1
 # elif defined(_M_IX86)
-#  define MD_ARCH_X86 1
+#  define ARCH_X86 1
 # elif defined(_M_ARM64)
-#  define MD_ARCH_ARM64 1
+#  define ARCH_ARM64 1
 # elif defined(_M_ARM)
-#  define MD_ARCH_ARM32 1
+#  define ARCH_ARM32 1
 # else
 #  error architecture not supported yet
 # endif
@@ -160,22 +160,22 @@
 
 #elif defined(__GNUC__) || defined(__GNUG__)
 
-# define MD_COMPILER_GCC 1
+# define COMPILER_GCC 1
 
 # if defined(__gnu_linux__)
-#  define MD_OS_LINUX 1
+#  define OS_LINUX 1
 # else
 #  error This compiler/platform combo is not supported yet
 # endif
 
 # if defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
-#  define MD_ARCH_X64 1
+#  define ARCH_X64 1
 # elif defined(i386) || defined(__i386) || defined(__i386__)
-#  define MD_ARCH_X86 1
+#  define ARCH_X86 1
 # elif defined(__aarch64__)
-#  define MD_ARCH_ARM64 1
+#  define ARCH_ARM64 1
 # elif defined(__arm__)
-#  define MD_ARCH_ARM32 1
+#  define ARCH_ARM32 1
 # else
 #  error architecture not supported yet
 # endif
@@ -184,14 +184,14 @@
 # error This compiler is not supported yet
 #endif
 
-#if defined(MD_ARCH_X64)
-# define MD_ARCH_64BIT 1
-#elif defined(MD_ARCH_X86)
-# define MD_ARCH_32BIT 1
+#if defined(ARCH_X64)
+# define ARCH_64BIT 1
+#elif defined(ARCH_X86)
+# define ARCH_32BIT 1
 #endif
 
 #if defined(__cplusplus)
-# define MD_LANG_CPP 1
+# define LANG_CPP 1
 
 // We can't get this 100% correct thanks to Microsoft's compiler.
 // So this check lets us pre-define MD_CPP_VERSION if we have to.
@@ -242,64 +242,64 @@
 # endif
 
 #else
-# define MD_LANG_C 1
+# define LANG_C 1
 #endif
 
 // zeroify
 
-#if !defined(MD_ARCH_32BIT)
-# define MD_ARCH_32BIT 0
+#if !defined(ARCH_32BIT)
+# define ARCH_32BIT 0
 #endif
-#if !defined(MD_ARCH_64BIT)
-# define MD_ARCH_64BIT 0
+#if !defined(ARCH_64BIT)
+# define ARCH_64BIT 0
 #endif
-#if !defined(MD_ARCH_X64)
-# define MD_ARCH_X64 0
+#if !defined(ARCH_X64)
+# define ARCH_X64 0
 #endif
-#if !defined(MD_ARCH_X86)
-# define MD_ARCH_X86 0
+#if !defined(ARCH_X86)
+# define ARCH_X86 0
 #endif
-#if !defined(MD_ARCH_ARM64)
-# define MD_ARCH_ARM64 0
+#if !defined(ARCH_ARM64)
+# define ARCH_ARM64 0
 #endif
-#if !defined(MD_ARCH_ARM32)
-# define MD_ARCH_ARM32 0
+#if !defined(ARCH_ARM32)
+# define ARCH_ARM32 0
 #endif
 #if !defined(MD_COMPILER_CL)
 # define MD_COMPILER_CL 0
 #endif
-#if !defined(MD_COMPILER_GCC)
-# define MD_COMPILER_GCC 0
+#if !defined(COMPILER_GCC)
+# define COMPILER_GCC 0
 #endif
-#if !defined(MD_COMPILER_CLANG)
-# define MD_COMPILER_CLANG 0
+#if !defined(COMPILER_CLANG)
+# define COMPILER_CLANG 0
 #endif
-#if !defined(MD_OS_WINDOWS)
-# define MD_OS_WINDOWS 0
+#if !defined(OS_WINDOWS)
+# define OS_WINDOWS 0
 #endif
-#if !defined(MD_OS_LINUX)
-# define MD_OS_LINUX 0
+#if !defined(OS_LINUX)
+# define OS_LINUX 0
 #endif
-#if !defined(MD_OS_MAC)
-# define MD_OS_MAC 0
+#if !defined(OS_MAC)
+# define OS_MAC 0
 #endif
-#if !defined(MD_LANG_C)
-# define MD_LANG_C 0
+#if !defined(LANG_C)
+# define LANG_C 0
 #endif
-#if !defined(MD_LANG_CPP)
-# define MD_LANG_CPP 0
+#if !defined(LANG_CPP)
+# define LANG_CPP 0
 #endif
 #if !defined(MD_CPP_VERSION)
 # define MD_CPP_VERSION 0
 #endif
 
-#if MD_LANG_CPP
+#if LANG_CPP
 # define MD_ZERO_STRUCT {}
 #else
 # define MD_ZERO_STRUCT {0}
 #endif
 
-#if MD_LANG_C
+#if LANG_C
 # define MD_C_LINKAGE_BEGIN
 # define MD_C_LINKAGE_END
 #else
@@ -309,7 +309,7 @@
 
 #if MD_COMPILER_CL
 # define MD_THREAD_LOCAL __declspec(thread)
-#elif MD_COMPILER_GCC || MD_COMPILER_CLANG
+#elif COMPILER_GCC || COMPILER_CLANG
 # define MD_THREAD_LOCAL __thread
 #endif
 
@@ -968,9 +968,9 @@ MD_FUNCTION MD_u64         MD_CalculateCStringLength(char *cstr);
 MD_FUNCTION MD_String8     MD_S8(MD_u8 *str, MD_u64 size);
 #define MD_S8CString(s)    MD_S8((MD_u8 *)(s), MD_CalculateCStringLength(s))
 
-#if MD_LANG_C
+#if LANG_C
 # define MD_S8Lit(s)        (MD_String8){(MD_u8 *)(s), sizeof(s)-1}
-#elif MD_LANG_CPP
+#elif LANG_CPP
 # define MD_S8Lit(s)        MD_S8((MD_u8*)(s), sizeof(s) - 1)
 #endif
 #define MD_S8LitComp(s)     {(MD_u8 *)(s), sizeof(s)-1}

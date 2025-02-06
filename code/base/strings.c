@@ -20,39 +20,39 @@
 //~ NOTE(allen): String <-> Integer Tables
 
 read_only global U8 integer_symbols[16] = {
-  '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F',
+	'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F',
 };
 
 // NOTE(allen): Includes reverses for uppercase and lowercase hex.
 read_only global U8 integer_symbol_reverse[128] = {
-  0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-  0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-  0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-  0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-  0xFF,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-  0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-  0xFF,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-  0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 };
 
 read_only global U8 base64[64] = {
-  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-  '_', '$',
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+	'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+	'_', '$',
 };
 
 read_only global U8 base64_reverse[128] = {
-  0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-  0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-  0xFF,0xFF,0xFF,0xFF,0x3F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-  0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0xFF,0xFF,0xFF,0xFF,0xFF,0x00,
-  0xFF,0x24,0x25,0x26,0x27,0x28,0x29,0x2A,0x2B,0x2C,0x2D,0x2E,0x2F,0x30,0x31,0x32,
-  0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x3A,0x3B,0x3C,0x3D,0xFF,0xFF,0xFF,0xFF,0x3E,
-  0xFF,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,
-  0x19,0x1A,0x1B,0x1C,0x1D,0x1E,0x1F,0x20,0x21,0x22,0x23,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0xFF,0xFF,0xFF,0xFF,0x3F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0xFF,0xFF,0xFF,0xFF,0xFF,0x00,
+	0xFF,0x24,0x25,0x26,0x27,0x28,0x29,0x2A,0x2B,0x2C,0x2D,0x2E,0x2F,0x30,0x31,0x32,
+	0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x3A,0x3B,0x3C,0x3D,0xFF,0xFF,0xFF,0xFF,0x3E,
+	0xFF,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,
+	0x19,0x1A,0x1B,0x1C,0x1D,0x1E,0x1F,0x20,0x21,0x22,0x23,0xFF,0xFF,0xFF,0xFF,0xFF,
 };
 
 ////////////////////////////////
@@ -163,7 +163,7 @@ str8_skip_chop_whitespace(String8 string)
 String8
 push_str8_cat(Arena* arena, String8 s1, String8 s2)
 {
-#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
 	String8 str;
 	str.size = s1.size + s2.size;
 	str.str  = push_array_no_zero(arena, U8, str.size + 1);
@@ -178,7 +178,7 @@ push_str8_cat(Arena* arena, String8 s1, String8 s2)
 
 String8
 push_str8_copy(Arena* arena, String8 s){
-#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
 	String8 str;
 	str.size = s.size;
 	str.str  = push_array_no_zero(arena, U8, str.size + 1);
@@ -192,7 +192,7 @@ push_str8_copy(Arena* arena, String8 s){
 
 String8
 push_str8fv(Arena* arena, char* fmt, va_list args){
-#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
 	va_list args2;
 	va_copy(args2, args);
 	U32     needed_bytes = raddbg_vsnprintf(0, 0, fmt, args) + 1;
@@ -326,7 +326,7 @@ try_u64_from_str8_c_rules(String8 string, U64 *x)
 
 String8
 str8_from_memory_size(Arena* arena, U64 z) {
-#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
 	String8 result = {0};
 	if (z < KB(1)) {
 		result = push_str8f(arena, "%llu  b", z);
@@ -548,7 +548,7 @@ str8_from_allocator_u64(AllocatorInfo ainfo, U64 u64, U32 radix, U8 min_digits, 
 String8
 str8_from_s64(Arena *arena, S64 s64, U32 radix, U8 min_digits, U8 digit_group_separator)
 {
-#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
 	String8 result = {0};
 	// TODO(rjf): preeeeetty sloppy...
 	if(s64 < 0) {
@@ -650,7 +650,7 @@ str8_list_concat_in_place(String8List* list, String8List* to_push) {
 String8Node*
 str8_list_push_aligner(Arena* arena, String8List* list, U64 min, U64 align)
 {
-#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
 	String8Node* node = push_array_no_zero(arena, String8Node, 1);
 	U64 new_size = list->total_size + min;
 	U64 increase_size = 0;
@@ -674,7 +674,7 @@ str8_list_push_aligner(Arena* arena, String8List* list, U64 min, U64 align)
 	node->string.size = increase_size;
 	return(node);
 #else
-	return str8_list_aligner(arena_allocator(arena), list, min, align)
+	return str8_list_aligner(arena_allocator(arena), list, min, align);
 #endif
 }
 
@@ -741,7 +741,8 @@ str8_list_alloc_copy(AllocatorInfo ainfo, String8List* list)
 //~ rjf: String Splitting & Joining
 
 String8List
-str8_split(Arena *arena, String8 string, U8 *split_chars, U64 split_char_count, StringSplitFlags flags){
+str8_split(Arena* arena, String8 string, U8* split_chars, U64 split_char_count, StringSplitFlags flags) {
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
 	String8List list = {0};
   
 	B32 keep_empties = (flags & StringSplitFlag_KeepEmpties);
@@ -773,346 +774,329 @@ str8_split(Arena *arena, String8 string, U8 *split_chars, U64 split_char_count, 
 		ptr += 1;
 	}
 	return(list);
+#else
+	return str8_split_alloc(arena_allocator(arena), string, split_chars, split_char_count, flags);
+#endif
 }
 
 String8List
-str8_split_by_string_chars(Arena *arena, String8 string, String8 split_chars, StringSplitFlags flags){
-  String8List list = str8_split(arena, string, split_chars.str, split_chars.size, flags);
-  return list;
-}
-
-String8List
-str8_list_split_by_string_chars(Arena *arena, String8List list, String8 split_chars, StringSplitFlags flags){
-  String8List result = {0};
-  for (String8Node *node = list.first; node != 0; node = node->next){
-    String8List split = str8_split_by_string_chars(arena, node->string, split_chars, flags);
-    str8_list_concat_in_place(&result, &split);
-  }
-  return result;
+str8_split_alloc(AllocatorInfo ainfo, String8 string, U8* split_chars, U64 split_char_count, StringSplitFlags flags) {
+	String8List list = {0};
+  
+	B32 keep_empties = (flags & StringSplitFlag_KeepEmpties);
+  
+	U8* ptr = string.str;
+	U8* opl = string.str + string.size;
+	for (;ptr < opl;)
+	{
+		U8* first = ptr;
+		for (;ptr < opl; ptr += 1)
+		{
+			U8  c        = *ptr;
+			B32 is_split = 0;
+			for (U64 i = 0; i < split_char_count; i += 1) {
+				if (split_chars[i] == c) {
+					is_split = 1;
+					break;
+				}
+			}
+			if (is_split){
+				break;
+			}
+		}
+    
+		String8 string = str8_range(first, ptr);
+		if (keep_empties || string.size > 0){
+			str8_list_alloc(ainfo, &list, string);
+		}
+		ptr += 1;
+	}
+	return(list);
 }
 
 String8
-str8_list_join(Arena *arena, String8List *list, StringJoin *optional_params){
-  StringJoin join = {0};
-  if (optional_params != 0){
-    MemoryCopyStruct(&join, optional_params);
-  }
-  
-  U64 sep_count = 0;
-  if (list->node_count > 0){
-    sep_count = list->node_count - 1;
-  }
-  
-  String8 result;
-  result.size = join.pre.size + join.post.size + sep_count*join.sep.size + list->total_size;
-  U8 *ptr = result.str = push_array_no_zero(arena, U8, result.size + 1);
-  
-  MemoryCopy(ptr, join.pre.str, join.pre.size);
-  ptr += join.pre.size;
-  for (String8Node *node = list->first;
-       node != 0;
-       node = node->next){
-    MemoryCopy(ptr, node->string.str, node->string.size);
-    ptr += node->string.size;
-    if (node->next != 0){
-      MemoryCopy(ptr, join.sep.str, join.sep.size);
-      ptr += join.sep.size;
-    }
-  }
-  MemoryCopy(ptr, join.post.str, join.post.size);
-  ptr += join.post.size;
-  
-  *ptr = 0;
-  
-  return(result);
-}
-
-void
-str8_list_from_flags(Arena *arena, String8List *list,
-                     U32 flags, String8 *flag_string_table, U32 flag_string_count){
-  for (U32 i = 0; i < flag_string_count; i += 1){
-    U32 flag = (1 << i);
-    if (flags & flag){
-      str8_list_push(arena, list, flag_string_table[i]);
-    }
-  }
-}
-
-////////////////////////////////
-//~ rjf; String Arrays
-
-internal String8Array
-str8_array_from_list(Arena *arena, String8List *list)
+str8_list_join(Arena* arena, String8List* list, StringJoin* optional_params) 
 {
-  String8Array array;
-  array.count   = list->node_count;
-  array.v = push_array_no_zero(arena, String8, array.count);
-  U64 idx = 0;
-  for(String8Node *n = list->first; n != 0; n = n->next, idx += 1)
-  {
-    array.v[idx] = n->string;
-  }
-  return array;
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
+	StringJoin join = {0};
+	if (optional_params != 0){
+		memory_copy_struct(&join, optional_params);
+	}
+	
+	U64 sep_count = 0;
+	if (list->node_count > 0){
+		sep_count = list->node_count - 1;
+	}
+	
+	String8 result;
+	result.size = join.pre.size + join.post.size + sep_count*join.sep.size + list->total_size;
+	U8 *ptr = result.str = push_array_no_zero(arena, U8, result.size + 1);
+	
+	MemoryCopy(ptr, join.pre.str, join.pre.size);
+	ptr += join.pre.size;
+	for (String8Node *node = list->first; node != 0; node = node->next)
+	{
+		memory_copy(ptr, node->string.str, node->string.size);
+		ptr += node->string.size;
+		if (node->next != 0) {
+			memory_copy(ptr, join.sep.str, join.sep.size);
+			ptr += join.sep.size;
+		}
+	}
+	memory_copy(ptr, join.post.str, join.post.size);
+	ptr += join.post.size;
+	*ptr = 0;
+	return(result);
+#else
+	return str8_list_join_alloc(arena_allocator(arena), list, optional_params);
+#endif
 }
 
-internal String8Array
-str8_array_reserve(Arena *arena, U64 count)
+String8
+str8_list_join_alloc(AllocatorInfo ainfo, String8List* list, StringJoin* optional_params) 
 {
-  String8Array arr;
-  arr.count = 0;
-  arr.v = push_array(arena, String8, count);
-  return arr;
+	StringJoin join = {0};
+	if (optional_params != 0){
+		MemoryCopyStruct(&join, optional_params);
+	}
+	
+	U64 sep_count = 0;
+	if (list->node_count > 0){
+		sep_count = list->node_count - 1;
+	}
+	
+	String8 result;
+	result.size = join.pre.size + join.post.size + sep_count*join.sep.size + list->total_size;
+	U8* ptr = result.str = alloc_array_no_zero(ainfo, U8, result.size + 1);
+	
+	memory_copy(ptr, join.pre.str, join.pre.size);
+	ptr += join.pre.size;
+	for (String8Node *node = list->first; node != 0; node = node->next)
+	{
+		memory_copy(ptr, node->string.str, node->string.size);
+		ptr += node->string.size;
+		if (node->next != 0) {
+			memory_copy(ptr, join.sep.str, join.sep.size);
+			ptr += join.sep.size;
+		}
+	}
+	memory_copy(ptr, join.post.str, join.post.size);
+	ptr += join.post.size;
+	*ptr = 0;
+	return(result);
 }
 
 ////////////////////////////////
 //~ rjf: String Path Helpers
 
-internal String8
-str8_chop_last_slash(String8 string){
-  if (string.size > 0){
-    U8 *ptr = string.str + string.size - 1;
-    for (;ptr >= string.str; ptr -= 1){
-      if (*ptr == '/' || *ptr == '\\'){
-        break;
-      }
-    }
-    if (ptr >= string.str){
-      string.size = (U64)(ptr - string.str);
-    }
-    else{
-      string.size = 0;
-    }
-  }
-  return(string);
+String8
+str8_chop_last_slash(String8 string) {
+	if (string.size > 0)
+	{
+		U8* ptr = string.str + string.size - 1;
+		for (;ptr >= string.str; ptr -= 1) {
+			if (*ptr == '/' || *ptr == '\\') break;
+		}
+		if (ptr >= string.str) {
+			string.size = (U64)(ptr - string.str);
+		}
+		else {
+			string.size = 0;
+		}
+	}
+	return(string);
 }
 
-internal String8
-str8_skip_last_slash(String8 string){
-  if (string.size > 0){
-    U8 *ptr = string.str + string.size - 1;
-    for (;ptr >= string.str; ptr -= 1){
-      if (*ptr == '/' || *ptr == '\\'){
-        break;
-      }
-    }
-    if (ptr >= string.str){
-      ptr += 1;
-      string.size = (U64)(string.str + string.size - ptr);
-      string.str = ptr;
-    }
-  }
-  return(string);
+String8
+str8_skip_last_slash(String8 string) {
+	if (string.size > 0)
+	{
+		U8* ptr = string.str + string.size - 1;
+		for (;ptr >= string.str; ptr -= 1) {
+			if (*ptr == '/' || *ptr == '\\') break;
+		}
+		if (ptr >= string.str) {
+			ptr += 1;
+			string.size = (U64)(string.str + string.size - ptr);
+			string.str = ptr;
+		}
+	}
+	return(string);
 }
 
-internal String8
-str8_chop_last_dot(String8 string)
+String8
+str8_chop_last_dot(String8 string) {
+	String8 result = string;
+	U64 p = string.size;
+	for (;p > 0;) {
+		p -= 1;
+		if (string.str[p] == '.') {
+			result = str8_prefix(string, p);
+			break;
+		}
+	}
+	return(result);
+}
+
+String8
+str8_skip_last_dot(String8 string) {
+	String8 result = string;
+	U64 p = string.size;
+	for (;p > 0;) {
+		p -= 1;
+		if (string.str[p] == '.') {
+			result = str8_skip(string, p + 1);
+			break;
+		}
+	}
+	return(result);
+}
+
+PathStyle
+path_style_from_str8(String8 string) {
+	PathStyle result = PathStyle_Relative;
+	if (string.size >= 1 && string.str[0] == '/') {
+		result = PathStyle_UnixAbsolute;
+	}
+	else if (string.size >= 2 && char_is_alpha(string.str[0]) && string.str[1] == ':')
+	{
+		if (string.size == 2 || char_is_slash(string.str[2])) {
+			result = PathStyle_WindowsAbsolute;
+		}
+	}
+	return(result);
+}
+
+void
+str8_path_list_resolve_dots_in_place(String8List* path, PathStyle style)
 {
-  String8 result = string;
-  U64 p = string.size;
-  for (;p > 0;){
-    p -= 1;
-    if (string.str[p] == '.'){
-      result = str8_prefix(string, p);
-      break;
-    }
-  }
-  return(result);
-}
-
-internal String8
-str8_skip_last_dot(String8 string){
-  String8 result = string;
-  U64 p = string.size;
-  for (;p > 0;){
-    p -= 1;
-    if (string.str[p] == '.'){
-      result = str8_skip(string, p + 1);
-      break;
-    }
-  }
-  return(result);
-}
-
-internal PathStyle
-path_style_from_str8(String8 string){
-  PathStyle result = PathStyle_Relative;
-  if (string.size >= 1 && string.str[0] == '/'){
-    result = PathStyle_UnixAbsolute;
-  }
-  else if (string.size >= 2 &&
-           char_is_alpha(string.str[0]) &&
-           string.str[1] == ':'){
-    if (string.size == 2 ||
-        char_is_slash(string.str[2])){
-      result = PathStyle_WindowsAbsolute;
-    }
-  }
-  return(result);
-}
-
-internal String8List
-str8_split_path(Arena *arena, String8 string){
-  String8List result = str8_split(arena, string, (U8*)"/\\", 2, 0);
-  return(result);
-}
-
-internal void
-str8_path_list_resolve_dots_in_place(String8List *path, PathStyle style){
-  Temp scratch = scratch_begin(0, 0);
+	TempArena scratch = scratch_begin(0, 0);
+	String8MetaNode* stack          = 0;
+	String8MetaNode* free_meta_node = 0;
+	String8Node*     first          = path->first;
   
-  String8MetaNode *stack = 0;
-  String8MetaNode *free_meta_node = 0;
-  String8Node *first = path->first;
-  
-  MemoryZeroStruct(path);
-  for (String8Node *node = first, *next = 0;
-       node != 0;
-       node = next){
-    // save next now
-    next = node->next;
-    
-    // cases:
-    if (node == first && style == PathStyle_WindowsAbsolute){
-      goto save_without_stack;
-    }
-    if (node->string.size == 1 && node->string.str[0] == '.'){
-      goto do_nothing;
-    }
-    if (node->string.size == 2 && node->string.str[0] == '.' && node->string.str[1] == '.'){
-      if (stack != 0){
-        goto eliminate_stack_top;
-      }
-      else{
-        goto save_without_stack;
-      }
-    }
-    goto save_with_stack;
-    
-    
-    // handlers:
-    save_with_stack:
-    {
-      str8_list_push_node(path, node);
-      
-      String8MetaNode *stack_node = free_meta_node;
-      if (stack_node != 0){
-        SLLStackPop(free_meta_node);
-      }
-      else{
-        stack_node = push_array_no_zero(scratch.arena, String8MetaNode, 1);
-      }
-      SLLStackPush(stack, stack_node);
-      stack_node->node = node;
-      
-      continue;
-    }
-    
-    save_without_stack:
-    {
-      str8_list_push_node(path, node);
-      
-      continue;
-    }
-    
-    eliminate_stack_top:
-    {
-      path->node_count -= 1;
-      path->total_size -= stack->node->string.size;
-      
-      SLLStackPop(stack);
-      
-      if (stack == 0){
-        path->last = path->first;
-      }
-      else{
-        path->last = stack->node;
-      }
-      continue;
-    }
-    
-    do_nothing: continue;
-  }
-  scratch_end(scratch);
+	memory_zero_struct(path);
+	for (String8Node* node = first, *next = 0; node != 0; node = next)
+	{
+		// save next now
+		next = node->next;
+		
+		// cases:
+		if (node == first && style == PathStyle_WindowsAbsolute){
+			goto save_without_stack;
+		}
+
+		if (node->string.size == 1 && node->string.str[0] == '.') {
+			goto do_nothing;
+		}
+		if (node->string.size == 2 && node->string.str[0] == '.' && node->string.str[1] == '.') {
+			if (stack != 0) {
+				goto eliminate_stack_top;
+			}
+			else{
+				goto save_without_stack;
+			}
+		}
+		goto save_with_stack;
+		
+		
+		// handlers:
+		save_with_stack:
+		{
+			str8_list_push_node(path, node);
+				
+			String8MetaNode *stack_node = free_meta_node;
+			if (stack_node != 0){
+				sll_stack_pop(free_meta_node);
+			}
+			else{
+				stack_node = push_array_no_zero(scratch.arena, String8MetaNode, 1);
+			}
+			sll_stack_push(stack, stack_node);
+			stack_node->node = node;
+			continue;
+		}
+			
+		save_without_stack:
+		{
+			str8_list_push_node(path, node);
+			continue;
+		}
+		
+		eliminate_stack_top:
+		{
+			path->node_count -= 1;
+			path->total_size -= stack->node->string.size;
+
+			sll_stack_pop(stack);
+			if (stack == 0) {
+				path->last = path->first;
+			}
+			else {
+				path->last = stack->node;
+			}
+			continue;
+		}
+		do_nothing: continue;
+	}
+	scratch_end(scratch);
 }
 
-internal String8
-str8_path_list_join_by_style(Arena *arena, String8List *path, PathStyle style){
-  StringJoin params = {0};
-  switch (style){
-    case PathStyle_Relative:
-    case PathStyle_WindowsAbsolute:
-    {
-      params.sep = str8_lit("/");
-    }break;
-    
-    case PathStyle_UnixAbsolute:
-    {
-      params.pre = str8_lit("/");
-      params.sep = str8_lit("/");
-    }break;
-  }
-  
-  String8 result = str8_list_join(arena, path, &params);
-  return(result);
+String8
+str8_path_list_join_by_style(Arena* arena, String8List* path, PathStyle style) {
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
+	StringJoin params = {0};
+	switch (style)
+	{
+		case PathStyle_Relative:
+		case PathStyle_WindowsAbsolute:
+		{
+			params.sep = str8_lit("/");
+		}
+		break;
+		
+		case PathStyle_UnixAbsolute:
+		{
+			params.pre = str8_lit("/");
+			params.sep = str8_lit("/");
+		}
+		break;
+	}
+	String8 result = str8_list_join(arena, path, &params);
+	return(result);
+#else
+	return str8_path_list_join_by_style_alloc(arena_allocator(arena), path, style);
+#endif
 }
 
-internal String8TxtPtPair
-str8_txt_pt_pair_from_string(String8 string)
-{
-  String8TxtPtPair pair = {0};
-  {
-    String8 file_part = {0};
-    String8 line_part = {0};
-    String8 col_part = {0};
-    
-    // rjf: grab file part
-    for(U64 idx = 0; idx <= string.size; idx += 1)
-    {
-      U8 byte = (idx < string.size) ? (string.str[idx]) : 0;
-      U8 next_byte = ((idx+1 < string.size) ? (string.str[idx+1]) : 0);
-      if(byte == ':' && next_byte != '/' && next_byte != '\\')
-      {
-        file_part = str8_prefix(string, idx);
-        line_part = str8_skip(string, idx+1);
-        break;
-      }
-      else if(byte == 0)
-      {
-        file_part = string;
-        break;
-      }
-    }
-    
-    // rjf: grab line/column
-    {
-      U64 colon_pos = str8_find_needle(line_part, 0, str8_lit(":"), 0);
-      if(colon_pos < line_part.size)
-      {
-        col_part = str8_skip(line_part, colon_pos+1);
-        line_part = str8_prefix(line_part, colon_pos);
-      }
-    }
-    
-    // rjf: convert line/column strings to numerics
-    U64 line = 0;
-    U64 column = 0;
-    try_u64_from_str8_c_rules(line_part, &line);
-    try_u64_from_str8_c_rules(col_part, &column);
-    
-    // rjf: fill
-    pair.string = file_part;
-    pair.pt = txt_pt((S64)line, (S64)column);
-    if(pair.pt.line == 0) { pair.pt.line = 1; }
-    if(pair.pt.column == 0) { pair.pt.column = 1; }
-  }
-  return pair;
+String8
+str8_path_list_join_by_style_alloc(AllocatorInfo ainfo, String8List* path, PathStyle style) {
+	StringJoin params = {0};
+	switch (style)
+	{
+		case PathStyle_Relative:
+		case PathStyle_WindowsAbsolute:
+		{
+			params.sep = str8_lit("/");
+		}
+		break;
+		
+		case PathStyle_UnixAbsolute:
+		{
+			params.pre = str8_lit("/");
+			params.sep = str8_lit("/");
+		}
+		break;
+	}
+	String8 result = str8_list_join_alloc(ainfo, path, &params);
+	return(result);
 }
 
 ////////////////////////////////
 //~ rjf: UTF-8 & UTF-16 Decoding/Encoding
 
 read_only global U8 utf8_class[32] = {
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,2,2,2,2,3,3,4,5,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,2,2,2,2,3,3,4,5,
 };
 
 internal UnicodeDecode
@@ -1873,3 +1857,4 @@ str8_deserial_read_block(String8 string, U64 off, U64 size, String8 *block_out)
   *block_out = str8_substr(string, range);
   return block_out->size;
 }
+

@@ -505,45 +505,158 @@ str8_list_alloc_frontf(AllocatorInfo ainfo, String8List* list, char* fmt, ...) {
 ////////////////////////////////
 //~ rjf: String Splitting & Joining
 
-String8List str8_split_arena(Arena *arena, String8 string, U8 *split_chars, U64 split_char_count, StringSplitFlags flags);
+MD_API String8List str8_split      (Arena*        arena, String8 string, U8* split_chars, U64 split_char_count, StringSplitFlags flags);
+MD_API String8List str8_split_alloc(AllocatorInfo ainfo, String8 string, U8* split_chars, U64 split_char_count, StringSplitFlags flags);
 
-// Example pattern for general allocator variants
+String8List  str8_split_by_string_chars           (Arena*        arena, String8      string, String8 split_chars, StringSplitFlags flags);
+String8List  str8_split_by_string_chars_alloc     (AllocatorInfo ainfo, String8      string, String8 split_chars, StringSplitFlags flags);
+String8List  str8_list_split_by_string_chars      (Arena*        arena, String8List  list,   String8 split_chars, StringSplitFlags flags);
+String8List  str8_list_split_by_string_chars_alloc(AllocatorInfo ainfo, String8List  list,   String8 split_chars, StringSplitFlags flags);
 
-// String8List  str8__split_ainfo(String8 string, U8* split_chars, U64 split_char_count, StringSplitFlags flags, AllocatorInfo allocator);
-// #define      str8_split_ainfo(string, split_chars, split_char_count, flags, ...) str8__split_ainfo(string, split_chars, split_char_count, flags, (AllocatorInfo){__VA_ARGS__});
+MD_API String8      str8_list_join            (Arena*        arena, String8List* list, StringJoin* optional_params);
+MD_API String8      str8_list_join_alloc      (AllocatorInfo ainfo, String8List* list, StringJoin* optional_params);
+       void         str8_list_from_flags      (Arena*        arena, String8List* list, U32 flags, String8* flag_string_table, U32 flag_string_count);
+       void         str8_list_from_flags_alloc(AllocatorInfo ainfo, String8List* list, U32 flags, String8* flag_string_table, U32 flag_string_count);
 
-internal String8List  str8_split_by_string_chars     (Arena* arena, String8      string, String8 split_chars, StringSplitFlags flags);
-internal String8List  str8_list_split_by_string_chars(Arena* arena, String8List  list,   String8 split_chars, StringSplitFlags flags);
-internal String8      str8_list_join                 (Arena* arena, String8List* list, StringJoin* optional_params);
-internal void         str8_list_from_flags           (Arena* arena, String8List* list, U32 flags, String8 *flag_string_table, U32 flag_string_count);
+inline String8List
+str8_split_by_string_chars(Arena *arena, String8 string, String8 split_chars, StringSplitFlags flags) {
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
+	String8List list = str8_split(arena, string, split_chars.str, split_chars.size, flags);
+	return list;
+#else
+	return str8_split_by_string_chars_alloc(arena_allocator(arena), string, split_chars, flags);
+#endif
+}
+
+inline String8List
+str8_split_by_string_chars(AllocatorInfo ainfo, String8 string, String8 split_chars, StringSplitFlags flags) {
+	String8List list = str8_split_alloc(ainfo, string, split_chars.str, split_chars.size, flags);
+	return list;
+}
+
+inline String8List
+str8_list_split_by_string_chars(Arena* arena, String8List list, String8 split_chars, StringSplitFlags flags) {
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
+	String8List result = {0};
+	for (String8Node *node = list.first; node != 0; node = node->next){
+		String8List split = str8_split_by_string_chars(arena, node->string, split_chars, flags);
+		str8_list_concat_in_place(&result, &split);
+	}
+	return result;
+#else
+	return str8_list_split_by_string_chars_alloc(arena_allocator(arena), list, split_chars, flags);
+#endif
+}
+
+inline String8List
+str8_list_split_by_string_chars_alloc(AllocatorInfo ainfo, String8List list, String8 split_chars, StringSplitFlags flags) {
+	String8List result = {0};
+	for (String8Node *node = list.first; node != 0; node = node->next){
+		String8List split = str8_split_by_string_chars_alloc(ainfo, node->string, split_chars, flags);
+		str8_list_concat_in_place(&result, &split);
+	}
+	return result;
+}
+
+void
+str8_list_from_flags(Arena* arena, String8List* list, U32 flags, String8* flag_string_table, U32 flag_string_count) {
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
+	for (U32 i = 0; i < flag_string_count; i += 1) {
+		U32 flag = (1 << i);
+		if (flags & flag) {
+			str8_list_push(arena, list, flag_string_table[i]);
+		}
+	}
+#else
+  return str8_list_from_flags_alloc(arena_allocator(arena), list, flags, flag_string_table, flag_string_count);
+#endif
+}
+
+void
+str8_list_from_flags_alloc(AllocatorInfo ainfo, String8List* list, U32 flags, String8* flag_string_table, U32 flag_string_count) {
+	for (U32 i = 0; i < flag_string_count; i += 1) {
+		U32 flag = (1 << i);
+		if (flags & flag) {
+			str8_list_alloc(ainfo, list, flag_string_table[i]);
+		}
+	}
+}
 
 ////////////////////////////////
 //~ rjf; String Arrays
 
-internal String8Array str8_array_from_list(Arena* arena, String8List* list);
-internal String8Array str8_array_reserve  (Arena* arena, U64 count);
+
+inline String8Array
+str8_array_from_list(Arena* arena, String8List* list) {
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
+	String8Array array;
+	array.count = list->node_count;
+	array.v     = push_array_no_zero(arena, String8, array.count);
+	U64 idx = 0;
+	for(String8Node *n = list->first; n != 0; n = n->next, idx += 1) {
+		array.v[idx] = n->string;
+	}
+	return array;
+#else
+	return str8_array_from_list_alloc(arena_allocator(arena), list);
+#endif
+}
+
+inline String8Array
+str8_array_reserve(Arena *arena, U64 count) {
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
+	String8Array arr;
+	arr.count = 0;
+	arr.v     = push_array(arena, String8, count);
+	return arr;
+#else
+	return str8_array_reserve_alloc(arena_allocator(arena), count);
+#endif
+}
+
+inline String8Array
+str8_array_from_list_alloc(AllocatorInfo ainfo, String8List* list) {
+	String8Array array;
+	array.count = list->node_count;
+	array.v     = alloc_array_no_zero(ainfo, String8, array.count);
+	U64 idx = 0;
+	for(String8Node *n = list->first; n != 0; n = n->next, idx += 1) {
+		array.v[idx] = n->string;
+	}
+	return array;
+}
+
+inline String8Array
+str8_array_reserve_alloc(AllocatorInfo ainfo, U64 count) {
+	String8Array arr;
+	arr.count = 0;
+	arr.v     = alloc_array(ainfo, String8, count);
+	return arr;
+}
 
 ////////////////////////////////
 //~ rjf: String Path Helpers
 
-internal String8 str8_chop_last_slash(String8 string);
-internal String8 str8_skip_last_slash(String8 string);
-internal String8 str8_chop_last_dot  (String8 string);
-internal String8 str8_skip_last_dot  (String8 string);
+MD_API String8 str8_chop_last_slash(String8 string);
+MD_API String8 str8_skip_last_slash(String8 string);
+MD_API String8 str8_chop_last_dot  (String8 string);
+MD_API String8 str8_skip_last_dot  (String8 string);
 
-internal PathStyle   path_style_from_str8                (String8 string);
-internal String8List str8_split_path                     (Arena* arena, String8 string);
-internal void        str8_path_list_resolve_dots_in_place(String8List* path, PathStyle style);
-internal String8     str8_path_list_join_by_style        (Arena* arena, String8List* path, PathStyle style);
+inline String8List str8_split_path(Arena* arena, String8 string) { String8List result = str8_split(arena, string, (U8*)"/\\", 2, 0); return(result); }
+
+MD_API PathStyle   path_style_from_str8                (String8 string);
+MD_API void        str8_path_list_resolve_dots_in_place(                     String8List* path, PathStyle style);
+MD_API String8     str8_path_list_join_by_style        (Arena*        arena, String8List* path, PathStyle style);
+MD_API String8     str8_path_list_join_by_style_alloc  (AllocatorInfo ainfo, String8List* path, PathStyle style);
 
 ////////////////////////////////
 //~ rjf: UTF-8 & UTF-16 Decoding/Encoding
 
-internal UnicodeDecode utf8_decode           (U8*  str,    U64 max);
-internal UnicodeDecode utf16_decode          (U16* str,    U64 max);
-internal U32           utf8_encode           (U8*  str,    U32 codepoint);
-internal U32           utf16_encode          (U16* str,    U32 codepoint);
-internal U32           utf8_from_utf32_single(U8*  buffer, U32 character);
+UnicodeDecode utf8_decode           (U8*  str,    U64 max);
+UnicodeDecode utf16_decode          (U16* str,    U64 max);
+U32           utf8_encode           (U8*  str,    U32 codepoint);
+U32           utf16_encode          (U16* str,    U32 codepoint);
+U32           utf8_from_utf32_single(U8*  buffer, U32 character);
 
 ////////////////////////////////
 //~ rjf: Unicode String Conversions
@@ -619,40 +732,3 @@ internal U64   str8_deserial_read_block                 (String8 string, U64 off
 
 #define str8_deserial_read_array(string, off, ptr, count) str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)) * (count), sizeof( *(ptr)))
 #define str8_deserial_read_struct(string, off, ptr)       str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)), sizeof( *(ptr)))
-
-////////////////////////////////
-//~ rjf: Text 2D Coordinates & Ranges
-
-typedef struct TxtPt TxtPt;
-struct TxtPt
-{
-  S64 line;
-  S64 column;
-};
-
-typedef struct TxtRng TxtRng;
-struct TxtRng
-{
-  TxtPt min;
-  TxtPt max;
-};
-
-////////////////////////////////
-//~ rjf: String Pair Types
-
-typedef struct String8TxtPtPair String8TxtPtPair;
-struct String8TxtPtPair
-{
-  String8 string;
-  TxtPt   pt;
-};
-
-////////////////////////////////
-//~ rjf: Text Path Helpers
-
-String8TxtPtPair str8_txt_pt_pair_from_string(String8 string);
-
-////////////////////////////////
-//~ rjf: Text Wrapping
-
-String8List wrapped_lines_from_string(Arena *arena, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent);

@@ -31,7 +31,10 @@
 		"system_error": "cpp",
 		"xlocmon": "cpp",
 		"xlocale": "cpp",
-		"limits": "cpp"
+		"limits": "cpp",
+		"toolchain.h": "c",
+		"thread_context.h": "c",
+		"stb_sprintf.h": "c"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

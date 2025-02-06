@@ -57,339 +57,100 @@ read_only global U8 base64_reverse[128] = {
 ////////////////////////////////
 //~ rjf: Character Classification & Conversion Functions
 
-internal B32
-char_is_space(U8 c){
-  return(c == ' ' || c == '\n' || c == '\t' || c == '\r' || c == '\f' || c == '\v');
-}
-
-internal B32
-char_is_upper(U8 c){
-  return('A' <= c && c <= 'Z');
-}
-
-internal B32
-char_is_lower(U8 c){
-  return('a' <= c && c <= 'z');
-}
-
-internal B32
-char_is_alpha(U8 c){
-  return(char_is_upper(c) || char_is_lower(c));
-}
-
-internal B32
-char_is_slash(U8 c){
-  return(c == '/' || c == '\\');
-}
-
-internal B32
-char_is_digit(U8 c, U32 base){
-  B32 result = 0;
-  if (0 < base && base <= 16){
-    U8 val = integer_symbol_reverse[c];
-    if (val < base){
-      result = 1;
-    }
-  }
-  return(result);
-}
-
-internal U8
-char_to_lower(U8 c){
-  if (char_is_upper(c)){
-    c += ('a' - 'A');
-  }
-  return(c);
-}
-
-internal U8
-char_to_upper(U8 c){
-  if (char_is_lower(c)){
-    c += ('A' - 'a');
-  }
-  return(c);
-}
-
-internal U8
-char_to_correct_slash(U8 c){
-  if(char_is_slash(c)){
-    c = '/';
-  }
-  return(c);
-}
-
-////////////////////////////////
-//~ rjf: C-String Measurement
-
-internal U64
-cstring8_length(U8 *c){
-  U8 *p = c;
-  for (;*p != 0; p += 1);
-  return(p - c);
-}
-
-internal U64
-cstring16_length(U16 *c){
-  U16 *p = c;
-  for (;*p != 0; p += 1);
-  return(p - c);
-}
-
-internal U64
-cstring32_length(U32 *c){
-  U32 *p = c;
-  for (;*p != 0; p += 1);
-  return(p - c);
-}
-
-////////////////////////////////
-//~ rjf: String Constructors
-
-internal String8
-str8(U8 *str, U64 size){
-  String8 result = {str, size};
-  return(result);
-}
-
-internal String8
-str8_range(U8 *first, U8 *one_past_last){
-  String8 result = {first, (U64)(one_past_last - first)};
-  return(result);
-}
-
-internal String8
-str8_zero(void){
-  String8 result = {0};
-  return(result);
-}
-
-internal String16
-str16(U16 *str, U64 size){
-  String16 result = {str, size};
-  return(result);
-}
-
-internal String16
-str16_range(U16 *first, U16 *one_past_last){
-  String16 result = {first, (U64)(one_past_last - first)};
-  return(result);
-}
-
-internal String16
-str16_zero(void){
-  String16 result = {0};
-  return(result);
-}
-
-internal String32
-str32(U32 *str, U64 size){
-  String32 result = {str, size};
-  return(result);
-}
-
-internal String32
-str32_range(U32 *first, U32 *one_past_last){
-  String32 result = {first, (U64)(one_past_last - first)};
-  return(result);
-}
-
-internal String32
-str32_zero(void){
-  String32 result = {0};
-  return(result);
-}
-
-internal String8
-str8_cstring(char *c){
-  String8 result = {(U8*)c, cstring8_length((U8*)c)};
-  return(result);
-}
-
-internal String16
-str16_cstring(U16 *c){
-  String16 result = {(U16*)c, cstring16_length((U16*)c)};
-  return(result);
-}
-
-internal String32
-str32_cstring(U32 *c){
-  String32 result = {(U32*)c, cstring32_length((U32*)c)};
-  return(result);
-}
-
-internal String8
-str8_cstring_capped(void *cstr, void *cap)
-{
-  char *ptr = (char*)cstr;
-  char *opl = (char*)cap;
-  for (;ptr < opl && *ptr != 0; ptr += 1);
-  U64 size = (U64)(ptr - (char *)cstr);
-  String8 result = {(U8*)cstr, size};
-  return(result);
-}
-
-////////////////////////////////
-//~ rjf: String Stylization
-
-internal String8
-upper_from_str8(Arena *arena, String8 string)
-{
-  string = push_str8_copy(arena, string);
-  for(U64 idx = 0; idx < string.size; idx += 1)
-  {
-    string.str[idx] = char_to_upper(string.str[idx]);
-  }
-  return string;
-}
-
-internal String8
-lower_from_str8(Arena *arena, String8 string)
-{
-  string = push_str8_copy(arena, string);
-  for(U64 idx = 0; idx < string.size; idx += 1)
-  {
-    string.str[idx] = char_to_lower(string.str[idx]);
-  }
-  return string;
-}
-
-internal String8
-backslashed_from_str8(Arena *arena, String8 string)
-{
-  string = push_str8_copy(arena, string);
-  for(U64 idx = 0; idx < string.size; idx += 1)
-  {
-    string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx];
-  }
-  return string;
+B32 char_is_digit(U8 c, U32 base) {
+	B32 result = 0;
+	if (0 < base && base <= 16) {
+		U8 val = integer_symbol_reverse[c];
+		if (val < base) {
+			result = 1;
+		}
+	}
+	return(result);
 }
 
 ////////////////////////////////
 //~ rjf: String Matching
 
-internal B32
-str8_match(String8 a, String8 b, StringMatchFlags flags){
-  B32 result = 0;
-  if (a.size == b.size || (flags & StringMatchFlag_RightSideSloppy)){
-    B32 case_insensitive = (flags & StringMatchFlag_CaseInsensitive);
-    B32 slash_insensitive = (flags & StringMatchFlag_SlashInsensitive);
-    U64 size = Min(a.size, b.size);
-    result = 1;
-    for (U64 i = 0; i < size; i += 1){
-      U8 at = a.str[i];
-      U8 bt = b.str[i];
-      if (case_insensitive){
-        at = char_to_upper(at);
-        bt = char_to_upper(bt);
-      }
-      if (slash_insensitive){
-        at = char_to_correct_slash(at);
-        bt = char_to_correct_slash(bt);
-      }
-      if (at != bt){
-        result = 0;
-        break;
-      }
-    }
-  }
-  return(result);
+B32
+str8_match(String8 a, String8 b, StringMatchFlags flags)
+{
+	B32 result = 0;
+	if (a.size == b.size || (flags & StringMatchFlag_RightSideSloppy))
+	{
+		B32 case_insensitive  = (flags & StringMatchFlag_CaseInsensitive);
+		B32 slash_insensitive = (flags & StringMatchFlag_SlashInsensitive);
+		U64 size              = min(a.size, b.size);
+		result = 1;
+		for (U64 i = 0; i < size; i += 1)
+		{
+			U8 at = a.str[i];
+			U8 bt = b.str[i];
+			if (case_insensitive) {
+				at = char_to_upper(at);
+				bt = char_to_upper(bt);
+			}
+			if (slash_insensitive) {
+				at = char_to_correct_slash(at);
+				bt = char_to_correct_slash(bt);
+			}
+			if (at != bt) {
+				result = 0;
+				break;
+			}
+		}
+	}
+	return(result);
 }
 
-internal U64
-str8_find_needle(String8 string, U64 start_pos, String8 needle, StringMatchFlags flags){
-  U8 *p = string.str + start_pos;
-  U64 stop_offset = Max(string.size + 1, needle.size) - needle.size;
-  U8 *stop_p = string.str + stop_offset;
-  if (needle.size > 0){
-    U8 *string_opl = string.str + string.size;
-    String8 needle_tail = str8_skip(needle, 1);
-    StringMatchFlags adjusted_flags = flags | StringMatchFlag_RightSideSloppy;
-    U8 needle_first_char_adjusted = needle.str[0];
-    if(adjusted_flags & StringMatchFlag_CaseInsensitive){
-      needle_first_char_adjusted = char_to_upper(needle_first_char_adjusted);
-    }
-    for (;p < stop_p; p += 1){
-      U8 haystack_char_adjusted = *p;
-      if(adjusted_flags & StringMatchFlag_CaseInsensitive){
-        haystack_char_adjusted = char_to_upper(haystack_char_adjusted);
-      }
-      if (haystack_char_adjusted == needle_first_char_adjusted){
-        if (str8_match(str8_range(p + 1, string_opl), needle_tail, adjusted_flags)){
-          break;
-        }
-      }
-    }
-  }
-  U64 result = string.size;
-  if (p < stop_p){
-    result = (U64)(p - string.str);
-  }
-  return(result);
-}
-
-internal B32
-str8_ends_with(String8 string, String8 end, StringMatchFlags flags){
-  String8 postfix = str8_postfix(string, end.size);
-  B32 is_match = str8_match(end, postfix, flags);
-  return is_match;
+U64
+str8_find_needle(String8 string, U64 start_pos, String8 needle, StringMatchFlags flags)
+{
+	U8* p           = string.str + start_pos;
+	U64 stop_offset = max(string.size + 1, needle.size) - needle.size;
+	U8* stop_p      = string.str + stop_offset;
+	if (needle.size > 0)
+	{
+		U8*              string_opl     = string.str + string.size;
+		String8          needle_tail    = str8_skip(needle, 1);
+		StringMatchFlags adjusted_flags = flags | StringMatchFlag_RightSideSloppy;
+		U8 needle_first_char_adjusted   = needle.str[0];
+		if (adjusted_flags & StringMatchFlag_CaseInsensitive) {
+			needle_first_char_adjusted = char_to_upper(needle_first_char_adjusted);
+		}
+		for (;p < stop_p; p += 1)
+		{
+			U8 haystack_char_adjusted = *p;
+			if(adjusted_flags & StringMatchFlag_CaseInsensitive) {
+				haystack_char_adjusted = char_to_upper(haystack_char_adjusted);
+			}
+			if (haystack_char_adjusted == needle_first_char_adjusted) {
+				if (str8_match(str8_range(p + 1, string_opl), needle_tail, adjusted_flags)){
+					break;
+				}
+			}
+		}
+	}
+	U64 result = string.size;
+	if (p < stop_p){
+		result = (U64)(p - string.str);
+	}
+	return(result);
 }
 
 ////////////////////////////////
 //~ rjf: String Slicing
 
-internal String8
-str8_substr(String8 str, Rng1U64 range){
-  range.min = ClampTop(range.min, str.size);
-  range.max = ClampTop(range.max, str.size);
-  str.str += range.min;
-  str.size = dim_1u64(range);
-  return(str);
-}
-
-internal String8
-str8_prefix(String8 str, U64 size){
-  str.size = ClampTop(size, str.size);
-  return(str);
-}
-
-internal String8
-str8_skip(String8 str, U64 amt){
-  amt = ClampTop(amt, str.size);
-  str.str += amt;
-  str.size -= amt;
-  return(str);
-}
-
-internal String8
-str8_postfix(String8 str, U64 size){
-  size = ClampTop(size, str.size);
-  str.str = (str.str + str.size) - size;
-  str.size = size;
-  return(str);
-}
-
-internal String8
-str8_chop(String8 str, U64 amt){
-  amt = ClampTop(amt, str.size);
-  str.size -= amt;
-  return(str);
-}
-
-internal String8
-str8_skip_chop_whitespace(String8 string){
-  U8 *first = string.str;
-  U8 *opl = first + string.size;
-  for (;first < opl; first += 1){
-    if (!char_is_space(*first)){
-      break;
-    }
+String8
+str8_skip_chop_whitespace(String8 string)
+{
+  U8* first = string.str;
+  U8* opl   = first + string.size;
+  for (; first < opl; first += 1) {
+    if ( ! char_is_space(*first)) { break;}
   }
-  for (;opl > first;){
+  for (; opl > first; ){
     opl -= 1;
-    if (!char_is_space(*opl)){
-      opl += 1;
-      break;
-    }
+    if ( ! char_is_space(*opl)){ opl += 1; break; }
   }
   String8 result = str8_range(first, opl);
   return(result);
@@ -403,9 +164,9 @@ push_str8_cat(Arena* arena, String8 s1, String8 s2)
 {
 	String8 str;
 	str.size = s1.size + s2.size;
-	str.str = push_array_no_zero(arena, U8, str.size + 1);
-	MemoryCopy(str.str, s1.str, s1.size);
-	MemoryCopy(str.str + s1.size, s2.str, s2.size);
+	str.str  = push_array_no_zero(arena, U8, str.size + 1);
+	memory_copy(str.str, s1.str, s1.size);
+	memory_copy(str.str + s1.size, s2.str, s2.size);
 	str.str[str.size] = 0;
 	return(str);
 }
@@ -414,8 +175,8 @@ internal String8
 push_str8_copy(Arena *arena, String8 s){
 	String8 str;
 	str.size = s.size;
-	str.str = push_array_no_zero(arena, U8, str.size + 1);
-	MemoryCopy(str.str, s.str, s.size);
+	str.str  = push_array_no_zero(arena, U8, str.size + 1);
+	memory_copy(str.str, s.str, s.size);
 	str.str[str.size] = 0;
 	return(str);
 }
@@ -424,9 +185,9 @@ internal String8
 push_str8fv(Arena *arena, char *fmt, va_list args){
 	va_list args2;
 	va_copy(args2, args);
-	U32 needed_bytes = raddbg_vsnprintf(0, 0, fmt, args) + 1;
-	String8 result = {0};
-	result.str = push_array_no_zero(arena, U8, needed_bytes);
+	U32     needed_bytes = raddbg_vsnprintf(0, 0, fmt, args) + 1;
+	String8 result       = {0};
+	result.str  = push_array_no_zero(arena, U8, needed_bytes);
 	result.size = raddbg_vsnprintf((char*)result.str, needed_bytes, fmt, args2);
 	result.str[result.size] = 0;
 	va_end(args2);
@@ -442,19 +203,41 @@ push_str8f(Arena *arena, char *fmt, ...){
 	return(result);
 }
 
-// String8
-// str8__cat(String8 s1, String8 s2, AllocatorInfo ainfo)
-// {
-// 	String8 str;
-// 	str.size = s1.size + s2.size;
-// 	str.str  = alloc_array(ainfo, U8, str.size + 1);
+String8
+str8__cat(String8 s1, String8 s2, AllocatorInfo ainfo)
+{
+	String8 str;
+	str.size = s1.size + s2.size;
+	str.str  = alloc_array(ainfo, U8, str.size + 1);
+	memory_copy(str.str,           s1.str, s1.size);
+	memory_copy(str.str + s1.size, s2.str, s2.size);
+	str.str[str.size] = 0;
+	return str;
+}
 
-// 	memory_copy(str.str,           s1.str, s1.size);
-// 	memory_copy(str.str + s1.size, s2.str, s2.size);
-// 	str.str[str.size] = 0;
+String8
+str8__copy(String8 s, AllocatorInfo ainfo)
+{
+	String8 str;
+	str.size = s.size;
+	str.str  = alloc_array(ainfo, U8, str.size + 1);
+	memory_copy(str.str, s.str, s.size);
+	str.str[str.size] = 0;
+	return(str);
+}
 
-// 	return str;
-// }
+internal String8
+push_str8fv(AllocatorInfo ainfo, char *fmt, va_list args){
+	va_list args2;
+	va_copy(args2, args);
+	U32     needed_bytes = raddbg_vsnprintf(0, 0, fmt, args) + 1;
+	String8 result       = {0};
+	result.str  = alloc_array(ainfo, U8, needed_bytes);
+	result.size = raddbg_vsnprintf((char*)result.str, needed_bytes, fmt, args2);
+	result.str[result.size] = 0;
+	va_end(args2);
+	return(result);
+}
 
 ////////////////////////////////
 //~ rjf: String <=> Integer Conversions

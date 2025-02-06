@@ -145,7 +145,6 @@ void* arena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size,
 
 		case AllocatorMode_Resize:
 		{
-			
 			assert(old_memory != nullptr);
 			assert(old_size > 0);
 			assert_msg(old_size == size, "Requested resize when none needed");
@@ -160,7 +159,6 @@ void* arena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size,
 
 			B32 requested_shrink = size >= old_size;
 			if (requested_shrink) {
-
 				arena->pos     -= size;
 				allocated_ptr   = old_memory;
 				break;

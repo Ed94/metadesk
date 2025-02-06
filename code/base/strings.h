@@ -327,9 +327,9 @@ MD_API String8 str8_from_memory_size(Arena* arena, U64 z);
 MD_API String8 str8_from_u64        (Arena* arena, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
 MD_API String8 str8_from_s64        (Arena* arena, S64 s64, U32 radix, U8 min_digits, U8 digit_group_separator);
 
-String8 str8_from_allocator_size(AllocatorInfo ainfo, U64 z);
-String8 str8_from_allocator_u64 (AllocatorInfo ainfo, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
-String8 str8_from_alloctor_s64  (AllocatorInfo ainfo, S64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
+MD_API String8 str8_from_allocator_size(AllocatorInfo ainfo, U64 z);
+MD_API String8 str8_from_allocator_u64 (AllocatorInfo ainfo, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
+MD_API String8 str8_from_alloctor_s64  (AllocatorInfo ainfo, S64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
 
 inline U64
 u64_from_str8(String8 string, U32 radix) {
@@ -410,29 +410,96 @@ str8_list_push_node_front_set_string(String8List* list, String8Node* node, Strin
 	return(node);
 }
 
+MD_API String8Node* str8_list_push_aligner(Arena* arena, String8List* list, U64 min, U64 align);
+MD_API String8List  str8_list_copy        (Arena* arena, String8List* list);
+
 String8Node* str8_list_push        (Arena* arena, String8List* list, String8 string);
 String8Node* str8_list_push_front  (Arena* arena, String8List* list, String8 string);
-String8Node* str8_list_push_aligner(Arena* arena, String8List* list, U64 min, U64 align);
 String8Node* str8_list_pushf       (Arena* arena, String8List* list, char* fmt, ...);
 String8Node* str8_list_push_frontf (Arena* arena, String8List* list, char* fmt, ...);
-String8List  str8_list_copy        (Arena* arena, String8List* list);
 
-String8Node* str8_list_alloc        (AllocatorInfo ainfo, String8List* list, String8 string);
-String8Node* str8_list_alloc_front  (AllocatorInfo ainfo, String8List* list, String8 string);
-String8Node* str8_list_alloc_aligner(AllocatorInfo ainfo, String8List* list, U64 min, U64 align);
+MD_API String8Node* str8_list_alloc_aligner(AllocatorInfo ainfo, String8List* list, U64 min, U64 align);
+MD_API String8List  str8_list_alloc_copy   (AllocatorInfo ainfo, String8List* list);
+
+String8Node* str8_list_alloc       (AllocatorInfo ainfo, String8List* list, String8 string);
+String8Node* str8_list_alloc_front (AllocatorInfo ainfo, String8List* list, String8 string);
+String8Node* str8_list_allocf      (AllocatorInfo ainfo, String8List* list, char* fmt, ...);
+String8Node* str8_list_alloc_frontf(AllocatorInfo ainfo, String8List* list, char* fmt, ...);
 
 inline String8Node*
 str8_list_push(Arena* arena, String8List* list, String8 string) {
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
 	String8Node* node = push_array_no_zero(arena, String8Node, 1);
 	str8_list_push_node_set_string(list, node, string);
 	return(node);
+#else
+	return str8_list_alloc(arena_allocator(arena), list, string);
+#endif
 }
 
 inline String8Node*
 str8_list_push_front(Arena* arena, String8List* list, String8 string) {
-  String8Node *node = push_array_no_zero(arena, String8Node, 1);
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
+	String8Node *node = push_array_no_zero(arena, String8Node, 1);
+	str8_list_push_node_front_set_string(list, node, string);
+	return(node);
+#else
+	return str8_list_alloc_front(arena_allocator(arena), list, string);
+#endif
+}
+
+inline String8Node*
+str8_list_pushf(Arena *arena, String8List *list, char *fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	String8      string = push_str8fv(arena, fmt, args);
+	String8Node* result = str8_list_push(arena, list, string);
+	va_end(args);
+	return(result);
+}
+
+inline String8Node*
+str8_list_push_frontf(Arena *arena, String8List *list, char *fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	String8      string = push_str8fv(arena, fmt, args);
+	String8Node* result = str8_list_push_front(arena, list, string);
+	va_end(args);
+	return(result);
+}
+
+inline String8Node*
+str8_list_alloc(AllocatorInfo ainfo, String8List* list, String8 string) {
+  String8Node *node = alloc_array_no_zero(ainfo, String8Node, 1);
   str8_list_push_node_front_set_string(list, node, string);
   return(node);
+}
+
+inline String8Node*
+str8_list_alloc_front(AllocatorInfo ainfo, String8List* list, String8 string) {
+  String8Node *node = alloc_array_no_zero(ainfo, String8Node, 1);
+  str8_list_push_node_front_set_string(list, node, string);
+  return(node);
+}
+
+inline String8Node*
+str8_list_allocf(AllocatorInfo ainfo, String8List* list, char* fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	String8      string = str8fv(ainfo, fmt, args);
+	String8Node* result = str8_list_alloc(ainfo, list, string);
+	va_end(args);
+	return(result);
+}
+
+inline String8Node*
+str8_list_alloc_frontf(AllocatorInfo ainfo, String8List* list, char* fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	String8      string = str8fv(ainfo, fmt, args);
+	String8Node* result = str8_list_alloc_front(ainfo, list, string);
+	va_end(args);
+	return(result);
 }
 
 ////////////////////////////////

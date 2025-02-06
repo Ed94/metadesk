@@ -347,7 +347,7 @@ str8_from_memory_size(Arena* arena, U64 z) {
 }
 
 String8
-str8__from_allocator_size(AllocatorInfo ainfo, U64 z) {
+str8_from_allocator_size(AllocatorInfo ainfo, U64 z) {
 	String8 result = {0};
 	if (z < KB(1)) {
 		result = str8f(ainfo, "%llu  b", z);
@@ -648,8 +648,9 @@ str8_list_concat_in_place(String8List* list, String8List* to_push) {
 }
 
 String8Node*
-str8_list_push_aligner(Arena *arena, String8List *list, U64 min, U64 align)
+str8_list_push_aligner(Arena* arena, String8List* list, U64 min, U64 align)
 {
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
 	String8Node* node = push_array_no_zero(arena, String8Node, 1);
 	U64 new_size = list->total_size + min;
 	U64 increase_size = 0;
@@ -672,6 +673,9 @@ str8_list_push_aligner(Arena *arena, String8List *list, U64 min, U64 align)
 	node->string.str  = (U8*)zeroes_buffer;
 	node->string.size = increase_size;
 	return(node);
+#else
+	return str8_list_aligner(arena_allocator(arena), list, min, align)
+#endif
 }
 
 String8Node*
@@ -700,71 +704,75 @@ str8_list_aligner(AllocatorInfo ainfo, String8List* list, U64 min, U64 align) {
 	return(node);
 }
 
-String8Node*
-str8_list_pushf(Arena *arena, String8List *list, char *fmt, ...) {
-	va_list args;
-	va_start(args, fmt);
-	String8 string = push_str8fv(arena, fmt, args);
-	String8Node *result = str8_list_push(arena, list, string);
-	va_end(args);
+String8List
+str8_list_copy(Arena *arena, String8List *list) {
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
+	String8List result = {0};
+	for (String8Node* node = list->first;
+		node != 0;
+		node = node->next)
+	{
+		String8Node* new_node   = push_array_no_zero(arena, String8Node, 1);
+		String8      new_string = push_str8_copy(arena, node->string);
+		str8_list_push_node_set_string(&result, new_node, new_string);
+	}
 	return(result);
-}
-
-String8Node*
-str8_list_push_frontf(Arena *arena, String8List *list, char *fmt, ...) {
-	va_list args;
-	va_start(args, fmt);
-	String8 string = push_str8fv(arena, fmt, args);
-	String8Node *result = str8_list_push_front(arena, list, string);
-	va_end(args);
-	return(result);
+#else
+	return str8_list_alloc_copy(arena_allocator(arena), list);
+#endif
 }
 
 String8List
-str8_list_copy(Arena *arena, String8List *list) {
-  String8List result = {0};
-  for (String8Node *node = list->first;
-       node != 0;
-       node = node->next){
-    String8Node *new_node = push_array_no_zero(arena, String8Node, 1);
-    String8 new_string = push_str8_copy(arena, node->string);
-    str8_list_push_node_set_string(&result, new_node, new_string);
-  }
-  return(result);
+str8_list_alloc_copy(AllocatorInfo ainfo, String8List* list)
+{
+	String8List result = {0};
+	for (String8Node* node = list->first;
+		node != 0;
+		node = node->next)
+	{
+		String8Node* new_node   = alloc_array_no_zero(ainfo, String8Node, 1);
+		String8      new_string = str8_copy(ainfo, node->string);
+		str8_list_push_node_set_string(&result, new_node, new_string);
+	}
+	return(result);
 }
+
+////////////////////////////////
+//~ rjf: String Splitting & Joining
 
 String8List
 str8_split(Arena *arena, String8 string, U8 *split_chars, U64 split_char_count, StringSplitFlags flags){
-  String8List list = {0};
+	String8List list = {0};
   
-  B32 keep_empties = (flags & StringSplitFlag_KeepEmpties);
+	B32 keep_empties = (flags & StringSplitFlag_KeepEmpties);
   
-  U8 *ptr = string.str;
-  U8 *opl = string.str + string.size;
-  for (;ptr < opl;){
-    U8 *first = ptr;
-    for (;ptr < opl; ptr += 1){
-      U8 c = *ptr;
-      B32 is_split = 0;
-      for (U64 i = 0; i < split_char_count; i += 1){
-        if (split_chars[i] == c){
-          is_split = 1;
-          break;
-        }
-      }
-      if (is_split){
-        break;
-      }
-    }
+	U8* ptr = string.str;
+	U8* opl = string.str + string.size;
+	for (;ptr < opl;)
+	{
+		U8* first = ptr;
+		for (;ptr < opl; ptr += 1)
+		{
+			U8  c        = *ptr;
+			B32 is_split = 0;
+			for (U64 i = 0; i < split_char_count; i += 1) {
+				if (split_chars[i] == c) {
+					is_split = 1;
+					break;
+				}
+			}
+			if (is_split){
+				break;
+			}
+		}
     
-    String8 string = str8_range(first, ptr);
-    if (keep_empties || string.size > 0){
-      str8_list_push(arena, &list, string);
-    }
-    ptr += 1;
-  }
-  
-  return(list);
+		String8 string = str8_range(first, ptr);
+		if (keep_empties || string.size > 0){
+			str8_list_push(arena, &list, string);
+		}
+		ptr += 1;
+	}
+	return(list);
 }
 
 String8List

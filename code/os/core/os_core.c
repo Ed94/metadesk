@@ -140,7 +140,7 @@ os_file_id_compare(OS_FileID a, OS_FileID b)
 }
 
 String8
-os_string_from_file_range(Arena *arena, OS_Handle file, Rng1U64 range)
+os_string_from_file_range(Arena* arena, OS_Handle file, Rng1U64 range)
 {
 	U64 pre_pos = arena_pos(arena);
 	String8 result;
@@ -163,6 +163,9 @@ os_string_from_file_range_alloc(AllocatorInfo ainfo, OS_Handle file, Rng1U64 ran
 	U64 actual_read_size = os_file_read(file, range, result.str);
 	if(actual_read_size < result.size)
 	{
+		// TODO(Ed): It may be better to actually wrap the alloation in an arena and then rewind it.
+		// This would ensure resize isn't doing an expensive shrink (from a bad heap realloc, or something else)
+		// That or we just leave it up to the user to make sure to pass in an arena.
 		resize(ainfo, result.str, result.size, result.str + actual_read_size);
 		result.size = actual_read_size;
 	}

@@ -2,6 +2,17 @@
 #	pragma once
 #endif
 
+////////////////////////////////
+//~ rjf: Build Options
+
+#if ! defined(BUILD_DEBUG)
+#	  define  BUILD_DEBUG 1
+#endif
+
+#if ! defined(BUILD_SUPPLEMENTARY_UNIT)
+#	  define  BUILD_SUPPLEMENTARY_UNIT 0
+#endif
+
 #pragma region Compiler Vendor
 
 #if defined( _MSC_VER )

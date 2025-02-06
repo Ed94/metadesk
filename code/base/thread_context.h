@@ -1,9 +1,7 @@
 #ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
-#	include "linkage.h"
-#	include "base_types.h"
-#	include "strings.h"
 #	include "arena.h"
+#	include "string.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools
@@ -15,30 +13,60 @@
 typedef struct TCTX TCTX;
 struct TCTX
 {
-  Arena* arenas[2];
-  
-  U8  thread_name[32];
-  U64 thread_name_size;
-  
-  char* file_name;
-  U64   line_number;
+	AllocatorInfo ainfos[2];
+	Arena*        arenas[2];
+	
+	U8  thread_name[32];
+	U64 thread_name_size;
+	
+	char* file_name;
+	U64   line_number;
 };
 
 ////////////////////////////////
 // NOTE(allen): Thread Context Functions
 
-internal void    tctx_init_and_equip(TCTX *tctx);
-internal void    tctx_release(void);
-internal TCTX*   tctx_get_equipped(void);
+MD_API void    tctx_init_and_equip(TCTX *tctx, AllocatorInfo ainfo);
+MD_API void    tctx_release(void);
+MD_API TCTX*   tctx_get_equipped(void);
 
-internal Arena*  tctx_get_scratch(Arena** conflicts, U64 count);
+MD_API Arena*  tctx_get_scratch(Arena** conflicts, U64 count);
 
-internal void    tctx_set_thread_name(String8 name);
-internal String8 tctx_get_thread_name(void);
+void    tctx_set_thread_name(String8 name);
+String8 tctx_get_thread_name(void);
 
-internal void    tctx_write_srcloc(char*  file_name, U64  line_number);
-internal void    tctx_read_srcloc (char** file_name, U64* line_number);
-#define          tctx_write_this_srcloc() tctx_write_srcloc(__FILE__, __LINE__)
+void    tctx_write_srcloc(char*  file_name, U64  line_number);
+void    tctx_read_srcloc (char** file_name, U64* line_number);
+#define tctx_write_this_srcloc() tctx_write_srcloc(__FILE__, __LINE__)
 
 #define scratch_begin(conflicts, count) temp_begin(tctx_get_scratch((conflicts), (count)))
 #define scratch_end(scratch) temp_end(scratch)
+
+inline void
+tctx_set_thread_name(String8 string){
+  TCTX* tctx = tctx_get_equipped();
+  U64   size = clamp_top(string.size, sizeof(tctx->thread_name));
+  memory_copy(tctx->thread_name, string.str, size);
+  tctx->thread_name_size = size;
+}
+
+inline String8
+tctx_get_thread_name(void) {
+  TCTX*   tctx   = tctx_get_equipped();
+  String8 result = str8(tctx->thread_name, tctx->thread_name_size);
+  return(result);
+}
+
+inline void
+tctx_write_srcloc(char *file_name, U64 line_number){
+  TCTX *tctx = tctx_get_equipped();
+  tctx->file_name = file_name;
+  tctx->line_number = line_number;
+}
+
+inline void
+tctx_read_srcloc(char** file_name, U64* line_number){
+	TCTX* tctx   = tctx_get_equipped();
+	*file_name   = tctx->file_name;
+	*line_number = tctx->line_number;
+}

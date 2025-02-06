@@ -36,16 +36,20 @@ enum AllocatorMode
 	AllocatorMode_Free,
 	AllocatorMode_FreeAll,
 	AllocatorMode_Resize,
+	// AllocatorMode_Pop,
+	// AllocatorMode_Pop_To,
 	AllocatorMode_QueryType,
 	AllocatorMode_QuerySupport,
 };
 typedef U64 AllocatorQueryFlags;
 enum
 {
-	AllocatorQuery_Alloc     = (1 << 0),
-	AllocatorQuery_Free      = (1 << 1),
-	AllocatorQuery_FreeAll   = (1 << 2),
-	AllocatorQuery_Resize    = (1 << 3),
+	AllocatorQuery_Alloc   = (1 << 0),
+	AllocatorQuery_Free    = (1 << 1),
+	AllocatorQuery_FreeAll = (1 << 2),
+	AllocatorQuery_Resize  = (1 << 3),
+	// AllocatorQuery_Pop     = (1 << 3),
+	// AllocatorQuery_Pop_To  = (1 << 3),
 };
 
 typedef void*(AllocatorProc)( void* allocator_data, AllocatorMode type, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags );
@@ -62,7 +66,7 @@ AllocatorInfo default_allocator();
 
 enum AllocFlag
 {
-	ALLOCATOR_FLAG_CLEAR_TO_ZERO = 0,
+	ALLOCATOR_FLAG_CLEAR_TO_ZERO = (1 << 0),
 };
 
 #ifndef MD_DEFAULT_MEMORY_ALIGNMENT
@@ -87,6 +91,10 @@ void* alloc_align( AllocatorInfo a, SSIZE size, SSIZE alignment );
 // Free allocated memory.
 void alloc_free( AllocatorInfo a, void* ptr );
 
+// void alloc_pop(AllocatorInfo a, SSIZE amt);
+
+// void alloc_pop_to(AllocatorInfo a, SSIZE pos);
+
 // Free all memory allocated by an allocator.
 void free_all( AllocatorInfo a );
 
@@ -98,12 +106,15 @@ void* resize_align( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size, 
 
 #ifndef alloc_item
 // Allocate memory for an item.
-#define alloc_item( allocator_, Type ) ( Type* )alloc( allocator_, size_of( Type ) )
+#define alloc_item(allocator, Type)           (Type*)memory_zero(alloc(allocator,  size_of(Type)), size_of(Type))
+// Allocate memory for an item.
+#define alloc_item_no_zero( allocator, Type ) (Type*)            alloc(allocator,  size_of(Type))
 #endif
 
 #ifndef alloc_array
 // Allocate memory for an array of items.
-#define alloc_array( allocator_, Type, count ) ( Type* )alloc( allocator_, size_of( Type ) * ( count ) )
+#define alloc_array( allocator_, Type, count )         (Type*)memory_zero(alloc( allocator_, size_of(Type) * (count) ), size_of(Type) * (count))
+#define alloc_array_no_zero( allocator_, Type, count ) (Type*)            alloc( allocator_, size_of(Type) * (count) )
 #endif
 
 // Allocate/Resize memory using default options.
@@ -174,17 +185,13 @@ struct VArenaParams
 typedef struct VArena VArena;
 struct VArena
 {
-	VArenaFlags flags;
 	SSIZE reserve_start;
 	SSIZE reserve;
+	SSIZE commit_size;
 	SSIZE committed;
 	SSIZE commit_used;
+	VArenaFlags flags;
 };
-
-AllocatorInfo vm_allocator(VArena* vm) {
-	AllocatorInfo info = { varena_allocator_proc, vm };
-	return info;
-}
 
 MD_API VArena* varena__alloc(VArenaParams params PARAM_DEFAULT);
 #define varena_alloc(...) varena__alloc( (VArenaParams){__VA_ARGS__} )
@@ -194,12 +201,16 @@ MD_API VArenaParams varena_release  (VArena vm);
 
 MD_API void* varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags);
 
+#define varena_allocator(vm) (AllocatorInfo) { varena_allocator_proc, vm }
+
 typedef struct ByteSlice ByteSlice;
 struct ByteSlice
 {
 	U8*   data;
 	SSIZE len;
 };
+
+#define mem_to_byteslice(data, len) (ByteSlice){ (U8*)(data), (SSIZE)(len) }
 
 // Fixed size arena
 typedef struct FArena FArena;
@@ -209,9 +220,12 @@ struct FArena
 	SSIZE     used;
 };
 
-FArena farena_from_byteslice(ByteSlice slice);
+#define farena_from_byteslice(slice)  (FArena) { slice, 0 }
+#define farena_from_memory(data, len) (FArena) { mem_to_byteslice(data, len), 0 }
 
 MD_API void* farena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags);
+
+#define farena_allocator(arena) (AllocatorInfo){ farena_allocator_proc, & arena }
 
 // Inlines
 
@@ -256,6 +270,22 @@ void alloc_free( AllocatorInfo a, void* ptr ) {
 		a.proc( a.data, AllocatorMode_Free, 0, 0, ptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
 	}
 }
+
+// inline
+// void alloc_pop(AllocatorInfo a, SSIZE amt) {
+// 	if (a.proc == nullptr) {
+// 		a = default_allocator();
+// 	}
+// 	a.proc(a.data, AllocatorMode_Pop, amt, 0, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS);
+// }
+
+// inline
+// void alloc_pop_to(AllocatorInfo a, SSIZE pos) {
+// 	if (a.proc == nullptr) {
+// 		a = default_allocator();
+// 	}
+// 	a.proc(a.data, AllocatorMode_Pop_To, 0, 0, rcast(void*, pos), 0, 0);
+// }
 
 inline
 void free_all( AllocatorInfo a ) {

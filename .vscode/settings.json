@@ -34,7 +34,10 @@
 		"limits": "cpp",
 		"toolchain.h": "c",
 		"thread_context.h": "c",
-		"stb_sprintf.h": "c"
+		"stb_sprintf.h": "c",
+		"base_types.h": "c",
+		"platform.h": "c",
+		"macros.h": "c"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

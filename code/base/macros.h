@@ -96,6 +96,38 @@
 #	endif
 #endif
 
+#ifndef        force_inline
+#	if COMPILER_MSVC
+#		define force_inline __forceinline
+#	elif COMPILER_GCC
+#		define force_inline inline __attribute__((__always_inline__))
+#	elif COMPILER_CLANG
+#		if __has_attribute(__always_inline__)
+#			define force_inline inline __attribute__((__always_inline__))
+#		else
+#			define force_inline
+#		endif
+#	else
+#		define force_inline
+#	endif
+#endif
+
+#ifndef        never_inline
+#	if COMPILER_MSVC
+#		define never_inline __declspec( noinline )
+#	elif COMPILER_GCC
+#		define never_inline __attribute__( ( __noinline__ ) )
+#	elif COMPILER_CLANG
+#		if __has_attribute(__always_inline__)
+#			define never_inline __attribute__( ( __noinline__ ) )
+#		else
+#			define never_inline
+#		endif
+#	else
+#		define never_inline
+#	endif
+#endif
+
 ////////////////////////////////
 //~ rjf: For-Loop Construct Macros
 

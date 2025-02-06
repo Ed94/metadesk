@@ -207,13 +207,6 @@ str8_cstring_capped(void *cstr, void *cap) {
 }
 
 ////////////////////////////////
-//~ rjf: String Stylization
-
-inline String8 upper_from_str8      (Arena* arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
-inline String8 lower_from_str8      (Arena* arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
-inline String8 backslashed_from_str8(Arena *arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
-
-////////////////////////////////
 //~ rjf: String Matching
 
 MD_API B32 str8_match      (String8 a, String8 b,                          StringMatchFlags flags);
@@ -284,13 +277,10 @@ MD_API String8 push_str8_copy(Arena* arena, String8 s);
 MD_API String8 push_str8fv   (Arena* arena, char* fmt, va_list args);
        String8 push_str8f    (Arena* arena, char* fmt, ...);
 
-MD_API String8 str8__cat (String8 s1, String8 s2, AllocatorInfo ainfo);
-MD_API String8 str8__copy(String8 s,              AllocatorInfo ainfo);
-MD_API String8 str8fv    (AllocatorInfo ainfo, char* fmt, va_list args);
-       String8 str8f     (AllocatorInfo ainfo, char* fmt, ...);
-
-#define str8_cat(s1, s2, ...)  str8__cat (s1, s2, (AllocatorInfo) {__VA_ARGS__})
-#define str8_copy(s, ...)      str8__copy(s,      (AllocatorInfo) {__VA_ARGS__})
+MD_API String8 str8_cat (AllocatorInfo ainfo, String8 s1, String8 s2);
+MD_API String8 str8_copy(AllocatorInfo ainfo, String8 s);
+MD_API String8 str8fv   (AllocatorInfo ainfo, char* fmt, va_list args);
+       String8 str8f    (AllocatorInfo ainfo, char* fmt, ...);
 
 inline String8
 push_str8f(Arena *arena, char *fmt, ...){
@@ -311,6 +301,13 @@ str8f(AllocatorInfo ainfo, char *fmt, ...){
 }
 
 ////////////////////////////////
+//~ rjf: String Stylization
+
+inline String8 upper_from_str8      (Arena* arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
+inline String8 lower_from_str8      (Arena* arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
+inline String8 backslashed_from_str8(Arena *arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
+
+////////////////////////////////
 //~ rjf: String <=> Integer Conversions
 
 //- rjf: string -> integer
@@ -322,9 +319,13 @@ MD_API B32 try_u64_from_str8_c_rules(String8 string, U64*     x);
        B32 try_s64_from_str8_c_rules(String8 string, S64*     x);
 
 //- rjf: integer -> string
-       String8 str8_from_memory_size(Arena *arena, U64 z);
+MD_API String8 str8_from_memory_size(Arena *arena, U64 z);
 MD_API String8 str8_from_u64        (Arena *arena, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
 MD_API String8 str8_from_s64        (Arena *arena, S64 s64, U32 radix, U8 min_digits, U8 digit_group_separator);
+
+String8 str8_from_allocator_size(U64 z, AllocatorInfo ainfo);
+String8 str8_from_allocator_u64 (AllocatorInfo ainfo, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
+String8 str8_from_alloctor_s64  (AllocatorInfo ainfo, S64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
 
 inline U64
 u64_from_str8(String8 string, U32 radix) {
@@ -412,6 +413,10 @@ String8Node* str8_list_pushf       (Arena* arena, String8List* list, char* fmt, 
 String8Node* str8_list_push_frontf (Arena* arena, String8List* list, char* fmt, ...);
 String8List  str8_list_copy        (Arena* arena, String8List* list);
 
+String8Node* str8_list_alloc        (AllocatorInfo ainfo, String8List* list, String8 string);
+String8Node* str8_list_alloc_front  (AllocatorInfo ainfo, String8List* list, String8 string);
+String8Node* str8_list_alloc_aligner(AllocatorInfo ainfo, String8List* list, U64 min, U64 align);
+
 inline String8Node*
 str8_list_push(Arena* arena, String8List* list, String8 string) {
 	String8Node* node = push_array_no_zero(arena, String8Node, 1);
@@ -425,8 +430,6 @@ str8_list_push_front(Arena* arena, String8List* list, String8 string) {
   str8_list_push_node_front_set_string(list, node, string);
   return(node);
 }
-
-
 
 ////////////////////////////////
 //~ rjf: String Splitting & Joining

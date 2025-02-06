@@ -70,7 +70,7 @@ struct TempArena
 
 MD_API void* arena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags);
 
-inline
+force_inline
 AllocatorInfo arena_allocator(Arena* arena) {
 	AllocatorInfo info = { arena_allocator_proc, arena};
 	return info;
@@ -85,19 +85,19 @@ void arena_release(Arena *arena);
 
 //- rjf: arena push/pop/pos core functions
 
-internal void *arena_push  (Arena* arena, SSIZE size, SSIZE align);
-internal U64   arena_pos   (Arena* arena);
-internal void  arena_pop_to(Arena* arena, SSIZE pos);
+MD_API void *arena_push  (Arena* arena, SSIZE size, SSIZE align);
+       U64   arena_pos   (Arena* arena);
+MD_API void  arena_pop_to(Arena* arena, SSIZE pos);
 
 //- rjf: arena push/pop helpers
 
-internal void arena_clear(Arena* arena);
-internal void arena_pop  (Arena* arena, SSIZE amt);
+void arena_clear(Arena* arena);
+void arena_pop  (Arena* arena, SSIZE amt);
 
 //- rjf: temporary arena scopes
 
-internal TempArena temp_arena_begin(Arena* arena);
-internal void      temp_arena_end(TempArena temp);
+TempArena temp_arena_begin(Arena* arena);
+void      temp_arena_end(TempArena temp);
 
 //- rjf: push helper macros
 
@@ -111,27 +111,58 @@ internal void      temp_arena_end(TempArena temp);
 // Inlines
 
 inline void
-arena_release(Arena* arena)
-{
-	for (Arena* n = arena->current, *prev = 0; n != 0; n = prev)
-	{
+arena_release(Arena* arena) {
+	for (Arena* n = arena->current, *prev = 0; n != 0; n = prev) {
 		prev = n->prev;
 		alloc_free(arena->backing, n);
 	}
 }
 
-// DEFAULT_ALLOCATOR
+inline U64
+arena_pos(Arena *arena) {
+	U64 const header_size = size_of(Arena);
+	Arena* current = arena->current;
+	U64    pos     = current + header_size + current->pos;
+	return pos;
+}
+
+//- rjf: arena push/pop helpers
+
+force_inline void arena_clear(Arena* arena) { arena_pop_to(arena, 0); }
+
+inline void
+arena_pop(Arena* arena, U64 amt) {
+	U64 pos_old = arena_pos(arena);
+	U64 pos_new = pos_old;
+	if (amt < pos_old)
+	{
+		pos_new = pos_old - amt;
+	}
+	arena_pop_to(arena, pos_new);
+}
+
+//- rjf: temporary arena scopes
+
+inline TempArena
+temp_begin(Arena *arena) {
+	U64       pos  = arena_pos(arena);
+	TempArena temp = {arena, pos};
+	return temp;
+}
+
+force_inline void temp_end(TempArena temp) { arena_pop_to(temp.arena, temp.pos); }
+
+// ======================================== DEFAULT_ALLOCATOR =====================================================
+
 #ifndef MD_OVERRIDE_DEFAULT_ALLOCATOR
 // The default allocator for this base module is the Arena allocator with a VArena backing
-inline
-AllocatorInfo default_allocator()
+inline AllocatorInfo
+default_allocator()
 {
-	// NOTE(Ed): Technically we don't need the backing_vmem var tracked here, but its nice for debug.
-	local_persist thread_local VArena* backing_vmem = nullptr;
-	local_persist thread_local Arena*  arena        = nullptr;
+	local_persist thread_local Arena* arena = nullptr;
 	if (arena == nullptr) {
-		backing_vmem = varena_alloc(.flags = 0, .base_addr = 0x0, .reserve_size = VARENA_DEFAULT_RESERVE, .commit_size = VARENA_DEFAULT_COMMIT);
-		arena        = arena_alloc(.backing = varena_allocator(backing_vmem), .block_size = VARENA_DEFAULT_RESERVE);
+		VArena* backing_vmem = varena_alloc(.flags = 0, .base_addr = 0x0, .reserve_size = VARENA_DEFAULT_RESERVE, .commit_size = VARENA_DEFAULT_COMMIT);
+		        arena        = arena_alloc(.backing = varena_allocator(backing_vmem), .block_size = VARENA_DEFAULT_RESERVE);
 	}
 	AllocatorInfo info = { arena_allocator_proc, arena };
 	return info;

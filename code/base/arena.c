@@ -94,63 +94,19 @@ arena_push(Arena *arena, U64 size, U64 align)
 	return result;
 }
 
-internal U64
-arena_pos(Arena *arena)
-{
-  Arena *current = arena->current;
-  U64 pos = current->base_pos + current->pos;
-  return pos;
-}
-
-internal void
+void
 arena_pop_to(Arena *arena, U64 pos)
 {
-  U64 big_pos = ClampBot(ARENA_HEADER_SIZE, pos);
-  Arena *current = arena->current;
-  for(Arena *prev = 0; current->base_pos >= big_pos; current = prev)
-  {
-    prev = current->prev;
-    os_release(current, current->res);
-  }
-  arena->current = current;
-  U64 new_pos = big_pos - current->base_pos;
-  AssertAlways(new_pos <= current->pos);
-  AsanPoisonMemoryRegion((U8*)current + new_pos, (current->pos - new_pos));
-  current->pos = new_pos;
-}
-
-//- rjf: arena push/pop helpers
-
-internal void
-arena_clear(Arena *arena)
-{
-  arena_pop_to(arena, 0);
-}
-
-internal void
-arena_pop(Arena *arena, U64 amt)
-{
-  U64 pos_old = arena_pos(arena);
-  U64 pos_new = pos_old;
-  if(amt < pos_old)
-  {
-    pos_new = pos_old - amt;
-  }
-  arena_pop_to(arena, pos_new);
-}
-
-//- rjf: temporary arena scopes
-
-internal TempArena
-temp_begin(Arena *arena)
-{
-  U64       pos  = arena_pos(arena);
-  TempArena temp = {arena, pos};
-  return temp;
-}
-
-internal void
-temp_end(TempArena temp)
-{
-  arena_pop_to(temp.arena, temp.pos);
+	U64    big_pos = clamp_bot(size_of(Arena), pos);
+	Arena* current = arena->current;
+	for(Arena* prev = 0; current->pos >= big_pos; current = prev)
+	{
+		prev = current->prev;
+		alloc_free(current->backing, current);
+	}
+	arena->current = current;
+	U64 new_pos = big_pos - current->pos;
+	assert_always(new_pos <= current->pos);
+	asan_poison_memory_region((U8*)current + new_pos, (current->pos - new_pos));
+	current->pos = new_pos;
 }

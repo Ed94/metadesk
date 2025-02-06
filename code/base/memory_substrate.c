@@ -186,6 +186,13 @@ void* heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size,
 
 VArena varena__alloc(VArenaParams params)
 {
+	if (params.reserve_size == 0) {
+		params.reserve_size = VARENA_DEFAULT_RESERVE;
+	}
+	if (params.commit_size == 0) {
+		params.commit_size = VARENA_DEFAULT_COMMIT;
+	}
+
 	// rjf: round up reserve/commit sizes
 	U64 reserve_size = params.reserve_size;
 	U64 commit_size  = params.commit_size;
@@ -222,12 +229,13 @@ VArena varena__alloc(VArenaParams params)
 	SPTR header_size = size_of(VArena);
 	asan_unpoison_memory_region(base, header_size);
 
-	VArena* vm = (VArena* ) base;
+	VArena* vm        = rcast(VArena*, base);
+	vm->reserve_start = rcast(SPTR,    base) + header_size;
 	vm->reserve       = reserve_size;
+	vm->commit_size   = params.commit_size;
 	vm->committed     = commit_size;
-	vm->reserve_start = (SPTR)base + header_size;
-	vm->flags         = params.flags;
 	vm->commit_used   = 0;
+	vm->flags         = params.flags;
 }
 
 void varena_release(VArena* arena)
@@ -236,81 +244,180 @@ void varena_release(VArena* arena)
 	arena = nullptr;
 }
 
-void* varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags)
+void* varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags)
 {
 	OS_SystemInfo const* info = os_get_system_info();
 
-	SPTR requested_size = size;
+	VArena* vm = rcast(VArena*, allocator_data);
 
-	void* result = nullptr;
+	void* allocated_mem = nullptr;
 	switch (mode)
 	{
 		case AllocatorMode_Alloc:
 		{
-			if (requested_size == 0)
 			assert(requested_size != 0);
-			return result;
 
+			UPTR alignment_offset = 0;
+			UPTR current_offset   = vm->reserve_start + vm->commit_used;
+			UPTR mask             = scast(UPTR, alignment) - 1;
 
+			if ((current_offset & mask) != 0) {
+				alignment_offset = alignment - (current_offset & mask);
+			}
+
+			UPTR size_to_allocate = requested_size + alignment_offset;
+			UPTR to_be_used       = vm->commit_used + size_to_allocate;
+
+			UPTR header_offset = vm->reserve_start - scast(UPTR, vm);
+
+			UPTR commit_left         = vm->committed - vm->commit_used - header_offset;
+			B32  needs_more_commited = commit_left < size_to_allocate;
+			if (needs_more_commited) 
+			{
+				SPTR reserve_left     = vm->reserve - vm->committed;
+				UPTR next_commit_size = reserve_left > 0 ? vm->commit_size : scast(UPTR, align_pow2( -reserve_left, os_get_system_info()->page_size));
+				if (next_commit_size) {
+					B32 commit_result = os_commit(vm, next_commit_size);
+					if (commit_result == false) {
+						break;
+					}
+				}
+			}
+
+			allocated_mem = rcast(void*, current_offset + alignment_offset);
+			vm->commit_used += size_to_allocate
 		}
 		break;
 
 		case AllocatorMode_Free:
 		{
-
 		}
 		break;
 
 		case AllocatorMode_FreeAll:
 		{
-
+			vm->commit_used = 0;
 		}
 		break;
 
 		case AllocatorMode_Resize:
 		{
+			assert(old_memory != nullptr);
+			assert(old_size > 0);
+			assert_msg(old_size == requested_size, "Requested resize when none needed");
 
+			UPTR alignment_offset = scast(UPTR, old_memory) & (scast(UPTR, alignment) - 1);
+			assert_msg(alignment_offset != 0 && requested_size >= old_size, "Requested shrink from VArena");
+
+			UPTR old_memory_offset = scast(UPTR, old_memory)        + scast(UPTR, old_size);
+			UPTR current_offset    = scast(UPTR, vm->reserve_start) + scast(UPTR, vm->commit_used);
+
+			assert_msg(old_memory_offset == current_offset, "Cannot resize existing allocation in VArena to a larger size unless it was the last allocated");
+
+			UPTR size_to_allocate = requested_size - old_size + alignment_offset;
+
+			UPTR header_offset       = vm->reserve_start - scast(UPTR, vm);
+			UPTR commit_left         = vm->committed - vm->commit_used - header_offset;
+			B32  needs_more_commited = commit_left < size_to_allocate;
+			if (needs_more_commited) 
+			{
+				SPTR reserve_left     = vm->reserve - vm->committed;
+				UPTR next_commit_size = reserve_left > 0 ? vm->commit_size : scast(UPTR, align_pow2( -reserve_left, os_get_system_info()->page_size));
+				if (next_commit_size) {
+					B32 commit_result = os_commit(vm, next_commit_size);
+					if (commit_result == false) {
+						break;
+					}
+				}
+			}
+
+			allocated_mem = old_memory;
+			vm->commit_used += size_to_allocate
 		}
 		break;
 
+		// case AllocatorMode_Pop:
+		// {
+
+		// }
+		// break;
+
+		// case AllocatorMode_Pop_To:
+		// {
+
+		// }
+		// break;
+
 		case AllocatorMode_QueryType:
 		{
-
+			return (void*) AllocatorType_VArena;
 		}
 		break;
 
 		case AllocatorMode_QuerySupport:
 		{
-
+			return (void*) (AllocatorQuery_Alloc | AllocatorQuery_FreeAll | AllocatorQuery_Resize 
+				// | AllocatorQuery_Pop | AllocatorQuery_Pop_To 
+			);
 		}
 		break;
 	}
-	return result;
+	return allocated_mem;
 }
 
 void* farena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags)
 {
-	void* result = nullptr;
+	FArena* arena = rcast(FArena*, allocator_data);
+
+	void* allocated_mem = nullptr;
 	switch (mode)
 	{
 		case AllocatorMode_Alloc:
+		{
+			UPTR  end        = arena->slice.data + arena->used;
+			SSIZE total_size = align_pow2(size, alignment);
 
+			if (arena->used + total_size > arena->slice.len ) {
+				return allocated_mem;
+			}
+
+			allocated_mem = align_pow2(end, alignment);
+			arena->used  += total_size;
+		}
 		break;
 
 		case AllocatorMode_Free:
+		{
+		}
 		break;
 
 		case AllocatorMode_FreeAll:
+		{
+			arena->used = 0;
+		}
 		break;
 
 		case AllocatorMode_Resize:
+		{
+			allocated_mem = default_resize_align(farena_allocator(arena), old_memory, old_size, size, alignment);
+		}
 		break;
 
+		// case AllocatorMode_Pop:
+		// break;
+
+		// case AllocatorMode_Pop_To:
+		// break;
+
 		case AllocatorMode_QueryType:
+			return (void*) AllocatorType_FArena;
 		break;
 
 		case AllocatorMode_QuerySupport:
+			return (void*) (AllocatorQuery_Alloc | AllocatorQuery_Free | AllocatorQuery_FreeAll | AllocatorQuery_Resize 
+				// | AllocatorQuery_Pop | AllocatorQuery_Pop_To
+			);
 		break;
 	}
-	return result;
+	return allocated_mem;
 }

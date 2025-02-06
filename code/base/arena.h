@@ -9,11 +9,6 @@
 // Licensed under the MIT license (https://opensource.org/license/mit/)
 
 ////////////////////////////////
-//~ rjf: Constants
-
-#define ARENA_HEADER_SIZE 64
-
-////////////////////////////////
 //~ rjf: Types
 
 typedef U32 ArenaFlags;
@@ -52,11 +47,12 @@ struct Arena
 	Arena*        prev;    // previous arena in chain
 	Arena*        current; // current arena in chain
 	AllocatorInfo backing;
+	SSIZE         base_pos;
 	SSIZE         pos;
 	SSIZE         block_size;
 	ArenaFlags    flags;
 };
-static_assert(size_of(Arena) <= ARENA_HEADER_SIZE, "sizeof(Arena) <= ARENA_HEADER_SIZE");
+// static_assert(size_of(Arena) <= ARENA_HEADER_SIZE, "sizeof(Arena) <= ARENA_HEADER_SIZE");
 
 typedef struct TempArena TempArena;
 struct TempArena
@@ -120,9 +116,8 @@ arena_release(Arena* arena) {
 
 inline U64
 arena_pos(Arena *arena) {
-	U64 const header_size = size_of(Arena);
 	Arena* current = arena->current;
-	U64    pos     = current + header_size + current->pos;
+	U64    pos     = current->base_pos + current->pos;
 	return pos;
 }
 

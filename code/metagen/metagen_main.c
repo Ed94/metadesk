@@ -27,57 +27,57 @@
 internal void
 entry_point(CmdLine *cmdline)
 {
-  //////////////////////////////
-  //- rjf: set up state
-  //
-  MG_MsgList msgs = {0};
-  mg_arena = arena_alloc(.reserve_size = GB(64), .commit_size = MB(64));
-  mg_state = push_array(mg_arena, MG_State, 1);
-  mg_state->slots_count = 256;
-  mg_state->slots = push_array(mg_arena, MG_LayerSlot, mg_state->slots_count);
-  
-  //////////////////////////////
-  //- rjf: extract paths
-  //
-  String8 build_dir_path   = os_get_process_info()->binary_path;
-  String8 project_dir_path = str8_chop_last_slash(build_dir_path);
-  String8 code_dir_path    = push_str8f(mg_arena, "%S/src", project_dir_path);
-  
-  //////////////////////////////
-  //- rjf: search code directories for all files to consider
-  //
-  String8List file_paths = {0};
-  DeferLoop(printf("searching %.*s...", str8_varg(code_dir_path)), printf(" %i files found\n", (int)file_paths.node_count))
-  {
-    typedef struct Task Task;
-    struct Task
-    {
-      Task *next;
-      String8 path;
-    };
-    Task start_task = {0, code_dir_path};
-    Task *first_task = &start_task;
-    Task *last_task = &start_task;
-    for(Task *task = first_task; task != 0; task = task->next)
-    {
-      OS_FileIter *it = os_file_iter_begin(mg_arena, task->path, 0);
-      for(OS_FileInfo info = {0}; os_file_iter_next(mg_arena, it, &info);)
-      {
-        String8 file_path = push_str8f(mg_arena, "%S/%S", task->path, info.name);
-        if(info.props.flags & FilePropertyFlag_IsFolder)
-        {
-          Task *next_task = push_array(mg_arena, Task, 1);
-          SLLQueuePush(first_task, last_task, next_task);
-          next_task->path = file_path;
-        }
-        else
-        {
-          str8_list_push(mg_arena, &file_paths, file_path);
-        }
-      }
-      os_file_iter_end(it);
-    }
-  }
+	//////////////////////////////
+	//- rjf: set up state
+	//
+	MG_MsgList msgs = {0};
+	mg_arena = arena_alloc(.reserve_size = GB(64), .commit_size = MB(64));
+	mg_state = push_array(mg_arena, MG_State, 1);
+	mg_state->slots_count = 256;
+	mg_state->slots = push_array(mg_arena, MG_LayerSlot, mg_state->slots_count);
+	
+	//////////////////////////////
+	//- rjf: extract paths
+	//
+	String8 build_dir_path   = os_get_process_info()->binary_path;
+	String8 project_dir_path = str8_chop_last_slash(build_dir_path);
+	String8 code_dir_path    = push_str8f(mg_arena, "%S/src", project_dir_path);
+
+	//////////////////////////////
+	//- rjf: search code directories for all files to consider
+	//
+	String8List file_paths = {0};
+	DeferLoop(printf("searching %.*s...", str8_varg(code_dir_path)), printf(" %i files found\n", (int)file_paths.node_count))
+	{
+		typedef struct Task Task;
+		struct Task
+		{
+			Task *next;
+			String8 path;
+		};
+		Task  start_task = {0, code_dir_path};
+		Task* first_task = &start_task;
+		Task* last_task  = &start_task;
+		for(Task *task = first_task; task != 0; task = task->next)
+		{
+			OS_FileIter* it = os_file_iter_begin(mg_arena, task->path, 0);
+			for(OS_FileInfo info = {0}; os_file_iter_next(mg_arena, it, &info);)
+			{
+				String8 file_path = push_str8f(mg_arena, "%S/%S", task->path, info.name);
+				if(info.props.flags & FilePropertyFlag_IsFolder)
+				{
+					Task *next_task = push_array(mg_arena, Task, 1);
+					SLLQueuePush(first_task, last_task, next_task);
+					next_task->path = file_path;
+				}
+				else
+				{
+					str8_list_push(mg_arena, &file_paths, file_path);
+				}
+			}
+			os_file_iter_end(it);
+		}
+  	}
   
   //////////////////////////////
   //- rjf: parse all metadesk files

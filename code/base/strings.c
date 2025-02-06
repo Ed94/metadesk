@@ -398,48 +398,63 @@ str8_skip_chop_whitespace(String8 string){
 ////////////////////////////////
 //~ rjf: String Formatting & Copying
 
-internal String8
-push_str8_cat(Arena *arena, String8 s1, String8 s2){
-  String8 str;
-  str.size = s1.size + s2.size;
-  str.str = push_array_no_zero(arena, U8, str.size + 1);
-  MemoryCopy(str.str, s1.str, s1.size);
-  MemoryCopy(str.str + s1.size, s2.str, s2.size);
-  str.str[str.size] = 0;
-  return(str);
+String8
+push_str8_cat(Arena* arena, String8 s1, String8 s2)
+{
+	String8 str;
+	str.size = s1.size + s2.size;
+	str.str = push_array_no_zero(arena, U8, str.size + 1);
+	MemoryCopy(str.str, s1.str, s1.size);
+	MemoryCopy(str.str + s1.size, s2.str, s2.size);
+	str.str[str.size] = 0;
+	return(str);
 }
 
 internal String8
 push_str8_copy(Arena *arena, String8 s){
-  String8 str;
-  str.size = s.size;
-  str.str = push_array_no_zero(arena, U8, str.size + 1);
-  MemoryCopy(str.str, s.str, s.size);
-  str.str[str.size] = 0;
-  return(str);
+	String8 str;
+	str.size = s.size;
+	str.str = push_array_no_zero(arena, U8, str.size + 1);
+	MemoryCopy(str.str, s.str, s.size);
+	str.str[str.size] = 0;
+	return(str);
 }
 
 internal String8
 push_str8fv(Arena *arena, char *fmt, va_list args){
-  va_list args2;
-  va_copy(args2, args);
-  U32 needed_bytes = raddbg_vsnprintf(0, 0, fmt, args) + 1;
-  String8 result = {0};
-  result.str = push_array_no_zero(arena, U8, needed_bytes);
-  result.size = raddbg_vsnprintf((char*)result.str, needed_bytes, fmt, args2);
-  result.str[result.size] = 0;
-  va_end(args2);
-  return(result);
+	va_list args2;
+	va_copy(args2, args);
+	U32 needed_bytes = raddbg_vsnprintf(0, 0, fmt, args) + 1;
+	String8 result = {0};
+	result.str = push_array_no_zero(arena, U8, needed_bytes);
+	result.size = raddbg_vsnprintf((char*)result.str, needed_bytes, fmt, args2);
+	result.str[result.size] = 0;
+	va_end(args2);
+	return(result);
 }
 
 internal String8
 push_str8f(Arena *arena, char *fmt, ...){
-  va_list args;
-  va_start(args, fmt);
-  String8 result = push_str8fv(arena, fmt, args);
-  va_end(args);
-  return(result);
+	va_list args;
+	va_start(args, fmt);
+	String8 result = push_str8fv(arena, fmt, args);
+	va_end(args);
+	return(result);
 }
+
+// String8
+// str8__cat(String8 s1, String8 s2, AllocatorInfo ainfo)
+// {
+// 	String8 str;
+// 	str.size = s1.size + s2.size;
+// 	str.str  = alloc_array(ainfo, U8, str.size + 1);
+
+// 	memory_copy(str.str,           s1.str, s1.size);
+// 	memory_copy(str.str + s1.size, s2.str, s2.size);
+// 	str.str[str.size] = 0;
+
+// 	return str;
+// }
 
 ////////////////////////////////
 //~ rjf: String <=> Integer Conversions

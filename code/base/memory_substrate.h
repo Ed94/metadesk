@@ -232,6 +232,9 @@ void* alloc_align( AllocatorInfo a, SSIZE size, SSIZE alignment ) {
 
 inline
 void* alloc( AllocatorInfo a, SSIZE size ) {
+	if (a.proc == nullptr) {
+		a = default_allocator();
+	}
 	return alloc_align( a, size, MD_DEFAULT_MEMORY_ALIGNMENT );
 }
 

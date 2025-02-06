@@ -30,21 +30,21 @@
 typedef struct String8 String8;
 struct String8
 {
-	U8 *str;
+	U8* str;
 	U64 size;
 };
 
 typedef struct String16 String16;
 struct String16
 {
-	U16 *str;
+	U16* str;
 	U64  size;
 };
 
 typedef struct String32 String32;
 struct String32
 {
-	U32 *str;
+	U32* str;
 	U64  size;
 };
 
@@ -54,22 +54,22 @@ struct String32
 typedef struct String8Node String8Node;
 struct String8Node
 {
-	String8Node *next;
+	String8Node* next;
 	String8      string;
 };
 
 typedef struct String8MetaNode String8MetaNode;
 struct String8MetaNode
 {
-	String8MetaNode *next;
-	String8Node     *node;
+	String8MetaNode* next;
+	String8Node*     node;
 };
 
 typedef struct String8List String8List;
 struct String8List
 {
-	String8Node *first;
-	String8Node *last;
+	String8Node* first;
+	String8Node* last;
 	U64 node_count;
 	U64 total_size;
 };
@@ -77,7 +77,7 @@ struct String8List
 typedef struct String8Array String8Array;
 struct String8Array
 {
-	String8 *v;
+	String8* v;
 	U64      count;
 };
 
@@ -138,15 +138,15 @@ struct UnicodeDecode
 typedef struct FuzzyMatchRangeNode FuzzyMatchRangeNode;
 struct FuzzyMatchRangeNode
 {
-	FuzzyMatchRangeNode *next;
+	FuzzyMatchRangeNode* next;
 	Rng1U64 range;
 };
 
 typedef struct FuzzyMatchRangeList FuzzyMatchRangeList;
 struct FuzzyMatchRangeList
 {
-	FuzzyMatchRangeNode *first;
-	FuzzyMatchRangeNode *last;
+	FuzzyMatchRangeNode* first;
+	FuzzyMatchRangeNode* last;
 	U64 count;
 	U64 needle_part_count;
 	U64 total_dim;
@@ -224,10 +224,13 @@ internal String8 str8_skip_chop_whitespace(String8 string);
 ////////////////////////////////
 //~ rjf: String Formatting & Copying
 
-internal String8 push_str8_cat (Arena *arena, String8 s1, String8 s2);
-internal String8 push_str8_copy(Arena *arena, String8 s);
-internal String8 push_str8fv   (Arena *arena, char *fmt, va_list args);
-internal String8 push_str8f    (Arena *arena, char *fmt, ...);
+internal String8 push_str8_cat (Arena* arena, String8 s1, String8 s2);
+internal String8 push_str8_copy(Arena* arena, String8 s);
+internal String8 push_str8fv   (Arena* arena, char* fmt, va_list args);
+internal String8 push_str8f    (Arena* arena, char* fmt, ...);
+
+// String8 str8__cat(String8 s1, String8 s2, AllocatorInfo a);
+// #define str8_cat(s1, s2, ...) str8__cat(s1, s2, (AllocatorInfo) {__VA_ARGS__})
 
 ////////////////////////////////
 //~ rjf: String <=> Integer Conversions
@@ -359,8 +362,8 @@ internal void    str8_serial_begin         (Arena *arena, String8List *srl);
 internal String8 str8_serial_end           (Arena *arena, String8List *srl);
 internal void    str8_serial_write_to_dst  (String8List *srl, void *out);
 internal U64     str8_serial_push_align    (Arena *arena, String8List *srl, U64 align);
-internal void *  str8_serial_push_size     (Arena *arena, String8List *srl, U64 size);
-internal void *  str8_serial_push_data     (Arena *arena, String8List *srl, void *data, U64 size);
+internal void*   str8_serial_push_size     (Arena *arena, String8List *srl, U64 size);
+internal void*   str8_serial_push_data     (Arena *arena, String8List *srl, void *data, U64 size);
 internal void    str8_serial_push_data_list(Arena *arena, String8List *srl, String8Node *first);
 internal void    str8_serial_push_u64      (Arena *arena, String8List *srl, U64 x);
 internal void    str8_serial_push_u32      (Arena *arena, String8List *srl, U32 x);
@@ -375,12 +378,12 @@ internal void    str8_serial_push_string   (Arena *arena, String8List *srl, Stri
 ////////////////////////////////
 //~ rjf: Deserialization Helpers
 
-internal U64    str8_deserial_read                       (String8 string, U64 off, void *read_dst, U64 read_size, U64 granularity);
-internal U64    str8_deserial_find_first_match           (String8 string, U64 off, U16 scan_val);
-internal void * str8_deserial_get_raw_ptr                (String8 string, U64 off, U64 size);
-internal U64    str8_deserial_read_cstr                  (String8 string, U64 off, String8 *cstr_out);
-internal U64    str8_deserial_read_windows_utf16_string16(String8 string, U64 off, String16 *str_out);
-internal U64    str8_deserial_read_block                 (String8 string, U64 off, U64 size, String8 *block_out);
+internal U64   str8_deserial_read                       (String8 string, U64 off, void* read_dst, U64 read_size, U64 granularity);
+internal U64   str8_deserial_find_first_match           (String8 string, U64 off, U16 scan_val);
+internal void* str8_deserial_get_raw_ptr                (String8 string, U64 off, U64 size);
+internal U64   str8_deserial_read_cstr                  (String8 string, U64 off, String8* cstr_out);
+internal U64   str8_deserial_read_windows_utf16_string16(String8 string, U64 off, String16* str_out);
+internal U64   str8_deserial_read_block                 (String8 string, U64 off, U64 size, String8* block_out);
 
 #define str8_deserial_read_array(string, off, ptr, count) str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)) * (count), sizeof( *(ptr)))
 #define str8_deserial_read_struct(string, off, ptr)       str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)), sizeof( *(ptr)))

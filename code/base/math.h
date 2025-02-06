@@ -3,6 +3,7 @@
 #	include "context_cracking.h"
 #	include "linkage.h"
 #	include "macros.h"
+#	include "generic_macros.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools
@@ -16,45 +17,45 @@
 typedef union Vec2F32 Vec2F32;
 union Vec2F32
 {
-  struct
-  {
-    F32 x;
-    F32 y;
-  };
-  F32 v[2];
+	struct
+	{
+		F32 x;
+		F32 y;
+	};
+	F32 v[2];
 };
 
 typedef union Vec2S64 Vec2S64;
 union Vec2S64
 {
-  struct
-  {
-    S64 x;
-    S64 y;
-  };
-  S64 v[2];
+	struct
+	{
+		S64 x;
+		S64 y;
+	};
+	S64 v[2];
 };
 
 typedef union Vec2S32 Vec2S32;
 union Vec2S32
 {
-  struct
-  {
-    S32 x;
-    S32 y;
-  };
-  S32 v[2];
+	struct
+	{
+		S32 x;
+		S32 y;
+	};
+	S32 v[2];
 };
 
 typedef union Vec2S16 Vec2S16;
 union Vec2S16
 {
-  struct
-  {
-    S16 x;
-    S16 y;
-  };
-  S16 v[2];
+	struct
+	{
+		S16 x;
+		S16 y;
+	};
+	S16 v[2];
 };
 
 //- rjf: 3-vectors
@@ -62,45 +63,45 @@ union Vec2S16
 typedef union Vec3F32 Vec3F32;
 union Vec3F32
 {
-  struct
-  {
-    F32 x;
-    F32 y;
-    F32 z;
-  };
-  struct
-  {
-    Vec2F32 xy;
-    F32 _z0;
-  };
-  struct
-  {
-    F32 _x0;
-    Vec2F32 yz;
-  };
-  F32 v[3];
+	struct
+	{
+		F32 x;
+		F32 y;
+		F32 z;
+	};
+	struct
+	{
+		Vec2F32 xy;
+		F32 _z0;
+	};
+	struct
+	{
+		F32 _x0;
+		Vec2F32 yz;
+	};
+	F32 v[3];
 };
 
 typedef union Vec3S32 Vec3S32;
 union Vec3S32
 {
-  struct
-  {
-    S32 x;
-    S32 y;
-    S32 z;
-  };
-  struct
-  {
-    Vec2S32 xy;
-    S32 _z0;
-  };
-  struct
-  {
-    S32 _x0;
-    Vec2S32 yz;
-  };
-  S32 v[3];
+	struct
+	{
+		S32 x;
+		S32 y;
+		S32 z;
+	};
+	struct
+	{
+		Vec2S32 xy;
+		S32 _z0;
+	};
+	struct
+	{
+		S32 _x0;
+		Vec2S32 yz;
+	};
+	S32 v[3];
 };
 
 //- rjf: 4-vectors
@@ -108,57 +109,57 @@ union Vec3S32
 typedef union Vec4F32 Vec4F32;
 union Vec4F32
 {
-  struct
-  {
-    F32 x;
-    F32 y;
-    F32 z;
-    F32 w;
-  };
-  struct
-  {
-    Vec2F32 xy;
-    Vec2F32 zw;
-  };
-  struct
-  {
-    Vec3F32 xyz;
-    F32 _z0;
-  };
-  struct
-  {
-    F32 _x0;
-    Vec3F32 yzw;
-  };
-  F32 v[4];
+	struct
+	{
+		F32 x;
+		F32 y;
+		F32 z;
+		F32 w;
+	};
+	struct
+	{
+		Vec2F32 xy;
+		Vec2F32 zw;
+	};
+	struct
+	{
+		Vec3F32 xyz;
+		F32 _z0;
+	};
+	struct
+	{
+		F32 _x0;
+		Vec3F32 yzw;
+	};
+	F32 v[4];
 };
 
 typedef union Vec4S32 Vec4S32;
 union Vec4S32
 {
-  struct
-  {
-    S32 x;
-    S32 y;
-    S32 z;
-    S32 w;
-  };
-  struct
-  {
-    Vec2S32 xy;
-    Vec2S32 zw;
-  };
-  struct
-  {
-    Vec3S32 xyz;
-    S32 _z0;
-  };
-  struct
-  {
-    S32 _x0;
-    Vec3S32 yzw;
-  };
-  S32 v[4];
+	struct
+	{
+		S32 x;
+		S32 y;
+		S32 z;
+		S32 w;
+	};
+	struct
+	{
+		Vec2S32 xy;
+		Vec2S32 zw;
+	};
+	struct
+	{
+		Vec3S32 xyz;
+		S32 _z0;
+	};
+	struct
+	{
+		S32 _x0;
+		Vec3S32 yzw;
+	};
+	S32 v[4];
 };
 
 ////////////////////////////////
@@ -167,13 +168,13 @@ union Vec4S32
 typedef struct Mat3x3F32 Mat3x3F32;
 struct Mat3x3F32
 {
-  F32 v[3][3];
+	F32 v[3][3];
 };
 
 typedef struct Mat4x4F32 Mat4x4F32;
 struct Mat4x4F32
 {
-  F32 v[4][4];
+	F32 v[4][4];
 };
 
 ////////////////////////////////
@@ -184,56 +185,56 @@ struct Mat4x4F32
 typedef union Rng1U32 Rng1U32;
 union Rng1U32
 {
-  struct
-  {
-    U32 min;
-    U32 max;
-  };
-  U32 v[2];
+	struct
+	{
+		U32 min;
+		U32 max;
+	};
+	U32 v[2];
 };
 
 typedef union Rng1S32 Rng1S32;
 union Rng1S32
 {
-  struct
-  {
-    S32 min;
-    S32 max;
-  };
-  S32 v[2];
+	struct
+	{
+		S32 min;
+		S32 max;
+	};
+	S32 v[2];
 };
 
 typedef union Rng1U64 Rng1U64;
 union Rng1U64
 {
-  struct
-  {
-    U64 min;
-    U64 max;
-  };
-  U64 v[2];
+	struct
+	{
+		U64 min;
+		U64 max;
+	};
+	U64 v[2];
 };
 
 typedef union Rng1S64 Rng1S64;
 union Rng1S64
 {
-  struct
-  {
-    S64 min;
-    S64 max;
-  };
-  S64 v[2];
+	struct
+	{
+		S64 min;
+		S64 max;
+	};
+	S64 v[2];
 };
 
 typedef union Rng1F32 Rng1F32;
 union Rng1F32
 {
-  struct
-  {
-    F32 min;
-    F32 max;
-  };
-  F32 v[2];
+	struct
+	{
+		F32 min;
+		F32 max;
+	};
+	F32 v[2];
 };
 
 //- rjf: 2-range (rectangles)
@@ -241,93 +242,93 @@ union Rng1F32
 typedef union Rng2S16 Rng2S16;
 union Rng2S16
 {
-  struct
-  {
-    Vec2S16 min;
-    Vec2S16 max;
-  };
-  struct
-  {
-    Vec2S16 p0;
-    Vec2S16 p1;
-  };
-  struct
-  {
-    S16 x0;
-    S16 y0;
-    S16 x1;
-    S16 y1;
-  };
-  Vec2S16 v[2];
+	struct
+	{
+		Vec2S16 min;
+		Vec2S16 max;
+	};
+	struct
+	{
+		Vec2S16 p0;
+		Vec2S16 p1;
+	};
+	struct
+	{
+		S16 x0;
+		S16 y0;
+		S16 x1;
+		S16 y1;
+	};
+	Vec2S16 v[2];
 };
 
 typedef union Rng2S32 Rng2S32;
 union Rng2S32
 {
-  struct
-  {
-    Vec2S32 min;
-    Vec2S32 max;
-  };
-  struct
-  {
-    Vec2S32 p0;
-    Vec2S32 p1;
-  };
-  struct
-  {
-    S32 x0;
-    S32 y0;
-    S32 x1;
-    S32 y1;
-  };
-  Vec2S32 v[2];
+	struct
+	{
+		Vec2S32 min;
+		Vec2S32 max;
+	};
+	struct
+	{
+		Vec2S32 p0;
+		Vec2S32 p1;
+	};
+	struct
+	{
+		S32 x0;
+		S32 y0;
+		S32 x1;
+		S32 y1;
+	};
+	Vec2S32 v[2];
 };
 
 typedef union Rng2F32 Rng2F32;
 union Rng2F32
 {
-  struct
-  {
-    Vec2F32 min;
-    Vec2F32 max;
-  };
-  struct
-  {
-    Vec2F32 p0;
-    Vec2F32 p1;
-  };
-  struct
-  {
-    F32 x0;
-    F32 y0;
-    F32 x1;
-    F32 y1;
-  };
-  Vec2F32 v[2];
+	struct
+	{
+		Vec2F32 min;
+		Vec2F32 max;
+	};
+	struct
+	{
+		Vec2F32 p0;
+		Vec2F32 p1;
+	};
+	struct
+	{
+		F32 x0;
+		F32 y0;
+		F32 x1;
+		F32 y1;
+	};
+	Vec2F32 v[2];
 };
 
 typedef union Rng2S64 Rng2S64;
 union Rng2S64
 {
-  struct
-  {
-    Vec2S64 min;
-    Vec2S64 max;
-  };
-  struct
-  {
-    Vec2S64 p0;
-    Vec2S64 p1;
-  };
-  struct
-  {
-    S64 x0;
-    S64 y0;
-    S64 x1;
-    S64 y1;
-  };
-  Vec2S64 v[2];
+	struct
+	{
+		Vec2S64 min;
+		Vec2S64 max;
+	};
+	struct
+	{
+		Vec2S64 p0;
+		Vec2S64 p1;
+	};
+	struct
+	{
+		S64 x0;
+		S64 y0;
+		S64 x1;
+		S64 y1;
+	};
+	Vec2S64 v[2];
 };
 
 ////////////////////////////////
@@ -336,23 +337,23 @@ union Rng2S64
 typedef struct Rng1S64Node Rng1S64Node;
 struct Rng1S64Node
 {
-  Rng1S64Node *next;
-  Rng1S64 v;
+	Rng1S64Node *next;
+	Rng1S64 v;
 };
 
 typedef struct Rng1S64List Rng1S64List;
 struct Rng1S64List
 {
-  Rng1S64Node *first;
-  Rng1S64Node *last;
-  U64 count;
+	Rng1S64Node *first;
+	Rng1S64Node *last;
+	U64 count;
 };
 
 typedef struct Rng1S64Array Rng1S64Array;
 struct Rng1S64Array
 {
-  Rng1S64 *v;
-  U64 count;
+	Rng1S64 *v;
+	U64 count;
 };
 
 ////////////////////////////////
@@ -367,15 +368,18 @@ struct Rng1S64Array
 #define floor_f32(v)  floorf(v)
 #define round_f32(v)  roundf(v)
 #define abs_f32(v)    fabsf(v)
-#define radians_from_turns_f32(v) ((v)*2*3.1415926535897f)
-#define turns_from_radians_f32(v) ((v)/2*3.1415926535897f)
-#define degrees_from_turns_f32(v) ((v)*360.f)
-#define turns_from_degrees_f32(v) ((v)/360.f)
+
+#define radians_from_turns_f32(v) ((v) * 2 * 3.1415926535897f)
+#define turns_from_radians_f32(v) ((v) / 2 * 3.1415926535897f)
+#define degrees_from_turns_f32(v) ((v) * 360.f)
+#define turns_from_degrees_f32(v) ((v) / 360.f)
+
 #define degrees_from_radians_f32(v) (degrees_from_turns_f32(turns_from_radians_f32(v)))
 #define radians_from_degrees_f32(v) (radians_from_turns_f32(turns_from_degrees_f32(v)))
-#define sin_f32(v)    sinf(radians_from_turns_f32(v))
-#define cos_f32(v)    cosf(radians_from_turns_f32(v))
-#define tan_f32(v)    tanf(radians_from_turns_f32(v))
+
+#define sin_f32(v)    sinf( radians_from_turns_f32(v) )
+#define cos_f32(v)    cosf( radians_from_turns_f32(v) )
+#define tan_f32(v)    tanf( radians_from_turns_f32(v) )
 
 #define sqrt_f64(v)   sqrt(v)
 #define mod_f64(a, b) fmod((a), (b))
@@ -384,127 +388,173 @@ struct Rng1S64Array
 #define floor_f64(v)  floor(v)
 #define round_f64(v)  round(v)
 #define abs_f64(v)    fabs(v)
-#define radians_from_turns_f64(v) ((v)*2*3.1415926535897)
-#define turns_from_radians_f64(v) ((v)/2*3.1415926535897)
-#define degrees_from_turns_f64(v) ((v)*360.0)
-#define turns_from_degrees_f64(v) ((v)/360.0)
+
+#define radians_from_turns_f64(v) ((v) * 2 * 3.1415926535897)
+#define turns_from_radians_f64(v) ((v) / 2 * 3.1415926535897)
+#define degrees_from_turns_f64(v) ((v) * 360.0)
+#define turns_from_degrees_f64(v) ((v) / 360.0)
+
 #define degrees_from_radians_f64(v) (degrees_from_turns_f64(turns_from_radians_f64(v)))
 #define radians_from_degrees_f64(v) (radians_from_turns_f64(turns_from_degrees_f64(v)))
+
 #define sin_f64(v)    sin(radians_from_turns_f64(v))
 #define cos_f64(v)    cos(radians_from_turns_f64(v))
 #define tan_f64(v)    tan(radians_from_turns_f64(v))
 
-internal F32 mix_1f32(F32 a, F32 b, F32 t);
-internal F64 mix_1f64(F64 a, F64 b, F64 t);
+inline F32 mix_1f32(F32 a, F32 b, F32 t) { F32 c = (a + (b - a) * Clamp(0.f, t, 1.f)); return c; }
+inline F64 mix_1f64(F64 a, F64 b, F64 t) { F64 c = (a + (b - a) * Clamp(0.0, t, 1.0)); return c; }
 
 ////////////////////////////////
 //~ rjf: Vector Ops
 
+// ==================== 2D Vectors ====================
+
 #define v2f32(x, y) vec_2f32((x), (y))
-internal Vec2F32 vec_2f32(F32 x, F32 y);
-internal Vec2F32 add_2f32(Vec2F32 a, Vec2F32 b);
-internal Vec2F32 sub_2f32(Vec2F32 a, Vec2F32 b);
-internal Vec2F32 mul_2f32(Vec2F32 a, Vec2F32 b);
-internal Vec2F32 div_2f32(Vec2F32 a, Vec2F32 b);
-internal Vec2F32 scale_2f32(Vec2F32 v, F32 s);
-internal F32 dot_2f32(Vec2F32 a, Vec2F32 b);
-internal F32 length_squared_2f32(Vec2F32 v);
-internal F32 length_2f32(Vec2F32 v);
-internal Vec2F32 normalize_2f32(Vec2F32 v);
-internal Vec2F32 mix_2f32(Vec2F32 a, Vec2F32 b, F32 t);
+inline Vec2F32 vec_2f32           (F32 x, F32 y)                { Vec2F32 v = {x,         y};                                 return v; }
+inline Vec2F32 add_2f32           (Vec2F32 a, Vec2F32 b)        { Vec2F32 c = {a.x + b.x, a.y + b.y};                         return c; }
+inline Vec2F32 sub_2f32           (Vec2F32 a, Vec2F32 b)        { Vec2F32 c = {a.x - b.x, a.y - b.y};                         return c; }
+inline Vec2F32 mul_2f32           (Vec2F32 a, Vec2F32 b)        { Vec2F32 c = {a.x * b.x, a.y * b.y};                         return c; }
+inline Vec2F32 div_2f32           (Vec2F32 a, Vec2F32 b)        { Vec2F32 c = {a.x / b.x, a.y / b.y};                         return c; }
+inline Vec2F32 scale_2f32         (Vec2F32 v, F32     s)        { Vec2F32 c = {v.x * s,   v.y * s  };                         return c; }
+inline F32     dot_2f32           (Vec2F32 a, Vec2F32 b)        { F32     c = a.x * b.x + a.y * b.y;                          return c; }
+inline F32     length_squared_2f32(Vec2F32 v)                   { F32     c = v.x * v.x + v.y * v.y;                          return c; }
+inline F32     length_2f32        (Vec2F32 v)                   { F32     c = sqrt_f32(v.x*v.x + v.y*v.y);                    return c; }
+inline Vec2F32 normalize_2f32     (Vec2F32 v)                   {         v = scale_2f32(v, 1.f / length_2f32(v));            return v; }
+inline Vec2F32 mix_2f32           (Vec2F32 a, Vec2F32 b, F32 t) { Vec2F32 c = {mix_1f32(a.x, b.x, t), mix_1f32(a.y, b.y, t)}; return c; }
 
 #define v2s64(x, y) vec_2s64((x), (y))
-internal Vec2S64 vec_2s64(S64 x, S64 y);
-internal Vec2S64 add_2s64(Vec2S64 a, Vec2S64 b);
-internal Vec2S64 sub_2s64(Vec2S64 a, Vec2S64 b);
-internal Vec2S64 mul_2s64(Vec2S64 a, Vec2S64 b);
-internal Vec2S64 div_2s64(Vec2S64 a, Vec2S64 b);
-internal Vec2S64 scale_2s64(Vec2S64 v, S64 s);
-internal S64 dot_2s64(Vec2S64 a, Vec2S64 b);
-internal S64 length_squared_2s64(Vec2S64 v);
-internal S64 length_2s64(Vec2S64 v);
-internal Vec2S64 normalize_2s64(Vec2S64 v);
-internal Vec2S64 mix_2s64(Vec2S64 a, Vec2S64 b, F32 t);
+inline Vec2S64 vec_2s64           (S64 x, S64 y)                { Vec2S64 v = {x,         y};                                 return v; }
+inline Vec2S64 add_2s64           (Vec2S64 a, Vec2S64 b)        { Vec2S64 c = {a.x + b.x, a.y + b.y};                         return c; }
+inline Vec2S64 sub_2s64           (Vec2S64 a, Vec2S64 b)        { Vec2S64 c = {a.x - b.x, a.y - b.y};                         return c; }
+inline Vec2S64 mul_2s64           (Vec2S64 a, Vec2S64 b)        { Vec2S64 c = {a.x * b.x, a.y * b.y};                         return c; }
+inline Vec2S64 div_2s64           (Vec2S64 a, Vec2S64 b)        { Vec2S64 c = {a.x / b.x, a.y / b.y};                         return c; }
+inline Vec2S64 scale_2s64         (Vec2S64 v, S64     s)        { Vec2S64 c = {v.x * s,   v.y * s  };                         return c; }
+inline S64     dot_2s64           (Vec2S64 a, Vec2S64 b)        { S64     c = a.x * b.x + a.y * b.y;                          return c; }
+inline S64     length_squared_2s64(Vec2S64 v)                   { S64     c = v.x * v.x + v.y * v.y;                          return c; }
+inline S64     length_2s64        (Vec2S64 v)                   { S64     c = (S64)sqrt_f64((F64)(v.x*v.x + v.y*v.y));        return c; }
+inline Vec2S64 normalize_2s64     (Vec2S64 v)                   {         v = scale_2s64(v, (S64)(1.f / length_2s64(v)));     return v; }
+inline Vec2S64 mix_2s64           (Vec2S64 a, Vec2S64 b, F32 t) { Vec2S64 c = {(S64)mix_1f32((F32)a.x, (F32)b.x, t), (S64)mix_1f32((F32)a.y, (F32)b.y, t)}; return c; }
 
 #define v2s32(x, y) vec_2s32((x), (y))
-internal Vec2S32 vec_2s32(S32 x, S32 y);
-internal Vec2S32 add_2s32(Vec2S32 a, Vec2S32 b);
-internal Vec2S32 sub_2s32(Vec2S32 a, Vec2S32 b);
-internal Vec2S32 mul_2s32(Vec2S32 a, Vec2S32 b);
-internal Vec2S32 div_2s32(Vec2S32 a, Vec2S32 b);
-internal Vec2S32 scale_2s32(Vec2S32 v, S32 s);
-internal S32 dot_2s32(Vec2S32 a, Vec2S32 b);
-internal S32 length_squared_2s32(Vec2S32 v);
-internal S32 length_2s32(Vec2S32 v);
-internal Vec2S32 normalize_2s32(Vec2S32 v);
-internal Vec2S32 mix_2s32(Vec2S32 a, Vec2S32 b, F32 t);
+inline Vec2S32 vec_2s32(S32 x, S32 y)                      { Vec2S32 v = {x,         y};                                 return v; }
+inline Vec2S32 add_2s32(Vec2S32 a, Vec2S32 b)              { Vec2S32 c = {a.x + b.x, a.y + b.y};                         return c; }
+inline Vec2S32 sub_2s32(Vec2S32 a, Vec2S32 b)              { Vec2S32 c = {a.x - b.x, a.y - b.y};                         return c; }
+inline Vec2S32 mul_2s32(Vec2S32 a, Vec2S32 b)              { Vec2S32 c = {a.x * b.x, a.y * b.y};                         return c; }
+inline Vec2S32 div_2s32(Vec2S32 a, Vec2S32 b)              { Vec2S32 c = {a.x / b.x, a.y / b.y};                         return c; }
+inline Vec2S32 scale_2s32(Vec2S32 v, S32 s)                { Vec2S32 c = {v.x * s,   v.y * s  };                         return c; }
+inline S32     dot_2s32  (Vec2S32 a, Vec2S32 b)            { S32     c = a.x * b.x + a.y * b.y;                          return c; }
+inline S32     length_squared_2s32(Vec2S32 v)              { S32     c = v.x * v.x + v.y * v.y;                          return c; }
+inline S32     length_2s32   (Vec2S32 v)                   { S32     c = (S32)sqrt_f32((F32)v.x*(F32)v.x + (F32)v.y*(F32)v.y); return c; }
+inline Vec2S32 normalize_2s32(Vec2S32 v)                   {         v = scale_2s32(v, (S32)(1.f / length_2s32(v)));     return v; }
+inline Vec2S32 mix_2s32      (Vec2S32 a, Vec2S32 b, F32 t) { Vec2S32 c = {(S32)mix_1f32((F32)a.x, (F32)b.x, t), (S32)mix_1f32((F32)a.y, (F32)b.y, t)}; return c; }
 
 #define v2s16(x, y) vec_2s16((x), (y))
-internal Vec2S16 vec_2s16(S16 x, S16 y);
-internal Vec2S16 add_2s16(Vec2S16 a, Vec2S16 b);
-internal Vec2S16 sub_2s16(Vec2S16 a, Vec2S16 b);
-internal Vec2S16 mul_2s16(Vec2S16 a, Vec2S16 b);
-internal Vec2S16 div_2s16(Vec2S16 a, Vec2S16 b);
-internal Vec2S16 scale_2s16(Vec2S16 v, S16 s);
-internal S16 dot_2s16(Vec2S16 a, Vec2S16 b);
-internal S16 length_squared_2s16(Vec2S16 v);
-internal S16 length_2s16(Vec2S16 v);
-internal Vec2S16 normalize_2s16(Vec2S16 v);
-internal Vec2S16 mix_2s16(Vec2S16 a, Vec2S16 b, F32 t);
+inline Vec2S16 vec_2s16(S16 x, S16 y)                      { Vec2S16 v = {x,         y};                                 return v; }
+inline Vec2S16 add_2s16(Vec2S16 a, Vec2S16 b)              { Vec2S16 c = {(S16)(a.x + b.x), (S16)(a.y + b.y)};           return c; }
+inline Vec2S16 sub_2s16(Vec2S16 a, Vec2S16 b)              { Vec2S16 c = {(S16)(a.x - b.x), (S16)(a.y - b.y)};           return c; }
+inline Vec2S16 mul_2s16(Vec2S16 a, Vec2S16 b)              { Vec2S16 c = {(S16)(a.x * b.x), (S16)(a.y * b.y)};           return c; }
+inline Vec2S16 div_2s16(Vec2S16 a, Vec2S16 b)              { Vec2S16 c = {(S16)(a.x / b.x), (S16)(a.y / b.y)};           return c; }
+inline Vec2S16 scale_2s16(Vec2S16 v, S16 s)                { Vec2S16 c = {(S16)(v.x * s),   (S16)(v.y * s  )};           return c; }
+inline S16     dot_2s16  (Vec2S16 a, Vec2S16 b)            { S16     c = a.x * b.x + a.y * b.y;                          return c; }
+inline S16     length_squared_2s16(Vec2S16 v)              { S16     c = v.x * v.x + v.y * v.y;                          return c; }
+inline S16     length_2s16   (Vec2S16 v)                   { S16     c = (S16)sqrt_f32((F32)(v.x*v.x + v.y*v.y));        return c; }
+inline Vec2S16 normalize_2s16(Vec2S16 v)                   {         v = scale_2s16(v, (S16)(1.f / length_2s16(v)));     return v; }
+inline Vec2S16 mix_2s16      (Vec2S16 a, Vec2S16 b, F32 t) { Vec2S16 c = {(S16)mix_1f32((F32)a.x, (F32)b.x, t), (S16)mix_1f32((F32)a.y, (F32)b.y, t)}; return c; }
+
+#define vec2(a, b)             _Generic(a, S16: vec_2s16,            S32: vec_2s32,            S64: vec_2s64,            F32: vec_2f32           )((a), (b))
+#define add_vec2(a, b)         _Generic(a, S16: add_2s16,            S32: add_2s32,            S64: add_2s64,            F32: add_2f32           )((a), (b))
+#define sub_vec2(a, b)         _Generic(a, S16: sub_2s16,            S32: sub_2s32,            S64: sub_2s64,            F32: sub_2f32           )((a), (b))
+#define mul_vec2(a, b)         _Generic(a, S16: mul_2s16,            S32: mul_2s32,            S64: mul_2s64,            F32: mul_2f32           )((a), (b))
+#define div_vec2(a, b)         _Generic(a, S16: div_2s16,            S32: div_2s32,            S64: div_2s64,            F32: div_2f32           )((a), (b))
+#define scale_vec2(v, s)       _Generic(v, S16: scale_2s16,          S32: scale_2s32,          S64: scale_2s64,          F32: scale_2f32         )((v), (s))
+#define dot_vec2(a, b)         _Generic(a, S16: dot_2s16,            S32: dot_2s32,            S64: dot_2s64,            F32: dot_2f32           )((a), (b))
+#define length_squared_vec2(v) _Generic(v, S16: length_squared_2s16, S32: length_squared_2s32, S64: length_squared_2s64, F32: length_squared_2f32)((v))
+#define length_vec2(v)         _Generic(v, S16: length_2s16,         S32: length_2s32,         S64: length_2s64,         F32: length_2f32        )((v))
+#define normalize_vec2(v)      _Generic(v, S16: normalize_2s16,      S32: normalize_2s32,      S64: normalize_2s64,      F32: normalize_2f32     )((v))
+#define mix_vec2(a, b, t)      _Generic(a, S16: mix_2s16,            S32: mix_2s32,            S64: mix_2s64,            F32: mix_2f32           )((a), (b), (t))
+
+// ==================== 3D Vectors ====================
 
 #define v3f32(x, y, z) vec_3f32((x), (y), (z))
-internal Vec3F32 vec_3f32(F32 x, F32 y, F32 z);
-internal Vec3F32 add_3f32(Vec3F32 a, Vec3F32 b);
-internal Vec3F32 sub_3f32(Vec3F32 a, Vec3F32 b);
-internal Vec3F32 mul_3f32(Vec3F32 a, Vec3F32 b);
-internal Vec3F32 div_3f32(Vec3F32 a, Vec3F32 b);
-internal Vec3F32 scale_3f32(Vec3F32 v, F32 s);
-internal F32 dot_3f32(Vec3F32 a, Vec3F32 b);
-internal F32 length_squared_3f32(Vec3F32 v);
-internal F32 length_3f32(Vec3F32 v);
-internal Vec3F32 normalize_3f32(Vec3F32 v);
-internal Vec3F32 mix_3f32(Vec3F32 a, Vec3F32 b, F32 t);
-internal Vec3F32 cross_3f32(Vec3F32 a, Vec3F32 b);
+inline Vec3F32 vec_3f32           (F32 x, F32 y, F32 z)         { Vec3F32 v = {x, y, z}; return v; }
+inline Vec3F32 add_3f32           (Vec3F32 a, Vec3F32 b)        { Vec3F32 c = {a.x + b.x, a.y + b.y, a.z + b.z};           return c; }
+inline Vec3F32 sub_3f32           (Vec3F32 a, Vec3F32 b)        { Vec3F32 c = {a.x - b.x, a.y - b.y, a.z - b.z};           return c; }
+inline Vec3F32 mul_3f32           (Vec3F32 a, Vec3F32 b)        { Vec3F32 c = {a.x * b.x, a.y * b.y, a.z * b.z};           return c; }
+inline Vec3F32 div_3f32           (Vec3F32 a, Vec3F32 b)        { Vec3F32 c = {a.x / b.x, a.y / b.y, a.z / b.z};           return c; }
+inline Vec3F32 scale_3f32         (Vec3F32 v, F32 s)            { Vec3F32 c = {v.x * s, v.y * s, v.z * s};                 return c; }
+inline F32     dot_3f32           (Vec3F32 a, Vec3F32 b)        { F32     c = a.x * b.x + a.y * b.y + a.z * b.z;           return c; }
+inline F32     length_squared_3f32(Vec3F32 v)                   { F32     c = v.x * v.x + v.y * v.y + v.z * v.z;           return c; }
+inline F32     length_3f32        (Vec3F32 v)                   { F32     c = sqrt_f32(v.x * v.x + v.y * v.y + v.z * v.z); return c; }
+inline Vec3F32 normalize_3f32     (Vec3F32 v)                   {         v = scale_3f32(v, 1.f / length_3f32(v));         return v; }
+inline Vec3F32 mix_3f32           (Vec3F32 a, Vec3F32 b, F32 t) { Vec3F32 c = {mix_1f32(a.x, b.x, t), mix_1f32(a.y, b.y, t), mix_1f32(a.z, b.z, t)}; return c; }
+inline Vec3F32 cross_3f32         (Vec3F32 a, Vec3F32 b)        { Vec3F32 c = {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x}; return c; }
 
 #define v3s32(x, y, z) vec_3s32((x), (y), (z))
-internal Vec3S32 vec_3s32(S32 x, S32 y, S32 z);
-internal Vec3S32 add_3s32(Vec3S32 a, Vec3S32 b);
-internal Vec3S32 sub_3s32(Vec3S32 a, Vec3S32 b);
-internal Vec3S32 mul_3s32(Vec3S32 a, Vec3S32 b);
-internal Vec3S32 div_3s32(Vec3S32 a, Vec3S32 b);
-internal Vec3S32 scale_3s32(Vec3S32 v, S32 s);
-internal S32 dot_3s32(Vec3S32 a, Vec3S32 b);
-internal S32 length_squared_3s32(Vec3S32 v);
-internal S32 length_3s32(Vec3S32 v);
-internal Vec3S32 normalize_3s32(Vec3S32 v);
-internal Vec3S32 mix_3s32(Vec3S32 a, Vec3S32 b, F32 t);
-internal Vec3S32 cross_3s32(Vec3S32 a, Vec3S32 b);
+inline Vec3S32 vec_3s32           (S32 x, S32 y, S32 z)         { Vec3S32 v = {x, y, z}; return v; }
+inline Vec3S32 add_3s32           (Vec3S32 a, Vec3S32 b)        { Vec3S32 c = {a.x + b.x, a.y + b.y, a.z + b.z};                       return c; }
+inline Vec3S32 sub_3s32           (Vec3S32 a, Vec3S32 b)        { Vec3S32 c = {a.x - b.x, a.y - b.y, a.z - b.z};                       return c; }
+inline Vec3S32 mul_3s32           (Vec3S32 a, Vec3S32 b)        { Vec3S32 c = {a.x * b.x, a.y * b.y, a.z * b.z};                       return c; }
+inline Vec3S32 div_3s32           (Vec3S32 a, Vec3S32 b)        { Vec3S32 c = {a.x / b.x, a.y / b.y, a.z / b.z};                       return c; }
+inline Vec3S32 scale_3s32         (Vec3S32 v, S32 s)            { Vec3S32 c = {v.x * s,   v.y * s,   v.z * s  };                       return c; }
+inline S32     dot_3s32           (Vec3S32 a, Vec3S32 b)        { S32     c = a.x * b.x + a.y * b.y + a.z * b.z;                       return c; }
+inline S32     length_squared_3s32(Vec3S32 v)                   { S32     c = v.x * v.x + v.y * v.y + v.z * v.z;                       return c; }
+inline S32     length_3s32        (Vec3S32 v)                   { S32     c = (S32)sqrt_f32((F32)(v.x * v.x + v.y * v.y + v.z * v.z)); return c; }
+inline Vec3S32 normalize_3s32     (Vec3S32 v)                   {         v = scale_3s32(v, (S32)(1.f / length_3s32(v)));              return v; }
+inline Vec3S32 mix_3s32           (Vec3S32 a, Vec3S32 b, F32 t) { Vec3S32 c = {(S32)mix_1f32((F32)a.x, (F32)b.x, t), (S32)mix_1f32((F32)a.y, (F32)b.y, t), (S32)mix_1f32((F32)a.z, (F32)b.z, t)}; return c; }
+inline Vec3S32 cross_3s32         (Vec3S32 a, Vec3S32 b)        { Vec3S32 c = {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x}; return c; }
+
+#define vec3(a, b, c)          _Generic(a, S32: vec_3s32,            F32: vec_3f32           )((a), (b), (c))
+#define add_vec3(a, b)         _Generic(a, S32: add_3s32,            F32: add_3f32           )((a), (b))
+#define sub_vec3(a, b)         _Generic(a, S32: sub_3s32,            F32: sub_3f32           )((a), (b))
+#define mul_vec3(a, b)         _Generic(a, S32: mul_3s32,            F32: mul_3f32           )((a), (b))
+#define div_vec3(a, b)         _Generic(a, S32: div_3s32,            F32: div_3f32           )((a), (b))
+#define scale_vec3(v, s)       _Generic(v, S32: scale_3s32,          F32: scale_3f32         )((v), (s))
+#define dot_vec3(a, b)         _Generic(a, S32: dot_3s32,            F32: dot_3f32           )((a), (b))
+#define length_squared_vec3(v) _Generic(v, S32: length_squared_3s32, F32: length_squared_3f32)((v))
+#define length_vec3(v)         _Generic(v, S32: length_3s32,         F32: length_3f32        )((v))
+#define normalize_vec3(v)      _Generic(v, S32: normalize_3s32,      F32: normalize_3f32     )((v))
+#define mix_vec3(a, b, t)      _Generic(a, S32: mix_3s32,            F32: mix_3f32           )((a), (b), (t))
+#define cross_vec3(a, b)       _Generic(a, S32: cross_3s32,          F32: cross_3f32         )((a), (b))
+
+// ==================== 4D Vectors ====================
 
 #define v4f32(x, y, z, w) vec_4f32((x), (y), (z), (w))
-internal Vec4F32 vec_4f32(F32 x, F32 y, F32 z, F32 w);
-internal Vec4F32 add_4f32(Vec4F32 a, Vec4F32 b);
-internal Vec4F32 sub_4f32(Vec4F32 a, Vec4F32 b);
-internal Vec4F32 mul_4f32(Vec4F32 a, Vec4F32 b);
-internal Vec4F32 div_4f32(Vec4F32 a, Vec4F32 b);
-internal Vec4F32 scale_4f32(Vec4F32 v, F32 s);
-internal F32 dot_4f32(Vec4F32 a, Vec4F32 b);
-internal F32 length_squared_4f32(Vec4F32 v);
-internal F32 length_4f32(Vec4F32 v);
-internal Vec4F32 normalize_4f32(Vec4F32 v);
-internal Vec4F32 mix_4f32(Vec4F32 a, Vec4F32 b, F32 t);
+internal Vec4F32 vec_4f32(F32 x, F32 y, F32 z, F32 w)           { Vec4F32 v = {x, y, z, w}; return v; }
+internal Vec4F32 add_4f32(Vec4F32 a, Vec4F32 b)                 { Vec4F32 c = {a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};            return c; }
+internal Vec4F32 sub_4f32(Vec4F32 a, Vec4F32 b)                 { Vec4F32 c = {a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};            return c; }
+internal Vec4F32 mul_4f32(Vec4F32 a, Vec4F32 b)                 { Vec4F32 c = {a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w};            return c; }
+internal Vec4F32 div_4f32(Vec4F32 a, Vec4F32 b)                 { Vec4F32 c = {a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w};            return c; }
+internal Vec4F32 scale_4f32(Vec4F32 v, F32 s)                   { Vec4F32 c = {v.x * s,   v.y * s,   v.z * s,   v.w * s  };            return c; }
+internal F32     dot_4f32(Vec4F32 a, Vec4F32 b)                 { F32     c = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;           return c; }
+internal F32     length_squared_4f32(Vec4F32 v)                 { F32     c = v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w;           return c; }
+internal F32     length_4f32(Vec4F32 v)                         { F32     c = sqrt_f32(v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w); return c; }
+internal Vec4F32 normalize_4f32(Vec4F32 v)                      {         v = scale_4f32(v, 1.f / length_4f32(v));                     return v; }
+internal Vec4F32 mix_4f32(Vec4F32 a, Vec4F32 b, F32 t)          { Vec4F32 c = {mix_1f32(a.x, b.x, t), mix_1f32(a.y, b.y, t), mix_1f32(a.z, b.z, t), mix_1f32(a.w, b.w, t)}; return c; }
 
 #define v4s32(x, y, z, w) vec_4s32((x), (y), (z), (w))
-internal Vec4S32 vec_4s32(S32 x, S32 y, S32 z, S32 w);
-internal Vec4S32 add_4s32(Vec4S32 a, Vec4S32 b);
-internal Vec4S32 sub_4s32(Vec4S32 a, Vec4S32 b);
-internal Vec4S32 mul_4s32(Vec4S32 a, Vec4S32 b);
-internal Vec4S32 div_4s32(Vec4S32 a, Vec4S32 b);
-internal Vec4S32 scale_4s32(Vec4S32 v, S32 s);
-internal S32 dot_4s32(Vec4S32 a, Vec4S32 b);
-internal S32 length_squared_4s32(Vec4S32 v);
-internal S32 length_4s32(Vec4S32 v);
-internal Vec4S32 normalize_4s32(Vec4S32 v);
-internal Vec4S32 mix_4s32(Vec4S32 a, Vec4S32 b, F32 t);
+internal Vec4S32 vec_4s32(S32 x, S32 y, S32 z, S32 w)           { Vec4S32 v = {x, y, z, w}; return v; }
+internal Vec4S32 add_4s32(Vec4S32 a, Vec4S32 b)                 { Vec4S32 c = {a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};                        return c; }
+internal Vec4S32 sub_4s32(Vec4S32 a, Vec4S32 b)                 { Vec4S32 c = {a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};                        return c; }
+internal Vec4S32 mul_4s32(Vec4S32 a, Vec4S32 b)                 { Vec4S32 c = {a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w};                        return c; }
+internal Vec4S32 div_4s32(Vec4S32 a, Vec4S32 b)                 { Vec4S32 c = {a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w};                        return c; }
+internal Vec4S32 scale_4s32(Vec4S32 v, S32 s)                   { Vec4S32 c = {v.x * s,   v.y * s,   v.z * s,   v.w * s  };                        return c; }
+internal S32     dot_4s32(Vec4S32 a, Vec4S32 b)                 { S32     c = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;                       return c; }
+internal S32     length_squared_4s32(Vec4S32 v)                 { S32     c = v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w;                       return c; }
+internal S32     length_4s32(Vec4S32 v)                         { S32     c = (S32)sqrt_f32((F32)(v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w)); return c; }
+internal Vec4S32 normalize_4s32(Vec4S32 v)                      {         v = scale_4s32(v, (S32)(1.f / length_4s32(v))); return v; }
+internal Vec4S32 mix_4s32(Vec4S32 a, Vec4S32 b, F32 t)          { Vec4S32 c = {(S32)mix_1f32((F32)a.x, (F32)b.x, t), (S32)mix_1f32((F32)a.y, (F32)b.y, t), (S32)mix_1f32((F32)a.z, (F32)b.z, t), (S32)mix_1f32((F32)a.w, (F32)b.w, t)}; return c; }
+
+#define vec4(a, b, c, d)       _Generic(a, S32: vec_4s32,            F32: vec_4f32           )((a), (b), (c), (d))
+#define add_vec4(a, b)         _Generic(a, S32: add_4s32,            F32: add_4f32           )((a), (b))
+#define sub_vec4(a, b)         _Generic(a, S32: sub_4s32,            F32: sub_4f32           )((a), (b))
+#define mul_vec4(a, b)         _Generic(a, S32: mul_4s32,            F32: mul_4f32           )((a), (b))
+#define div_vec4(a, b)         _Generic(a, S32: div_4s32,            F32: div_4f32           )((a), (b))
+#define scale_vec4(v, s)       _Generic(v, S32: scale_4s32,          F32: scale_4f32         )((v), (s))
+#define dot_vec4(a, b)         _Generic(a, S32: dot_4s32,            F32: dot_4f32           )((a), (b))
+#define length_squared_vec4(v) _Generic(v, S32: length_squared_4s32, F32: length_squared_4f32)((v))
+#define length_vec4(v)         _Generic(v, S32: length_4s32,         F32: length_4f32        )((v))
+#define normalize_vec4(v)      _Generic(v, S32: normalize_4s32,      F32: normalize_4f32     )((v))
+#define mix_vec4(a, b, t)      _Generic(a, S32: mix_4s32,            F32: mix_4f32           )((a), (b), (t))
 
 ////////////////////////////////
 //~ rjf: Matrix Ops
@@ -602,7 +652,7 @@ internal Rng2S32 rng_2s32(Vec2S32 min, Vec2S32 max);
 internal Rng2S32 shift_2s32(Rng2S32 r, Vec2S32 x);
 internal Rng2S32 pad_2s32(Rng2S32 r, S32 x);
 internal Vec2S32 center_2s32(Rng2S32 r);
-internal B32 contains_2s32(Rng2S32 r, Vec2S32 x);
+internal B32     contains_2s32(Rng2S32 r, Vec2S32 x);
 internal Vec2S32 dim_2s32(Rng2S32 r);
 internal Rng2S32 union_2s32(Rng2S32 a, Rng2S32 b);
 internal Rng2S32 intersect_2s32(Rng2S32 a, Rng2S32 b);
@@ -614,7 +664,7 @@ internal Rng2S64 rng_2s64(Vec2S64 min, Vec2S64 max);
 internal Rng2S64 shift_2s64(Rng2S64 r, Vec2S64 x);
 internal Rng2S64 pad_2s64(Rng2S64 r, S64 x);
 internal Vec2S64 center_2s64(Rng2S64 r);
-internal B32 contains_2s64(Rng2S64 r, Vec2S64 x);
+internal B32     contains_2s64(Rng2S64 r, Vec2S64 x);
 internal Vec2S64 dim_2s64(Rng2S64 r);
 internal Rng2S64 union_2s64(Rng2S64 a, Rng2S64 b);
 internal Rng2S64 intersect_2s64(Rng2S64 a, Rng2S64 b);
@@ -626,7 +676,7 @@ internal Rng2F32 rng_2f32(Vec2F32 min, Vec2F32 max);
 internal Rng2F32 shift_2f32(Rng2F32 r, Vec2F32 x);
 internal Rng2F32 pad_2f32(Rng2F32 r, F32 x);
 internal Vec2F32 center_2f32(Rng2F32 r);
-internal B32 contains_2f32(Rng2F32 r, Vec2F32 x);
+internal B32     contains_2f32(Rng2F32 r, Vec2F32 x);
 internal Vec2F32 dim_2f32(Rng2F32 r);
 internal Rng2F32 union_2f32(Rng2F32 a, Rng2F32 b);
 internal Rng2F32 intersect_2f32(Rng2F32 a, Rng2F32 b);
@@ -635,17 +685,23 @@ internal Vec2F32 clamp_2f32(Rng2F32 r, Vec2F32 v);
 ////////////////////////////////
 //~ rjf: Miscellaneous Ops
 
-internal Vec3F32 hsv_from_rgb(Vec3F32 rgb);
-internal Vec3F32 rgb_from_hsv(Vec3F32 hsv);
+internal Vec3F32 hsv_from_rgb  (Vec3F32 rgb);
+internal Vec3F32 rgb_from_hsv  (Vec3F32 hsv);
 internal Vec4F32 hsva_from_rgba(Vec4F32 rgba);
 internal Vec4F32 rgba_from_hsva(Vec4F32 hsva);
-internal Vec4F32 rgba_from_u32(U32 hex);
-internal U32 u32_from_rgba(Vec4F32 rgba);
+internal Vec4F32 rgba_from_u32 (U32     hex);
+internal U32     u32_from_rgba (Vec4F32 rgba);
 
-#define rgba_from_u32_lit_comp(h) { (((h)&0xff000000)>>24)/255.f, (((h)&0x00ff0000)>>16)/255.f, (((h)&0x0000ff00)>> 8)/255.f, (((h)&0x000000ff)>> 0)/255.f }
+#define rgba_from_u32_lit_comp(h)       \
+{                                       \
+	(((h) & 0xff000000) >> 24) / 255.f, \
+	(((h) & 0x00ff0000) >> 16) / 255.f, \
+	(((h) & 0x0000ff00) >> 8 ) / 255.f, \
+	(((h) & 0x000000ff) >> 0 ) / 255.f  \
+}
 
 ////////////////////////////////
 //~ rjf: List Type Functions
 
-internal void rng1s64_list_push(Arena *arena, Rng1S64List *list, Rng1S64 rng);
+internal void         rng1s64_list_push      (Arena *arena, Rng1S64List *list, Rng1S64 rng);
 internal Rng1S64Array rng1s64_array_from_list(Arena *arena, Rng1S64List *list);

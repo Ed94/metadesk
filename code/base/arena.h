@@ -85,18 +85,18 @@ void arena_release(Arena *arena);
 
 //- rjf: arena push/pop/pos core functions
 
-internal void *arena_push  (Arena *arena, SSIZE size, SSIZE align);
-internal U64   arena_pos   (Arena *arena);
-internal void  arena_pop_to(Arena *arena, SSIZE pos);
+internal void *arena_push  (Arena* arena, SSIZE size, SSIZE align);
+internal U64   arena_pos   (Arena* arena);
+internal void  arena_pop_to(Arena* arena, SSIZE pos);
 
 //- rjf: arena push/pop helpers
 
-internal void arena_clear(Arena *arena);
-internal void arena_pop  (Arena *arena, SSIZE amt);
+internal void arena_clear(Arena* arena);
+internal void arena_pop  (Arena* arena, SSIZE amt);
 
 //- rjf: temporary arena scopes
 
-internal TempArena temp_arena_begin(Arena *arena);
+internal TempArena temp_arena_begin(Arena* arena);
 internal void      temp_arena_end(TempArena temp);
 
 //- rjf: push helper macros

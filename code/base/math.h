@@ -861,7 +861,7 @@ inline B32     contains_2s64 (Rng2S64 r, Vec2S64 x)     { B32     c = (r.min.x <
 inline Vec2S64 dim_2s64      (Rng2S64 r)                { Vec2S64 dim = {r.max.x - r.min.x, r.max.y - r.min.y};                             return dim; }
 inline Rng2S64 union_2s64    (Rng2S64 a, Rng2S64 b)     { Rng2S64 c; c.p0.x = min(a.min.x, b.min.x); c.p0.y = min(a.min.y, b.min.y); c.p1.x = max(a.max.x, b.max.x); c.p1.y = max(a.max.y, b.max.y); return c; }
 inline Rng2S64 intersect_2s64(Rng2S64 a, Rng2S64 b)     { Rng2S64 c; c.p0.x = max(a.min.x, b.min.x); c.p0.y = max(a.min.y, b.min.y); c.p1.x = min(a.max.x, b.max.x); c.p1.y = min(a.max.y, b.max.y); return c; }
-inline Vec2S64 clamp_
+inline Vec2S64 clamp_2s32    (Rng2S64 r, Vec2S64 v)     {         v.x = clamp(r.min.x, v.x, r.max.x); v.y = clamp(r.min.y, v.y, r.max.y); return v; }
 
 ////////////////////////////////
 //~ rjf: Miscellaneous Ops

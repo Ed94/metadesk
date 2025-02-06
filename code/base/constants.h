@@ -20,44 +20,44 @@
 
 #define MACHINE_EPSILON64 4.94065645841247e-324;
 
-#define U8_MIN 0u
-#define U8_MAX 0xffu
-#define S8_MIN ( -0x7f - 1 )
-#define S8_MAX 0x7f
+#define MIN_U8 0u
+#define MAX_U8 0xffu
+#define MIN_S8 ( -0x7f - 1 )
+#define MAX_S8 0x7f
 
-#define U16_MIN 0u
-#define U16_MAX 0xffffu
-#define S16_MIN ( -0x7fff - 1 )
-#define S16_MAX 0x7fff
+#define MIN_U16 0u
+#define MAX_U16 0xffffu
+#define MIN_S16 ( -0x7fff - 1 )
+#define MAX_S16 0x7fff
 
-#define U32_MIN 0u
-#define U32_MAX 0xffffffffu
-#define S32_MIN ( -0x7fffffff - 1 )
-#define S32_MAX 0x7fffffff
+#define MIN_U32 0u
+#define MAX_U32 0xffffffffu
+#define MIN_S32 ( -0x7fffffff - 1 )
+#define MAX_S32 0x7fffffff
 
-#define U64_MIN 0ull
-#define U64_MAX 0xffffffffffffffffull
-#define S64_MIN ( -0x7fffffffffffffffll - 1 )
-#define S64_MAX 0x7fffffffffffffffll
+#define MIN_U64 0ull
+#define MAX_U64 0xffffffffffffffffull
+#define MIN_S64 ( -0x7fffffffffffffffll - 1 )
+#define MAX_S64 0x7fffffffffffffffll
 
-#if defined( ARCH_32_BIT )
-#	define USIZE_MIN U32_MIN
-#	define USIZE_MAX U32_MAX
-#	define ISIZE_MIN S32_MIN
-#	define ISIZE_MAX S32_MAX
-#elif defined( ARCH_64_BIT )
-#	define USIZE_MIN U64_MIN
-#	define USIZE_MAX U64_MAX
-#	define ISIZE_MIN S64_MIN
-#	define ISIZE_MAX S64_MAX
+#if ARCH_32BIT
+#	define MIN_USIZE U32_MIN
+#	define MAX_USIZE U32_MAX
+#	define MIN_ISIZE S32_MIN
+#	define MAX_ISIZE S32_MAX
+#elif ARCH_64BIT
+#	define MIN_USIZE U64_MIN
+#	define MAX_USIZE U64_MAX
+#	define MIN_ISIZE S64_MIN
+#	define MAX_ISIZE S64_MAX
 #else
 #	error Unknown architecture size. This library only supports 32 bit and 64 bit architectures.
 #endif
 
-#define F32_MIN 1.17549435e-38f
-#define F32_MAX 3.40282347e+38f
-#define F64_MIN 2.2250738585072014e-308
-#define F64_MAX 1.7976931348623157e+308
+#define MIN_F32 1.17549435e-38f
+#define MAX_F32 3.40282347e+38f
+#define MIN_F64 2.2250738585072014e-308
+#define MAX_F64 1.7976931348623157e+308
 
 #define BITMASK1  0x00000001
 #define BITMASK2  0x00000003

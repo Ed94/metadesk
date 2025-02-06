@@ -307,6 +307,10 @@ inline String8 upper_from_str8      (Arena* arena, String8 string) { string = pu
 inline String8 lower_from_str8      (Arena* arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
 inline String8 backslashed_from_str8(Arena *arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
 
+inline String8 upper_from_str8_alloc      (AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
+inline String8 lower_from_str8_alloc      (AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
+inline String8 backslashed_from_str8_alloc(AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
+
 ////////////////////////////////
 //~ rjf: String <=> Integer Conversions
 
@@ -319,11 +323,11 @@ MD_API B32 try_u64_from_str8_c_rules(String8 string, U64*     x);
        B32 try_s64_from_str8_c_rules(String8 string, S64*     x);
 
 //- rjf: integer -> string
-MD_API String8 str8_from_memory_size(Arena *arena, U64 z);
-MD_API String8 str8_from_u64        (Arena *arena, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
-MD_API String8 str8_from_s64        (Arena *arena, S64 s64, U32 radix, U8 min_digits, U8 digit_group_separator);
+MD_API String8 str8_from_memory_size(Arena* arena, U64 z);
+MD_API String8 str8_from_u64        (Arena* arena, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
+MD_API String8 str8_from_s64        (Arena* arena, S64 s64, U32 radix, U8 min_digits, U8 digit_group_separator);
 
-String8 str8_from_allocator_size(U64 z, AllocatorInfo ainfo);
+String8 str8_from_allocator_size(AllocatorInfo ainfo, U64 z);
 String8 str8_from_allocator_u64 (AllocatorInfo ainfo, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
 String8 str8_from_alloctor_s64  (AllocatorInfo ainfo, S64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
 
@@ -370,7 +374,7 @@ String8Node* str8_list_push_node                 (String8List* list, String8Node
 String8Node* str8_list_push_node_set_string      (String8List* list, String8Node* node, String8 string);
 String8Node* str8_list_push_node_front           (String8List* list, String8Node* node);
 String8Node* str8_list_push_node_front_set_string(String8List* list, String8Node* node, String8 string);
-void         str8_list_concat_in_place           (String8List *list, String8List* to_push);
+void         str8_list_concat_in_place           (String8List* list, String8List* to_push);
 
 inline String8Node*
 str8_list_push_node(String8List* list, String8Node* node){
@@ -441,16 +445,16 @@ String8List str8_split_arena(Arena *arena, String8 string, U8 *split_chars, U64 
 // String8List  str8__split_ainfo(String8 string, U8* split_chars, U64 split_char_count, StringSplitFlags flags, AllocatorInfo allocator);
 // #define      str8_split_ainfo(string, split_chars, split_char_count, flags, ...) str8__split_ainfo(string, split_chars, split_char_count, flags, (AllocatorInfo){__VA_ARGS__});
 
-internal String8List  str8_split_by_string_chars     (Arena *arena, String8 string, String8 split_chars, StringSplitFlags flags);
-internal String8List  str8_list_split_by_string_chars(Arena *arena, String8List list, String8 split_chars, StringSplitFlags flags);
-internal String8      str8_list_join                 (Arena *arena, String8List *list, StringJoin *optional_params);
-internal void         str8_list_from_flags           (Arena *arena, String8List *list, U32 flags, String8 *flag_string_table, U32 flag_string_count);
+internal String8List  str8_split_by_string_chars     (Arena* arena, String8      string, String8 split_chars, StringSplitFlags flags);
+internal String8List  str8_list_split_by_string_chars(Arena* arena, String8List  list,   String8 split_chars, StringSplitFlags flags);
+internal String8      str8_list_join                 (Arena* arena, String8List* list, StringJoin* optional_params);
+internal void         str8_list_from_flags           (Arena* arena, String8List* list, U32 flags, String8 *flag_string_table, U32 flag_string_count);
 
 ////////////////////////////////
 //~ rjf; String Arrays
 
-internal String8Array str8_array_from_list(Arena *arena, String8List *list);
-internal String8Array str8_array_reserve  (Arena *arena, U64 count);
+internal String8Array str8_array_from_list(Arena* arena, String8List* list);
+internal String8Array str8_array_reserve  (Arena* arena, U64 count);
 
 ////////////////////////////////
 //~ rjf: String Path Helpers
@@ -461,9 +465,9 @@ internal String8 str8_chop_last_dot  (String8 string);
 internal String8 str8_skip_last_dot  (String8 string);
 
 internal PathStyle   path_style_from_str8                (String8 string);
-internal String8List str8_split_path                     (Arena *arena, String8 string);
-internal void        str8_path_list_resolve_dots_in_place(String8List *path, PathStyle style);
-internal String8     str8_path_list_join_by_style        (Arena *arena, String8List *path, PathStyle style);
+internal String8List str8_split_path                     (Arena* arena, String8 string);
+internal void        str8_path_list_resolve_dots_in_place(String8List* path, PathStyle style);
+internal String8     str8_path_list_join_by_style        (Arena* arena, String8List* path, PathStyle style);
 
 ////////////////////////////////
 //~ rjf: UTF-8 & UTF-16 Decoding/Encoding

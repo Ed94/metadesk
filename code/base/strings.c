@@ -163,6 +163,7 @@ str8_skip_chop_whitespace(String8 string)
 String8
 push_str8_cat(Arena* arena, String8 s1, String8 s2)
 {
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
 	String8 str;
 	str.size = s1.size + s2.size;
 	str.str  = push_array_no_zero(arena, U8, str.size + 1);
@@ -170,20 +171,28 @@ push_str8_cat(Arena* arena, String8 s1, String8 s2)
 	memory_copy(str.str + s1.size, s2.str, s2.size);
 	str.str[str.size] = 0;
 	return(str);
+#else
+	return str8_cat(arena_allocator(arena), s1, s2);
+#endif
 }
 
 String8
-push_str8_copy(Arena *arena, String8 s){
+push_str8_copy(Arena* arena, String8 s){
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
 	String8 str;
 	str.size = s.size;
 	str.str  = push_array_no_zero(arena, U8, str.size + 1);
 	memory_copy(str.str, s.str, s.size);
 	str.str[str.size] = 0;
 	return(str);
+#else
+	return str8_copy(arena_allocator(arena), s);
+#endif
 }
 
 String8
-push_str8fv(Arena *arena, char *fmt, va_list args){
+push_str8fv(Arena* arena, char* fmt, va_list args){
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
 	va_list args2;
 	va_copy(args2, args);
 	U32     needed_bytes = raddbg_vsnprintf(0, 0, fmt, args) + 1;
@@ -193,6 +202,9 @@ push_str8fv(Arena *arena, char *fmt, va_list args){
 	result.str[result.size] = 0;
 	va_end(args2);
 	return(result);
+#else
+	return str8fv(arena_allocator(arena), fmt, args);
+#endif
 }
 
 String8
@@ -200,7 +212,7 @@ str8_cat(AllocatorInfo ainfo, String8 s1, String8 s2)
 {
 	String8 str;
 	str.size = s1.size + s2.size;
-	str.str  = alloc_array(ainfo, U8, str.size + 1);
+	str.str  = alloc_array_no_zero(ainfo, U8, str.size + 1);
 	memory_copy(str.str,           s1.str, s1.size);
 	memory_copy(str.str + s1.size, s2.str, s2.size);
 	str.str[str.size] = 0;
@@ -212,7 +224,7 @@ str8_copy(AllocatorInfo ainfo, String8 s)
 {
 	String8 str;
 	str.size = s.size;
-	str.str  = alloc_array(ainfo, U8, str.size + 1);
+	str.str  = alloc_array_no_zero(ainfo, U8, str.size + 1);
 	memory_copy(str.str, s.str, s.size);
 	str.str[str.size] = 0;
 	return(str);
@@ -313,7 +325,8 @@ try_u64_from_str8_c_rules(String8 string, U64 *x)
 //- rjf: integer -> string
 
 String8
-str8_from_memory_size(Arena *arena, U64 z) {
+str8_from_memory_size(Arena* arena, U64 z) {
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
 	String8 result = {0};
 	if (z < KB(1)) {
 		result = push_str8f(arena, "%llu  b", z);
@@ -328,6 +341,9 @@ str8_from_memory_size(Arena *arena, U64 z) {
 		result = push_str8f(arena, "%llu.%02llu Gb", z/GB(1), ((100*z)/GB(1))%100);
 	}
 	return(result);
+#else
+	return str8_from_allocator_size(arena_allocator(arena), z);
+#endif
 }
 
 String8
@@ -349,8 +365,9 @@ str8__from_allocator_size(AllocatorInfo ainfo, U64 z) {
 }
 
 String8
-str8_from_u64(Arena *arena, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator)
+str8_from_u64(Arena* arena, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator)
 {
+	#if 0
 	String8 result = {0};
 	{
 		// rjf: prefix
@@ -435,10 +452,12 @@ str8_from_u64(Arena *arena, U64 u64, U32 radix, U8 min_digits, U8 digit_group_se
 		}
 	}
 	return result;
+	#endif
+	return str8_from_allocator_u64(arena_allocator(arena), u64, radix, min_digits, digit_group_separator);
 }
 
 String8
-str8__from_allocator_u64(AllocatorInfo ainfo, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator)
+str8_from_allocator_u64(AllocatorInfo ainfo, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator)
 {
 	String8 result = {0};
 	{
@@ -488,7 +507,7 @@ str8__from_allocator_u64(AllocatorInfo ainfo, U64 u64, U32 radix, U8 min_digits,
 				}
 			}
 			result.size = prefix.size + needed_leading_0s + needed_separators + needed_digits;
-			result.str  = alloc_array(ainfo, U8, result.size + 1);
+			result.str  = alloc_array_no_zero(ainfo, U8, result.size + 1);
 			result.str[result.size] = 0;
 		}
 		
@@ -529,6 +548,7 @@ str8__from_allocator_u64(AllocatorInfo ainfo, U64 u64, U32 radix, U8 min_digits,
 String8
 str8_from_s64(Arena *arena, S64 s64, U32 radix, U8 min_digits, U8 digit_group_separator)
 {
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
 	String8 result = {0};
 	// TODO(rjf): preeeeetty sloppy...
 	if(s64 < 0) {
@@ -541,20 +561,23 @@ str8_from_s64(Arena *arena, S64 s64, U32 radix, U8 min_digits, U8 digit_group_se
 		result = str8_from_u64(arena, (U64)s64, radix, min_digits, digit_group_separator);
 	}
 	return result;
+#else
+	return str8_from_alloctor_s64(arena_allocator(arena), s64, radix, min_digits, digit_group_separator);
+#endif
 }
 
 String8
-str8__from_alloctor_s64(AllocatorInfo ainfo, S64 s64, U32 radix, U8 min_digits, U8 digit_group_separator)
+str8_from_alloctor_s64(AllocatorInfo ainfo, S64 s64, U32 radix, U8 min_digits, U8 digit_group_separator)
 {
 	String8 result = {0};
 	if(s64 < 0) {
 		U8      bytes[KB(8)];
 		FArena  scratch = farena_from_memory(bytes, size_of(bytes));
-		String8 numeric_part = str8__from_allocator_u64((U64)(-s64), radix, min_digits, digit_group_separator, farena_allocator(scratch));
+		String8 numeric_part = str8__from_allocator_u64(farena_allocator(scratch), (U64)(-s64), radix, min_digits, digit_group_separator);
 		result = str8f(ainfo, "-%S", numeric_part);
 	}
 	else {
-		result = str8__from_allocator_u64((U64)s64, radix, min_digits, digit_group_separator, ainfo);
+		result = str8__from_allocator_u64(ainfo, (U64)s64, radix, min_digits, digit_group_separator);
 	}
 	return result;
 }
@@ -620,7 +643,7 @@ str8_list_concat_in_place(String8List* list, String8List* to_push) {
 		else {
 			*list = *to_push;
 		}
-		MemoryZeroStruct(to_push);
+		memory_zero_struct(to_push);
 	}
 }
 
@@ -653,7 +676,7 @@ str8_list_push_aligner(Arena *arena, String8List *list, U64 min, U64 align)
 
 String8Node*
 str8_list_aligner(AllocatorInfo ainfo, String8List* list, U64 min, U64 align) {
-	String8Node* node = alloc_array(ainfo, String8Node, 1);
+	String8Node* node = alloc_array_no_zero(ainfo, String8Node, 1);
 	U64 new_size = list->total_size + min;
 	U64 increase_size = 0;
 
@@ -1086,7 +1109,7 @@ read_only global U8 utf8_class[32] = {
 
 internal UnicodeDecode
 utf8_decode(U8 *str, U64 max){
-  UnicodeDecode result = {1, max_U32};
+  UnicodeDecode result = {1, MAX_U32};
   U8 byte = str[0];
   U8 byte_class = utf8_class[byte >> 3];
   switch (byte_class)
@@ -1102,8 +1125,8 @@ utf8_decode(U8 *str, U64 max){
         U8 cont_byte = str[1];
         if (utf8_class[cont_byte >> 3] == 0)
         {
-          result.codepoint = (byte & bitmask5) << 6;
-          result.codepoint |=  (cont_byte & bitmask6);
+          result.codepoint =   (byte      & BITMASK5) << 6;
+          result.codepoint |=  (cont_byte & BITMASK6);
           result.inc = 2;
         }
       }
@@ -1116,9 +1139,9 @@ utf8_decode(U8 *str, U64 max){
         if (utf8_class[cont_byte[0] >> 3] == 0 &&
             utf8_class[cont_byte[1] >> 3] == 0)
         {
-          result.codepoint = (byte & bitmask4) << 12;
-          result.codepoint |= ((cont_byte[0] & bitmask6) << 6);
-          result.codepoint |=  (cont_byte[1] & bitmask6);
+          result.codepoint =   (byte         & BITMASK4) << 12;
+          result.codepoint |= ((cont_byte[0] & BITMASK6) << 6);
+          result.codepoint |=  (cont_byte[1] & BITMASK6);
           result.inc = 3;
         }
       }
@@ -1132,10 +1155,10 @@ utf8_decode(U8 *str, U64 max){
             utf8_class[cont_byte[1] >> 3] == 0 &&
             utf8_class[cont_byte[2] >> 3] == 0)
         {
-          result.codepoint = (byte & bitmask3) << 18;
-          result.codepoint |= ((cont_byte[0] & bitmask6) << 12);
-          result.codepoint |= ((cont_byte[1] & bitmask6) <<  6);
-          result.codepoint |=  (cont_byte[2] & bitmask6);
+          result.codepoint =   (byte         & BITMASK3) << 18;
+          result.codepoint |= ((cont_byte[0] & BITMASK6) << 12);
+          result.codepoint |= ((cont_byte[1] & BITMASK6) <<  6);
+          result.codepoint |=  (cont_byte[2] & BITMASK6);
           result.inc = 4;
         }
       }

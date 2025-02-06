@@ -147,39 +147,40 @@
 //~ rjf: Memory Functions
 
 inline B32
-memory_is_zero(void *ptr, U64 size){
-  B32 result = 1;
-  
-  // break down size
-  U64 extra = (size&0x7);
-  U64 count8 = (size >> 3);
-  
-  // check with 8-byte stride
-  U64 *p64 = (U64*)ptr;
-  if(result)
-  {
-    for (U64 i = 0; i < count8; i += 1, p64 += 1){
-      if (*p64 != 0){
-        result = 0;
-        goto done;
-      }
-    }
-  }
-  
-  // check extra
-  if(result)
-  {
-    U8 *p8 = (U8*)p64;
-    for (U64 i = 0; i < extra; i += 1, p8 += 1){
-      if (*p8 != 0){
-        result = 0;
-        goto done;
-      }
-    }
-  }
-  
-  done:;
-  return(result);
+memory_is_zero(void* ptr, U64 size)
+{
+	B32 result = 1;
+	
+	// break down size
+	U64 extra  = (size & 0x7);
+	U64 count8 = (size >> 3);
+	
+	// check with 8-byte stride
+	U64* p64 = (U64*)ptr;
+	if (result)
+	{
+		for (U64 i = 0; i < count8; i += 1, p64 += 1) {
+			if (*p64 != 0){
+				result = 0;
+				goto done;
+			}
+		}
+	}
+	
+	// check extra
+	if (result)
+	{
+		U8* p8 = (U8*)p64;
+		for (U64 i = 0; i < extra; i += 1, p8 += 1) {
+			if (*p8 != 0) {
+				result = 0;
+				goto done;
+			}
+		}
+	}
+	
+done:;
+	return(result);
 }
 
 inline
@@ -695,4 +696,143 @@ void* mem_set( void* destination, U8 fill_byte, SSIZE byte_count )
 #	define thread_local __thread
 #else
 #	error "No thread local support"
+#endif
+
+
+////////////////////////////////
+//~ rjf: Safe Casts
+
+inline U16
+safe_cast_u16(U32 x) {
+	assert_always(x <= MAX_U16);
+	U16 result = (U16)x;
+	return result;
+}
+
+inline U32
+safe_cast_u32(U64 x) {
+	assert_always(x <= MAX_U32);
+	U32 result = (U32)x;
+	return result;
+}
+
+inline S32
+safe_cast_s32(S64 x) {
+	assert_always(x <= MAX_S32);
+	S32 result = (S32)x;
+	return result;
+}
+
+////////////////////////////////
+//~ rjf: Large Base Type Functions
+
+inline U128 u128_zero (void)           { U128 v = {0};      return v; }
+inline U128 u128_make (U64 v0, U64 v1) { U128 v = {v0, v1}; return v; }
+inline B32  u128_match(U128 a, U128 b) { return memory_match_struct(&a, &b); }
+
+////////////////////////////////
+//~ rjf: Bit Patterns
+
+inline U32 u32_from_u64_saturate(U64 x) { U32 x32 = (x > MAX_U32) ? MAX_U32 : (U32)x; return(x32); }
+
+inline U64
+u64_up_to_pow2(U64 x) {
+	if (x == 0) {
+		x = 1;
+	}
+	else {
+		x -= 1;
+		x |= (x >> 1);
+		x |= (x >> 2);
+		x |= (x >> 4);
+		x |= (x >> 8);
+		x |= (x >> 16);
+		x |= (x >> 32);
+		x += 1;
+	}
+	return(x);
+}
+
+inline S32
+extend_sign32(U32 x, U32 size) {
+  U32 high_bit = size * 8;
+  U32 shift    = 32 - high_bit;
+  S32 result   = ((S32)x << shift) >> shift;
+  return result;
+}
+
+inline S64
+extend_sign64(U64 x, U64 size) {
+  U64 high_bit = size * 8;
+  U64 shift    = 64 - high_bit;
+  S64 result   = ((S64)x << shift) >> shift;
+  return result;
+}
+
+inline F32 inf32    (void) { union { U32 u; F32 f; } x; x.u = EXPONENT32;          return(x.f); }
+inline F32 neg_inf32(void) { union { U32 u; F32 f; } x; x.u = SIGN32 | EXPONENT32; return(x.f); }
+
+inline U16
+bswap_u16(U16 x)
+{
+  U16 result = (((x & 0xFF00) >> 8) |
+                ((x & 0x00FF) << 8));
+  return result;
+}
+
+inline U32
+bswap_u32(U32 x)
+{
+  U32 result = (((x & 0xFF000000) >> 24) |
+                ((x & 0x00FF0000) >> 8)  |
+                ((x & 0x0000FF00) << 8)  |
+                ((x & 0x000000FF) << 24));
+  return result;
+}
+
+inline U64
+bswap_u64(U64 x)
+{
+  // TODO(nick): naive bswap, replace with something that is faster like an intrinsic
+  U64 result = (((x & 0xFF00000000000000ULL) >> 56) |
+                ((x & 0x00FF000000000000ULL) >> 40) |
+                ((x & 0x0000FF0000000000ULL) >> 24) |
+                ((x & 0x000000FF00000000ULL) >> 8)  |
+                ((x & 0x00000000FF000000ULL) << 8)  |
+                ((x & 0x0000000000FF0000ULL) << 24) |
+                ((x & 0x000000000000FF00ULL) << 40) |
+                ((x & 0x00000000000000FFULL) << 56));
+  return result;
+}
+
+#if ARCH_LITTLE_ENDIAN
+# define from_be_u16(x) bswap_u16(x)
+# define from_be_u32(x) bswap_u32(x)
+# define from_be_u64(x) bswap_u64(x)
+#else
+# define from_be_u16(x) (x)
+# define from_be_u32(x) (x)
+# define from_be_u64(x) (x)
+#endif
+
+#if COMPILER_MSVC || (COMPILER_CLANG && OS_WINDOWS)
+	inline U64 count_bits_set16(U16 val) { return __popcnt16(val); }
+	inline U64 count_bits_set32(U32 val) { return __popcnt  (val); }
+	inline U64 count_bits_set64(U64 val) { return __popcnt64(val); }
+
+	inline U64 ctz32(U32 mask) { unsigned long idx; _BitScanForward  (&idx, mask); return idx; }
+	inline U64 ctz64(U64 mask) { unsigned long idx; _BitScanForward64(&idx, mask); return idx; }
+	inline U64 clz32(U32 mask) { unsigned long idx; _BitScanReverse  (&idx, mask); return 31 - idx; }
+	inline U64 clz64(U64 mask) { unsigned long idx; _BitScanReverse64(&idx, mask); return 63 - idx; }
+#elif COMPILER_CLANG || COMPILER_GCC
+	inline U64 count_bits_set16(U16 val) { NotImplemented; return 0; }
+	inline U64 count_bits_set32(U32 val) { NotImplemented; return 0; }
+	inline U64 count_bits_set64(U64 val) { NotImplemented; return 0; }
+
+	inline U64 ctz32(U32 val) { NotImplemented; return 0; }
+	inline U64 ctz64(U32 val) { NotImplemented; return 0; }
+	inline U64 clz32(U32 val) { NotImplemented; return 0; }
+	inline U64 clz64(U64 val) { NotImplemented; return 0; }
+#else
+#	error "Bit intrinsic functions not defined for this compiler."
 #endif

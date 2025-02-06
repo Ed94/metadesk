@@ -710,7 +710,7 @@ internal OperatingSystem operating_system_from_string(String8 string);
 internal String8 string_from_dimension(Dimension dimension);
 internal String8 string_from_side(Side side);
 internal String8 string_from_operating_system(OperatingSystem os);
-internal String8 string_from_architecture(Architecture arch);
+internal String8 string_from_arch(Arch arch);
 
 ////////////////////////////////
 //~ rjf: Time Types -> String
@@ -785,8 +785,8 @@ internal void* str8_deserial_get_raw_ptr                (String8 string, U64 off
 internal U64   str8_deserial_read_cstr                  (String8 string, U64 off, String8* cstr_out);
 internal U64   str8_deserial_read_windows_utf16_string16(String8 string, U64 off, String16* str_out);
 internal U64   str8_deserial_read_block                 (String8 string, U64 off, U64 size, String8* block_out);
-internal U64    str8_deserial_read_uleb128(String8 string, U64 off, U64 *value_out);
-internal U64    str8_deserial_read_sleb128(String8 string, U64 off, S64 *value_out);
+internal U64   str8_deserial_read_uleb128(String8 string, U64 off, U64 *value_out);
+internal U64   str8_deserial_read_sleb128(String8 string, U64 off, S64 *value_out);
 
 #define str8_deserial_read_array(string, off, ptr, count) str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)) * (count), sizeof( *(ptr)))
 #define str8_deserial_read_struct(string, off, ptr)       str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)), sizeof( *(ptr)))

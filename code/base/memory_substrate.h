@@ -36,8 +36,6 @@ enum AllocatorMode
 	AllocatorMode_Free,
 	AllocatorMode_FreeAll,
 	AllocatorMode_Resize,
-	// AllocatorMode_Pop,
-	// AllocatorMode_Pop_To,
 	AllocatorMode_QueryType,
 	AllocatorMode_QuerySupport,
 };
@@ -48,8 +46,6 @@ enum
 	AllocatorQuery_Free    = (1 << 1),
 	AllocatorQuery_FreeAll = (1 << 2),
 	AllocatorQuery_Resize  = (1 << 3),
-	// AllocatorQuery_Pop     = (1 << 3),
-	// AllocatorQuery_Pop_To  = (1 << 3),
 };
 
 typedef void*(AllocatorProc)( void* allocator_data, AllocatorMode type, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags );
@@ -90,10 +86,6 @@ void* alloc_align( AllocatorInfo a, SSIZE size, SSIZE alignment );
 
 // Free allocated memory.
 void alloc_free( AllocatorInfo a, void* ptr );
-
-// void alloc_pop(AllocatorInfo a, SSIZE amt);
-
-// void alloc_pop_to(AllocatorInfo a, SSIZE pos);
 
 // Free all memory allocated by an allocator.
 void free_all( AllocatorInfo a );
@@ -270,22 +262,6 @@ void alloc_free( AllocatorInfo a, void* ptr ) {
 		a.proc( a.data, AllocatorMode_Free, 0, 0, ptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
 	}
 }
-
-// inline
-// void alloc_pop(AllocatorInfo a, SSIZE amt) {
-// 	if (a.proc == nullptr) {
-// 		a = default_allocator();
-// 	}
-// 	a.proc(a.data, AllocatorMode_Pop, amt, 0, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS);
-// }
-
-// inline
-// void alloc_pop_to(AllocatorInfo a, SSIZE pos) {
-// 	if (a.proc == nullptr) {
-// 		a = default_allocator();
-// 	}
-// 	a.proc(a.data, AllocatorMode_Pop_To, 0, 0, rcast(void*, pos), 0, 0);
-// }
 
 inline
 void free_all( AllocatorInfo a ) {

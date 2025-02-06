@@ -286,14 +286,14 @@ typedef void VoidProc(void);
 typedef union Guid Guid;
 union Guid
 {
-  struct
-  {
-    U32 data1;
-    U16 data2;
-    U16 data3;
-    U8  data4[8];
-  };
-  U8 v[16];
+	struct
+	{
+		U32 data1;
+		U16 data2;
+		U16 data3;
+		U8  data4[8];
+	};
+	U8 v[16];
 };
 static_assert(size_of(Guid) == 16, "Guid is not 16 bytes");
 
@@ -303,71 +303,24 @@ static_assert(size_of(Guid) == 16, "Guid is not 16 bytes");
 typedef struct U16Array U16Array;
 struct U16Array
 {
-  U64  count;
-  U16* v;
+	U64  count;
+	U16* v;
 };
 typedef struct U32Array U32Array;
 struct U32Array
 {
-  U64  count;
-  U32* v;
+	U64  count;
+	U32* v;
 };
 typedef struct U64Array U64Array;
 struct U64Array
 {
-  U64  count;
-  U64* v;
+	U64  count;
+	U64* v;
 };
 typedef struct U128Array U128Array;
 struct U128Array
 {
-  U64   count;
-  U128* v;
+	U64   count;
+	U128* v;
 };
-
-////////////////////////////////
-//~ rjf: Safe Casts
-
-internal U16 safe_cast_u16(U32 x);
-internal U32 safe_cast_u32(U64 x);
-internal S32 safe_cast_s32(S64 x);
-
-////////////////////////////////
-//~ rjf: Large Base Type Functions
-
-internal U128 u128_zero(void);
-internal U128 u128_make(U64 v0, U64 v1);
-internal B32 u128_match(U128 a, U128 b);
-
-////////////////////////////////
-//~ rjf: Bit Patterns
-
-internal U32 u32_from_u64_saturate(U64 x);
-internal U64 u64_up_to_pow2(U64 x);
-internal S32 extend_sign32(U32 x, U32 size);
-internal S64 extend_sign64(U64 x, U64 size);
-
-internal F32 inf32(void);
-internal F32 neg_inf32(void);
-
-internal U16 bswap_u16(U16 x);
-internal U32 bswap_u32(U32 x);
-internal U64 bswap_u64(U64 x);
-
-#if ARCH_LITTLE_ENDIAN
-# define from_be_u16(x) bswap_u16(x)
-# define from_be_u32(x) bswap_u32(x)
-# define from_be_u64(x) bswap_u64(x)
-#else
-# define from_be_u16(x) (x)
-# define from_be_u32(x) (x)
-# define from_be_u64(x) (x)
-#endif
-
-internal U64 count_bits_set32(U32 val);
-internal U64 count_bits_set64(U64 val);
-
-internal U64 ctz32(U32 val);
-internal U64 ctz64(U64 val);
-internal U64 clz32(U32 val);
-internal U64 clz64(U64 val);

@@ -62,12 +62,5 @@ Dir2;
 ////////////////////////////////
 //~ rjf: Enum -> Sign
 
-internal S32
-sign_from_side_S32(Side side){
-  return((side == Side_Min)?-1:1);
-}
-
-internal F32
-sign_from_side_F32(Side side){
-  return((side == Side_Min)?-1.f:1.f);
-}
+inline S32 sign_from_side_S32(Side side) { return((side == Side_Min) ? -1   : 1  ); }
+inline F32 sign_from_side_F32(Side side) { return((side == Side_Min) ? -1.f : 1.f); }

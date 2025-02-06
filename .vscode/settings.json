@@ -39,7 +39,11 @@
 		"platform.h": "c",
 		"macros.h": "c",
 		"linkage.h": "c",
-		"context_cracking.h": "c"
+		"context_cracking.h": "c",
+		"stdarg.h": "c",
+		"intrin.h": "c",
+		"stddef.h": "c",
+		"wmmintrin.h": "c"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

@@ -7,10 +7,10 @@
 // base
 
 #include "base/context_cracking.h"
+#include "base/platform.h"
 #include "base/linkage.h"
 #include "base/macros.h"
 #include "base/generic_macros.h"
-#include "base/platform.h"
 #include "base/namespace.h"
 
 MD_NS_BEGIN

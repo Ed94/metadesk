@@ -4,6 +4,9 @@
 #	include "linkage.h"
 #	include "macros.h"
 #	include "base_types.h"
+#	include "memory.h"
+#	include "memory_substrate.h"
+#	include "arena.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools
@@ -953,8 +956,6 @@ u32_from_rgba(Vec4F32 rgba)
 	return result;
 }
 
-
-
 #define rgba_from_u32_lit_comp(h)       \
 {                                       \
 	(((h) & 0xff000000) >> 24) / 255.f, \
@@ -966,29 +967,56 @@ u32_from_rgba(Vec4F32 rgba)
 ////////////////////////////////
 //~ rjf: List Type Functions
 
-void         rng1s64_list_push      (Arena *arena, Rng1S64List *list, Rng1S64 rng);
-Rng1S64Array rng1s64_array_from_list(Arena *arena, Rng1S64List *list);
-
 inline void
-rng1s64_list_push(Arena *arena, Rng1S64List *list, Rng1S64 rng)
+rng1s64_list_push(Arena* arena, Rng1S64List* list, Rng1S64 rng)
 {
-  Rng1S64Node* n = push_array(arena, Rng1S64Node, 1);
-  MemoryCopyStruct(&n->v, &rng);
-  SLLQueuePush(list->first, list->last, n);
-  list->count += 1;
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
+	Rng1S64Node* n = push_array(arena, Rng1S64Node, 1);
+	memory_copy_struct(&n->v, &rng);
+	sll_queue_push(list->first, list->last, n);
+	list->count += 1;
+#else
+	rng1s64_list_alloc(arena_allocator(arena), list, rng);
+#endif
 }
 
 inline Rng1S64Array
-rng1s64_array_from_list(Arena *arena, Rng1S64List *list)
+rng1s64_array_from_list(Arena* arena, Rng1S64List* list)
 {
-  Rng1S64Array 
-  arr       = {0};
-  arr.count = list->count;
-  arr.v     = push_array_no_zero(arena, Rng1S64, arr.count);
-  U64 idx   = 0;
-  for(Rng1S64Node *n = list->first; n != 0; n = n->next) {
-    arr.v[idx] = n->v;
-    idx += 1;
-  }
-  return arr;
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
+	Rng1S64Array 
+	arr       = {0};
+	arr.count = list->count;
+	arr.v     = push_array_no_zero(arena, Rng1S64, arr.count);
+	U64 idx   = 0;
+	for (Rng1S64Node *n = list->first; n != 0; n = n->next) {
+		arr.v[idx] = n->v;
+		idx       += 1;
+	}
+	return arr;
+#else
+	return rng1s64_array_from_list_alloc(arena_allocator(arena), list);
+#endif
+}
+
+inline void
+rng1s64_list_alloc(AllocatorInfo ainfo, Rng1S64List* list, Rng1S64 rng) {
+	Rng1S64Node* n = alloc_array(ainfo, Rng1S64Node, 1);
+	memory_copy_struct(&n->v, &rng);
+	sll_queue_push(list->first, list->last, n);
+	list->count += 1;
+}
+
+inline Rng1S64Array
+rng1s64_array_from_list_alloc(AllocatorInfo ainfo, Rng1S64List* list) {
+	Rng1S64Array 
+	arr       = {0};
+	arr.count = list->count;
+	arr.v     = alloc_array_no_zero(ainfo, Rng1S64, arr.count);
+	U64 idx   = 0;
+	for (Rng1S64Node *n = list->first; n != 0; n = n->next) {
+		arr.v[idx] = n->v;
+		idx       += 1;
+	}
+	return arr;
 }

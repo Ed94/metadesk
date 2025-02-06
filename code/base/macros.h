@@ -95,3 +95,20 @@
 #		endif
 #	endif
 #endif
+
+////////////////////////////////
+//~ rjf: For-Loop Construct Macros
+
+#ifndef defer_loop
+#define defer_loop(begin, end)           for (int _i_ =       ((begin), 0); ! _i_;                           _i_ += 1, (end))
+#endif
+#ifndef defer_loop_checked
+#define defer_loop_checked(begin, end)   for (int _i_ = 2 * ! (begin);       (_i_ == 2 ? ((end), 0) : !_i_); _i_ += 1, (end))
+#endif
+
+#ifndef each_enum_val
+#define each_enum_val(type, it)          type it = (type) 0; it < type ## _COUNT; it = (type)( it + 1 )
+#endif
+#ifndef each_non_zero_enum_val
+#define each_non_zero_enum_val(type, it) type it = (type) 1; it < type ## _COUNT; it = (type)( it + 1 )
+#endif

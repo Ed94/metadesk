@@ -7,7 +7,6 @@
 #	include "base_types.h"
 #endif
 
-
 ////////////////////////////////
 //~ rjf: Units
 
@@ -48,25 +47,6 @@
 #endif
 
 ////////////////////////////////
-//~ rjf: Clamps, Mins, Maxes
-
-#ifndef min
-#define min(A,B) (((A) < (B)) ? (A) : (B))
-#endif
-#ifndef max
-#define max(A,B) (((A) > (B)) ? (A) : (B))
-#endif
-
-#ifndef clamp_top
-#define clamp_top(A,X) Min(A, X)
-#endif
-#ifndef clamp_bot
-#define clamp_bot(X,B) Max(X, B)
-#endif
-
-#define clamp(A,X,B) (((X) < (A)) ? (A) : ((X) > (B)) ? (B) : (X))
-
-////////////////////////////////
 //~ rjf: Type -> Alignment
 
 #ifndef align_of
@@ -98,23 +78,6 @@
 #endif
 
 ////////////////////////////////
-//~ rjf: For-Loop Construct Macros
-
-#ifndef defer_loop
-#define defer_loop(begin, end)           for (int _i_ =       ((begin), 0); ! _i_;                           _i_ += 1, (end))
-#endif
-#ifndef defer_loop_checked
-#define defer_loop_checked(begin, end)   for (int _i_ = 2 * ! (begin);       (_i_ == 2 ? ((end), 0) : !_i_); _i_ += 1, (end))
-#endif
-
-#ifndef each_enum_val
-#define each_enum_val(type, it)          type it = (type) 0; it < type ## _COUNT; it = (type)( it + 1 )
-#endif
-#ifndef each_non_zero_enum_val
-#define each_non_zero_enum_val(type, it) type it = (type) 1; it < type ## _COUNT; it = (type)( it + 1 )
-#endif
-
-////////////////////////////////
 //~ rjf: Memory Operation Macros
 
 
@@ -141,13 +104,13 @@
 #endif
 
 #ifndef memory_copy_struct
-#define memory_copy_struct(d,s)        memory_copy((d), (s), sizeof( *(d)))
+#define memory_copy_struct(d, s)       memory_copy((d), (s), sizeof( *(d)))
 #endif
 #ifndef memory_copy_array
-#define memory_copy_array(d,s)         memory_copy((d), (s), sizeof( d))
+#define memory_copy_array(d, s)        memory_copy((d), (s), sizeof( d))
 #endif
 #ifndef memory_copy_type
-#define memory_copy_type(d,s,c)        memory_copy((d), (s), sizeof( *(d)) * (c))
+#define memory_copy_type(d, s, c)      memory_copy((d), (s), sizeof( *(d)) * (c))
 #endif
 
 #ifndef memory_zero
@@ -160,24 +123,24 @@
 #define memory_zero_array(a)           memory_zero((a), sizeof(a))
 #endif
 #ifndef memory_zero_type
-#define memory_zero_type(m,c)          memory_zero((m), sizeof( *(m)) * (c))
+#define memory_zero_type(m, c)         memory_zero((m), sizeof( *(m)) * (c))
 #endif
 
 #ifndef memory_match
-#define memory_match(a,b,z)            (memory_compare((a), (b), (z)) == 0)
+#define memory_match(a, b, z)          (memory_compare((a), (b), (z)) == 0)
 #endif
 #ifndef memory_match_struct
-#define memory_match_struct(a,b)       memory_match((a), (b), sizeof(*(a)))
+#define memory_match_struct(a, b)      memory_match((a), (b), sizeof(*(a)))
 #endif
 #ifndef memory_match_array
-#define memory_match_array(a,b)        memory_match((a), (b), sizeof(a))
+#define memory_match_array(a, b)       memory_match((a), (b), sizeof(a))
 #endif
 
 #ifndef memory_read
-#define memory_read(T,p,e)            ( ((p) + sizeof(T) <= (e)) ? ( *(T*)(p)) : (0) )
+#define memory_read(T, p, e)          ( ((p) + sizeof(T) <= (e)) ? ( *(T*)(p)) : (0) )
 #endif
 #ifndef memory_consume
-#define memory_consume(T,p,e)         ( ((p) + sizeof(T) <= (e)) ? ((p) += sizeof(T), *(T*)((p) - sizeof(T))) : ((p) = (e),0) )
+#define memory_consume(T, p, e)       ( ((p) + sizeof(T) <= (e)) ? ((p) += sizeof(T), *(T*)((p) - sizeof(T))) : ((p) = (e),0) )
 #endif
 
 inline

@@ -217,16 +217,25 @@ MD_API void* farena_allocator_proc(void* allocator_data, AllocatorMode mode, SSI
 
 inline
 AllocatorType allocator_type(AllocatorInfo a) {
+	if (a.proc == nullptr) {
+		a = default_allocator();
+	}
 	return (AllocatorType) a.proc(a.data, AllocatorMode_QueryType, 0, 0, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS);
 }
 
 inline
 AllocatorQueryFlags allocator_query_support(AllocatorInfo a) {
+	if (a.proc == nullptr) {
+		a = default_allocator();
+	}
 	return (AllocatorType) a.proc(a.data, AllocatorMode_QuerySupport, 0, 0, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS);
 }
 
 inline
 void* alloc_align( AllocatorInfo a, SSIZE size, SSIZE alignment ) {
+	if (a.proc == nullptr) {
+		a = default_allocator();
+	}
 	return a.proc( a.data, AllocatorMode_Alloc, size, alignment, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
 
@@ -240,22 +249,35 @@ void* alloc( AllocatorInfo a, SSIZE size ) {
 
 inline
 void alloc_free( AllocatorInfo a, void* ptr ) {
-	if ( ptr != nullptr )
+	if (a.proc == nullptr) {
+		a = default_allocator();
+	}
+	if ( ptr != nullptr ) {
 		a.proc( a.data, AllocatorMode_Free, 0, 0, ptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
+	}
 }
 
 inline
 void free_all( AllocatorInfo a ) {
+	if (a.proc == nullptr) {
+		a = default_allocator();
+	}
 	a.proc( a.data, AllocatorMode_FreeAll, 0, 0, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
 
 inline
 void* resize( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size ) {
+	if (a.proc == nullptr) {
+		a = default_allocator();
+	}
 	return resize_align( a, ptr, old_size, new_size, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
 
 inline
 void* resize_align( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size, SSIZE alignment ) {
+	if (a.proc == nullptr) {
+		a = default_allocator();
+	}
 	return a.proc( a.data, AllocatorMode_Resize, new_size, alignment, ptr, old_size, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
 

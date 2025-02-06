@@ -29,7 +29,9 @@
 		"ratio": "cpp",
 		"tuple": "cpp",
 		"system_error": "cpp",
-		"xlocmon": "cpp"
+		"xlocmon": "cpp",
+		"xlocale": "cpp",
+		"limits": "cpp"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

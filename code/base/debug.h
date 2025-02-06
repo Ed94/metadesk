@@ -1,8 +1,8 @@
 #ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
 #	include "context_cracking.h"
-#	include "base_types.h"
 #	include "macros.h"
+#	include "base_types.h"
 #endif
 
 ////////////////////////////////

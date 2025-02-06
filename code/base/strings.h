@@ -6,7 +6,6 @@
 #	include "macros.h"
 #	include "generic_macros.h"
 #	include "base_types.h"
-#	include "constants.h"
 #	include "arena.h"
 #	include "space.h"
 #	include "math.h"
@@ -196,6 +195,10 @@ inline String8  str8_cstring (char* c)                        { String8  result 
 inline String16 str16_cstring(U16*  c)                        { String16 result = {(U16*)c, cstring16_length((U16*)c)};  return(result); }
 inline String32 str32_cstring(U32*  c)                        { String32 result = {(U32*)c, cstring32_length((U32*)c)};  return(result); }
 
+// TODO(Ed): review these
+internal String16 str16_cstring_capped(void *cstr, void *cap);
+internal String8  str8_cstring_capped_reverse(void *raw_start, void *raw_cap);
+
 inline String8
 str8_cstring_capped(void *cstr, void *cap) {
   char *ptr = (char*)cstr;
@@ -207,11 +210,28 @@ str8_cstring_capped(void *cstr, void *cap) {
 }
 
 ////////////////////////////////
+//~ rjf: String Stylization
+
+inline String8 upper_from_str8      (Arena* arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
+inline String8 lower_from_str8      (Arena* arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
+inline String8 backslashed_from_str8(Arena *arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
+
+inline String8 upper_from_str8_alloc      (AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
+inline String8 lower_from_str8_alloc      (AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
+inline String8 backslashed_from_str8_alloc(AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
+
+////////////////////////////////
 //~ rjf: String Matching
+
+#define str8_match_lit(a_lit, b, flags)   str8_match(str8_lit(a_lit), (b), (flags))
+#define str8_match_cstr(a_cstr, b, flags) str8_match(str8_cstring(a_cstr), (b), (flags))
+#define str8_ends_with_lit(string, end_lit, flags) str8_ends_with((string), str8_lit(end_lit), (flags))
 
 MD_API B32 str8_match      (String8 a, String8 b,                          StringMatchFlags flags);
 MD_API U64 str8_find_needle(String8 string, U64 start_pos, String8 needle, StringMatchFlags flags);
        B32 str8_ends_with  (String8 string, String8 end,                   StringMatchFlags flags);
+
+	   internal U64 str8_find_needle_reverse(String8 string, U64 start_pos, String8 needle, StringMatchFlags flags);
 
 inline B32
 str8_ends_with(String8 string, String8 end, StringMatchFlags flags) {
@@ -301,17 +321,6 @@ str8f(AllocatorInfo ainfo, char *fmt, ...){
 }
 
 ////////////////////////////////
-//~ rjf: String Stylization
-
-inline String8 upper_from_str8      (Arena* arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
-inline String8 lower_from_str8      (Arena* arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
-inline String8 backslashed_from_str8(Arena *arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
-
-inline String8 upper_from_str8_alloc      (AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
-inline String8 lower_from_str8_alloc      (AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
-inline String8 backslashed_from_str8_alloc(AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
-
-////////////////////////////////
 //~ rjf: String <=> Integer Conversions
 
 //- rjf: string -> integer
@@ -319,6 +328,11 @@ MD_API S64 sign_from_str8           (String8 string, String8* string_tail);
 MD_API B32 str8_is_integer          (String8 string, U32      radix);
 MD_API U64 u64_from_str8            (String8 string, U32      radix);
        S64 s64_from_str8            (String8 string, U32      radix);
+
+// TODO(Ed): review these
+internal U32 u32_from_str8(String8 string, U32 radix);
+internal S32 s32_from_str8(String8 string, U32 radix);
+
 MD_API B32 try_u64_from_str8_c_rules(String8 string, U64*     x);
        B32 try_s64_from_str8_c_rules(String8 string, S64*     x);
 
@@ -326,6 +340,10 @@ MD_API B32 try_u64_from_str8_c_rules(String8 string, U64*     x);
 MD_API String8 str8_from_memory_size(Arena* arena, U64 z);
 MD_API String8 str8_from_u64        (Arena* arena, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
 MD_API String8 str8_from_s64        (Arena* arena, S64 s64, U32 radix, U8 min_digits, U8 digit_group_separator);
+
+// TODO(Ed): review these
+internal String8 str8_from_bits_u32(Arena *arena, U32 x);
+internal String8 str8_from_bits_u64(Arena *arena, U64 x);
 
 MD_API String8 str8_from_allocator_size(AllocatorInfo ainfo, U64 z);
 MD_API String8 str8_from_allocator_u64 (AllocatorInfo ainfo, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
@@ -652,11 +670,26 @@ MD_API String8     str8_path_list_join_by_style_alloc  (AllocatorInfo ainfo, Str
 ////////////////////////////////
 //~ rjf: UTF-8 & UTF-16 Decoding/Encoding
 
-UnicodeDecode utf8_decode           (U8*  str,    U64 max);
-UnicodeDecode utf16_decode          (U16* str,    U64 max);
-U32           utf8_encode           (U8*  str,    U32 codepoint);
-U32           utf16_encode          (U16* str,    U32 codepoint);
-U32           utf8_from_utf32_single(U8*  buffer, U32 character);
+MD_API UnicodeDecode utf8_decode           (U8*  str,    U64 max);
+       UnicodeDecode utf16_decode          (U16* str,    U64 max);
+MD_API U32           utf8_encode           (U8*  str,    U32 codepoint);
+MD_API U32           utf16_encode          (U16* str,    U32 codepoint);
+       U32           utf8_from_utf32_single(U8*  buffer, U32 character);
+
+inline UnicodeDecode
+utf16_decode(U16* str, U64 max) {
+	UnicodeDecode result = {1, MAX_U32};
+	result.codepoint = str[0];
+	result.inc       = 1;
+	if (max > 1 && 0xD800 <= str[0] && str[0] < 0xDC00 && 0xDC00 <= str[1] && str[1] < 0xE000) {
+		result.codepoint = ((str[0] - 0xD800) << 10) | 
+		                   ((str[1] - 0xDC00) + 0x10000);
+		result.inc = 2;
+	}
+	return(result);
+}
+
+inline U32 utf8_from_utf32_single(U8* buffer, U32 character){ return(utf8_encode(buffer, character)); }
 
 ////////////////////////////////
 //~ rjf: Unicode String Conversions
@@ -665,6 +698,11 @@ internal String8  str8_from_16(Arena* arena, String16 in);
 internal String16 str16_from_8(Arena* arena, String8  in);
 internal String8  str8_from_32(Arena* arena, String32 in);
 internal String32 str32_from_8(Arena* arena, String8  in);
+
+////////////////////////////////
+//~ String -> Enum Conversions
+
+internal OperatingSystem operating_system_from_string(String8 string);
 
 ////////////////////////////////
 //~ rjf: Basic Types & Space Enum -> String Conversions
@@ -684,9 +722,27 @@ internal String8 push_file_name_date_time_string(Arena* arena, DateTime* date_ti
 internal String8 string_from_elapsed_time       (Arena* arena, DateTime dt);
 
 ////////////////////////////////
+//~ Globally Unique Ids
+
+internal String8 string_from_guid(Arena *arena, Guid guid);
+internal B32     try_guid_from_string(String8 string, Guid *guid_out);
+internal Guid    guid_from_string(String8 string);
+
+////////////////////////////////
 //~ rjf: Basic Text Indentation
 
 internal String8 indented_from_string(Arena *arena, String8 string);
+
+////////////////////////////////
+//~ rjf: Text Escaping
+
+internal String8 escaped_from_raw_str8(Arena *arena, String8 string);
+internal String8 raw_from_escaped_str8(Arena *arena, String8 string);
+
+////////////////////////////////
+//~ rjf: Text Wrapping
+
+String8List wrapped_lines_from_string(Arena *arena, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent);
 
 ////////////////////////////////
 //~ rjf: String <-> Color
@@ -729,6 +785,8 @@ internal void* str8_deserial_get_raw_ptr                (String8 string, U64 off
 internal U64   str8_deserial_read_cstr                  (String8 string, U64 off, String8* cstr_out);
 internal U64   str8_deserial_read_windows_utf16_string16(String8 string, U64 off, String16* str_out);
 internal U64   str8_deserial_read_block                 (String8 string, U64 off, U64 size, String8* block_out);
+internal U64    str8_deserial_read_uleb128(String8 string, U64 off, U64 *value_out);
+internal U64    str8_deserial_read_sleb128(String8 string, U64 off, S64 *value_out);
 
 #define str8_deserial_read_array(string, off, ptr, count) str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)) * (count), sizeof( *(ptr)))
 #define str8_deserial_read_struct(string, off, ptr)       str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)), sizeof( *(ptr)))

@@ -1099,131 +1099,122 @@ read_only global U8 utf8_class[32] = {
 	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,2,2,2,2,3,3,4,5,
 };
 
-internal UnicodeDecode
-utf8_decode(U8 *str, U64 max){
-  UnicodeDecode result = {1, MAX_U32};
-  U8 byte = str[0];
-  U8 byte_class = utf8_class[byte >> 3];
-  switch (byte_class)
-  {
-    case 1:
-    {
-      result.codepoint = byte;
-    }break;
-    case 2:
-    {
-      if (2 < max)
-      {
-        U8 cont_byte = str[1];
-        if (utf8_class[cont_byte >> 3] == 0)
-        {
-          result.codepoint =   (byte      & BITMASK5) << 6;
-          result.codepoint |=  (cont_byte & BITMASK6);
-          result.inc = 2;
-        }
-      }
-    }break;
-    case 3:
-    {
-      if (2 < max)
-      {
-        U8 cont_byte[2] = {str[1], str[2]};
-        if (utf8_class[cont_byte[0] >> 3] == 0 &&
-            utf8_class[cont_byte[1] >> 3] == 0)
-        {
-          result.codepoint =   (byte         & BITMASK4) << 12;
-          result.codepoint |= ((cont_byte[0] & BITMASK6) << 6);
-          result.codepoint |=  (cont_byte[1] & BITMASK6);
-          result.inc = 3;
-        }
-      }
-    }break;
-    case 4:
-    {
-      if (3 < max)
-      {
-        U8 cont_byte[3] = {str[1], str[2], str[3]};
-        if (utf8_class[cont_byte[0] >> 3] == 0 &&
-            utf8_class[cont_byte[1] >> 3] == 0 &&
-            utf8_class[cont_byte[2] >> 3] == 0)
-        {
-          result.codepoint =   (byte         & BITMASK3) << 18;
-          result.codepoint |= ((cont_byte[0] & BITMASK6) << 12);
-          result.codepoint |= ((cont_byte[1] & BITMASK6) <<  6);
-          result.codepoint |=  (cont_byte[2] & BITMASK6);
-          result.inc = 4;
-        }
-      }
-    }
-  }
-  return(result);
+UnicodeDecode
+utf8_decode(U8* str, U64 max)
+{
+	UnicodeDecode result = {1, MAX_U32};
+	U8 byte       = str[0];
+	U8 byte_class = utf8_class[byte >> 3];
+	switch (byte_class)
+	{
+		case 1:
+		{
+			result.codepoint = byte;
+		}
+		break;
+
+		case 2:
+		{
+			if (2 < max)
+			{
+				U8 cont_byte = str[1];
+				if (utf8_class[cont_byte >> 3] == 0)
+				{
+					result.codepoint =   (byte      & BITMASK5) << 6;
+					result.codepoint |=  (cont_byte & BITMASK6);
+					result.inc = 2;
+				}
+			}
+		}
+		break;
+
+		case 3:
+		{
+			if (2 < max)
+			{
+				U8 cont_byte[2] = {str[1], str[2]};
+				if (utf8_class[cont_byte[0] >> 3] == 0 &&
+					utf8_class[cont_byte[1] >> 3] == 0)
+				{
+					result.codepoint =   (byte         & BITMASK4) << 12;
+					result.codepoint |= ((cont_byte[0] & BITMASK6) << 6);
+					result.codepoint |=  (cont_byte[1] & BITMASK6);
+					result.inc = 3;
+				}
+			}
+		}
+		break;
+
+		case 4:
+		{
+			if (3 < max)
+			{
+				U8 cont_byte[3] = {str[1], str[2], str[3]};
+				if (utf8_class[cont_byte[0] >> 3] == 0 &&
+					utf8_class[cont_byte[1] >> 3] == 0 &&
+					utf8_class[cont_byte[2] >> 3] == 0)
+				{
+					result.codepoint =   (byte         & BITMASK3) << 18;
+					result.codepoint |= ((cont_byte[0] & BITMASK6) << 12);
+					result.codepoint |= ((cont_byte[1] & BITMASK6) <<  6);
+					result.codepoint |=  (cont_byte[2] & BITMASK6);
+					result.inc = 4;
+				}
+			}
+		}
+	}
+	return(result);
 }
 
-internal UnicodeDecode
-utf16_decode(U16 *str, U64 max){
-  UnicodeDecode result = {1, max_U32};
-  result.codepoint = str[0];
-  result.inc = 1;
-  if (max > 1 && 0xD800 <= str[0] && str[0] < 0xDC00 && 0xDC00 <= str[1] && str[1] < 0xE000){
-    result.codepoint = ((str[0] - 0xD800) << 10) | ((str[1] - 0xDC00) + 0x10000);
-    result.inc = 2;
-  }
-  return(result);
+U32
+utf8_encode(U8* str, U32 codepoint)
+{
+	U32 inc = 0;
+	if (codepoint <= 0x7F){
+		str[0] = (U8)codepoint;
+		inc    = 1;
+	}
+	else if (codepoint <= 0x7FF){
+		str[0] = (BITMASK2 << 6) | ((codepoint >> 6) & BITMASK5);
+		str[1] = BIT8 | (codepoint & BITMASK6);
+		inc    = 2;
+	}
+	else if (codepoint <= 0xFFFF){
+		str[0] = (BITMASK3 << 5) | ((codepoint >> 12) & BITMASK4);
+		str[1] = BIT8 | ((codepoint >> 6) & BITMASK6);
+		str[2] = BIT8 | ( codepoint       & BITMASK6);
+		inc    = 3;
+	}
+	else if (codepoint <= 0x10FFFF){
+		str[0] = (BITMASK4 << 4) | ((codepoint >> 18) & BITMASK3);
+		str[1] = BIT8 | ((codepoint >> 12) & BITMASK6);
+		str[2] = BIT8 | ((codepoint >>  6) & BITMASK6);
+		str[3] = BIT8 | ( codepoint        & BITMASK6);
+		inc    = 4;
+	}
+	else{
+		str[0] = '?';
+		inc    = 1;
+	}
+	return(inc);
 }
 
-internal U32
-utf8_encode(U8 *str, U32 codepoint){
-  U32 inc = 0;
-  if (codepoint <= 0x7F){
-    str[0] = (U8)codepoint;
-    inc = 1;
-  }
-  else if (codepoint <= 0x7FF){
-    str[0] = (bitmask2 << 6) | ((codepoint >> 6) & bitmask5);
-    str[1] = bit8 | (codepoint & bitmask6);
-    inc = 2;
-  }
-  else if (codepoint <= 0xFFFF){
-    str[0] = (bitmask3 << 5) | ((codepoint >> 12) & bitmask4);
-    str[1] = bit8 | ((codepoint >> 6) & bitmask6);
-    str[2] = bit8 | ( codepoint       & bitmask6);
-    inc = 3;
-  }
-  else if (codepoint <= 0x10FFFF){
-    str[0] = (bitmask4 << 4) | ((codepoint >> 18) & bitmask3);
-    str[1] = bit8 | ((codepoint >> 12) & bitmask6);
-    str[2] = bit8 | ((codepoint >>  6) & bitmask6);
-    str[3] = bit8 | ( codepoint        & bitmask6);
-    inc = 4;
-  }
-  else{
-    str[0] = '?';
-    inc = 1;
-  }
-  return(inc);
-}
-
-internal U32
-utf16_encode(U16 *str, U32 codepoint){
-  U32 inc = 1;
-  if (codepoint == max_U32){
-    str[0] = (U16)'?';
-  }
-  else if (codepoint < 0x10000){
-    str[0] = (U16)codepoint;
-  }
-  else{
-    U32 v = codepoint - 0x10000;
-    str[0] = safe_cast_u16(0xD800 + (v >> 10));
-    str[1] = safe_cast_u16(0xDC00 + (v & bitmask10));
-    inc = 2;
-  }
-  return(inc);
-}
-
-internal U32
-utf8_from_utf32_single(U8 *buffer, U32 character){
-  return(utf8_encode(buffer, character));
+U32
+utf16_encode(U16 *str, U32 codepoint) {
+	U32 inc = 1;
+	if (codepoint == MAX_U32) {
+		str[0] = (U16)'?';
+	}
+	else if (codepoint < 0x10000) {
+		str[0] = (U16)codepoint;
+	}
+	else {
+		U32 v = codepoint - 0x10000;
+		str[0] = safe_cast_u16(0xD800 + (v >> 10));
+		str[1] = safe_cast_u16(0xDC00 + (v & BITMASK10));
+		inc    = 2;
+	}
+	return(inc);
 }
 
 ////////////////////////////////
@@ -1428,25 +1419,98 @@ push_file_name_date_time_string(Arena *arena, DateTime *date_time){
   return(result);
 }
 
+////////////////////////////////
+//~ rjf: Text Escaping
+
 internal String8
-string_from_elapsed_time(Arena *arena, DateTime dt){
-  Temp scratch = scratch_begin(&arena, 1);
-  String8List list = {0};
-  if (dt.year){
-    str8_list_pushf(scratch.arena, &list, "%dy", dt.year);
-    str8_list_pushf(scratch.arena, &list, "%um", dt.mon);
-    str8_list_pushf(scratch.arena, &list, "%ud", dt.day);
-  } else if (dt.mon){
-    str8_list_pushf(scratch.arena, &list, "%um", dt.mon);
-    str8_list_pushf(scratch.arena, &list, "%ud", dt.day);
-  } else if (dt.day){
-    str8_list_pushf(scratch.arena, &list, "%ud", dt.day);
+escaped_from_raw_str8(Arena *arena, String8 string)
+{
+  TempArena scratch = scratch_begin(&arena, 1);
+  String8List parts = {0};
+  U64 start_split_idx = 0;
+  for(U64 idx = 0; idx <= string.size; idx += 1)
+  {
+    U8 byte = (idx < string.size) ? string.str[idx] : 0;
+    B32 split = 1;
+    String8 separator_replace = {0};
+    switch(byte)
+    {
+      default:{split = 0;}break;
+      case 0:    {}break;
+      case '\a': {separator_replace = str8_lit("\\a");}break;
+      case '\b': {separator_replace = str8_lit("\\b");}break;
+      case '\f': {separator_replace = str8_lit("\\f");}break;
+      case '\n': {separator_replace = str8_lit("\\n");}break;
+      case '\r': {separator_replace = str8_lit("\\r");}break;
+      case '\t': {separator_replace = str8_lit("\\t");}break;
+      case '\v': {separator_replace = str8_lit("\\v");}break;
+      case '\\': {separator_replace = str8_lit("\\\\");}break;
+      case '"':  {separator_replace = str8_lit("\\\"");}break;
+      case '?':  {separator_replace = str8_lit("\\?");}break;
+    }
+    if(split)
+    {
+      String8 substr = str8_substr(string, r1u64(start_split_idx, idx));
+      start_split_idx = idx+1;
+      str8_list_push(scratch.arena, &parts, substr);
+      if(separator_replace.size != 0)
+      {
+        str8_list_push(scratch.arena, &parts, separator_replace);
+      }
+    }
   }
-  str8_list_pushf(scratch.arena, &list, "%u:%u:%u:%u ms", dt.hour, dt.min, dt.sec, dt.msec);
-  StringJoin join = { str8_lit_comp(""), str8_lit_comp(" "), str8_lit_comp("") };
-  String8 result = str8_list_join(arena, &list, &join);
+  StringJoin join = {0};
+  String8 result = str8_list_join(arena, &parts, &join);
   scratch_end(scratch);
-  return(result);
+  return result;
+}
+
+internal String8
+raw_from_escaped_str8(Arena *arena, String8 string)
+{
+  TempArena scratch = scratch_begin(&arena, 1);
+  String8List strs = {0};
+  U64 start = 0;
+  for(U64 idx = 0; idx <= string.size; idx += 1)
+  {
+    if(idx == string.size || string.str[idx] == '\\' || string.str[idx] == '\r')
+    {
+      String8 str = str8_substr(string, r1u64(start, idx));
+      if(str.size != 0)
+      {
+        str8_list_push(scratch.arena, &strs, str);
+      }
+      start = idx+1;
+    }
+    if(idx < string.size && string.str[idx] == '\\')
+    {
+      U8 next_char = string.str[idx+1];
+      U8 replace_byte = 0;
+      switch(next_char)
+      {
+        default:{}break;
+        case 'a': replace_byte = 0x07; break;
+        case 'b': replace_byte = 0x08; break;
+        case 'e': replace_byte = 0x1b; break;
+        case 'f': replace_byte = 0x0c; break;
+        case 'n': replace_byte = 0x0a; break;
+        case 'r': replace_byte = 0x0d; break;
+        case 't': replace_byte = 0x09; break;
+        case 'v': replace_byte = 0x0b; break;
+        case '\\':replace_byte = '\\'; break;
+        case '\'':replace_byte = '\''; break;
+        case '"': replace_byte = '"';  break;
+        case '?': replace_byte = '?';  break;
+      }
+      String8 replace_string = push_str8_copy(scratch.arena, str8(&replace_byte, 1));
+      str8_list_push(scratch.arena, &strs, replace_string);
+      idx += 1;
+      start += 1;
+    }
+  }
+  String8 result = str8_list_join(arena, &strs, 0);
+  scratch_end(scratch);
+  return result;
 }
 
 ////////////////////////////////
@@ -1455,7 +1519,7 @@ string_from_elapsed_time(Arena *arena, DateTime dt){
 internal String8
 indented_from_string(Arena *arena, String8 string)
 {
-  Temp scratch = scratch_begin(&arena, 1);
+  TempArena scratch = scratch_begin(&arena, 1);
   read_only local_persist U8 indentation_bytes[] = "                                                                                                                                ";
   String8List indented_strings = {0};
   S64 depth = 0;
@@ -1467,8 +1531,8 @@ indented_from_string(Arena *arena, String8 string)
     switch(byte)
     {
       default:{}break;
-      case '{':case '[':case '(':{next_depth += 1; next_depth = Max(0, next_depth);}break;
-      case '}':case ']':case ')':{next_depth -= 1; next_depth = Max(0, next_depth); depth = next_depth;}break;
+      case '{':case '[':case '(':{next_depth += 1; next_depth = max(0, next_depth);}break;
+      case '}':case ']':case ')':{next_depth -= 1; next_depth = max(0, next_depth); depth = next_depth;}break;
       case '\n':
       case 0:
       {
@@ -1491,58 +1555,68 @@ indented_from_string(Arena *arena, String8 string)
 //~ rjf: Text Wrapping
 
 internal String8List
-wrapped_lines_from_string(Arena *arena, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent)
+wrapped_lines_from_string(Arena* arena, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent)
 {
-  String8List list = {0};
-  Rng1U64 line_range = r1u64(0, 0);
-  U64 wrapped_indent_level = 0;
-  static char *spaces = "                                                                ";
-  for (U64 idx = 0; idx <= string.size; idx += 1){
-    U8 chr = idx < string.size ? string.str[idx] : 0;
-    if (chr == '\n'){
-      Rng1U64 candidate_line_range = line_range;
-      candidate_line_range.max = idx;
-      // NOTE(nick): when wrapping is interrupted with \n we emit a string without including \n
-      // because later tool_fprint_list inserts separator after each node
-      // except for last node, so don't strip last \n.
-      if (idx + 1 == string.size){
-        candidate_line_range.max += 1;
-      }
-      String8 substr = str8_substr(string, candidate_line_range);
-      str8_list_push(arena, &list, substr);
-      line_range = r1u64(idx+1,idx+1);
-    }
-    else
-      if (char_is_space(chr) || chr == 0){
-      Rng1U64 candidate_line_range = line_range;
-      candidate_line_range.max = idx;
-      String8 substr = str8_substr(string, candidate_line_range);
-      U64 width_this_line = max_width-wrapped_indent_level;
-      if (list.node_count == 0){
-        width_this_line = first_line_max_width;
-      }
-      if (substr.size > width_this_line){
-        String8 line = str8_substr(string, line_range);
-        if (wrapped_indent_level > 0){
-          line = push_str8f(arena, "%.*s%S", wrapped_indent_level, spaces, line);
-        }
-        str8_list_push(arena, &list, line);
-        line_range = r1u64(line_range.max+1, candidate_line_range.max);
-        wrapped_indent_level = ClampTop(64, wrap_indent);
-      }
-      else{
-        line_range = candidate_line_range;
-      }
-    }
-  }
-  if (line_range.min < string.size && line_range.max > line_range.min){
-    String8 line = str8_substr(string, line_range);
-    if (wrapped_indent_level > 0){
-      line = push_str8f(arena, "%.*s%S", wrapped_indent_level, spaces, line);
-    }
-    str8_list_push(arena, &list, line);
-  }
-  return list;
+	String8List list       = {0};
+	Rng1U64     line_range = r1u64(0, 0);
+
+	U64 wrapped_indent_level = 0;
+	static char* spaces = "                                                                ";
+
+	for (U64 idx = 0; idx <= string.size; idx += 1)
+	{
+		U8 chr = idx < string.size ? string.str[idx] : 0;
+		if (chr == '\n')
+		{
+			Rng1U64
+			candidate_line_range     = line_range;
+			candidate_line_range.max = idx;
+			// NOTE(nick): when wrapping is interrupted with \n we emit a string without including \n
+			// because later tool_fprint_list inserts separator after each node
+			// except for last node, so don't strip last \n.
+			if (idx + 1 == string.size){
+				candidate_line_range.max += 1;
+			}
+			String8 substr = str8_substr(string, candidate_line_range);
+			str8_list_push(arena, &list, substr);
+			line_range = r1u64(idx + 1,idx + 1);
+		}
+		else
+		if (char_is_space(chr) || chr == 0)
+		{
+			Rng1U64 
+			candidate_line_range     = line_range;
+			candidate_line_range.max = idx;
+
+			String8 substr          = str8_substr(string, candidate_line_range);
+			U64     width_this_line = max_width-wrapped_indent_level;
+
+			if (list.node_count == 0) {
+				width_this_line = first_line_max_width;
+			}
+			if (substr.size > width_this_line) 
+			{
+				String8 line = str8_substr(string, line_range);
+				if (wrapped_indent_level > 0){
+					line = push_str8f(arena, "%.*s%S", wrapped_indent_level, spaces, line);
+				}
+				str8_list_push(arena, &list, line);
+				line_range           = r1u64(line_range.max + 1, candidate_line_range.max);
+				wrapped_indent_level = clamp_top(64, wrap_indent);
+			}
+			else{
+				line_range = candidate_line_range;
+			}
+		}
+	}
+	if (line_range.min < string.size && line_range.max > line_range.min) {
+		String8 line = str8_substr(string, line_range);
+		if (wrapped_indent_level > 0) {
+			line = push_str8f(arena, "%.*s%S", wrapped_indent_level, spaces, line);
+		}
+		str8_list_push(arena, &list, line);
+	}
+	return list;
 }
 
 ////////////////////////////////
@@ -1584,7 +1658,7 @@ internal FuzzyMatchRangeList
 fuzzy_match_find(Arena *arena, String8 needle, String8 haystack)
 {
   FuzzyMatchRangeList result = {0};
-  Temp scratch = scratch_begin(&arena, 1);
+  TempArena scratch = scratch_begin(&arena, 1);
   String8List needles = str8_split(scratch.arena, needle, (U8*)" ", 1, 0);
   result.needle_part_count = needles.node_count;
   for(String8Node *needle_n = needles.first; needle_n != 0; needle_n = needle_n->next)
@@ -1857,4 +1931,3 @@ str8_deserial_read_block(String8 string, U64 off, U64 size, String8 *block_out)
   *block_out = str8_substr(string, range);
   return block_out->size;
 }
-

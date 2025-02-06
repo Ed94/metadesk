@@ -143,6 +143,45 @@
 #define memory_consume(T, p, e)       ( ((p) + sizeof(T) <= (e)) ? ((p) += sizeof(T), *(T*)((p) - sizeof(T))) : ((p) = (e),0) )
 #endif
 
+////////////////////////////////
+//~ rjf: Memory Functions
+
+inline B32
+memory_is_zero(void *ptr, U64 size){
+  B32 result = 1;
+  
+  // break down size
+  U64 extra = (size&0x7);
+  U64 count8 = (size >> 3);
+  
+  // check with 8-byte stride
+  U64 *p64 = (U64*)ptr;
+  if(result)
+  {
+    for (U64 i = 0; i < count8; i += 1, p64 += 1){
+      if (*p64 != 0){
+        result = 0;
+        goto done;
+      }
+    }
+  }
+  
+  // check extra
+  if(result)
+  {
+    U8 *p8 = (U8*)p64;
+    for (U64 i = 0; i < extra; i += 1, p8 += 1){
+      if (*p8 != 0){
+        result = 0;
+        goto done;
+      }
+    }
+  }
+  
+  done:;
+  return(result);
+}
+
 inline
 void* mem_move( void* destination, void const* source, SSIZE byte_count )
 {

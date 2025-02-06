@@ -37,7 +37,9 @@
 		"stb_sprintf.h": "c",
 		"base_types.h": "c",
 		"platform.h": "c",
-		"macros.h": "c"
+		"macros.h": "c",
+		"linkage.h": "c",
+		"context_cracking.h": "c"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

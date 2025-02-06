@@ -48,7 +48,3 @@ TxtRng txt_rng_intersect(TxtRng a, TxtRng b);
 TxtRng txt_rng_union(TxtRng a, TxtRng b);
 B32    txt_rng_contains(TxtRng r, TxtPt pt);
 
-////////////////////////////////
-//~ rjf: Text Wrapping
-
-String8List wrapped_lines_from_string(Arena *arena, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent);

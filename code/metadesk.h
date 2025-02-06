@@ -16,7 +16,6 @@
 MD_NS_BEGIN
 
 #include "base/base_types.h"
-#include "base/constants.h"
 #include "base/debug.h"
 #include "base/memory.h"
 #include "base/memory_substrate.h"
@@ -26,7 +25,6 @@ MD_NS_BEGIN
 #include "base/math.h"
 #include "base/toolchain.h"
 #include "base/strings.h"
-
 
 MD_NS_END
 

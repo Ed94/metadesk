@@ -58,3 +58,16 @@ Dir2;
 
 #define axis2_from_dir2(d) (((d) & 1)          ? Axis2_Y  : Axis2_X)
 #define side_from_dir2(d)  (((d) < Dir2_Right) ? Side_Min : Side_Max)
+
+////////////////////////////////
+//~ rjf: Enum -> Sign
+
+internal S32
+sign_from_side_S32(Side side){
+  return((side == Side_Min)?-1:1);
+}
+
+internal F32
+sign_from_side_F32(Side side){
+  return((side == Side_Min)?-1.f:1.f);
+}

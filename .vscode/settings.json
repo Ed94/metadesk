@@ -46,7 +46,8 @@
 		"wmmintrin.h": "c",
 		"thread": "c",
 		"cmath": "c",
-		"string.h": "c"
+		"string.h": "c",
+		"time.h": "c"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

@@ -10,14 +10,14 @@
 typedef U32 FilePropertyFlags;
 enum
 {
-  FilePropertyFlag_IsFolder = (1 << 0),
+	FilePropertyFlag_IsFolder = (1 << 0),
 };
 
 typedef struct FileProperties FileProperties;
 struct FileProperties
 {
-  U64 size;
-  DenseTime modified;
-  DenseTime created;
-  FilePropertyFlags flags;
+	U64               size;
+	DenseTime         modified;
+	DenseTime         created;
+	FilePropertyFlags flags;
 };

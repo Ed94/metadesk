@@ -19,7 +19,7 @@
 ////////////////////////////////
 //~ rjf: Third Party Includes
 
-#define STB_SPRINTF_DECORATE(name) raddbg_##name
+#define STB_SPRINTF_DECORATE(name) md_##name
 #include "third_party/stb/stb_sprintf.h"
 
 ////////////////////////////////

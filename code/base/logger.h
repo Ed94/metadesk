@@ -68,33 +68,8 @@ inline void log_release(Log* log) { arena_release(log->arena); }
 ////////////////////////////////
 //~ rjf: Log Building
 
-void log_msg (LogMsgKind kind, String8 string);
-void log_msgf(LogMsgKind kind, char* fmt, ...);
-
-inline void
-log_msg(LogMsgKind kind, String8 string) {
-	if(log_active != 0 && log_active->top_scope != 0) {
-		String8 string_copy = push_str8_copy(log_active->arena, string);
-		str8_list_push(log_active->arena, &log_active->top_scope->strings[kind], string_copy);
-	}
-}
-
-inline void
-log_msgf(LogMsgKind kind, char *fmt, ...) {
-	if(log_active != 0) 
-	{
-		// TODO(Ed): Review
-		TempArena scratch = scratch_begin(0, 0);
-
-		va_list args;
-		va_start(args, fmt);
-		String8 string = push_str8fv(scratch.arena, fmt, args);
-		log_msg(kind, string);
-		va_end(args);
-
-		scratch_end(scratch);
-	}
-}
+MD_API void log_msg (LogMsgKind kind, String8 string);
+MD_API void log_msgf(LogMsgKind kind, char* fmt, ...);
 
 #define log_info(s)               log_msg (LogMsgKind_Info,      (s))
 #define log_infof(fmt, ...)       log_msgf(LogMsgKind_Info,      (fmt), __VA_ARGS__)

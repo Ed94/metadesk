@@ -197,10 +197,10 @@ push_str8fv(Arena* arena, char* fmt, va_list args){
 #if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
 	va_list args2;
 	va_copy(args2, args);
-	U32     needed_bytes = raddbg_vsnprintf(0, 0, fmt, args) + 1;
+	U32     needed_bytes = md_vsnprintf(0, 0, fmt, args) + 1;
 	String8 result       = {0};
 	result.str  = push_array_no_zero(arena, U8, needed_bytes);
-	result.size = raddbg_vsnprintf((char*)result.str, needed_bytes, fmt, args2);
+	result.size = md_vsnprintf((char*)result.str, needed_bytes, fmt, args2);
 	result.str[result.size] = 0;
 	va_end(args2);
 	return(result);
@@ -236,10 +236,10 @@ String8
 str8fv(AllocatorInfo ainfo, char *fmt, va_list args){
 	va_list args2;
 	va_copy(args2, args);
-	U32     needed_bytes = raddbg_vsnprintf(0, 0, fmt, args) + 1;
+	U32     needed_bytes = md_vsnprintf(0, 0, fmt, args) + 1;
 	String8 result       = {0};
 	result.str  = alloc_array_no_zero(ainfo, U8, needed_bytes);
-	result.size = raddbg_vsnprintf((char*)result.str, needed_bytes, fmt, args2);
+	result.size = md_vsnprintf((char*)result.str, needed_bytes, fmt, args2);
 	result.str[result.size] = 0;
 	va_end(args2);
 	return(result);

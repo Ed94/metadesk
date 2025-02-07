@@ -888,35 +888,140 @@ MD_API FuzzyMatchRangeList fuzzy_match_range_list_copy_alloc(AllocatorInfo ainfo
 ////////////////////////////////
 //~ NOTE(allen): Serialization Helpers
 
-internal void    str8_serial_write_to_dst  (String8List* srl, void *out);
-
-internal void    str8_serial_begin         (Arena* arena, String8List* srl);
-internal String8 str8_serial_end           (Arena* arena, String8List* srl);
-internal U64     str8_serial_push_align    (Arena* arena, String8List* srl, U64 align);
-internal void*   str8_serial_push_size     (Arena* arena, String8List* srl, U64 size);
-internal void*   str8_serial_push_data     (Arena* arena, String8List* srl, void* data, U64 size);
-internal void    str8_serial_push_data_list(Arena* arena, String8List* srl, String8Node* first);
-internal void    str8_serial_push_u64      (Arena* arena, String8List* srl, U64 x);
-internal void    str8_serial_push_u32      (Arena* arena, String8List* srl, U32 x);
-internal void    str8_serial_push_u16      (Arena* arena, String8List* srl, U16 x);
-internal void    str8_serial_push_u8       (Arena* arena, String8List* srl, U8 x);
-internal void    str8_serial_push_cstr     (Arena* arena, String8List* srl, String8 str);
-internal void    str8_serial_push_string   (Arena* arena, String8List* srl, String8 str);
-
 #define str8_serial_push_array(arena, srl, ptr, count) str8_serial_push_data (arena, srl, ptr, sizeof(*(ptr)) * (count))
 #define str8_serial_push_struct(arena, srl, ptr)       str8_serial_push_array(arena, srl, ptr, 1)
+
+inline void
+str8_serial_write_to_dst(String8List* srl, void* out) {
+	U8* ptr = (U8*)out;
+	for (String8Node *node = srl->first; node != 0; node = node->next) 
+	{
+		U64 size = node->string.size;
+		memory_copy(ptr, node->string.str, size);
+		ptr += size;
+	}
+}
+
+       void    str8_serial_begin         (Arena* arena, String8List* srl);
+       String8 str8_serial_end           (Arena* arena, String8List* srl);
+MD_API U64     str8_serial_push_align    (Arena* arena, String8List* srl, U64 align);
+MD_API void*   str8_serial_push_size     (Arena* arena, String8List* srl, U64 size);
+       void*   str8_serial_push_data     (Arena* arena, String8List* srl, void* data, U64 size);
+       void    str8_serial_push_data_list(Arena* arena, String8List* srl, String8Node* first);
+MD_API void    str8_serial_push_u64      (Arena* arena, String8List* srl, U64 x);
+MD_API void    str8_serial_push_u32      (Arena* arena, String8List* srl, U32 x);
+       void    str8_serial_push_u16      (Arena* arena, String8List* srl, U16 x);
+       void    str8_serial_push_u8       (Arena* arena, String8List* srl, U8 x);
+       void    str8_serial_push_cstr     (Arena* arena, String8List* srl, String8 str);
+       void    str8_serial_push_string   (Arena* arena, String8List* srl, String8 str);
+
+inline void 
+str8_serial_begin(Arena* arena, String8List* srl){
+	String8Node* node = push_array(arena, String8Node, 1);
+	node->string.str = push_array_no_zero(arena, U8, 0);
+	srl->first       = srl->last = node;
+	srl->node_count  = 1;
+	srl->total_size  = 0;
+}
+
+inline String8
+str8_serial_end(Arena* arena, String8List* srl) {
+	U64 size = srl->total_size;
+	U8* out  = push_array_no_zero(arena, U8, size);
+	str8_serial_write_to_dst(srl, out);
+	String8 result = str8(out, size);
+	return  result;
+}
+
+inline void*
+str8_serial_push_data(Arena* arena, String8List* srl, void* data, U64 size){
+	void* result = str8_serial_push_size(arena, srl, size);
+	if(result != 0) {
+		memory_copy(result, data, size);
+	}
+	return result;
+}
+
+inline void
+str8_serial_push_data_list(Arena* arena, String8List* srl, String8Node* first){
+	for (String8Node* node = first; node != 0; node = node->next) {
+		str8_serial_push_data(arena, srl, node->string.str, node->string.size);
+	}
+}
+
+inline void str8_serial_push_u16(Arena* arena, String8List* srl, U16 x) { str8_serial_push_data(arena, srl, &x, sizeof(x)); }
+inline void str8_serial_push_u8 (Arena* arena, String8List* srl, U8  x) { str8_serial_push_data(arena, srl, &x, sizeof(x)); }
+
+inline void str8_serial_push_cstr  (Arena* arena, String8List* srl, String8 str) { str8_serial_push_data(arena, srl, str.str, str.size);  str8_serial_push_u8(arena, srl, 0); } 
+inline void str8_serial_push_string(Arena* arena, String8List* srl, String8 str) { str8_serial_push_data(arena, srl, str.str, str.size); }
+
+       void    str8_serial_begin_alloc    (AllocatorInfo ainfo, String8List* srl);
+       String8 str8_serial_end_alloc      (AllocatorInfo ainfo, String8List* srl);
+MD_API U64     str8_serial_alloc_align    (AllocatorInfo ainfo, String8List* srl, U64 align);
+MD_API void*   str8_serial_alloc_size     (AllocatorInfo ainfo, String8List* srl, U64 size);
+       void*   str8_serial_alloc_data     (AllocatorInfo ainfo, String8List* srl, void* data, U64 size);
+       void    str8_serial_alloc_data_list(AllocatorInfo ainfo, String8List* srl, String8Node* first);
+MD_API void    str8_serial_alloc_u64      (AllocatorInfo ainfo, String8List* srl, U64 x);
+MD_API void    str8_serial_alloc_u32      (AllocatorInfo ainfo, String8List* srl, U32 x);
+       void    str8_serial_alloc_u16      (AllocatorInfo ainfo, String8List* srl, U16 x);
+       void    str8_serial_alloc_u8       (AllocatorInfo ainfo, String8List* srl, U8 x);
+       void    str8_serial_alloc_cstr     (AllocatorInfo ainfo, String8List* srl, String8 str);
+       void    str8_serial_alloc_string   (AllocatorInfo ainfo, String8List* srl, String8 str);
+
+inline void 
+str8_serial_begin(AllocatorInfo ainfo, String8List* srl) {
+	String8Node* node = alloc_array(ainfo, String8Node, 1);
+	node->string.str = alloc_array_no_zero(ainfo, U8, 0);
+	srl->first       = srl->last = node;
+	srl->node_count  = 1;
+	srl->total_size  = 0;
+}
+
+inline String8
+str8_serial_end(AllocatorInfo ainfo, String8List* srl) {
+	U64 size = srl->total_size;
+	U8* out  = alloc_array_no_zero(ainfo, U8, size);
+	str8_serial_write_to_dst(srl, out);
+	String8 result = str8(out, size);
+	return  result;
+}
+
+inline void*
+str8_serial_push_data(AllocatorInfo ainfo, String8List* srl, void* data, U64 size){
+	void* result = str8_serial_alloc_size(ainfo, srl, size);
+	if(result != 0) {
+		memory_copy(result, data, size);
+	}
+	return result;
+}
+
+inline void
+str8_serial_push_data_list(AllocatorInfo ainfo, String8List* srl, String8Node* first){
+	for (String8Node* node = first; node != 0; node = node->next) {
+		str8_serial_alloc_data(ainfo, srl, node->string.str, node->string.size);
+	}
+}
+
+inline void str8_serial_alloc_u16(AllocatorInfo ainfo, String8List* srl, U16 x) { str8_serial_alloc_data(ainfo, srl, &x, sizeof(x)); }
+inline void str8_serial_alloc_u8 (AllocatorInfo ainfo, String8List* srl, U8  x) { str8_serial_alloc_data(ainfo, srl, &x, sizeof(x)); }
+
+inline void str8_serial_push_cstr  (AllocatorInfo ainfo, String8List* srl, String8 str) { str8_serial_alloc_data(ainfo, srl, str.str, str.size);  str8_serial_alloc_u8(ainfo, srl, 0); } 
+inline void str8_serial_push_string(AllocatorInfo ainfo, String8List* srl, String8 str) { str8_serial_alloc_data(ainfo, srl, str.str, str.size); }
 
 ////////////////////////////////
 //~ rjf: Deserialization Helpers
 
-internal U64   str8_deserial_read                       (String8 string, U64 off, void* read_dst, U64 read_size, U64 granularity);
-internal U64   str8_deserial_find_first_match           (String8 string, U64 off, U16 scan_val);
-internal void* str8_deserial_get_raw_ptr                (String8 string, U64 off, U64 size);
-internal U64   str8_deserial_read_cstr                  (String8 string, U64 off, String8* cstr_out);
-internal U64   str8_deserial_read_windows_utf16_string16(String8 string, U64 off, String16* str_out);
-internal U64   str8_deserial_read_block                 (String8 string, U64 off, U64 size, String8* block_out);
-internal U64   str8_deserial_read_uleb128               (String8 string, U64 off, U64* value_out);
-internal U64   str8_deserial_read_sleb128               (String8 string, U64 off, S64* value_out);
-
 #define str8_deserial_read_array(string, off, ptr, count) str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)) * (count), sizeof( *(ptr)))
 #define str8_deserial_read_struct(string, off, ptr)       str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)), sizeof( *(ptr)))
+
+MD_API U64   str8_deserial_read                       (String8 string, U64 off, void* read_dst, U64 read_size, U64 granularity);
+MD_API U64   str8_deserial_find_first_match           (String8 string, U64 off, U16 scan_val);
+       void* str8_deserial_get_raw_ptr                (String8 string, U64 off, U64 size);
+MD_API U64   str8_deserial_read_cstr                  (String8 string, U64 off, String8* cstr_out);
+MD_API U64   str8_deserial_read_windows_utf16_string16(String8 string, U64 off, String16* str_out);
+       U64   str8_deserial_read_block                 (String8 string, U64 off, U64 size, String8* block_out);
+MD_API U64   str8_deserial_read_uleb128               (String8 string, U64 off, U64* value_out);
+MD_API U64   str8_deserial_read_sleb128               (String8 string, U64 off, S64* value_out);
+
+inline void* str8_deserial_get_raw_ptr(String8 string, U64 off, U64 size)                      { void* raw_ptr = 0; if (off + size <= string.size) { raw_ptr = string.str + off; }   return raw_ptr; }
+inline U64   str8_deserial_read_block (String8 string, U64 off, U64 size, String8* block_out)  { Rng1U64 range = rng_1u64(off, off + size); *block_out = str8_substr(string, range); return block_out->size; }

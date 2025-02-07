@@ -2055,7 +2055,7 @@ FuzzyMatchRangeList
 fuzzy_match_find_alloc(AllocatorInfo ainfo, String8 needle, String8 haystack)
 {
 	Arena*    arena   = arena_alloc(.backing = ainfo, .block_size = MB(1));
-	TempArena scratch = scratch_begin(&arena, 1);
+	TempArena scratch = temp_begin(&arena, 1);
 
 	String8List needles = str8_split(scratch.arena, needle, (U8*)" ", 1, 0);
 	FuzzyMatchRangeList 
@@ -2089,7 +2089,7 @@ fuzzy_match_find_alloc(AllocatorInfo ainfo, String8 needle, String8 haystack)
 			result.total_dim += dim_1u64(range);
 		}
 	}
-	scratch_end(scratch);
+	temp_end(scratch);
 	arena_release(arena);
 	return result;
 }
@@ -2133,219 +2133,276 @@ fuzzy_match_range_list_copy_alloc(AllocatorInfo ainfo, FuzzyMatchRangeList* src)
 ////////////////////////////////
 //~ NOTE(allen): Serialization Helpers
 
-internal void
-str8_serial_begin(Arena *arena, String8List *srl){
-  String8Node *node = push_array(arena, String8Node, 1);
-  node->string.str = push_array_no_zero(arena, U8, 0);
-  srl->first = srl->last = node;
-  srl->node_count = 1;
-  srl->total_size = 0;
+U64
+str8_serial_push_align(Arena* arena, String8List* srl, U64 align) {
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
+	Assert(is_pow2(align));
+	U64 pos     = srl->total_size;
+	U64 new_pos = align_pow2(pos, align);
+	U64 size    = (new_pos - pos);
+	
+	if(size != 0)
+	{
+		U8* buf = push_array(arena, U8, size);
+		
+		String8* str = &srl->last->string;
+		if (str->str + str->size == buf) {
+			srl->last->string.size += size;
+			srl->total_size        += size;
+		}
+		else {
+			str8_list_push(arena, srl, str8(buf, size));
+		}
+	}
+	return size;
+#else
+	return str8_serial_alloc_align(arena_allocator(arena), srl, align);
+#endif
 }
 
-internal String8
-str8_serial_end(Arena *arena, String8List *srl){
-  U64 size = srl->total_size;
-  U8 *out = push_array_no_zero(arena, U8, size);
-  str8_serial_write_to_dst(srl, out);
-  String8 result = str8(out, size);
-  return result;
+void*
+str8_serial_push_size(Arena* arena, String8List* srl, U64 size) {
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
+	void* result = 0;
+	if(size != 0)
+	{
+		U8*      buf = push_array_no_zero(arena, U8, size);
+		String8* str = &srl->last->string;
+		if (str->str + str->size == buf) {
+			srl->last->string.size += size;
+			srl->total_size += size;
+		}
+		else {
+			str8_list_push(arena, srl, str8(buf, size));
+		}
+		result = buf;
+	}
+	return result;
+#else
+	return str8_serial_alloc_size(arena_allocator(arena, srl, size));
+#endif
 }
 
-internal void
-str8_serial_write_to_dst(String8List *srl, void *out){
-  U8 *ptr = (U8*)out;
-  for (String8Node *node = srl->first;
-       node != 0;
-       node = node->next){
-    U64 size = node->string.size;
-    MemoryCopy(ptr, node->string.str, size);
-    ptr += size;
-  }
+void
+str8_serial_push_u64(Arena* arena, String8List* srl, U64 x) {
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
+	U8* buf = push_array_no_zero(arena, U8, 8);
+	memory_copy(buf, &x, 8);
+	String8* str = &srl->last->string;
+	if (str->str + str->size == buf) {
+		srl->last->string.size += 8;
+		srl->total_size        += 8;
+	}
+	else {
+		str8_list_push(arena, srl, str8(buf, 8));
+	}
+#else
+	str8_serial_alloc_u64(arena_allocator(arena), srl, x);
+#endif
 }
 
-internal U64
-str8_serial_push_align(Arena *arena, String8List *srl, U64 align){
-  Assert(IsPow2(align));
-  
-  U64 pos = srl->total_size;
-  U64 new_pos = AlignPow2(pos, align);
-  U64 size = (new_pos - pos);
-  
-  if(size != 0)
-  {
-    U8 *buf = push_array(arena, U8, size);
-    
-    String8 *str = &srl->last->string;
-    if (str->str + str->size == buf){
-      srl->last->string.size += size;
-      srl->total_size += size;
-    }
-    else{
-      str8_list_push(arena, srl, str8(buf, size));
-    }
-  }
-  return size;
+void
+str8_serial_push_u32(Arena* arena, String8List* srl, U32 x) {
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
+	U8* buf = push_array_no_zero(arena, U8, 4);
+	memory_copy(buf, &x, 4);
+	String8 *str = &srl->last->string;
+	if (str->str + str->size == buf) {
+		srl->last->string.size += 4;
+		srl->total_size += 4;
+	}
+	else {
+		str8_list_push(arena, srl, str8(buf, 4));
+	}
+#else
+	str8_serial_alloc_u32(arena_allocator(arena), srl, x);
+#endif
 }
 
-internal void *
-str8_serial_push_size(Arena *arena, String8List *srl, U64 size)
-{
-  void *result = 0;
-  if(size != 0)
-  {
-    U8 *buf = push_array_no_zero(arena, U8, size);
-    String8 *str = &srl->last->string;
-    if (str->str + str->size == buf){
-      srl->last->string.size += size;
-      srl->total_size += size;
-    }
-    else{
-      str8_list_push(arena, srl, str8(buf, size));
-    }
-    result = buf;
-  }
-  return result;
+U64
+str8_serial_alloc_align(AllocatorInfo ainfo, String8List* srl, U64 align) {
+	Assert(is_pow2(align));
+	U64 pos     = srl->total_size;
+	U64 new_pos = align_pow2(pos, align);
+	U64 size    = (new_pos - pos);
+	
+	if(size != 0)
+	{
+		U8* buf = alloc_array(ainfo, U8, size);
+		
+		String8* str = &srl->last->string;
+		if (str->str + str->size == buf) {
+			srl->last->string.size += size;
+			srl->total_size        += size;
+		}
+		else {
+			str8_list_alloc(ainfo, srl, str8(buf, size));
+		}
+	}
+	return size;
 }
 
-internal void *
-str8_serial_push_data(Arena *arena, String8List *srl, void *data, U64 size){
-  void *result = str8_serial_push_size(arena, srl, size);
-  if(result != 0)
-  {
-    MemoryCopy(result, data, size);
-  }
-  return result;
+void*
+str8_serial_alloc_size(AllocatorInfo ainfo, String8List* srl, U64 size) {
+	void* result = 0;
+	if(size != 0)
+	{
+		U8*      buf = alloc_array_no_zero(ainfo, U8, size);
+		String8* str = &srl->last->string;
+		if (str->str + str->size == buf) {
+			srl->last->string.size += size;
+			srl->total_size += size;
+		}
+		else {
+			str8_list_alloc(ainfo, srl, str8(buf, size));
+		}
+		result = buf;
+	}
+	return result;
 }
 
-internal void
-str8_serial_push_data_list(Arena *arena, String8List *srl, String8Node *first){
-  for (String8Node *node = first;
-       node != 0;
-       node = node->next){
-    str8_serial_push_data(arena, srl, node->string.str, node->string.size);
-  }
+void
+str8_serial_alloc_u64(AllocatorInfo ainfo, String8List* srl, U64 x) {
+	U8* buf = alloc_array_no_zero(ainfo, U8, 8);
+	memory_copy(buf, &x, 8);
+	String8* str = &srl->last->string;
+	if (str->str + str->size == buf) {
+		srl->last->string.size += 8;
+		srl->total_size        += 8;
+	}
+	else {
+		str8_list_alloc(ainfo, srl, str8(buf, 8));
+	}
 }
 
-internal void
-str8_serial_push_u64(Arena *arena, String8List *srl, U64 x){
-  U8 *buf = push_array_no_zero(arena, U8, 8);
-  MemoryCopy(buf, &x, 8);
-  String8 *str = &srl->last->string;
-  if (str->str + str->size == buf){
-    srl->last->string.size += 8;
-    srl->total_size += 8;
-  }
-  else{
-    str8_list_push(arena, srl, str8(buf, 8));
-  }
-}
-
-internal void
-str8_serial_push_u32(Arena *arena, String8List *srl, U32 x){
-  U8 *buf = push_array_no_zero(arena, U8, 4);
-  MemoryCopy(buf, &x, 4);
-  String8 *str = &srl->last->string;
-  if (str->str + str->size == buf){
-    srl->last->string.size += 4;
-    srl->total_size += 4;
-  }
-  else{
-    str8_list_push(arena, srl, str8(buf, 4));
-  }
-}
-
-internal void
-str8_serial_push_u16(Arena *arena, String8List *srl, U16 x){
-  str8_serial_push_data(arena, srl, &x, sizeof(x));
-}
-
-internal void
-str8_serial_push_u8(Arena *arena, String8List *srl, U8 x){
-  str8_serial_push_data(arena, srl, &x, sizeof(x));
-}
-
-internal void
-str8_serial_push_cstr(Arena *arena, String8List *srl, String8 str){
-  str8_serial_push_data(arena, srl, str.str, str.size);
-  str8_serial_push_u8(arena, srl, 0);
-}
-
-internal void
-str8_serial_push_string(Arena *arena, String8List *srl, String8 str){
-  str8_serial_push_data(arena, srl, str.str, str.size);
+void
+str8_serial_push_u32(AllocatorInfo ainfo, String8List* srl, U32 x) {
+	U8* buf = alloc_array_no_zero(ainfo, U8, 4);
+	memory_copy(buf, &x, 4);
+	String8 *str = &srl->last->string;
+	if (str->str + str->size == buf) {
+		srl->last->string.size += 4;
+		srl->total_size += 4;
+	}
+	else {
+		str8_list_alloc(ainfo, srl, str8(buf, 4));
+	}
 }
 
 ////////////////////////////////
 //~ rjf: Deserialization Helpers
 
-internal U64
-str8_deserial_read(String8 string, U64 off, void *read_dst, U64 read_size, U64 granularity)
-{
-  U64 bytes_left = string.size-Min(off, string.size);
-  U64 actually_readable_size = Min(bytes_left, read_size);
-  U64 legally_readable_size = actually_readable_size - actually_readable_size%granularity;
-  if(legally_readable_size > 0)
-  {
-    MemoryCopy(read_dst, string.str+off, legally_readable_size);
-  }
-  return legally_readable_size;
+U64
+str8_deserial_read(String8 string, U64 off, void *read_dst, U64 read_size, U64 granularity) {
+	U64 bytes_left             = string.size - min(off, string.size);
+	U64 actually_readable_size = min(bytes_left, read_size);
+	U64 legally_readable_size  = actually_readable_size - actually_readable_size % granularity;
+	if(legally_readable_size > 0)
+	{
+		memory_copy(read_dst, string.str + off, legally_readable_size);
+	}
+	return legally_readable_size;
 }
 
-internal U64
-str8_deserial_find_first_match(String8 string, U64 off, U16 scan_val)
-{
-  U64 cursor = off;
-  for (;;) {
-    U16 val = 0;
-    str8_deserial_read_struct(string, cursor, &val);
-    if (val == scan_val) {
-      break;
-    }
-    cursor += sizeof(val);
-  }
-  return cursor;
+U64
+str8_deserial_find_first_match(String8 string, U64 off, U16 scan_val) {
+	U64 cursor = off;
+	for (;;) 
+	{
+		U16 val = 0;
+		str8_deserial_read_struct(string, cursor, &val);
+		if (val == scan_val) {
+			break;
+		}
+		cursor += sizeof(val);
+	}
+	return cursor;
 }
 
-internal void *
-str8_deserial_get_raw_ptr(String8 string, U64 off, U64 size)
-{
-  void *raw_ptr = 0;
-  if (off + size <= string.size) {
-    raw_ptr = string.str + off;
-  }
-  return raw_ptr;
+U64
+str8_deserial_read_cstr(String8 string, U64 off, String8* cstr_out) {
+	U64 cstr_size = 0;
+	if (off < string.size) {
+		U8* ptr   = string.str + off;
+		U8* cap   = string.str + string.size;
+		*cstr_out = str8_cstring_capped(ptr, cap);
+		cstr_size = (cstr_out->size + 1);
+	}
+	return cstr_size;
 }
 
-internal U64
-str8_deserial_read_cstr(String8 string, U64 off, String8 *cstr_out)
+U64
+str8_deserial_read_windows_utf16_string16(String8 string, U64 off, String16* str_out)
 {
-  U64 cstr_size = 0;
-  if (off < string.size) {
-    U8 *ptr = string.str + off;
-    U8 *cap = string.str + string.size;
-    *cstr_out = str8_cstring_capped(ptr, cap);
-    cstr_size = (cstr_out->size + 1);
-  }
-  return cstr_size;
+	U64 null_off = str8_deserial_find_first_match(string, off, 0);
+	U64 size     = null_off - off;
+	U16 *str     = (U16*)str8_deserial_get_raw_ptr(string, off, size);
+	U64 count    = size / sizeof(*str);
+	
+	*str_out = str16(str, count);
+	
+	U64    read_size_with_null = size + sizeof(*str);
+	return read_size_with_null;
 }
 
-internal U64
-str8_deserial_read_windows_utf16_string16(String8 string, U64 off, String16 *str_out)
-{
-  U64 null_off = str8_deserial_find_first_match(string, off, 0);
-  U64 size = null_off - off;
-  U16 *str = (U16 *)str8_deserial_get_raw_ptr(string, off, size);
-  U64 count = size / sizeof(*str);
-  *str_out = str16(str, count);
-  
-  U64 read_size_with_null = size + sizeof(*str);
-  return read_size_with_null;
+U64
+str8_deserial_read_uleb128(String8 string, U64 off, U64 *value_out) {
+	U64 value  = 0;
+	U64 shift  = 0;
+	U64 cursor = off;
+	for(;;)
+	{
+		U8  byte       = 0;
+		U64 bytes_read = str8_deserial_read_struct(string, cursor, &byte);
+		if (bytes_read != sizeof(byte)) { 
+			break;
+		}
+
+		U8 val = byte & 0x7fu;
+		value |= ((U64)val) << shift;
+
+		cursor += bytes_read;
+		shift  += 7u;
+		if ((byte & 0x80u) == 0) {
+			break;
+		}
+	}
+	if(value_out != 0) { *value_out = value; }
+
+	U64    bytes_read = cursor - off;
+	return bytes_read;
 }
 
-internal U64
-str8_deserial_read_block(String8 string, U64 off, U64 size, String8 *block_out)
+U64
+str8_deserial_read_sleb128(String8 string, U64 off, S64 *value_out)
 {
-  Rng1U64 range = rng_1u64(off, off + size);
-  *block_out = str8_substr(string, range);
-  return block_out->size;
+	U64 value  = 0;
+	U64 shift  = 0;
+	U64 cursor = off;
+	for(;;)
+	{
+		U8  byte;
+		U64 bytes_read = str8_deserial_read_struct(string, cursor, &byte);
+		if (bytes_read != sizeof(byte)) {
+			break;
+		}
+
+		U8 val = byte & 0x7fu;
+		value |= ((U64)val) << shift;
+
+		cursor += bytes_read;
+		shift  += 7u;
+
+		if ((byte & 0x80u) == 0)
+		{
+			if (shift < sizeof(value) * 8 && (byte & 0x40u) != 0) {
+				value |= -(S64)(1ull << shift);
+			}
+			break;
+		}
+	}
+	if (value_out != 0) { *value_out = value; }
+
+	U64    bytes_read = cursor - off;
+	return bytes_read;
 }

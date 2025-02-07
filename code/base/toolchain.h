@@ -6,26 +6,28 @@
 ////////////////////////////////
 //~ rjf: Toolchain/Environment Enums
 
-typedef enum OperatingSystem
+typedef enum OperatingSystem OperatingSystem;
+enum OperatingSystem
 {
 	OperatingSystem_Null,
 	OperatingSystem_Windows,
 	OperatingSystem_Linux,
 	OperatingSystem_Mac,
 	OperatingSystem_COUNT,
-}
-OperatingSystem;
+};
 
-typedef enum ImageType
+typedef enum ImageType ImageType;
+enum ImageType
 {
   Image_Null,
   Image_CoffPe,
   Image_Elf32,
   Image_Elf64,
   Image_Macho
-} ImageType;
+};
 
-typedef enum Arch
+typedef enum Arch Arch;
+enum Arch
 {
 	Arch_Null,
 	Arch_x64,
@@ -33,18 +35,17 @@ typedef enum Arch
 	Arch_arm64,
 	Arch_arm32,
 	Arch_COUNT,
-}
-Arch;
+};
 
-typedef enum Compiler
+typedef enum Compiler Compiler;
+enum Compiler
 {
 	Compiler_Null,
 	Compiler_msvc,
 	Compiler_gcc,
 	Compiler_clang,
 	Compiler_COUNT,
-}
-Compiler;
+};
 
 ////////////////////////////////
 //~ rjf: Toolchain/Environment Enum Functions

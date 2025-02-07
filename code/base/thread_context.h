@@ -25,8 +25,8 @@ struct TCTX
 ////////////////////////////////
 // NOTE(allen): Thread Context Functions
 
-MD_API void    tctx_init_and_equip(TCTX *tctx);
-MD_API void    tctx_init_and_equip_ainfos(TCTX *tctx, AllocatorInfo ainfos[2]);
+MD_API void    tctx_init_and_equip(TCTX* tctx);
+MD_API void    tctx_init_and_equip_ainfos(TCTX* tctx, AllocatorInfo ainfos[2]);
 MD_API void    tctx_release(void);
 MD_API TCTX*   tctx_get_equipped(void);
 
@@ -58,7 +58,7 @@ tctx_get_thread_name(void) {
 }
 
 inline void
-tctx_write_srcloc(char *file_name, U64 line_number){
+tctx_write_srcloc(char* file_name, U64 line_number){
   TCTX *tctx = tctx_get_equipped();
   tctx->file_name = file_name;
   tctx->line_number = line_number;

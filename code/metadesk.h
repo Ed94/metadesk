@@ -28,6 +28,8 @@ MD_NS_BEGIN
 #include "base/thread_context.h"
 #include "base/command_line.h"
 #include "base/markup.h"
+#include "base/logger.h"
+#include "base/entry_point.h"
 
 MD_NS_END
 

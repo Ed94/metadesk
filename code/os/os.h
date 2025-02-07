@@ -1,6 +1,6 @@
 #ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
-#	include "context_cracking.h"
+#	include "base/context_cracking.h"
 #endif
 
 #if !defined(OS_FEATURE_GRAPHICAL)

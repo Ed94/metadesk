@@ -11,6 +11,7 @@
 #include "base/linkage.h"
 #include "base/macros.h"
 #include "base/generic_macros.h"
+#include "base/profiling.h"
 #include "base/namespace.h"
 
 MD_NS_BEGIN
@@ -25,6 +26,8 @@ MD_NS_BEGIN
 #include "base/math.h"
 #include "base/toolchain.h"
 #include "base/strings.h"
+#include "base/command_line.h"
+#include "base/markup.h"
 
 MD_NS_END
 

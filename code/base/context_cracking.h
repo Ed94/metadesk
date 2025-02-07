@@ -61,12 +61,12 @@
 #endif
 
 #if defined(GCC_VERSION_CHECK)
-#  undef GCC_VERSION_CHECK
+#	undef GCC_VERSION_CHECK
 #endif
 #if defined(GEN_GCC_VERSION)
-#  define GCC_VERSION_CHECK(major,minor,patch) (GEN_GCC_VERSION >= GEN_VERSION_ENCODE(major, minor, patch))
+#	define GCC_VERSION_CHECK(major,minor,patch) (GEN_GCC_VERSION >= GEN_VERSION_ENCODE(major, minor, patch))
 #else
-#  define GCC_VERSION_CHECK(major,minor,patch) (0)
+#	define GCC_VERSION_CHECK(major,minor,patch) (0)
 #endif
 
 #pragma endregion Compiler Vendor

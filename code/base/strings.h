@@ -531,10 +531,10 @@ String8List  str8_split_by_string_chars_alloc     (AllocatorInfo ainfo, String8 
 String8List  str8_list_split_by_string_chars      (Arena*        arena, String8List  list,   String8 split_chars, StringSplitFlags flags);
 String8List  str8_list_split_by_string_chars_alloc(AllocatorInfo ainfo, String8List  list,   String8 split_chars, StringSplitFlags flags);
 
-MD_API String8      str8_list_join            (Arena*        arena, String8List* list, StringJoin* optional_params);
-MD_API String8      str8_list_join_alloc      (AllocatorInfo ainfo, String8List* list, StringJoin* optional_params);
-       void         str8_list_from_flags      (Arena*        arena, String8List* list, U32 flags, String8* flag_string_table, U32 flag_string_count);
-       void         str8_list_from_flags_alloc(AllocatorInfo ainfo, String8List* list, U32 flags, String8* flag_string_table, U32 flag_string_count);
+MD_API String8 str8_list_join            (Arena*        arena, String8List* list, StringJoin* optional_params);
+MD_API String8 str8_list_join_alloc      (AllocatorInfo ainfo, String8List* list, StringJoin* optional_params);
+       void    str8_list_from_flags      (Arena*        arena, String8List* list, U32 flags, String8* flag_string_table, U32 flag_string_count);
+       void    str8_list_from_flags_alloc(AllocatorInfo ainfo, String8List* list, U32 flags, String8* flag_string_table, U32 flag_string_count);
 
 inline String8List
 str8_split_by_string_chars(Arena *arena, String8 string, String8 split_chars, StringSplitFlags flags) {
@@ -694,74 +694,199 @@ inline U32 utf8_from_utf32_single(U8* buffer, U32 character){ return(utf8_encode
 ////////////////////////////////
 //~ rjf: Unicode String Conversions
 
-internal String8  str8_from_16(Arena* arena, String16 in);
-internal String16 str16_from_8(Arena* arena, String8  in);
-internal String8  str8_from_32(Arena* arena, String32 in);
-internal String32 str32_from_8(Arena* arena, String8  in);
+MD_API String8  str8_from_16(Arena* arena, String16 in);
+MD_API String16 str16_from_8(Arena* arena, String8  in);
+MD_API String8  str8_from_32(Arena* arena, String32 in);
+MD_API String32 str32_from_8(Arena* arena, String8  in);
+
+MD_API String8  str8_from_16_alloc(AllocatorInfo ainfo, String16 in);
+MD_API String16 str16_from_8_alloc(AllocatorInfo ainfo, String8  in);
+MD_API String8  str8_from_32_alloc(AllocatorInfo ainfo, String32 in);
+MD_API String32 str32_from_8_alloc(AllocatorInfo ainfo, String8  in);
 
 ////////////////////////////////
 //~ String -> Enum Conversions
 
-internal OperatingSystem operating_system_from_string(String8 string);
+MD_API OperatingSystem operating_system_from_string(String8 string);
 
 ////////////////////////////////
 //~ rjf: Basic Types & Space Enum -> String Conversions
 
-internal String8 string_from_dimension(Dimension dimension);
-internal String8 string_from_side(Side side);
-internal String8 string_from_operating_system(OperatingSystem os);
-internal String8 string_from_arch(Arch arch);
+inline String8
+string_from_dimension(Dimension dimension) {
+	local_persist String8 strings[] = {
+		str8_lit_comp("X"),
+		str8_lit_comp("Y"),
+		str8_lit_comp("Z"),
+		str8_lit_comp("W"),
+	};
+	String8 result = str8_lit("error");
+	if ((U32)dimension < 4) {
+		result = strings[dimension];
+	}
+	return(result);
+}
+
+inline String8
+string_from_side(Side side) {
+	local_persist String8 strings[] = {
+		str8_lit_comp("Min"),
+		str8_lit_comp("Max"),
+	};
+	String8 result = str8_lit("error");
+	if ((U32)side < 2) {
+		result = strings[side];
+	}
+	return(result);
+}
+
+inline String8
+string_from_operating_system(OperatingSystem os) {
+	local_persist String8 strings[] = {
+		str8_lit_comp("Null"),
+		str8_lit_comp("Windows"),
+		str8_lit_comp("Linux"),
+		str8_lit_comp("Mac"),
+	};
+	String8 result = str8_lit("error");
+	if (os < OperatingSystem_COUNT) {
+		result = strings[os];
+	}
+	return(result);
+}
+
+inline String8
+string_from_architecture(Arch arch) {
+	local_persist String8 strings[] = {
+		str8_lit_comp("Null"),
+		str8_lit_comp("x64"),
+		str8_lit_comp("x86"),
+		str8_lit_comp("arm64"),
+		str8_lit_comp("arm32"),
+	};
+	String8 result = str8_lit("error");
+	if (arch < Arch_COUNT) {
+		result = strings[arch];
+	}
+	return(result);
+}
 
 ////////////////////////////////
 //~ rjf: Time Types -> String
 
-internal String8 string_from_week_day           (WeekDay week_day);
-internal String8 string_from_month              (Month month);
-internal String8 push_date_time_string          (Arena* arena, DateTime* date_time);
-internal String8 push_file_name_date_time_string(Arena* arena, DateTime* date_time);
-internal String8 string_from_elapsed_time       (Arena* arena, DateTime dt);
+inline String8
+string_from_week_day(WeekDay week_day) {
+	local_persist String8 strings[] = {
+		str8_lit_comp("Sun"),
+		str8_lit_comp("Mon"),
+		str8_lit_comp("Tue"),
+		str8_lit_comp("Wed"),
+		str8_lit_comp("Thu"),
+		str8_lit_comp("Fri"),
+		str8_lit_comp("Sat"),
+	};
+	String8 result = str8_lit("Err");
+	if ((U32)week_day < WeekDay_COUNT) {
+		result = strings[week_day];
+	}
+	return(result);
+}
+
+inline String8
+string_from_month(Month month) {
+	local_persist String8 strings[] = {
+		str8_lit_comp("Jan"),
+		str8_lit_comp("Feb"),
+		str8_lit_comp("Mar"),
+		str8_lit_comp("Apr"),
+		str8_lit_comp("May"),
+		str8_lit_comp("Jun"),
+		str8_lit_comp("Jul"),
+		str8_lit_comp("Aug"),
+		str8_lit_comp("Sep"),
+		str8_lit_comp("Oct"),
+		str8_lit_comp("Nov"),
+		str8_lit_comp("Dec"),
+	};
+	String8 result = str8_lit("Err");
+	if ((U32)month < Month_COUNT) {
+		result = strings[month];
+	}
+	return(result);
+}
+
+MD_API String8 push_date_time_string          (Arena* arena, DateTime* date_time);
+MD_API String8 push_file_name_date_time_string(Arena* arena, DateTime* date_time);
+MD_API String8 string_from_elapsed_time       (Arena* arena, DateTime  date_time);
+
+MD_API String8 alloc_date_time_string          (AllocatorInfo ainfo, DateTime* date_time);
+MD_API String8 alloc_file_name_date_time_string(AllocatorInfo ainfo, DateTime* date_time);
+MD_API String8 string_from_elapsed_time_alloc  (AllocatorInfo ainfo, DateTime  date_time);
 
 ////////////////////////////////
 //~ Globally Unique Ids
 
-internal String8 string_from_guid(Arena *arena, Guid guid);
-internal B32     try_guid_from_string(String8 string, Guid *guid_out);
-internal Guid    guid_from_string(String8 string);
+inline String8
+string_from_guid(Arena* arena, Guid guid) {
+	String8 result = push_str8f(arena, 
+		"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+		guid.data1,
+		guid.data2,
+		guid.data3,
+		guid.data4[0],
+		guid.data4[1],
+		guid.data4[2],
+		guid.data4[3],
+		guid.data4[4],
+		guid.data4[5],
+		guid.data4[6],
+		guid.data4[7]
+	);
+	return result;
+}
+
+inline Guid guid_from_string(String8 string) { Guid guid = {0}; try_guid_from_string(string, &guid); return guid; }
+
+MD_API B32 try_guid_from_string(String8 string, Guid* guid_out);
 
 ////////////////////////////////
 //~ rjf: Basic Text Indentation
 
-internal String8 indented_from_string(Arena *arena, String8 string);
+MD_API String8 indented_from_string(Arena*        arena, String8 string);
+MD_API String8 indented_from_string(AllocatorInfo arena, String8 string);
 
 ////////////////////////////////
 //~ rjf: Text Escaping
 
-internal String8 escaped_from_raw_str8(Arena *arena, String8 string);
-internal String8 raw_from_escaped_str8(Arena *arena, String8 string);
+MD_API String8 escaped_from_raw_str8(Arena*        arena, String8 string);
+MD_API String8 escaped_from_raw_str8(AllocatorInfo ainfo, String8 string);
+MD_API String8 raw_from_escaped_str8(Arena*        arena, String8 string);
+MD_API String8 raw_from_escaped_str8(AllocatorInfo ainfo, String8 string);
 
 ////////////////////////////////
 //~ rjf: Text Wrapping
 
-String8List wrapped_lines_from_string(Arena *arena, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent);
+String8List wrapped_lines_from_string(Arena* arena, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent);
 
 ////////////////////////////////
 //~ rjf: String <-> Color
 
-internal String8 hex_string_from_rgba_4f32(Arena *arena, Vec4F32 rgba);
+internal String8 hex_string_from_rgba_4f32(Arena*  arena, Vec4F32 rgba);
 internal Vec4F32 rgba_from_hex_string_4f32(String8 hex_string);
 
 ////////////////////////////////
 //~ rjf: String Fuzzy Matching
 
-internal FuzzyMatchRangeList fuzzy_match_find           (Arena *arena, String8 needle, String8 haystack);
-internal FuzzyMatchRangeList fuzzy_match_range_list_copy(Arena *arena, FuzzyMatchRangeList *src);
+internal FuzzyMatchRangeList fuzzy_match_find           (Arena* arena, String8 needle, String8 haystack);
+internal FuzzyMatchRangeList fuzzy_match_range_list_copy(Arena* arena, FuzzyMatchRangeList* src);
 
 ////////////////////////////////
 //~ NOTE(allen): Serialization Helpers
 
+internal void    str8_serial_write_to_dst  (String8List *srl, void *out);
+
 internal void    str8_serial_begin         (Arena *arena, String8List *srl);
 internal String8 str8_serial_end           (Arena *arena, String8List *srl);
-internal void    str8_serial_write_to_dst  (String8List *srl, void *out);
 internal U64     str8_serial_push_align    (Arena *arena, String8List *srl, U64 align);
 internal void*   str8_serial_push_size     (Arena *arena, String8List *srl, U64 size);
 internal void*   str8_serial_push_data     (Arena *arena, String8List *srl, void *data, U64 size);
@@ -785,8 +910,8 @@ internal void* str8_deserial_get_raw_ptr                (String8 string, U64 off
 internal U64   str8_deserial_read_cstr                  (String8 string, U64 off, String8* cstr_out);
 internal U64   str8_deserial_read_windows_utf16_string16(String8 string, U64 off, String16* str_out);
 internal U64   str8_deserial_read_block                 (String8 string, U64 off, U64 size, String8* block_out);
-internal U64   str8_deserial_read_uleb128(String8 string, U64 off, U64 *value_out);
-internal U64   str8_deserial_read_sleb128(String8 string, U64 off, S64 *value_out);
+internal U64   str8_deserial_read_uleb128               (String8 string, U64 off, U64* value_out);
+internal U64   str8_deserial_read_sleb128               (String8 string, U64 off, S64* value_out);
 
 #define str8_deserial_read_array(string, off, ptr, count) str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)) * (count), sizeof( *(ptr)))
 #define str8_deserial_read_struct(string, off, ptr)       str8_deserial_read((string), (off), (ptr), sizeof(*(ptr)), sizeof( *(ptr)))

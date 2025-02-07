@@ -1388,6 +1388,7 @@ operating_system_from_string(String8 string)
 
 String8
 push_date_time_string(Arena* arena, DateTime* date_time) {
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
 	char* mon_str = (char*)string_from_month(date_time->month).str;
 
 	U32 adjusted_hour = date_time->hour % 12;
@@ -1406,10 +1407,14 @@ push_date_time_string(Arena* arena, DateTime* date_time) {
 		adjusted_hour, date_time->min, date_time->sec, ampm
 	);
 	return(result);
+#else
+	return alloc_date_time_string(arena_allocator(arena), date_time);
+#endif
 }
 
 String8
 push_file_name_date_time_string(Arena* arena, DateTime* date_time) {
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
 	char* mon_str = (char*)string_from_month(date_time->month).str;
 
 	String8 result = push_str8f(arena, 
@@ -1418,10 +1423,14 @@ push_file_name_date_time_string(Arena* arena, DateTime* date_time) {
 		date_time->hour, date_time->min, date_time->sec
 	);
 	return(result);
+#else
+	return alloc_file_name_date_time_string(arena_allocator(arena), date_time);
+#endif
 }
 
 String8
 string_from_elapsed_time(Arena* arena, DateTime dt) {
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
 	TempArena   scratch = scratch_begin(&arena, 1);
 	String8List list    = {0};
 	if (dt.year) {
@@ -1439,10 +1448,13 @@ string_from_elapsed_time(Arena* arena, DateTime dt) {
 	String8    result = str8_list_join(arena, &list, &join);
 	scratch_end(scratch);
 	return(result);
+#else
+	return string_from_elapsed_time_alloc(arena_allocator(arena), dt);
+#endif
 }
 
 String8
-push_date_time_string(AllocatorInfo ainfo, DateTime* date_time) {
+alloc_date_time_string(AllocatorInfo ainfo, DateTime* date_time) {
 	char* mon_str = (char*)string_from_month(date_time->month).str;
 
 	U32 adjusted_hour = date_time->hour % 12;
@@ -1464,7 +1476,7 @@ push_date_time_string(AllocatorInfo ainfo, DateTime* date_time) {
 }
 
 String8
-push_file_name_date_time_string(AllocatorInfo ainfo, DateTime* date_time) {
+alloc_file_name_date_time_string(AllocatorInfo ainfo, DateTime* date_time) {
 	char* mon_str = (char*)string_from_month(date_time->month).str;
 
 	String8 result = str8f(ainfo, 
@@ -1476,7 +1488,7 @@ push_file_name_date_time_string(AllocatorInfo ainfo, DateTime* date_time) {
 }
 
 String8
-string_from_elapsed_time(AllocatorInfo ainfo, DateTime dt) {
+string_from_elapsed_time_alloc(AllocatorInfo ainfo, DateTime dt) {
 	U8            bytes[KB(8)];
 	FArena        arena   = farena_from_memory(bytes, size_of(bytes));
 	AllocatorInfo scratch = farena_allocator(arena);
@@ -1553,6 +1565,7 @@ try_guid_from_string(String8 string, Guid *guid_out)
 String8
 indented_from_string(Arena* arena, String8 string)
 {
+#if 1 // Better than enforcing abstract allocator for this case.
   TempArena scratch = scratch_begin(&arena, 1);
 
   read_only local_persist U8 indentation_bytes[] = "                                                                                                                                ";
@@ -1584,6 +1597,9 @@ indented_from_string(Arena* arena, String8 string)
   String8 result = str8_list_join(arena, &indented_strings, 0);
   scratch_end(scratch);
   return result;
+#else
+  return indented_from_string_alloc(arena_allocator(arena), string);
+#endif
 }
 
 String8
@@ -1631,6 +1647,7 @@ indented_from_string_alloc(AllocatorInfo ainfo, String8 string)
 String8
 escaped_from_raw_str8(Arena* arena, String8 string)
 {
+#if 1 // Better than enforcing abstract allocator for this case.
 	TempArena scratch = scratch_begin(&arena, 1);
 
 	String8List parts   = {0};
@@ -1672,11 +1689,63 @@ escaped_from_raw_str8(Arena* arena, String8 string)
 
 	scratch_end(scratch);
 	return result;
+#else
+	return escaped_from_raw_str8_alloc(arena_allocator(arena), string);
+#endif
+}
+
+String8
+escaped_from_raw_str8_alloc(AllocatorInfo ainfo, String8 string)
+{
+	Arena*    arena   = arena_alloc(.backing = ainfo, .block_size = MB(1));
+	TempArena scratch = scratch_begin(&arena, 1);
+
+	String8List parts   = {0};
+	U64 start_split_idx = 0;
+	for(U64 idx = 0; idx <= string.size; idx += 1)
+	{
+		U8  byte  = (idx < string.size) ? string.str[idx] : 0;
+		B32 split = 1;
+		String8 separator_replace = {0};
+		switch (byte)
+		{
+			default: { split = 0; } break;
+
+			case 0:    {} break;
+			case '\a': { separator_replace = str8_lit("\\a" ); } break;
+			case '\b': { separator_replace = str8_lit("\\b" ); } break;
+			case '\f': { separator_replace = str8_lit("\\f" ); } break;
+			case '\n': { separator_replace = str8_lit("\\n" ); } break;
+			case '\r': { separator_replace = str8_lit("\\r" ); } break;
+			case '\t': { separator_replace = str8_lit("\\t" ); } break;
+			case '\v': { separator_replace = str8_lit("\\v" ); } break;
+			case '\\': { separator_replace = str8_lit("\\\\"); } break;
+			case '"':  { separator_replace = str8_lit("\\\""); } break;
+			case '?':  { separator_replace = str8_lit("\\?" ); } break;
+		}
+		if (split)
+		{
+			String8 substr  = str8_substr(string, r1u64(start_split_idx, idx));
+			start_split_idx = idx + 1;
+			str8_list_push(scratch.arena, &parts, substr);
+			if(separator_replace.size != 0) {
+				str8_list_push(scratch.arena, &parts, separator_replace);
+			}
+		}
+	}
+
+	StringJoin join   = {0};
+	String8    result = str8_list_join_alloc(ainfo, &parts, &join);
+
+	scratch_end(scratch);
+	arena_release(arena);
+	return result;
 }
 
 String8
 raw_from_escaped_str8(Arena* arena, String8 string)
 {
+#if 1 // Better than enforcing abstract allocator for this case.
 	TempArena scratch = scratch_begin(&arena, 1);
 	String8List strs  = {0};
 	U64         start = 0;
@@ -1719,14 +1788,68 @@ raw_from_escaped_str8(Arena* arena, String8 string)
 	String8 result = str8_list_join(arena, &strs, 0);
 	scratch_end(scratch);
 	return result;
+#else
+	return raw_from_escaped_str8(arena_allocator(arena), string);
+#endif
+}
+
+String8
+raw_from_escaped_str8_alloc(AllocatorInfo ainfo, String8 string)
+{
+	Arena*    arena   = arena_alloc(.backing = ainfo, .block_size = MB(1));
+	TempArena scratch = scratch_begin(&arena, 1);
+
+	String8List strs  = {0};
+	U64         start = 0;
+	for (U64 idx = 0; idx <= string.size; idx += 1)
+	{
+		if (idx == string.size || string.str[idx] == '\\' || string.str[idx] == '\r') {
+			String8 str = str8_substr(string, r1u64(start, idx));
+			if (str.size != 0) {
+				str8_list_push(scratch.arena, &strs, str);
+			}
+			start = idx + 1;
+		}
+		if (idx < string.size && string.str[idx] == '\\') {
+			U8 next_char    = string.str[idx+1];
+			U8 replace_byte = 0;
+			switch(next_char)
+			{
+				default: {} break;
+				case 'a':  replace_byte = 0x07; break;
+				case 'b':  replace_byte = 0x08; break;
+				case 'e':  replace_byte = 0x1b; break;
+				case 'f':  replace_byte = 0x0c; break;
+				case 'n':  replace_byte = 0x0a; break;
+				case 'r':  replace_byte = 0x0d; break;
+				case 't':  replace_byte = 0x09; break;
+				case 'v':  replace_byte = 0x0b; break;
+				case '\\': replace_byte = '\\'; break;
+				case '\'': replace_byte = '\''; break;
+				case '"':  replace_byte = '"';  break;
+				case '?':  replace_byte = '?';  break;
+			}
+
+			String8 replace_string = push_str8_copy(scratch.arena, str8(&replace_byte, 1));
+			str8_list_push(scratch.arena, &strs, replace_string);
+			idx += 1;
+			start += 1;
+		}
+	}
+
+	String8 result = str8_list_join_alloc(ainfo, &strs, 0);
+	scratch_end(scratch);
+	arena_release(arena);
+	return result;
 }
 
 ////////////////////////////////
 //~ rjf: Text Wrapping
 
-internal String8List
+String8List
 wrapped_lines_from_string(Arena* arena, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent)
 {
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
 	String8List list       = {0};
 	Rng1U64     line_range = r1u64(0, 0);
 
@@ -1787,99 +1910,224 @@ wrapped_lines_from_string(Arena* arena, String8 string, U64 first_line_max_width
 		str8_list_push(arena, &list, line);
 	}
 	return list;
+#else
+	return wrapped_lines_from_string_alloc(arena_allocator(arena), string, first_line_max_width, max_width, wrap_indent);
+#endif
+}
+
+String8List
+wrapped_lines_from_string_alloc(AllocatorInfo ainfo, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent)
+{
+	String8List list       = {0};
+	Rng1U64     line_range = r1u64(0, 0);
+
+	U64 wrapped_indent_level = 0;
+	static char* spaces = "                                                                ";
+
+	for (U64 idx = 0; idx <= string.size; idx += 1)
+	{
+		U8 chr = idx < string.size ? string.str[idx] : 0;
+		if (chr == '\n')
+		{
+			Rng1U64
+			candidate_line_range     = line_range;
+			candidate_line_range.max = idx;
+			// NOTE(nick): when wrapping is interrupted with \n we emit a string without including \n
+			// because later tool_fprint_list inserts separator after each node
+			// except for last node, so don't strip last \n.
+			if (idx + 1 == string.size){
+				candidate_line_range.max += 1;
+			}
+			String8 substr = str8_substr(string, candidate_line_range);
+			str8_list_alloc(ainfo, &list, substr);
+			line_range = r1u64(idx + 1,idx + 1);
+		}
+		else
+		if (char_is_space(chr) || chr == 0)
+		{
+			Rng1U64 
+			candidate_line_range     = line_range;
+			candidate_line_range.max = idx;
+
+			String8 substr          = str8_substr(string, candidate_line_range);
+			U64     width_this_line = max_width-wrapped_indent_level;
+
+			if (list.node_count == 0) {
+				width_this_line = first_line_max_width;
+			}
+			if (substr.size > width_this_line) 
+			{
+				String8 line = str8_substr(string, line_range);
+				if (wrapped_indent_level > 0){
+					line = str8f(ainfo, "%.*s%S", wrapped_indent_level, spaces, line);
+				}
+				str8_list_alloc(ainfo, &list, line);
+				line_range           = r1u64(line_range.max + 1, candidate_line_range.max);
+				wrapped_indent_level = clamp_top(64, wrap_indent);
+			}
+			else{
+				line_range = candidate_line_range;
+			}
+		}
+	}
+	if (line_range.min < string.size && line_range.max > line_range.min) {
+		String8 line = str8_substr(string, line_range);
+		if (wrapped_indent_level > 0) {
+			line = str8f(ainfo, "%.*s%S", wrapped_indent_level, spaces, line);
+		}
+		str8_list_alloc(ainfo, &list, line);
+	}
+	return list;
 }
 
 ////////////////////////////////
 //~ rjf: String <-> Color
 
-internal String8
-hex_string_from_rgba_4f32(Arena *arena, Vec4F32 rgba)
-{
-  String8 hex_string = push_str8f(arena, "%02x%02x%02x%02x", (U8)(rgba.x*255.f), (U8)(rgba.y*255.f), (U8)(rgba.z*255.f), (U8)(rgba.w*255.f));
-  return hex_string;
-}
-
-internal Vec4F32
+Vec4F32
 rgba_from_hex_string_4f32(String8 hex_string)
 {
-  U8 byte_text[8] = {0};
-  U64 byte_text_idx = 0;
-  for(U64 idx = 0; idx < hex_string.size && byte_text_idx < ArrayCount(byte_text); idx += 1)
-  {
-    if(char_is_digit(hex_string.str[idx], 16))
-    {
-      byte_text[byte_text_idx] = char_to_lower(hex_string.str[idx]);
-      byte_text_idx += 1;
-    }
-  }
-  U8 byte_vals[4] = {0};
-  for(U64 idx = 0; idx < 4; idx += 1)
-  {
-    byte_vals[idx] = (U8)u64_from_str8(str8(&byte_text[idx*2], 2), 16);
-  }
-  Vec4F32 rgba = v4f32(byte_vals[0]/255.f, byte_vals[1]/255.f, byte_vals[2]/255.f, byte_vals[3]/255.f);
-  return rgba;
+	U8  byte_text[8]  = {0};
+	U64 byte_text_idx = 0;
+	for(U64 idx = 0; idx < hex_string.size && byte_text_idx < array_count(byte_text); idx += 1)
+	{
+		if(char_is_digit(hex_string.str[idx], 16)) {
+			byte_text[byte_text_idx] = char_to_lower(hex_string.str[idx]);
+			byte_text_idx           += 1;
+		}
+	}
+	U8 byte_vals[4] = {0};
+	for(U64 idx = 0; idx < 4; idx += 1) {
+		byte_vals[idx] = (U8)u64_from_str8(str8(&byte_text[idx*2], 2), 16);
+	}
+	Vec4F32 rgba = v4f32(byte_vals[0] / 255.f, byte_vals[1] / 255.f, byte_vals[2] / 255.f, byte_vals[3] / 255.f);
+	return  rgba;
 }
 
 ////////////////////////////////
 //~ rjf: String Fuzzy Matching
 
-internal FuzzyMatchRangeList
+FuzzyMatchRangeList
 fuzzy_match_find(Arena *arena, String8 needle, String8 haystack)
 {
-  FuzzyMatchRangeList result = {0};
-  TempArena scratch = scratch_begin(&arena, 1);
-  String8List needles = str8_split(scratch.arena, needle, (U8*)" ", 1, 0);
-  result.needle_part_count = needles.node_count;
-  for(String8Node *needle_n = needles.first; needle_n != 0; needle_n = needle_n->next)
-  {
-    U64 find_pos = 0;
-    for(;find_pos < haystack.size;)
-    {
-      find_pos = str8_find_needle(haystack, find_pos, needle_n->string, StringMatchFlag_CaseInsensitive);
-      B32 is_in_gathered_ranges = 0;
-      for(FuzzyMatchRangeNode *n = result.first; n != 0; n = n->next)
-      {
-        if(n->range.min <= find_pos && find_pos < n->range.max)
-        {
-          is_in_gathered_ranges = 1;
-          find_pos = n->range.max;
-          break;
-        }
-      }
-      if(!is_in_gathered_ranges)
-      {
-        break;
-      }
-    }
-    if(find_pos < haystack.size)
-    {
-      Rng1U64 range = r1u64(find_pos, find_pos+needle_n->string.size);
-      FuzzyMatchRangeNode *n = push_array(arena, FuzzyMatchRangeNode, 1);
-      n->range = range;
-      SLLQueuePush(result.first, result.last, n);
-      result.count += 1;
-      result.total_dim += dim_1u64(range);
-    }
-  }
-  scratch_end(scratch);
-  return result;
+#if 1 // Better than enforcing abstract allocator for this case.
+	TempArena   scratch = scratch_begin(&arena, 1);
+	String8List needles = str8_split(scratch.arena, needle, (U8*)" ", 1, 0);
+
+	FuzzyMatchRangeList 
+	result = {0};
+	result.needle_part_count = needles.node_count;
+	for(String8Node* needle_n = needles.first; needle_n != 0; needle_n = needle_n->next)
+	{
+		U64 find_pos = 0;
+		for(;find_pos < haystack.size;)
+		{
+			find_pos = str8_find_needle(haystack, find_pos, needle_n->string, StringMatchFlag_CaseInsensitive);
+			B32 is_in_gathered_ranges = 0;
+			for (FuzzyMatchRangeNode* n = result.first; n != 0; n = n->next)
+			{
+				if (n->range.min <= find_pos && find_pos < n->range.max) {
+					is_in_gathered_ranges = 1;
+					find_pos              = n->range.max;
+					break;
+				}
+			}
+			if( ! is_in_gathered_ranges) {
+				break;
+			}
+		}
+		if (find_pos < haystack.size) {
+			Rng1U64             range = r1u64(find_pos, find_pos+needle_n->string.size);
+			FuzzyMatchRangeNode* n    = push_array(arena, FuzzyMatchRangeNode, 1);
+			n->range = range;
+			sll_queue_push(result.first, result.last, n);
+			result.count     += 1;
+			result.total_dim += dim_1u64(range);
+		}
+	}
+	scratch_end(scratch);
+	return result;
+#else
+	return fuzzy_match_find_alloc(arena_allocator(arena), needle, haystack);
+#endif
 }
 
-internal FuzzyMatchRangeList
-fuzzy_match_range_list_copy(Arena *arena, FuzzyMatchRangeList *src)
+FuzzyMatchRangeList
+fuzzy_match_find_alloc(AllocatorInfo ainfo, String8 needle, String8 haystack)
 {
-  FuzzyMatchRangeList dst = {0};
-  for(FuzzyMatchRangeNode *src_n = src->first; src_n != 0; src_n = src_n->next)
-  {
-    FuzzyMatchRangeNode *dst_n = push_array(arena, FuzzyMatchRangeNode, 1);
-    SLLQueuePush(dst.first, dst.last, dst_n);
-    dst_n->range = src_n->range;
-  }
-  dst.count = src->count;
-  dst.needle_part_count = src->needle_part_count;
-  dst.total_dim = src->total_dim;
-  return dst;
+	Arena*    arena   = arena_alloc(.backing = ainfo, .block_size = MB(1));
+	TempArena scratch = scratch_begin(&arena, 1);
+
+	String8List needles = str8_split(scratch.arena, needle, (U8*)" ", 1, 0);
+	FuzzyMatchRangeList 
+	result = {0};
+	result.needle_part_count = needles.node_count;
+	for(String8Node* needle_n = needles.first; needle_n != 0; needle_n = needle_n->next)
+	{
+		U64 find_pos = 0;
+		for(;find_pos < haystack.size;)
+		{
+			find_pos = str8_find_needle(haystack, find_pos, needle_n->string, StringMatchFlag_CaseInsensitive);
+			B32 is_in_gathered_ranges = 0;
+			for (FuzzyMatchRangeNode* n = result.first; n != 0; n = n->next)
+			{
+				if (n->range.min <= find_pos && find_pos < n->range.max) {
+					is_in_gathered_ranges = 1;
+					find_pos              = n->range.max;
+					break;
+				}
+			}
+			if( ! is_in_gathered_ranges) {
+				break;
+			}
+		}
+		if (find_pos < haystack.size) {
+			Rng1U64             range = r1u64(find_pos, find_pos+needle_n->string.size);
+			FuzzyMatchRangeNode* n    = push_array(arena, FuzzyMatchRangeNode, 1);
+			n->range = range;
+			sll_queue_push(result.first, result.last, n);
+			result.count     += 1;
+			result.total_dim += dim_1u64(range);
+		}
+	}
+	scratch_end(scratch);
+	arena_release(arena);
+	return result;
+}
+
+FuzzyMatchRangeList
+fuzzy_match_range_list_copy(Arena* arena, FuzzyMatchRangeList* src)
+{
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
+	FuzzyMatchRangeList dst = {0};
+	for(FuzzyMatchRangeNode* src_n = src->first; src_n != 0; src_n = src_n->next)
+	{
+		FuzzyMatchRangeNode* dst_n = push_array(arena, FuzzyMatchRangeNode, 1);
+		sll_queue_push(dst.first, dst.last, dst_n);
+		dst_n->range = src_n->range;
+	}
+	dst.count             = src->count;
+	dst.needle_part_count = src->needle_part_count;
+	dst.total_dim         = src->total_dim;
+	return dst;
+#else
+	return fuzzy_match_range_list_copy_alloc(arena_allocator(arena), src);
+#endif
+}
+
+FuzzyMatchRangeList
+fuzzy_match_range_list_copy_alloc(AllocatorInfo ainfo, FuzzyMatchRangeList* src)
+{
+	FuzzyMatchRangeList dst = {0};
+	for(FuzzyMatchRangeNode* src_n = src->first; src_n != 0; src_n = src_n->next)
+	{
+		FuzzyMatchRangeNode* dst_n = alloc_array(ainfo, FuzzyMatchRangeNode, 1);
+		sll_queue_push(dst.first, dst.last, dst_n);
+		dst_n->range = src_n->range;
+	}
+	dst.count             = src->count;
+	dst.needle_part_count = src->needle_part_count;
+	dst.total_dim         = src->total_dim;
+	return dst;
 }
 
 ////////////////////////////////

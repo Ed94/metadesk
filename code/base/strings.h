@@ -852,51 +852,56 @@ MD_API B32 try_guid_from_string(String8 string, Guid* guid_out);
 ////////////////////////////////
 //~ rjf: Basic Text Indentation
 
-MD_API String8 indented_from_string(Arena*        arena, String8 string);
-MD_API String8 indented_from_string(AllocatorInfo arena, String8 string);
+MD_API String8 indented_from_string      (Arena*        arena, String8 string);
+MD_API String8 indented_from_string_alloc(AllocatorInfo arena, String8 string);
 
 ////////////////////////////////
 //~ rjf: Text Escaping
 
-MD_API String8 escaped_from_raw_str8(Arena*        arena, String8 string);
-MD_API String8 escaped_from_raw_str8(AllocatorInfo ainfo, String8 string);
-MD_API String8 raw_from_escaped_str8(Arena*        arena, String8 string);
-MD_API String8 raw_from_escaped_str8(AllocatorInfo ainfo, String8 string);
+MD_API String8 escaped_from_raw_str8      (Arena*        arena, String8 string);
+MD_API String8 escaped_from_raw_str8_alloc(AllocatorInfo ainfo, String8 string);
+MD_API String8 raw_from_escaped_str8      (Arena*        arena, String8 string);
+MD_API String8 raw_from_escaped_str8_alloc(AllocatorInfo ainfo, String8 string);
 
 ////////////////////////////////
 //~ rjf: Text Wrapping
 
-String8List wrapped_lines_from_string(Arena* arena, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent);
+MD_API String8List wrapped_lines_from_string      (Arena*        arena, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent);
+MD_API String8List wrapped_lines_from_string_alloc(AllocatorInfo ainfo, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent);
 
 ////////////////////////////////
 //~ rjf: String <-> Color
 
-internal String8 hex_string_from_rgba_4f32(Arena*  arena, Vec4F32 rgba);
-internal Vec4F32 rgba_from_hex_string_4f32(String8 hex_string);
+inline String8 hex_string_from_rgba_4f32      (Arena*        arena, Vec4F32 rgba) { String8 hex_string = push_str8f(arena, "%02x%02x%02x%02x", (U8)(rgba.x*255.f), (U8)(rgba.y*255.f), (U8)(rgba.z*255.f), (U8)(rgba.w*255.f));  return hex_string; }
+inline String8 hex_string_from_rgba_4f32_alloc(AllocatorInfo ainfo, Vec4F32 rgba) { String8 hex_string =      str8f(ainfo, "%02x%02x%02x%02x", (U8)(rgba.x*255.f), (U8)(rgba.y*255.f), (U8)(rgba.z*255.f), (U8)(rgba.w*255.f));  return hex_string; }
+
+MD_API Vec4F32 rgba_from_hex_string_4f32(String8 hex_string);
 
 ////////////////////////////////
 //~ rjf: String Fuzzy Matching
 
-internal FuzzyMatchRangeList fuzzy_match_find           (Arena* arena, String8 needle, String8 haystack);
-internal FuzzyMatchRangeList fuzzy_match_range_list_copy(Arena* arena, FuzzyMatchRangeList* src);
+MD_API FuzzyMatchRangeList fuzzy_match_find                 (Arena*        arena, String8 needle, String8 haystack);
+MD_API FuzzyMatchRangeList fuzzy_match_find_alloc           (AllocatorInfo ainfo, String8 needle, String8 haystack);
+MD_API FuzzyMatchRangeList fuzzy_match_range_list_copy      (Arena*        arena, FuzzyMatchRangeList* src);
+MD_API FuzzyMatchRangeList fuzzy_match_range_list_copy_alloc(AllocatorInfo ainfo, FuzzyMatchRangeList* src);
 
 ////////////////////////////////
 //~ NOTE(allen): Serialization Helpers
 
-internal void    str8_serial_write_to_dst  (String8List *srl, void *out);
+internal void    str8_serial_write_to_dst  (String8List* srl, void *out);
 
-internal void    str8_serial_begin         (Arena *arena, String8List *srl);
-internal String8 str8_serial_end           (Arena *arena, String8List *srl);
-internal U64     str8_serial_push_align    (Arena *arena, String8List *srl, U64 align);
-internal void*   str8_serial_push_size     (Arena *arena, String8List *srl, U64 size);
-internal void*   str8_serial_push_data     (Arena *arena, String8List *srl, void *data, U64 size);
-internal void    str8_serial_push_data_list(Arena *arena, String8List *srl, String8Node *first);
-internal void    str8_serial_push_u64      (Arena *arena, String8List *srl, U64 x);
-internal void    str8_serial_push_u32      (Arena *arena, String8List *srl, U32 x);
-internal void    str8_serial_push_u16      (Arena *arena, String8List *srl, U16 x);
-internal void    str8_serial_push_u8       (Arena *arena, String8List *srl, U8 x);
-internal void    str8_serial_push_cstr     (Arena *arena, String8List *srl, String8 str);
-internal void    str8_serial_push_string   (Arena *arena, String8List *srl, String8 str);
+internal void    str8_serial_begin         (Arena* arena, String8List* srl);
+internal String8 str8_serial_end           (Arena* arena, String8List* srl);
+internal U64     str8_serial_push_align    (Arena* arena, String8List* srl, U64 align);
+internal void*   str8_serial_push_size     (Arena* arena, String8List* srl, U64 size);
+internal void*   str8_serial_push_data     (Arena* arena, String8List* srl, void* data, U64 size);
+internal void    str8_serial_push_data_list(Arena* arena, String8List* srl, String8Node* first);
+internal void    str8_serial_push_u64      (Arena* arena, String8List* srl, U64 x);
+internal void    str8_serial_push_u32      (Arena* arena, String8List* srl, U32 x);
+internal void    str8_serial_push_u16      (Arena* arena, String8List* srl, U16 x);
+internal void    str8_serial_push_u8       (Arena* arena, String8List* srl, U8 x);
+internal void    str8_serial_push_cstr     (Arena* arena, String8List* srl, String8 str);
+internal void    str8_serial_push_string   (Arena* arena, String8List* srl, String8 str);
 
 #define str8_serial_push_array(arena, srl, ptr, count) str8_serial_push_data (arena, srl, ptr, sizeof(*(ptr)) * (count))
 #define str8_serial_push_struct(arena, srl, ptr)       str8_serial_push_array(arena, srl, ptr, 1)

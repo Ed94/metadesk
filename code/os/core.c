@@ -1,5 +1,5 @@
 #ifdef INTELLISENSE_DIRECTIVES
-#	include "os_core.h"
+#	include "os.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools

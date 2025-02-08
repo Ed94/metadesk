@@ -314,6 +314,7 @@ tokenize_from_text(Arena* arena, String8 text)
 				}
 			}
 		}
+		#undef is_whitspace
 		
 		//- rjf: newlines
 		if (token_flags == 0 && *byte == '\n')
@@ -410,6 +411,7 @@ tokenize_from_text(Arena* arena, String8 text)
 				}
 			}
 		}
+		#undef is_identifier
 
 		#define is_numeric(byte) (                                                       \
 			('0'  <= *byte && *byte <= '9')                                           || \
@@ -440,6 +442,8 @@ tokenize_from_text(Arena* arena, String8 text)
 				}
 			}
 		}
+		#undef is_numeric
+		#undef is_not_numeric
 
 		#define is_triple_string_literal(byte) (                     \
 			(byte[0] == '"' && byte[1] == '"' && byte[2] == '"' ) || \
@@ -473,6 +477,7 @@ tokenize_from_text(Arena* arena, String8 text)
 				}
 			}
 		}
+		#undef is_triple_string_literal
 		
 		//- rjf: singlet string literals
 		if (token_flags == 0 && (byte[0] == '"' || byte[0] == '\'' || byte[0] == '`'))
@@ -539,6 +544,7 @@ tokenize_from_text(Arena* arena, String8 text)
 				}
 			}
 		}
+		#undef is_non_reserved_symbol
 
 		#define is_reserved_symbol(byte) (  \
 			*byte == '{' || *byte == '}' || \
@@ -559,6 +565,7 @@ tokenize_from_text(Arena* arena, String8 text)
 
 			byte += 1;
 		}
+		#undef is_reserved_symbol
 		
 		//- rjf: bad characters in all other cases
 		if (token_flags == 0) {
@@ -598,11 +605,6 @@ tokenize_from_text(Arena* arena, String8 text)
 	}
 	scratch_end(scratch);
 	return result;
-
-#undef byte_is_whitespace
-#undef byte_is_identifier
-#undef byte_is_numeric
-#undef byte_is_not_numeric
 }
 
 ////////////////////////////////
@@ -631,21 +633,28 @@ struct ParseWorkNode
 	S32            counted_newlines;
 };
 
-#if 0
-void parser_work_push(work_kind, work_parent, work_free)
+inline
+void parse__work_push(ParseWorkKind work_kind, Node* work_parent, ParseWorkNode* work_top, ParseWorkNode* work_free, TempArena* scratch)
 {
 	ParseWorkNode* work_node = work_free;
 	if (work_node == 0) {
-		work_node = push_array(scratch.arena, MD_ParseWorkNode, 1);
+		work_node = push_array(scratch->arena, ParseWorkNode, 1);
 	}
 	else {
 		sll_stack_pop(work_free);
 	}
-	work_node->kind = (work_kind);
+	work_node->kind   = (work_kind);
 	work_node->parent = (work_parent);
 	sll_stack_push(work_top, work_node);
 }
-#endif
+
+inline
+void parse__work_pop(ParseWorkNode* work_top, ParseWorkNode* broken_work) {
+	sll_stack_pop(work_top);
+	if (work_top == 0) {
+		work_top = broken_work;
+	}
+}
 
 ParseResult
 parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray tokens)
@@ -654,115 +663,104 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 	
 	//- rjf: set up outputs
 	MsgList msgs = {0};
-	Node *root = push_node(arena, NodeKind_File, 0, filename, text, 0);
+	Node*   root = push_node(arena, NodeKind_File, 0, filename, text, 0);
 	
 	//- rjf: set up parse rule stack
-
-	ParseWorkNode first_work = {
-		0,
-		ParseWorkKind_Main,
-		root,
-	};
-
-	ParseWorkNode  broken_work = { 0, ParseWorkKind_Main, root,};
+	ParseWorkNode  first_work  = { 0, ParseWorkKind_Main, root };
+	ParseWorkNode  broken_work = { 0, ParseWorkKind_Main, root };
 	ParseWorkNode* work_top    = &first_work;
 	ParseWorkNode* work_free   = 0;
 
-	#define parser_work_push(work_kind, work_parent) do                 \
-	{                                                                   \
-		ParseWorkNode* work_node = work_free;                           \
-		if (work_node == 0) {                                           \
-			work_node = push_array(scratch.arena, MD_ParseWorkNode, 1); \
-		}                                                               \
-		else {                                                          \
-			sll_stack_pop(work_free);                                   \
-		}                                                               \
-		work_node->kind = (work_kind);                                  \
-		work_node->parent = (work_parent);                              \
-		sll_stack_push(work_top, work_node);                            \
-	} while(0)
-
-	#define parse_work_pop() do                       \
-	{                                                 \
-		sll_stack_pop(work_top);                      \
-		if (work_top == 0) {                          \
-			work_top = &broken_work;                  \
-		}                                             \
-	} while(0)
+	#define parse_work_push(work_kind, work_parent) parse__work_push(work_kind, work_parent, work_top, work_free, &scratch)
+	#define parse_work_pop()                        parse__work_pop (work_top, &broken_work)
 	
 	//- rjf: parse
 	Token* tokens_first = tokens.v;
 	Token* tokens_opl   = tokens_first + tokens.count;
 	Token* token        = tokens_first;
-	for(;token < tokens_opl;)
+	for (;token < tokens_opl;)
 	{
 		//- rjf: unpack token
 		String8 token_string = str8_substr(text, token[0].range);
+
+		// Note(Ed): Each of the the follwoing conditionals will always terminate the iteration path to end_consume label.
 		
+		// TODO(Ed): Add opt-in support for whitespace awareness
 		//- rjf: whitespace -> always no-op & inc
 		if (token->flags & TokenFlag_Whitespace) {
 			token += 1;
 			goto end_consume;
 		}
 		
+		// TODO(Ed): Add opt-in support for comment awareness
 		//- rjf: comments -> always no-op & inc
 		if (token->flags & TokenGroup_Comment) {
 			token += 1;
 			goto end_consume;
 		}
 		
-		//- rjf: [node follow up] : following label -> work top parent has children. we need
-		// to scan for explicit delimiters, else parse an implicitly delimited set of children
+		//- rjf: [node follow up] : following label -> work top parent has children. 
+		// we need to scan for explicit delimiters, else parse an implicitly delimited set of children
 		if (work_top->kind == ParseWorkKind_NodeOptionalFollowUp && str8_match(token_string, str8_lit(":"), 0)) {
 			Node* parent = work_top->parent;
 			parse_work_pop();
 			parse_work_push(ParseWorkKind_NodeChildrenStyleScan, parent);
 			token += 1;
 			goto end_consume;
+			// Transition to a state where we scan for // explicit delimiters (e.g., '{', '[', '(').
 		}
 		
-		//- rjf: [node follow up] anything but : following label -> node has no children. just
-		// pop & move on
+		//- rjf: [node follow up] anything but : following label -> node has no children.
+		// just pop & move on
 		if (work_top->kind == ParseWorkKind_NodeOptionalFollowUp) {
 			parse_work_pop();
 			goto end_consume;
 		}
+
+		B32 reserved_token = token->flags & TokenFlag_Reserved;
+		B32 found_seprator = reserved_token && (str8_match(token_string, str8_lit(","), 0) || str8_match(token_string, str8_lit(";"), 0));
 		
 		//- rjf: [main] separators -> mark & inc
-		if (work_top->kind == ParseWorkKind_Main && token->flags & TokenFlag_Reserved && (str8_match(token_string, str8_lit(","), 0) || str8_match(token_string, str8_lit(";"), 0)))
+		if (work_top->kind == ParseWorkKind_Main && found_seprator)
 		{
 			Node* parent = work_top->parent;
 			if (!node_is_nil(parent->last))
 			{
-				parent->last->flags           |=     NodeFlag_IsBeforeComma *!! str8_match(token_string, str8_lit(","), 0);
+				parent->last->flags           |= NodeFlag_IsBeforeComma     *!! str8_match(token_string, str8_lit(","), 0);
 				parent->last->flags           |= NodeFlag_IsBeforeSemicolon *!! str8_match(token_string, str8_lit(";"), 0);
-				work_top->gathered_node_flags |=     NodeFlag_IsAfterComma  *!! str8_match(token_string, str8_lit(","), 0);
+				work_top->gathered_node_flags |= NodeFlag_IsAfterComma      *!! str8_match(token_string, str8_lit(","), 0);
 				work_top->gathered_node_flags |= NodeFlag_IsAfterSemicolon  *!! str8_match(token_string, str8_lit(";"), 0);
 			}
 			token += 1;
 			goto end_consume;
+			// 
 		}
 		
 		//- rjf: [main_implicit] separators -> pop
-		if(work_top->kind == ParseWorkKind_MainImplicit && token->flags & TokenFlag_Reserved && (str8_match(token_string, str8_lit(","), 0) || str8_match(token_string, str8_lit(";"), 0))) {
+		if(work_top->kind == ParseWorkKind_MainImplicit && token->flags & found_seprator) {
 			parse_work_pop();
 			goto end_consume;
 		}
+
+		B32 mode_main_and_implict = (work_top->kind == ParseWorkKind_Main || work_top->kind == ParseWorkKind_MainImplicit);
+		B32 found_unexpected      = reserved_token && (str8_match(token_string, str8_lit("#"), 0) || str8_match(token_string, str8_lit("\\"), 0) || str8_match(token_string, str8_lit(":"), 0));
 		
 		//- rjf: [main, main_implicit] unexpected reserved tokens
-		if ((work_top->kind == ParseWorkKind_Main || work_top->kind == ParseWorkKind_MainImplicit) && token->flags & TokenFlag_Reserved && (str8_match(token_string, str8_lit("#"), 0) || str8_match(token_string, str8_lit("\\"), 0) || str8_match(token_string, str8_lit(":"), 0))) 
-		{
+		if (mode_main_and_implict && found_unexpected) {
 			Node*   error        = push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
 			String8 error_string = push_str8f(arena, "Unexpected reserved symbol \"%S\".", token_string);
 			msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
 			token += 1;
 			goto end_consume;
 		}
+
+
+		B32 found_tag = reserved_token && str8_match(token_string, str8_lit("@"), 0);
 		
 		//- rjf: [main, main_implicit] tag signifier -> create new tag
-		if ((work_top->kind == ParseWorkKind_Main || work_top->kind == ParseWorkKind_MainImplicit) && token[0].flags & TokenFlag_Reserved && str8_match(token_string, str8_lit("@"), 0))
+		if (mode_main_and_implict && found_tag)
 		{
-			if (token+1 >= tokens_opl || !(token[1].flags & TokenGroup_Label))
+			if (token + 1 >= tokens_opl || !(token[1].flags & TokenGroup_Label))
 			{
 				Node*   error        = push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
 				String8 error_string = str8_lit("Tag label expected after @ symbol.");
@@ -791,7 +789,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 		}
 		
 		//- rjf: [main, main_implicit] label -> create new main
-		if ((work_top->kind == ParseWorkKind_Main || work_top->kind == ParseWorkKind_MainImplicit) && token->flags & TokenGroup_Label)
+		if (mode_main_and_implict && token->flags & TokenGroup_Label)
 		{
 			String8   node_string_raw = token_string;
 			String8   node_string     = content_string_from_token_flags_str8(token->flags, node_string_raw);
@@ -814,7 +812,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 		}
 		
 		//- rjf: [main] {s, [s, and (s -> create new main
-		if (work_top->kind == ParseWorkKind_Main && token->flags & TokenFlag_Reserved &&
+		if (work_top->kind == ParseWorkKind_Main && reserved_token &&
 			(
 				str8_match(token_string, str8_lit("{"), 0) ||
 				str8_match(token_string, str8_lit("["), 0) ||
@@ -846,7 +844,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 		}
 		
 		//- rjf: [node children style scan] {s, [s, and (s -> explicitly delimited children
-		if (work_top->kind == ParseWorkKind_NodeChildrenStyleScan && token->flags & TokenFlag_Reserved &&
+		if (work_top->kind == ParseWorkKind_NodeChildrenStyleScan && reserved_token &&
 			(
 				str8_match(token_string, str8_lit("{"), 0) ||
 				str8_match(token_string, str8_lit("["), 0) ||
@@ -863,23 +861,25 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 			token += 1;
 			goto end_consume;
 		}
+
+		B32 newline_token = token->flags & TokenFlag_Newline;
 		
 		//- rjf: [node children style scan] count newlines
-		if (work_top->kind == ParseWorkKind_NodeChildrenStyleScan && token->flags & TokenFlag_Newline) {
+		if (work_top->kind == ParseWorkKind_NodeChildrenStyleScan && newline_token) {
 			work_top->counted_newlines += 1;
 			token += 1;
 			goto end_consume;
 		}
 		
 		//- rjf: [main_implicit] newline -> pop
-		if (work_top->kind == ParseWorkKind_MainImplicit && token->flags & TokenFlag_Newline) {
+		if (work_top->kind == ParseWorkKind_MainImplicit && newline_token) {
 			parss_work_pop();
 			token += 1;
 			goto end_consume;
 		}
 		
 		//- rjf: [all but main_implicit] newline -> no-op & inc
-		if (work_top->kind != ParseWorkKind_MainImplicit && token->flags & TokenFlag_Newline) {
+		if (work_top->kind != ParseWorkKind_MainImplicit && newline_token) {
 			token += 1;
 			goto end_consume;
 		}
@@ -906,7 +906,14 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 		}
 		
 		//- rjf: [main] }s, ]s, and )s -> pop
-		if (work_top->kind == ParseWorkKind_Main && token->flags & TokenFlag_Reserved && (str8_match(token_string, str8_lit("}"), 0) || str8_match(token_string, str8_lit("]"), 0) || str8_match(token_string, str8_lit(")"), 0))) {
+		if (work_top->kind == ParseWorkKind_Main && reserved_token && 
+			(
+				str8_match(token_string, str8_lit("}"), 0) || 
+				str8_match(token_string, str8_lit("]"), 0) || 
+				str8_match(token_string, str8_lit(")"), 0)
+			)
+		) 
+		{
 			Node* parent = work_top->parent;
 			parent->flags |= NodeFlag_HasBraceRight   *!! str8_match(token_string, str8_lit("}"), 0);
 			parent->flags |= NodeFlag_HasBracketRight *!! str8_match(token_string, str8_lit("]"), 0);
@@ -917,7 +924,14 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 		}
 		
 		//- rjf: [main implicit] }s, ]s, and )s -> pop without advancing
-		if(work_top->kind == ParseWorkKind_MainImplicit && token->flags & TokenFlag_Reserved && (str8_match(token_string, str8_lit("}"), 0) || str8_match(token_string, str8_lit("]"), 0) || str8_match(token_string, str8_lit(")"), 0))) {
+		if (work_top->kind == ParseWorkKind_MainImplicit && reserved_token && 
+			(
+				str8_match(token_string, str8_lit("}"), 0) ||
+				str8_match(token_string, str8_lit("]"), 0) ||
+				str8_match(token_string, str8_lit(")"), 0)
+			)
+		)
+		{
 			parse_work_pop();
 			goto end_consume;
 		}

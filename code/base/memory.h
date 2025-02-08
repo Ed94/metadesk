@@ -452,9 +452,11 @@ dll__insert_npz(
 			)                                                              \
 	)                                                                      \
 )
+// ! MD_LINKED_LIST_PURE_MACRO
+#endif
+// dll_insert_npz
 #endif
 
-#endif
 #ifndef dll_push_back_npz
 // push-back next-previous with nil
 #define dll_push_back_npz(nil, f, l, n, next, prev)  dll_insert_npz(nil, f, l, l, n, next, prev)
@@ -517,7 +519,9 @@ dll__remove_npz(
 		:	((n)->next->prev = (n)->prev)        \
 	)                                            \
 )
+// ! MD_LINKED_LIST_PURE_MACRO
 #endif
+// dll_remove_npz
 #endif
 
 //- rjf: singly-linked, doubly-headed lists (queues)
@@ -558,7 +562,9 @@ sll__queue_push_nz(
 		set_nil(nil,(n)->next)                \
 	)                                         \
 )
+// ! MD_LINKED_LIST_PURE_MACRO
 #endif
+// sll_queue_push_nz
 #endif
 
 #ifndef sll_queue_push_front_nz
@@ -589,6 +595,8 @@ sll__queue_push_front_nz(void* nil, void** f, void** l, void* n, void** n_next) 
 		(f) = (n)                                   \
 	)                                               \
 )
+// ! MD_LINKED_LIST_PURE_MACRO
+#endif
 #endif
 
 #ifndef sll_queue_pop_nz
@@ -618,6 +626,9 @@ sll__queue_pop_nz(void* nil, void** f, void* f_next, void** l)
 		(f)=(f)->next                     \
 	)                                     \
 )
+// ! MD_LINKED_LIST_PURE_MACRO
+#endif
+// sll_queue_pop_nz
 #endif
 
 //- rjf: singly-linked, singly-headed lists (stacks)

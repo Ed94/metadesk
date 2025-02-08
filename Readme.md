@@ -18,4 +18,3 @@ docs will be updated referencing content procued by Ryan Fleury and content base
 * [examples](./examples/Readme.md)
 * [gen_c11](./gen_c11/Readme.md)
 * [gen_cpp17](./gen_cpp17/Readme.md)
-

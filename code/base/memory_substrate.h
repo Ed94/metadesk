@@ -106,6 +106,7 @@ void* resize_align( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size, 
 #ifndef alloc_array
 // Allocate memory for an array of items.
 #define alloc_array( allocator_, Type, count )         (Type*)memory_zero(alloc( allocator_, size_of(Type) * (count) ), size_of(Type) * (count))
+// Allocate memory for an array of items. (Don't zero initialize)
 #define alloc_array_no_zero( allocator_, Type, count ) (Type*)            alloc( allocator_, size_of(Type) * (count) )
 #endif
 
@@ -221,40 +222,40 @@ MD_API void* farena_allocator_proc(void* allocator_data, AllocatorMode mode, SSI
 
 // Inlines
 
-inline
-AllocatorType allocator_type(AllocatorInfo a) {
+inline AllocatorType
+allocator_type(AllocatorInfo a) {
 	if (a.proc == nullptr) {
 		a = default_allocator();
 	}
 	return (AllocatorType) a.proc(a.data, AllocatorMode_QueryType, 0, 0, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS);
 }
 
-inline
-AllocatorQueryFlags allocator_query_support(AllocatorInfo a) {
+inline AllocatorQueryFlags
+allocator_query_support(AllocatorInfo a) {
 	if (a.proc == nullptr) {
 		a = default_allocator();
 	}
 	return (AllocatorType) a.proc(a.data, AllocatorMode_QuerySupport, 0, 0, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS);
 }
 
-inline
-void* alloc_align( AllocatorInfo a, SSIZE size, SSIZE alignment ) {
+inline void* 
+alloc_align( AllocatorInfo a, SSIZE size, SSIZE alignment ) {
 	if (a.proc == nullptr) {
 		a = default_allocator();
 	}
 	return a.proc( a.data, AllocatorMode_Alloc, size, alignment, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
 
-inline
-void* alloc( AllocatorInfo a, SSIZE size ) {
+inline void*
+alloc( AllocatorInfo a, SSIZE size ) {
 	if (a.proc == nullptr) {
 		a = default_allocator();
 	}
 	return alloc_align( a, size, MD_DEFAULT_MEMORY_ALIGNMENT );
 }
 
-inline
-void alloc_free( AllocatorInfo a, void* ptr ) {
+inline void
+alloc_free( AllocatorInfo a, void* ptr ) {
 	if (a.proc == nullptr) {
 		a = default_allocator();
 	}
@@ -263,32 +264,32 @@ void alloc_free( AllocatorInfo a, void* ptr ) {
 	}
 }
 
-inline
-void free_all( AllocatorInfo a ) {
+inline void
+free_all( AllocatorInfo a ) {
 	if (a.proc == nullptr) {
 		a = default_allocator();
 	}
 	a.proc( a.data, AllocatorMode_FreeAll, 0, 0, nullptr, 0, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
 
-inline
-void* resize( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size ) {
+inline void*
+resize( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size ) {
 	if (a.proc == nullptr) {
 		a = default_allocator();
 	}
 	return resize_align( a, ptr, old_size, new_size, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
 
-inline
-void* resize_align( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size, SSIZE alignment ) {
+inline void*
+resize_align( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size, SSIZE alignment ) {
 	if (a.proc == nullptr) {
 		a = default_allocator();
 	}
 	return a.proc( a.data, AllocatorMode_Resize, new_size, alignment, ptr, old_size, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
 
-inline
-void* default_resize_align( AllocatorInfo a, void* old_memory, SSIZE old_size, SSIZE new_size, SSIZE alignment )
+inline void*
+default_resize_align( AllocatorInfo a, void* old_memory, SSIZE old_size, SSIZE new_size, SSIZE alignment )
 {
 	if ( ! old_memory )
 		return alloc_align( a, new_size, alignment );

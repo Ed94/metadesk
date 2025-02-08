@@ -17,25 +17,29 @@ struct _heap_stats
 
 global _heap_stats _heap_stats_info;
 
-void heap_stats_init( void )
+void
+heap_stats_init( void )
 {
 	memory_zero_struct( &_heap_stats_info );
 	_heap_stats_info.magic = GEN_HEAP_STATS_MAGIC;
 }
 
-SSIZE heap_stats_used_memory( void )
+SSIZE
+heap_stats_used_memory( void )
 {
 	assert_msg( _heap_stats_info.magic == GEN_HEAP_STATS_MAGIC, "heap_stats is not initialised yet, call heap_stats_init first!" );
 	return _heap_stats_info.used_memory;
 }
 
-SSIZE heap_stats_alloc_count( void )
+SSIZE
+heap_stats_alloc_count( void )
 {
 	assert_msg( _heap_stats_info.magic == GEN_HEAP_STATS_MAGIC, "heap_stats is not initialised yet, call heap_stats_init first!" );
 	return _heap_stats_info.alloc_count;
 }
 
-void heap_stats_check( void )
+void
+heap_stats_check( void )
 {
 	assert_msg( _heap_stats_info.magic == GEN_HEAP_STATS_MAGIC, "heap_stats is not initialised yet, call heap_stats_init first!" );
 	assert( _heap_stats_info.used_memory == 0 );
@@ -50,7 +54,8 @@ struct _heap_alloc_info
 };
 #endif
 
-void* heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags )
+void*
+heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags )
 {
 	void* ptr = nullptr;
 	// unused( allocator_data );
@@ -184,7 +189,8 @@ void* heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size,
 	return ptr;
 }
 
-VArena varena__alloc(VArenaParams params)
+VArena
+varena__alloc(VArenaParams params)
 {
 	if (params.reserve_size == 0) {
 		params.reserve_size = VARENA_DEFAULT_RESERVE;
@@ -238,13 +244,15 @@ VArena varena__alloc(VArenaParams params)
 	vm->flags         = params.flags;
 }
 
-void varena_release(VArena* arena)
+void
+varena_release(VArena* arena)
 {
 	os_release(arena, arena->reserve);
 	arena = nullptr;
 }
 
-void* varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags)
+void*
+varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags)
 {
 	OS_SystemInfo const* info = os_get_system_info();
 
@@ -372,7 +380,8 @@ void* varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requ
 	return allocated_mem;
 }
 
-void* farena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags)
+void*
+farena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags)
 {
 	FArena* arena = rcast(FArena*, allocator_data);
 

@@ -6,7 +6,7 @@
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
 
-MD_API global OS_W32_State os_w32_state = {0};
+MD_API_C global OS_W32_State os_w32_state = {0};
 
 ////////////////////////////////
 //~ rjf: Modern Windows SDK Functions
@@ -15,9 +15,6 @@ MD_API global OS_W32_State os_w32_state = {0};
 
 typedef HRESULT W32_SetThreadDescription_Type(HANDLE hThread, PCWSTR lpThreadDescription);
 MD_API_C global W32_SetThreadDescription_Type* w32_SetThreadDescription_func = 0;
-
-////////////////////////////////
-//~ rjf: File Info Conversion Helpers
 
 ////////////////////////////////
 //~ rjf: Time Conversion Helpers
@@ -190,92 +187,98 @@ os_file_open(OS_AccessFlags flags, String8 path)
 }
 
 void
-os_file_close(OS_Handle file)
-{
+os_file_close(OS_Handle file) {
 	if (os_handle_match(file, os_handle_zero())) { return; }
 	HANDLE handle = (HANDLE)file.u64[0];
 	BOOL   result = CloseHandle(handle);
 	(void)result;
 }
 
-internal U64
+U64
 os_file_read(OS_Handle file, Rng1U64 rng, void *out_data)
 {
-  if(os_handle_match(file, os_handle_zero())) { return 0; }
-  HANDLE handle = (HANDLE)file.u64[0];
+	if (os_handle_match(file, os_handle_zero())) { return 0; }
+	HANDLE handle = (HANDLE)file.u64[0];
   
-  // rjf: clamp range by file size
-  U64 size = 0;
-  GetFileSizeEx(handle, (LARGE_INTEGER *)&size);
-  Rng1U64 rng_clamped  = r1u64(ClampTop(rng.min, size), ClampTop(rng.max, size));
-  U64 total_read_size = 0;
+	// rjf: clamp range by file size
+	U64 size = 0;
+	GetFileSizeEx(handle, (LARGE_INTEGER *)&size);
+	Rng1U64 rng_clamped     = r1u64(ClampTop(rng.min, size), ClampTop(rng.max, size));
+	U64     total_read_size = 0;
   
-  // rjf: read loop
-  {
-    U64 to_read = dim_1u64(rng_clamped);
-    for(U64 off = rng.min; total_read_size < to_read;)
-    {
-      U64 amt64 = to_read - total_read_size;
-      U32 amt32 = u32_from_u64_saturate(amt64);
-      DWORD read_size = 0;
-      OVERLAPPED overlapped = {0};
-      overlapped.Offset     = (off&0x00000000ffffffffull);
-      overlapped.OffsetHigh = (off&0xffffffff00000000ull) >> 32;
-      ReadFile(handle, (U8 *)out_data + total_read_size, amt32, &read_size, &overlapped);
-      off += read_size;
-      total_read_size += read_size;
-      if(read_size != amt32)
-      {
-        break;
-      }
-    }
-  }
+	// rjf: read loop
+	{
+		U64 to_read = dim_1u64(rng_clamped);
+		for(U64 off = rng.min; total_read_size < to_read;)
+		{
+			U64        amt64      = to_read - total_read_size;
+			U32        amt32      = u32_from_u64_saturate(amt64);
+			DWORD      read_size  = 0;
+
+			OVERLAPPED overlapped = {0};
+			overlapped.Offset     = (off&0x00000000ffffffffull);
+			overlapped.OffsetHigh = (off&0xffffffff00000000ull) >> 32;
+
+			ReadFile(handle, (U8 *)out_data + total_read_size, amt32, &read_size, &overlapped);
+
+			off             += read_size;
+			total_read_size += read_size;
+			if (read_size != amt32) {
+				break;
+			}
+		}
+	}
   
-  return total_read_size;
+	return total_read_size;
 }
 
-internal U64
+U64
 os_file_write(OS_Handle file, Rng1U64 rng, void *data)
 {
-  if(os_handle_match(file, os_handle_zero())) { return 0; }
-  HANDLE win_handle = (HANDLE)file.u64[0];
-  U64 src_off = 0;
-  U64 dst_off = rng.min;
-  U64 bytes_to_write_total = rng.max-rng.min;
-  U64 total_bytes_written = 0;
-  for(;src_off < bytes_to_write_total;)
-  {
-    void *bytes_src = (void *)((U8 *)data + src_off);
-    U64 bytes_to_write_64 = (bytes_to_write_total-src_off);
-    U32 bytes_to_write_32 = u32_from_u64_saturate(bytes_to_write_64);
-    U32 bytes_written = 0;
-    OVERLAPPED overlapped = {0};
-    overlapped.Offset     = (dst_off&0x00000000ffffffffull);
-    overlapped.OffsetHigh = (dst_off&0xffffffff00000000ull) >> 32;
-    BOOL success = WriteFile(win_handle, bytes_src, bytes_to_write_32, (DWORD *)&bytes_written, &overlapped);
-    if(success == 0)
-    {
-      break;
-    }
-    src_off += bytes_written;
-    dst_off += bytes_written;
-    total_bytes_written += bytes_written;
-  }
-  return total_bytes_written;
+	if(os_handle_match(file, os_handle_zero())) { return 0; }
+	HANDLE win_handle = (HANDLE)file.u64[0];
+
+	U64 src_off              = 0;
+	U64 dst_off              = rng.min;
+	U64 bytes_to_write_total = rng.max-rng.min;
+	U64 total_bytes_written  = 0;
+	for  (;src_off < bytes_to_write_total;)
+	{
+		void* bytes_src         = (void*)((U8*)data + src_off);
+		U64   bytes_to_write_64 = (bytes_to_write_total-src_off);
+		U32   bytes_to_write_32 = u32_from_u64_saturate(bytes_to_write_64);
+		U32   bytes_written     = 0;
+
+		OVERLAPPED overlapped = {0};
+		overlapped.Offset     = (dst_off&0x00000000ffffffffull);
+		overlapped.OffsetHigh = (dst_off&0xffffffff00000000ull) >> 32;
+
+		BOOL success = WriteFile(win_handle, bytes_src, bytes_to_write_32, (DWORD *)&bytes_written, &overlapped);
+		if (success == 0) {
+			break;
+		}
+		src_off             += bytes_written;
+		dst_off             += bytes_written;
+		total_bytes_written += bytes_written;
+	}
+
+	return total_bytes_written;
 }
 
-internal B32
-os_file_set_time(OS_Handle file, DateTime time)
+B32
+os_file_set_times(OS_Handle file, DateTime time)
 {
-  if(os_handle_match(file, os_handle_zero())) { return 0; }
-  B32 result = 0;
-  HANDLE handle = (HANDLE)file.u64[0];
-  SYSTEMTIME system_time = {0};
-  os_w32_system_time_from_date_time(&system_time, &time);
-  FILETIME file_time = {0};
-  result = (SystemTimeToFileTime(&system_time, &file_time) &&
-            SetFileTime(handle, &file_time, &file_time, &file_time));
-  return result;
+	if(os_handle_match(file, os_handle_zero())) { return 0; }
+	B32 result = 0;
+	{
+		HANDLE     handle      = (HANDLE)file.u64[0];
+		SYSTEMTIME system_time = {0};
+		os_w32_system_time_from_date_time(&system_time, &time);
+
+		FILETIME file_time = {0};
+		result = (SystemTimeToFileTime(&system_time, &file_time) && SetFileTime(handle, &file_time, &file_time, &file_time));
+	}
+	return result;
 }
 
 internal FileProperties

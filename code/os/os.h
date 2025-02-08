@@ -303,8 +303,8 @@ os_string_from_guid(Arena* arena, OS_Guid guid) {
 ////////////////////////////////
 //~ rjf: @os_hooks System/Process Info (Implemented Per-OS)
 
-internal OS_SystemInfo *os_get_system_info(void);
-internal OS_ProcessInfo *os_get_process_info(void);
+internal OS_SystemInfo*  os_get_system_info(void);
+internal OS_ProcessInfo* os_get_process_info(void);
 internal String8 os_get_current_path(Arena *arena);
 
 ////////////////////////////////

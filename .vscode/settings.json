@@ -51,7 +51,8 @@
 		"sstream": "c",
 		"os_win32.h": "c",
 		"windows.h": "c",
-		"base.h": "c"
+		"base.h": "c",
+		"os_linux.h": "c"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

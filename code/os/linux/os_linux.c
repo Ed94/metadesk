@@ -1,117 +1,45 @@
+#ifdef INTELLISENSE_DIRECTIVES
+#	include "os_linux.h"
+#	include "os/os.h"
+#endif
+
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
 
 ////////////////////////////////
-//~ rjf: Helpers
+//~ rjf: Globals
 
-internal DateTime
-os_lnx_date_time_from_tm(tm in, U32 msec)
-{
-  DateTime dt = {0};
-  dt.sec  = in.tm_sec;
-  dt.min  = in.tm_min;
-  dt.hour = in.tm_hour;
-  dt.day  = in.tm_mday-1;
-  dt.mon  = in.tm_mon;
-  dt.year = in.tm_year+1900;
-  dt.msec = msec;
-  return dt;
-}
-
-internal tm
-os_lnx_tm_from_date_time(DateTime dt)
-{
-  tm result = {0};
-  result.tm_sec = dt.sec;
-  result.tm_min = dt.min;
-  result.tm_hour= dt.hour;
-  result.tm_mday= dt.day+1;
-  result.tm_mon = dt.mon;
-  result.tm_year= dt.year-1900;
-  return result;
-}
-
-internal timespec
-os_lnx_timespec_from_date_time(DateTime dt)
-{
-  tm tm_val = os_lnx_tm_from_date_time(dt);
-  time_t seconds = timegm(&tm_val);
-  timespec result = {0};
-  result.tv_sec = seconds;
-  return result;
-}
-
-internal DenseTime
-os_lnx_dense_time_from_timespec(timespec in)
-{
-  DenseTime result = 0;
-  {
-    struct tm tm_time = {0};
-    gmtime_r(&in.tv_sec, &tm_time);
-    DateTime date_time = os_lnx_date_time_from_tm(tm_time, in.tv_nsec/Million(1));
-    result = dense_time_from_date_time(date_time);
-  }
-  return result;
-}
-
-internal FileProperties
-os_lnx_file_properties_from_stat(struct stat *s)
-{
-  FileProperties props = {0};
-  props.size     = s->st_size;
-  props.created  = os_lnx_dense_time_from_timespec(s->st_ctim);
-  props.modified = os_lnx_dense_time_from_timespec(s->st_mtim);
-  if(s->st_mode & S_IFDIR)
-  {
-    props.flags |= FilePropertyFlag_IsFolder;
-  }
-  return props;
-}
-
-internal void
-os_lnx_safe_call_sig_handler(int x)
-{
-  OS_LNX_SafeCallChain *chain = os_lnx_safe_call_chain;
-  if(chain != 0 && chain->fail_handler != 0)
-  {
-    chain->fail_handler(chain->ptr);
-  }
-  abort();
-}
+MD_API_C global        OS_LNX_State          os_lnx_state           = {0};
+MD_API_C thread_static OS_LNX_SafeCallChain* os_lnx_safe_call_chain = 0;
 
 ////////////////////////////////
 //~ rjf: Entities
 
-internal OS_LNX_Entity *
+OS_LNX_Entity*
 os_lnx_entity_alloc(OS_LNX_EntityKind kind)
 {
-  OS_LNX_Entity *entity = 0;
-  DeferLoop(pthread_mutex_lock(&os_lnx_state.entity_mutex),
-            pthread_mutex_unlock(&os_lnx_state.entity_mutex))
-  {
-    entity = os_lnx_state.entity_free;
-    if(entity)
-    {
-      SLLStackPop(os_lnx_state.entity_free);
-    }
-    else
-    {
-      entity = push_array_no_zero(os_lnx_state.entity_arena, OS_LNX_Entity, 1);
-    }
-  }
-  MemoryZeroStruct(entity);
-  entity->kind = kind;
-  return entity;
+	OS_LNX_Entity* entity = 0;
+	defer_loop(pthread_mutex_lock  (&os_lnx_state.entity_mutex), pthread_mutex_unlock(&os_lnx_state.entity_mutex))
+	{
+		entity = os_lnx_state.entity_free;
+		if (entity) {
+			sll_stack_pop(os_lnx_state.entity_free);
+		}
+		else {
+			entity = push_array_no_zero(os_lnx_state.entity_arena, OS_LNX_Entity, 1);
+		}
+	}
+	memory_zero_struct(entity);
+	entity->kind = kind;
+	return entity;
 }
 
-internal void
-os_lnx_entity_release(OS_LNX_Entity *entity)
-{
-  DeferLoop(pthread_mutex_lock(&os_lnx_state.entity_mutex),
-            pthread_mutex_unlock(&os_lnx_state.entity_mutex))
-  {
-    SLLStackPush(os_lnx_state.entity_free, entity);
-  }
+void
+os_lnx_entity_release(OS_LNX_Entity *entity) {
+	defer_loop(pthread_mutex_lock(&os_lnx_state.entity_mutex), pthread_mutex_unlock(&os_lnx_state.entity_mutex))
+	{
+		sll_stack_push(os_lnx_state.entity_free, entity);
+	}
 }
 
 ////////////////////////////////
@@ -120,119 +48,43 @@ os_lnx_entity_release(OS_LNX_Entity *entity)
 internal void *
 os_lnx_thread_entry_point(void *ptr)
 {
-  OS_LNX_Entity *entity = (OS_LNX_Entity *)ptr;
-  OS_ThreadFunctionType *func = entity->thread.func;
-  void *thread_ptr = entity->thread.ptr;
-  TCTX tctx_;
-  tctx_init_and_equip(&tctx_);
-  func(thread_ptr);
-  tctx_release();
-  return 0;
+	OS_LNX_Entity*         entity     = (OS_LNX_Entity *)ptr;
+	OS_ThreadFunctionType* func       = entity->thread.func;
+	void*                  thread_ptr = entity->thread.ptr;
+
+	TCTX tctx_;
+	tctx_init_and_equip(&tctx_);
+	func(thread_ptr);
+	tctx_release();
+	return 0;
 }
 
 ////////////////////////////////
 //~ rjf: @os_hooks System/Process Info (Implemented Per-OS)
 
-internal OS_SystemInfo *
-os_get_system_info(void)
-{
-  return &os_lnx_state.system_info;
+OS_SystemInfo*
+os_get_system_info(void) {
+	return &os_lnx_state.system_info;
 }
 
-internal OS_ProcessInfo *
-os_get_process_info(void)
-{
+OS_ProcessInfo*
+os_get_process_info(void) {
   return &os_lnx_state.process_info;
-}
-
-internal String8
-os_get_current_path(Arena *arena)
-{
-  char *cwdir = getcwd(0, 0);
-  String8 string = push_str8_copy(arena, str8_cstring(cwdir));
-  return string;
-}
-
-////////////////////////////////
-//~ rjf: @os_hooks Memory Allocation (Implemented Per-OS)
-
-//- rjf: basic
-
-internal void *
-os_reserve(U64 size)
-{
-  void *result = mmap(0, size, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-  return result;
-}
-
-internal B32
-os_commit(void *ptr, U64 size)
-{
-  mprotect(ptr, size, PROT_READ|PROT_WRITE);
-  return 1;
-}
-
-internal void
-os_decommit(void *ptr, U64 size)
-{
-  madvise(ptr, size, MADV_DONTNEED);
-  mprotect(ptr, size, PROT_NONE);
-}
-
-internal void
-os_release(void *ptr, U64 size)
-{
-  munmap(ptr, size);
-}
-
-//- rjf: large pages
-
-internal void *
-os_reserve_large(U64 size)
-{
-  void *result = mmap(0, size, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_HUGETLB, -1, 0);
-  return result;
-}
-
-internal B32
-os_commit_large(void *ptr, U64 size)
-{
-  mprotect(ptr, size, PROT_READ|PROT_WRITE);
-  return 1;
 }
 
 ////////////////////////////////
 //~ rjf: @os_hooks Thread Info (Implemented Per-OS)
 
-internal U32
-os_tid(void)
-{
-  U32 result = 0;
-#if defined(SYS_gettid)
-  result = syscall(SYS_gettid);
-#else
-  result = gettid();
-#endif
-  return result;
-}
-
-internal void
+void
 os_set_thread_name(String8 name)
 {
-  Temp scratch = scratch_begin(0, 0);
-  String8 name_copy = push_str8_copy(scratch.arena, name);
-  pthread_t current_thread = pthread_self();
-  pthread_setname_np(current_thread, (char *)name_copy.str);
-  scratch_end(scratch);
-}
-
-////////////////////////////////
-//~ rjf: @os_hooks Aborting (Implemented Per-OS)
-
-internal void
-os_abort(S32 exit_code)
-{
-  exit(exit_code);
+	TempArena scratch = scratch_begin(0, 0);
+	{
+		String8   name_copy      = push_str8_copy(scratch.arena, name);
+		pthread_t current_thread = pthread_self();
+		pthread_setname_np(current_thread, (char *)name_copy.str);
+	}
+	scratch_end(scratch);
 }
 
 ////////////////////////////////
@@ -240,112 +92,101 @@ os_abort(S32 exit_code)
 
 //- rjf: files
 
-internal OS_Handle
+OS_Handle
 os_file_open(OS_AccessFlags flags, String8 path)
 {
-  Temp scratch = scratch_begin(0, 0);
-  String8 path_copy = push_str8_copy(scratch.arena, path);
-  int lnx_flags = 0;
-  if(flags & (OS_AccessFlag_Read|OS_AccessFlag_Write))
-  {
-    lnx_flags = O_RDWR;
-  }
-  else if(flags & OS_AccessFlag_Write)
-  {
-    lnx_flags = O_WRONLY;
-  }
-  else if(flags & OS_AccessFlag_Read)
-  {
-    lnx_flags = O_RDONLY;
-  }
-  if(flags & OS_AccessFlag_Append)
-  {
-    lnx_flags |= O_APPEND;
-  }
-  int fd = open((char *)path_copy.str, lnx_flags);
-  OS_Handle handle = {0};
-  if(fd != -1)
-  {
-    handle.u64[0] = fd;
-  }
-  scratch_end(scratch);
-  return handle;
+	TempArena scratch   = scratch_begin(0, 0);
+	{
+		String8   path_copy = push_str8_copy(scratch.arena, path);
+		int       lnx_flags = 0;
+		if      (flags & (OS_AccessFlag_Read | OS_AccessFlag_Write)) { lnx_flags  = O_RDWR; }
+		else if (flags & OS_AccessFlag_Write)                        { lnx_flags  = O_WRONLY; }
+		else if (flags & OS_AccessFlag_Read)                         { lnx_flags  = O_RDONLY; }
+		if      (flags & OS_AccessFlag_Append)                       { lnx_flags |= O_APPEND; }
+
+		int       fd     = open((char *)path_copy.str, lnx_flags);
+		OS_Handle handle = {0};
+		if (fd != -1) {
+			handle.u64[0] = fd;
+		}
+	}
+	scratch_end(scratch);
+	return handle;
 }
 
-internal void
+void
 os_file_close(OS_Handle file)
 {
-  if(os_handle_match(file, os_handle_zero())) { return; }
-  int fd = (int)file.u64[0];
-  close(fd);
+	if (os_handle_match(file, os_handle_zero())) { return; }
+	int fd = (int)file.u64[0];
+	close(fd);
 }
 
-internal U64
-os_file_read(OS_Handle file, Rng1U64 rng, void *out_data)
+U64
+os_file_read(OS_Handle file, Rng1U64 rng, void* out_data)
 {
-  if(os_handle_match(file, os_handle_zero())) { return 0; }
-  int fd = (int)file.u64[0];
-  if(rng.min != 0)
-  {
-    lseek(fd, rng.min, SEEK_SET);
-  }
-  U64 total_num_bytes_to_read = dim_1u64(rng);
-  U64 total_num_bytes_read = 0;
-  U64 total_num_bytes_left_to_read = total_num_bytes_to_read;
-  for(;total_num_bytes_left_to_read > 0;)
-  {
-    int read_result = read(fd, (U8 *)out_data + total_num_bytes_read, total_num_bytes_left_to_read);
-    if(read_result >= 0)
-    {
-      total_num_bytes_read += read_result;
-      total_num_bytes_left_to_read -= read_result;
-    }
-    else if(errno != EINTR)
-    {
-      break;
-    }
-  }
-  return total_num_bytes_read;
+	if (os_handle_match(file, os_handle_zero())) { return 0; }
+
+	int fd = (int)file.u64[0];
+	if (rng.min != 0) {
+		lseek(fd, rng.min, SEEK_SET);
+	}
+
+	U64 total_num_bytes_to_read      = dim_1u64(rng);
+	U64 total_num_bytes_read         = 0;
+	U64 total_num_bytes_left_to_read = total_num_bytes_to_read;
+	for (;total_num_bytes_left_to_read > 0;)
+{
+		int read_result = read(fd, (U8 *)out_data + total_num_bytes_read, total_num_bytes_left_to_read);
+		if (read_result >= 0) {
+			total_num_bytes_read         += read_result;
+			total_num_bytes_left_to_read -= read_result;
+		}
+		else if (errno != EINTR) {
+			break;
+		}
+	}
+	return total_num_bytes_read;
 }
 
-internal U64
+U64
 os_file_write(OS_Handle file, Rng1U64 rng, void *data)
 {
-  if(os_handle_match(file, os_handle_zero())) { return 0; }
-  int fd = (int)file.u64[0];
-  if(rng.min != 0)
-  {
-    lseek(fd, rng.min, SEEK_SET);
-  }
-  U64 total_num_bytes_to_write = dim_1u64(rng);
-  U64 total_num_bytes_written = 0;
-  U64 total_num_bytes_left_to_write = total_num_bytes_to_write;
-  for(;total_num_bytes_left_to_write > 0;)
-  {
-    int write_result = write(fd, (U8 *)data + total_num_bytes_written, total_num_bytes_left_to_write);
-    if(write_result >= 0)
-    {
-      total_num_bytes_written += write_result;
-      total_num_bytes_left_to_write -= write_result;
-    }
-    else if(errno != EINTR)
-    {
-      break;
-    }
-  }
-  return total_num_bytes_written;
+	if(os_handle_match(file, os_handle_zero())) { return 0; }
+
+	int fd = (int)file.u64[0];
+	if (rng.min != 0) {
+		lseek(fd, rng.min, SEEK_SET);
+	}
+
+	U64 total_num_bytes_to_write      = dim_1u64(rng);
+	U64 total_num_bytes_written       = 0;
+	U64 total_num_bytes_left_to_write = total_num_bytes_to_write;
+	for (;total_num_bytes_left_to_write > 0;)
+	{
+		int write_result = write(fd, (U8*)data + total_num_bytes_written, total_num_bytes_left_to_write);
+		if (write_result >= 0) {
+			total_num_bytes_written       += write_result;
+			total_num_bytes_left_to_write -= write_result;
+		}
+		else if (errno != EINTR) {
+			break;
+		}
+	}
+	return total_num_bytes_written;
 }
 
-internal B32
+B32
 os_file_set_times(OS_Handle file, DateTime date_time)
 {
-  if(os_handle_match(file, os_handle_zero())) { return 0; }
-  int fd = (int)file.u64[0];
-  timespec time = os_lnx_timespec_from_date_time(date_time);
-  timespec times[2] = {time, time};
-  int futimens_result = futimens(fd, times);
-  B32 good = (futimens_result != -1);
-  return good;
+	if(os_handle_match(file, os_handle_zero())) { return 0; }
+	int fd = (int)file.u64[0];
+
+	timespec time            = os_lnx_timespec_from_date_time(date_time);
+	timespec times[2]        = {time, time};
+	int      futimens_result = futimens(fd, times);
+	B32      good            = (futimens_result != -1);
+	return good;
 }
 
 internal FileProperties

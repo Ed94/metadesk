@@ -177,15 +177,7 @@ os_w32_dense_time_from_file_time(DenseTime* out, FILETIME* in) {
 //~ rjf: Entity Functions
 
 MD_API OS_W32_Entity* os_w32_entity_alloc  (OS_W32_EntityKind kind);
-MD_API       void           os_w32_entity_release(OS_W32_Entity*    entity);
-
-inline void
-os_w32_entity_release(OS_W32_Entity *entity) {
-	entity->kind = OS_W32_EntityKind_Null;
-	EnterCriticalSection(&os_w32_state.entity_mutex);
-	sll_stack_push(os_w32_state.entity_free, entity);
-	LeaveCriticalSection(&os_w32_state.entity_mutex);
-}
+MD_API void           os_w32_entity_release(OS_W32_Entity*    entity);
 
 ////////////////////////////////
 //~ rjf: Thread Entry Point
@@ -245,4 +237,8 @@ inline U32 os_tid(void) { DWORD id = GetCurrentThreadId(); return (U32)id; }
 
 inline void os_abort(S32 exit_code) { ExitProcess(exit_code); }
 
+////////////////////////////////
+//~ rjf: @os_hooks File System (Implemented Per-OS)
+
+//- rjf: files
 

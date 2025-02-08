@@ -74,8 +74,8 @@ AllocatorInfo arena_allocator(Arena* arena) {
 
 //- rjf: arena creation/destruction
 
-MD_API Arena* arena_alloc_(ArenaParams* params);
-#define       arena_alloc(...) arena_alloc_( &(ArenaParams){ __VA_ARGS__ } )
+MD_API Arena* arena__alloc(ArenaParams* params);
+#define       arena_alloc(...) arena__alloc( &(ArenaParams){ __VA_ARGS__ } )
 
 void arena_release(Arena *arena);
 

@@ -132,13 +132,13 @@ typedef void VoidProc(void);
 #if ARCH_32BIT
 #	define MIN_USIZE U32_MIN
 #	define MAX_USIZE U32_MAX
-#	define MIN_ISIZE S32_MIN
-#	define MAX_ISIZE S32_MAX
+#	define MIN_SSIZE S32_MIN
+#	define MAX_SSIZE S32_MAX
 #elif ARCH_64BIT
 #	define MIN_USIZE U64_MIN
 #	define MAX_USIZE U64_MAX
-#	define MIN_ISIZE S64_MIN
-#	define MAX_ISIZE S64_MAX
+#	define MIN_SSIZE S64_MIN
+#	define MAX_SSIZE S64_MAX
 #else
 #	error Unknown architecture size. This library only supports 32 bit and 64 bit architectures.
 #endif

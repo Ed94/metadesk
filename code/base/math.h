@@ -362,11 +362,11 @@ struct Rng1S64Array
 ////////////////////////////////
 //~ rjf: Clamps, Mins, Maxes
 
-#ifndef min
-#define min(A, B) (((A) < (B)) ? (A) : (B))
+#ifndef md_min
+#define md_min(A, B) (((A) < (B)) ? (A) : (B))
 #endif
-#ifndef max
-#define max(A, B) (((A) > (B)) ? (A) : (B))
+#ifndef md_max
+#define md_max(A, B) (((A) > (B)) ? (A) : (B))
 #endif
 
 #ifndef clamp_top
@@ -780,8 +780,8 @@ inline Rng1U32 pad_1u32      (Rng1U32 r, U32 x)     {         r.min -= x; r.max 
 inline U32     center_1u32   (Rng1U32 r)            { U32     c = (r.min + r.max) / 2;                                       return c; }
 inline B32     contains_1u32 (Rng1U32 r, U32 x)     { B32     c = (r.min <= x && x < r.max);                                 return c; }
 inline U32     dim_1u32      (Rng1U32 r)            { U32     c = r.max - r.min;                                             return c; }
-inline Rng1U32 union_1u32    (Rng1U32 a, Rng1U32 b) { Rng1U32 c = {min(a.min, b.min), min(a.max, b.max)};                    return c; }
-inline Rng1U32 intersect_1u32(Rng1U32 a, Rng1U32 b) { Rng1U32 c = {max(a.min, b.min), min(a.max, b.max)};                    return c; }
+inline Rng1U32 union_1u32    (Rng1U32 a, Rng1U32 b) { Rng1U32 c = {md_min(a.min, b.min), md_min(a.max, b.max)};              return c; }
+inline Rng1U32 intersect_1u32(Rng1U32 a, Rng1U32 b) { Rng1U32 c = {md_max(a.min, b.min), md_min(a.max, b.max)};              return c; }
 inline U32     clamp_1u32    (Rng1U32 r, U32 v)     {         v = clamp(r.min, v, r.max);                                    return v; }
 
 #define r1s32(min, max) rng_1s32((min), (max))
@@ -791,8 +791,8 @@ inline Rng1S32 pad_1s32      (Rng1S32 r, S32 x)     {         r.min -= x; r.max 
 inline S32     center_1s32   (Rng1S32 r)            { S32     c = (r.min+r.max) / 2;                                         return c; }
 inline B32     contains_1s32 (Rng1S32 r, S32 x)     { B32     c = (r.min <= x && x < r.max);                                 return c; }
 inline S32     dim_1s32      (Rng1S32 r)            { S32     c = r.max-r.min;                                               return c; }
-inline Rng1S32 union_1s32    (Rng1S32 a, Rng1S32 b) { Rng1S32 c = {min(a.min, b.min), max(a.max, b.max)};                    return c; }
-inline Rng1S32 intersect_1s32(Rng1S32 a, Rng1S32 b) { Rng1S32 c = {max(a.min, b.min), min(a.max, b.max)};                    return c; }
+inline Rng1S32 union_1s32    (Rng1S32 a, Rng1S32 b) { Rng1S32 c = {md_min(a.min, b.min), md_max(a.max, b.max)};              return c; }
+inline Rng1S32 intersect_1s32(Rng1S32 a, Rng1S32 b) { Rng1S32 c = {md_max(a.min, b.min), md_min(a.max, b.max)};              return c; }
 inline S32     clamp_1s32    (Rng1S32 r, S32 v)     {         v = clamp(r.min, v, r.max);                                    return v; }
 
 #define r1u64(min, max) rng_1u64((min), (max))
@@ -802,8 +802,8 @@ inline Rng1U64 pad_1u64      (Rng1U64 r, U64 x)     {         r.min -= x; r.max 
 inline U64     center_1u64   (Rng1U64 r)            { U64     c = (r.min + r.max)/2;                                         return c; }
 inline B32     contains_1u64 (Rng1U64 r, U64 x)     { B32     c = (r.min <= x && x < r.max);                                 return c; }
 inline U64     dim_1u64      (Rng1U64 r)            { U64     c = r.max-r.min;                                               return c; }
-inline Rng1U64 union_1u64    (Rng1U64 a, Rng1U64 b) { Rng1U64 c = {min(a.min, b.min), max(a.max, b.max)};                    return c; }
-inline Rng1U64 intersect_1u64(Rng1U64 a, Rng1U64 b) { Rng1U64 c = {max(a.min, b.min), min(a.max, b.max)};                    return c; }
+inline Rng1U64 union_1u64    (Rng1U64 a, Rng1U64 b) { Rng1U64 c = {md_min(a.min, b.min), md_max(a.max, b.max)};              return c; }
+inline Rng1U64 intersect_1u64(Rng1U64 a, Rng1U64 b) { Rng1U64 c = {md_max(a.min, b.min), md_min(a.max, b.max)};              return c; }
 inline U64     clamp_1u64    (Rng1U64 r, U64 v)     {         v = clamp(r.min, v, r.max);                                    return v; }
 
 #define r1s64(min, max) rng_1s64((min), (max))
@@ -813,8 +813,8 @@ inline Rng1S64 pad_1s64      (Rng1S64 r, S64 x)     {         r.min -= x; r.max 
 inline S64     center_1s64   (Rng1S64 r)            { S64     c = (r.min + r.max) / 2;                                       return c; }
 inline B32     contains_1s64 (Rng1S64 r, S64 x)     { B32     c = (r.min <= x && x < r.max);                                 return c; }
 inline S64     dim_1s64      (Rng1S64 r)            { S64     c = r.max - r.min;                                             return c; }
-inline Rng1S64 union_1s64    (Rng1S64 a, Rng1S64 b) { Rng1S64 c = {min(a.min, b.min), max(a.max, b.max)};                    return c; }
-inline Rng1S64 intersect_1s64(Rng1S64 a, Rng1S64 b) { Rng1S64 c = {max(a.min, b.min), min(a.max, b.max)};                    return c; }
+inline Rng1S64 union_1s64    (Rng1S64 a, Rng1S64 b) { Rng1S64 c = {md_min(a.min, b.min), md_max(a.max, b.max)};              return c; }
+inline Rng1S64 intersect_1s64(Rng1S64 a, Rng1S64 b) { Rng1S64 c = {md_max(a.min, b.min), md_min(a.max, b.max)};              return c; }
 inline S64     clamp_1s64    (Rng1S64 r, S64 v)     {         v = clamp(r.min, v, r.max);                                    return v;}
 
 #define r1f32(min, max) rng_1f32((min), (max))
@@ -824,8 +824,8 @@ inline Rng1F32 pad_1f32      (Rng1F32 r, F32 x)     {         r.min -= x; r.max 
 inline F32     center_1f32   (Rng1F32 r)            { F32     c = (r.min + r.max) / 2;                                       return c; }
 inline B32     contains_1f32 (Rng1F32 r, F32 x)     { B32     c = (r.min <= x && x < r.max);                                 return c; }
 inline F32     dim_1f32      (Rng1F32 r)            { F32     c = r.max - r.min;                                             return c; }
-inline Rng1F32 union_1f32    (Rng1F32 a, Rng1F32 b) { Rng1F32 c = {min(a.min, b.min), max(a.max, b.max)};                    return c; }
-inline Rng1F32 intersect_1f32(Rng1F32 a, Rng1F32 b) { Rng1F32 c = {max(a.min, b.min), min(a.max, b.max)};                    return c; }
+inline Rng1F32 union_1f32    (Rng1F32 a, Rng1F32 b) { Rng1F32 c = {md_min(a.min, b.min), md_max(a.max, b.max)};              return c; }
+inline Rng1F32 intersect_1f32(Rng1F32 a, Rng1F32 b) { Rng1F32 c = {md_max(a.min, b.min), md_min(a.max, b.max)};              return c; }
 inline F32     clamp_1f32    (Rng1F32 r, F32 v)     {         v = clamp(r.min, v, r.max);                                    return v; }
 
 // ==================== 2D Ranges ====================
@@ -838,8 +838,8 @@ inline Rng2S16 pad_2s16      (Rng2S16 r, S16 x)         { Vec2S16 xv = {x, x}; r
 inline Vec2S16 center_2s16   (Rng2S16 r)                { Vec2S16 c = {(S16)((r.min.x + r.max.x) / 2), (S16)((r.min.y + r.max.y) / 2)};      return c; }
 inline B32     contains_2s16 (Rng2S16 r, Vec2S16 x)     { B32     c = (r.min.x <= x.x && x.x < r.max.x && r.min.y <= x.y && x.y < r.max.y);  return c; }
 inline Vec2S16 dim_2s16      (Rng2S16 r)                { Vec2S16 dim = {(S16)(r.max.x - r.min.x), (S16)(r.max.y - r.min.y)};                return dim; }
-inline Rng2S16 union_2s16    (Rng2S16 a, Rng2S16 b)     { Rng2S16 c; c.p0.x = min(a.min.x, b.min.x); c.p0.y = min(a.min.y, b.min.y); c.p1.x = max(a.max.x, b.max.x); c.p1.y = max(a.max.y, b.max.y); return c; }
-inline Rng2S16 intersect_2s16(Rng2S16 a, Rng2S16 b)     { Rng2S16 c; c.p0.x = max(a.min.x, b.min.x); c.p0.y = max(a.min.y, b.min.y); c.p1.x = min(a.max.x, b.max.x); c.p1.y = min(a.max.y, b.max.y); return c; }
+inline Rng2S16 union_2s16    (Rng2S16 a, Rng2S16 b)     { Rng2S16 c; c.p0.x = md_min(a.min.x, b.min.x); c.p0.y = md_min(a.min.y, b.min.y); c.p1.x = md_max(a.max.x, b.max.x); c.p1.y = md_max(a.max.y, b.max.y); return c; }
+inline Rng2S16 intersect_2s16(Rng2S16 a, Rng2S16 b)     { Rng2S16 c; c.p0.x = md_max(a.min.x, b.min.x); c.p0.y = md_max(a.min.y, b.min.y); c.p1.x = md_min(a.max.x, b.max.x); c.p1.y = md_min(a.max.y, b.max.y); return c; }
 inline Vec2S16 clamp_2s16    (Rng2S16 r, Vec2S16 v)     {         v.x = clamp(r.min.x, v.x, r.max.x); v.y = clamp(r.min.y, v.y, r.max.y); return v; }
 
 #define r2s32(min, max) rng_2s32((min), (max))
@@ -850,8 +850,8 @@ inline Rng2S32 pad_2s32      (Rng2S32 r, S32 x)         { Vec2S32 xv = {x, x}; r
 inline Vec2S32 center_2s32   (Rng2S32 r)                { Vec2S32 c = {(r.min.x + r.max.x) / 2, (r.min.y + r.max.y) / 2};                   return c; }
 inline B32     contains_2s32 (Rng2S32 r, Vec2S32 x)     { B32     c = (r.min.x <= x.x && x.x < r.max.x && r.min.y <= x.y && x.y < r.max.y); return c; }
 inline Vec2S32 dim_2s32      (Rng2S32 r)                { Vec2S32 dim = {r.max.x - r.min.x, r.max.y - r.min.y};                             return dim; }
-inline Rng2S32 union_2s32    (Rng2S32 a, Rng2S32 b)     { Rng2S32 c; c.p0.x = min(a.min.x, b.min.x); c.p0.y = min(a.min.y, b.min.y); c.p1.x = max(a.max.x, b.max.x); c.p1.y = max(a.max.y, b.max.y); return c; }
-inline Rng2S32 intersect_2s32(Rng2S32 a, Rng2S32 b)     { Rng2S32 c; c.p0.x = max(a.min.x, b.min.x); c.p0.y = max(a.min.y, b.min.y); c.p1.x = min(a.max.x, b.max.x); c.p1.y = min(a.max.y, b.max.y); return c; }
+inline Rng2S32 union_2s32    (Rng2S32 a, Rng2S32 b)     { Rng2S32 c; c.p0.x = md_min(a.min.x, b.min.x); c.p0.y = md_min(a.min.y, b.min.y); c.p1.x = md_max(a.max.x, b.max.x); c.p1.y = md_max(a.max.y, b.max.y); return c; }
+inline Rng2S32 intersect_2s32(Rng2S32 a, Rng2S32 b)     { Rng2S32 c; c.p0.x = md_max(a.min.x, b.min.x); c.p0.y = md_max(a.min.y, b.min.y); c.p1.x = md_min(a.max.x, b.max.x); c.p1.y = md_min(a.max.y, b.max.y); return c; }
 inline Vec2S32 clamp_2s32    (Rng2S32 r, Vec2S32 v)     {         v.x = clamp(r.min.x, v.x, r.max.x); v.y = clamp(r.min.y, v.y, r.max.y); return v; }
 
 #define r2s64(min, max) rng_2s64((min), (max))
@@ -862,8 +862,8 @@ inline Rng2S64 pad_2s64      (Rng2S64 r, S64 x)         { Vec2S64 xv = {x, x}; r
 inline Vec2S64 center_2s64   (Rng2S64 r)                { Vec2S64 c = {(r.min.x + r.max.x) / 2, (r.min.y + r.max.y) / 2};                   return c; }
 inline B32     contains_2s64 (Rng2S64 r, Vec2S64 x)     { B32     c = (r.min.x <= x.x && x.x < r.max.x && r.min.y <= x.y && x.y < r.max.y); return c; }
 inline Vec2S64 dim_2s64      (Rng2S64 r)                { Vec2S64 dim = {r.max.x - r.min.x, r.max.y - r.min.y};                             return dim; }
-inline Rng2S64 union_2s64    (Rng2S64 a, Rng2S64 b)     { Rng2S64 c; c.p0.x = min(a.min.x, b.min.x); c.p0.y = min(a.min.y, b.min.y); c.p1.x = max(a.max.x, b.max.x); c.p1.y = max(a.max.y, b.max.y); return c; }
-inline Rng2S64 intersect_2s64(Rng2S64 a, Rng2S64 b)     { Rng2S64 c; c.p0.x = max(a.min.x, b.min.x); c.p0.y = max(a.min.y, b.min.y); c.p1.x = min(a.max.x, b.max.x); c.p1.y = min(a.max.y, b.max.y); return c; }
+inline Rng2S64 union_2s64    (Rng2S64 a, Rng2S64 b)     { Rng2S64 c; c.p0.x = md_min(a.min.x, b.min.x); c.p0.y = md_min(a.min.y, b.min.y); c.p1.x = md_max(a.max.x, b.max.x); c.p1.y = md_max(a.max.y, b.max.y); return c; }
+inline Rng2S64 intersect_2s64(Rng2S64 a, Rng2S64 b)     { Rng2S64 c; c.p0.x = md_max(a.min.x, b.min.x); c.p0.y = md_max(a.min.y, b.min.y); c.p1.x = md_min(a.max.x, b.max.x); c.p1.y = md_min(a.max.y, b.max.y); return c; }
 inline Vec2S64 clamp_2s32    (Rng2S64 r, Vec2S64 v)     {         v.x = clamp(r.min.x, v.x, r.max.x); v.y = clamp(r.min.y, v.y, r.max.y); return v; }
 
 ////////////////////////////////
@@ -879,8 +879,8 @@ U32     u32_from_rgba (Vec4F32 rgba);
 inline Vec3F32
 hsv_from_rgb(Vec3F32 rgb)
 {
-	F32 c_max   = Max(rgb.x, Max(rgb.y, rgb.z));
-	F32 c_min   = Min(rgb.x, Min(rgb.y, rgb.z));
+	F32 c_max   = md_max(rgb.x, md_max(rgb.y, rgb.z));
+	F32 c_min   = md_min(rgb.x, md_min(rgb.y, rgb.z));
 	F32 delta   = c_max - c_min;
 	F32 q_delta = 1.0f / delta;
 	F32 h = ( 

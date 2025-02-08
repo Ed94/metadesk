@@ -65,7 +65,12 @@
 		"profiling.h": "c",
 		"ring.h": "c",
 		"debug.h": "c",
-		"arena.h": "c"
+		"arena.h": "c",
+		"tmmintrin.h": "c",
+		"math.h": "c",
+		"command_line.h": "c",
+		"sort.h": "c",
+		"chrono": "c"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

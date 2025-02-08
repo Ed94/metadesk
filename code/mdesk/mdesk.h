@@ -306,21 +306,23 @@ B32 node_is_nil(Node* node) { return (node == 0 || node == nil_node() || node->k
 
 //- rjf: iteration
 
-#define each_node(it, first) (Node *it = first; !node_is_nil(it); it = it->next)
+#define each_node(it, first) (Node* it = first; !node_is_nil(it); it = it->next)
 
-MD_API NodeRec node_rec_depth_first(Node *node, Node *subtree_root, U64 child_off, U64 sib_off);
+MD_API NodeRec node_rec_depth_first(Node* node, Node* subtree_root, U64 child_off, U64 sib_off);
 
 #define node_rec_depth_first_pre(node, subtree_root)     node_rec_depth_first((node), (subtree_root), offset_of(Node, first), offset_of(Node, next))
 #define node_rec_depth_first_pre_rev(node, subtree_root) node_rec_depth_first((node), (subtree_root), offset_of(Node, last),  offset_of(Node, prev))
 
 //- rjf: tree building
 
-Node* push_node        (Arena *arena, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset);
-void  node_insert_tag  (Node *parent, Node *prev_child, Node *node);
-void  node_insert_child(Node *parent, Node *prev_child, Node *node);
-void  node_push_child  (Node *parent, Node *node);
-void  node_push_tag    (Node *parent, Node *node);
-void  unhook           (Node *node);
+Node* push_node (Arena*        arena, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset);
+Node* alloc_node(AllocatorInfo ainfo, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset);
+
+void  node_insert_tag  (Node* parent, Node* prev_child, Node* node);
+void  node_insert_child(Node* parent, Node* prev_child, Node* node);
+void  node_push_child  (Node* parent, Node* node);
+void  node_push_tag    (Node* parent, Node* node);
+void  unhook           (Node* node);
 
 inline Node*
 push_node(Arena* arena, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset) {
@@ -360,25 +362,123 @@ node_push_tag(Node* parent, Node* node) {
   dll_push_back_npz(nil_node(), parent->first_tag, parent->last_tag, node, next, prev);
 }
 
-//- rjf: tree introspectionhttps://github.com/Ed94/metadesk
+//- rjf: tree introspection
 
-internal Node*   node_from_chain_string(Node *first, Node *opl, String8 string, StringMatchFlags flags);
-internal Node*   node_from_chain_index (Node *first, Node *opl, U64 index);
-internal Node*   node_from_chain_flags (Node *first, Node *opl, NodeFlags flags);
-internal U64     index_from_node       (Node *node);
-internal Node*   root_from_node        (Node *node);
-internal Node*   child_from_string     (Node *node, String8 child_string, StringMatchFlags flags);
-internal Node*   tag_from_string       (Node *node, String8 tag_string, StringMatchFlags flags);
-internal Node*   child_from_index      (Node *node, U64 index);
-internal Node*   tag_from_index        (Node *node, U64 index);
-internal Node*   tag_arg_from_index    (Node *node, String8 tag_string, StringMatchFlags flags, U64 index);
-internal Node*   tag_arg_from_string   (Node *node, String8 tag_string, StringMatchFlags tag_str_flags, String8 arg_string, StringMatchFlags arg_str_flags);
-internal B32     node_has_child        (Node *node, String8 string, StringMatchFlags flags);
-internal B32     node_has_tag          (Node *node, String8 string, StringMatchFlags flags);
-internal U64     child_count_from_node (Node *node);
-internal U64     tag_count_from_node   (Node *node);
+Node* node_from_chain_string(Node* first, Node* opl, String8 string, StringMatchFlags flags);
+Node* node_from_chain_index (Node* first, Node* opl, U64 index);
+Node* node_from_chain_flags (Node* first, Node* opl, NodeFlags flags);
+U64   index_from_node       (Node* node);
+Node* root_from_node        (Node* node);
+Node* child_from_string     (Node* node, String8 child_string, StringMatchFlags flags);
+Node* tag_from_string       (Node* node, String8 tag_string, StringMatchFlags flags);
+Node* child_from_index      (Node* node, U64 index);
+Node* tag_from_index        (Node* node, U64 index);
+Node* tag_arg_from_index    (Node* node, String8 tag_string, StringMatchFlags flags, U64 index);
+Node* tag_arg_from_string   (Node* node, String8 tag_string, StringMatchFlags tag_str_flags, String8 arg_string, StringMatchFlags arg_str_flags);
+B32   node_has_child        (Node* node, String8 string, StringMatchFlags flags);
+B32   node_has_tag          (Node* node, String8 string, StringMatchFlags flags);
+U64   child_count_from_node (Node* node);
+U64   tag_count_from_node   (Node* node);
 
-internal String8 string_from_children (Arena *arena, Node *root);
+MD_API String8 string_from_children(Arena* arena, Node* root);
+
+inline Node*
+node_from_chain_string(Node* first, Node* opl, String8 string, StringMatchFlags flags)
+{
+	Node* result = nil_node();
+	for (Node* n = first; !node_is_nil(n) && n != opl; n = n->next)
+	{
+		if (str8_match(n->string, string, flags)) {
+			result = n;
+			break;
+		}
+	}
+	return result;
+}
+
+inline Node*
+node_from_chain_index(Node* first, Node* opl, U64 index) {
+	Node* result = nil_node();
+	S64   idx    = 0;
+	for (Node* n = first; !node_is_nil(n) && n != opl; n = n->next, idx += 1)
+	{
+		if (index == idx) {
+			result = n;
+			break;
+		}
+	}
+	return result;
+}
+
+inline Node*
+node_from_chain_flags(Node* first, Node* opl, NodeFlags flags) {
+	Node* result = nil_node();
+	for (Node* n = first; !node_is_nil(n) && n != opl; n = n->next)
+	{
+		if (n->flags & flags) {
+			result = n;
+			break;
+		}
+	}
+	return result;
+}
+
+inline U64
+index_from_node(Node* node) {
+	U64 index = 0;
+	for (Node* n = node->prev; !node_is_nil(n); n = n->prev) {
+		index += 1;
+	}
+	return index;
+}
+
+inline Node*
+root_from_node(Node* node) {
+	Node* result = node;
+	for (Node* p = node->parent; (p->kind == NodeKind_Main || p->kind == NodeKind_Tag) && !node_is_nil(p); p = p->parent) {
+		result = p;
+	}
+	return result;
+}
+
+inline Node* child_from_string(Node* node, String8 child_string, StringMatchFlags flags) { return node_from_chain_string(node->first,     nil_node(), child_string, flags); }
+inline Node* tag_from_string  (Node* node, String8 tag_string,   StringMatchFlags flags) { return node_from_chain_string(node->first_tag, nil_node(), tag_string,   flags); }
+inline Node* child_from_index (Node* node, U64 index)                                    { return node_from_chain_index (node->first,     nil_node(), index); }
+inline Node* tag_from_index   (Node* node, U64 index)                                    { return node_from_chain_index (node->first_tag, nil_node(), index); }
+
+inline Node*
+tag_arg_from_index(Node* node, String8 tag_string, StringMatchFlags flags, U64 index) {
+	Node* tag = tag_from_string(node, tag_string, flags);
+	return child_from_index(tag, index);
+}
+
+inline Node*
+tag_arg_from_string(Node* node, String8 tag_string, StringMatchFlags tag_str_flags, String8 arg_string, StringMatchFlags arg_str_flags) {
+	Node* tag = tag_from_string  (node, tag_string, tag_str_flags);
+	Node* arg = child_from_string(tag,  arg_string, arg_str_flags);
+	return arg;
+}
+
+inline B32 node_has_child(Node* node, String8 string, StringMatchFlags flags) { return !node_is_nil(child_from_string(node, string, flags)); }
+inline B32 node_has_tag  (Node* node, String8 string, StringMatchFlags flags) { return !node_is_nil(tag_from_string  (node, string, flags)); }
+
+inline U64
+child_count_from_node(Node *node) {
+	U64 result = 0;
+	for (Node* child = node->first; !node_is_nil(child); child = child->next) {
+		result += 1;
+	}
+	return result;
+}
+
+inline U64
+tag_count_from_node(Node* node) {
+	U64 result = 0;
+	for (Node* child = node->first_tag; !node_is_nil(child); child = child->next) {
+		result += 1;
+	}
+	return result;
+}
 
 //- rjf: tree comparison
 

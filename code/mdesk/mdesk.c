@@ -157,163 +157,25 @@ unhook(Node* node)
 
 //- rjf: tree introspection
 
-internal Node *
-node_from_chain_string(Node *first, Node *opl, String8 string, StringMatchFlags flags)
+String8
+string_from_children(Arena* arena, Node*  root)
 {
-  Node *result = nil_node();
-  for(Node *n = first; !node_is_nil(n) && n != opl; n = n->next)
-  {
-    if(str8_match(n->string, string, flags))
-    {
-      result = n;
-      break;
-    }
-  }
-  return result;
-}
-
-internal Node *
-node_from_chain_index(Node *first, Node *opl, U64 index)
-{
-  Node *result = nil_node();
-  S64 idx = 0;
-  for(Node *n = first; !node_is_nil(n) && n != opl; n = n->next, idx += 1)
-  {
-    if(index == idx)
-    {
-      result = n;
-      break;
-    }
-  }
-  return result;
-}
-
-internal Node *
-node_from_chain_flags(Node *first, Node *opl, NodeFlags flags)
-{
-  Node *result = nil_node();
-  for(Node *n = first; !node_is_nil(n) && n != opl; n = n->next)
-  {
-    if(n->flags & flags)
-    {
-      result = n;
-      break;
-    }
-  }
-  return result;
-}
-
-internal U64
-index_from_node(Node *node)
-{
-  U64 index = 0;
-  for(Node *n = node->prev; !node_is_nil(n); n = n->prev)
-  {
-    index += 1;
-  }
-  return index;
-}
-
-internal Node *
-root_from_node(Node *node)
-{
-  Node *result = node;
-  for(Node *p = node->parent; (p->kind == NodeKind_Main || p->kind == NodeKind_Tag) && !node_is_nil(p); p = p->parent)
-  {
-    result = p;
-  }
-  return result;
-}
-
-internal Node *
-child_from_string(Node *node, String8 child_string, StringMatchFlags flags)
-{
-  return node_from_chain_string(node->first, nil_node(), child_string, flags);
-}
-
-internal Node *
-tag_from_string(Node *node, String8 tag_string, StringMatchFlags flags)
-{
-  return node_from_chain_string(node->first_tag, nil_node(), tag_string, flags);
-}
-
-internal Node *
-child_from_index(Node *node, U64 index)
-{
-  return node_from_chain_index(node->first, nil_node(), index);
-}
-
-internal Node *
-tag_from_index(Node *node, U64 index)
-{
-  return node_from_chain_index(node->first_tag, nil_node(), index);
-}
-
-internal Node *
-tag_arg_from_index(Node *node, String8 tag_string, StringMatchFlags flags, U64 index)
-{
-  Node *tag = tag_from_string(node, tag_string, flags);
-  return child_from_index(tag, index);
-}
-
-internal Node *
-tag_arg_from_string(Node *node, String8 tag_string, StringMatchFlags tag_str_flags, String8 arg_string, StringMatchFlags arg_str_flags)
-{
-  Node *tag = tag_from_string(node, tag_string, tag_str_flags);
-  Node *arg = child_from_string(tag, arg_string, arg_str_flags);
-  return arg;
-}
-
-internal B32
-node_has_child(Node *node, String8 string, StringMatchFlags flags)
-{
-  return !node_is_nil(child_from_string(node, string, flags));
-}
-
-internal B32
-node_has_tag(Node *node, String8 string, StringMatchFlags flags)
-{
-  return !node_is_nil(tag_from_string(node, string, flags));
-}
-
-internal U64
-child_count_from_node(Node *node)
-{
-  U64 result = 0;
-  for(Node *child = node->first; !node_is_nil(child); child = child->next)
-  {
-    result += 1;
-  }
-  return result;
-}
-
-internal U64
-tag_count_from_node(Node *node)
-{
-  U64 result = 0;
-  for(Node *child = node->first_tag; !node_is_nil(child); child = child->next)
-  {
-    result += 1;
-  }
-  return result;
-}
-
-internal String8
-string_from_children(Arena *arena, Node *root)
-{
-  TempArena scratch = scratch_begin(&arena, 1);
-  String8List strs = {0};
-  for each_node(child, root->first)
-  {
-    if(child->flags == child->prev->flags)
-    {
-      str8_list_push(scratch.arena, &strs, str8_lit(" "));
-    }
-    str8_list_push(scratch.arena, &strs, child->string);
-  }
-  String8 result = str8_list_join(arena, &strs, 0);
-  scratch_end(scratch);
-  return result;
+	String8 result;
+	TempArena scratch = scratch_begin(&arena, 1);
+	{
+		String8List strs = {0};
+		for each_node(child, root->first)
+		{
+			if (child->flags == child->prev->flags) {
+				str8_list_push(scratch.arena, &strs, str8_lit(" "));
+			}
+			str8_list_push(scratch.arena, &strs, child->string);
+		
+		}
+		result = str8_list_join(arena, &strs, 0);
+	}
+	scratch_end(scratch);
+	return result;
 }
 
 //- rjf: tree comparison

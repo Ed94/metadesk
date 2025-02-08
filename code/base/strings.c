@@ -4,72 +4,19 @@
 #	include "debug.h"
 #	include "strings.h"
 #	include "thread_context.h"
+////////////////////////////////
+//~ rjf: Third Party Includes
+#if !BUILD_SUPPLEMENTARY_UNIT
+#	define STB_SPRINTF_IMPLEMENTATION
+#	define STB_SPRINTF_STATIC
+#	include "third_party/stb/stb_sprintf.h"
+// Note(Ed): We should inject when generating the library segmented or singleheader
+#endif
+
 #endif
 
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
-
-////////////////////////////////
-//~ rjf: Third Party Includes
-
-// #if !BUILD_SUPPLEMENTARY_UNIT
-// # define STB_SPRINTF_IMPLEMENTATION
-// # define STB_SPRINTF_STATIC
-// # include "third_party/stb/stb_sprintf.h"
-// #endif
-
-////////////////////////////////
-//~ NOTE(allen): String <-> Integer Tables
-
-MD_API_C read_only global U8 integer_symbols[16] = {
-	'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F',
-};
-
-// NOTE(allen): Includes reverses for uppercase and lowercase hex.
-MD_API_C read_only global U8 integer_symbol_reverse[128] = {
-	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-	0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-	0xFF,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-	0xFF,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-};
-
-MD_API_C read_only global U8 base64[64] = {
-	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-	'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-	'_', '$',
-};
-
-MD_API_C read_only global U8 base64_reverse[128] = {
-	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-	0xFF,0xFF,0xFF,0xFF,0x3F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-	0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0xFF,0xFF,0xFF,0xFF,0xFF,0x00,
-	0xFF,0x24,0x25,0x26,0x27,0x28,0x29,0x2A,0x2B,0x2C,0x2D,0x2E,0x2F,0x30,0x31,0x32,
-	0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x3A,0x3B,0x3C,0x3D,0xFF,0xFF,0xFF,0xFF,0x3E,
-	0xFF,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,
-	0x19,0x1A,0x1B,0x1C,0x1D,0x1E,0x1F,0x20,0x21,0x22,0x23,0xFF,0xFF,0xFF,0xFF,0xFF,
-};
-
-////////////////////////////////
-//~ rjf: Character Classification & Conversion Functions
-
-B32 char_is_digit(U8 c, U32 base) {
-	B32 result = 0;
-	if (0 < base && base <= 16) {
-		U8 val = integer_symbol_reverse[c];
-		if (val < base) {
-			result = 1;
-		}
-	}
-	return(result);
-}
 
 ////////////////////////////////
 //~ rjf: String Matching
@@ -140,6 +87,20 @@ str8_find_needle(String8 string, U64 start_pos, String8 needle, StringMatchFlags
 	return(result);
 }
 
+U64
+str8_find_needle_reverse(String8 string, U64 start_pos, String8 needle, StringMatchFlags flags) {
+	U64 result = 0;
+	for (S64 i = string.size - start_pos - needle.size; i >= 0; --i)
+	{
+		String8 haystack = str8_substr(string, rng_1u64(i, i + needle.size));
+		if (str8_match(haystack, needle, flags)) {
+			result = (U64)i + needle.size;
+			break;
+		}
+	}
+	return result;
+}
+
 ////////////////////////////////
 //~ rjf: String Slicing
 
@@ -174,7 +135,7 @@ push_str8_cat(Arena* arena, String8 s1, String8 s2)
 	str.str[str.size] = 0;
 	return(str);
 #else
-	return str8_cat(arena_allocator(arena), s1, s2);
+	return alloc_str8_cat(arena_allocator(arena), s1, s2);
 #endif
 }
 
@@ -188,7 +149,7 @@ push_str8_copy(Arena* arena, String8 s){
 	str.str[str.size] = 0;
 	return(str);
 #else
-	return str8_copy(arena_allocator(arena), s);
+	return alloc_str8_copy(arena_allocator(arena), s);
 #endif
 }
 
@@ -205,12 +166,12 @@ push_str8fv(Arena* arena, char* fmt, va_list args){
 	va_end(args2);
 	return(result);
 #else
-	return str8fv(arena_allocator(arena), fmt, args);
+	return alloc_str8fv(arena_allocator(arena), fmt, args);
 #endif
 }
 
 String8
-str8_cat(AllocatorInfo ainfo, String8 s1, String8 s2)
+alloc_str8_cat(AllocatorInfo ainfo, String8 s1, String8 s2)
 {
 	String8 str;
 	str.size = s1.size + s2.size;
@@ -222,7 +183,7 @@ str8_cat(AllocatorInfo ainfo, String8 s1, String8 s2)
 }
 
 String8
-str8_copy(AllocatorInfo ainfo, String8 s)
+alloc_str8_copy(AllocatorInfo ainfo, String8 s)
 {
 	String8 str;
 	str.size = s.size;
@@ -233,7 +194,7 @@ str8_copy(AllocatorInfo ainfo, String8 s)
 }
 
 String8
-str8fv(AllocatorInfo ainfo, char *fmt, va_list args){
+alloc_str8fv(AllocatorInfo ainfo, char *fmt, va_list args){
 	va_list args2;
 	va_copy(args2, args);
 	U32     needed_bytes = md_vsnprintf(0, 0, fmt, args) + 1;
@@ -278,25 +239,13 @@ str8_is_integer(String8 string, U32 radix){
 		result = 1;
 		for (U64 i = 0; i < string.size; i += 1) {
 			U8 c = string.str[i];
-			if ( ! (c < 0x80) || integer_symbol_reverse[c] >= radix){
+			if ( ! (c < 0x80) || integer_symbol_reverse(c) >= radix){
 				result = 0;
 				break;
 			}
 		}
 	}
 	return(result);
-}
-
-U64
-u64_from_str8(String8 string, U32 radix) {
-	U64 x = 0;
-	if (1 < radix && radix <= 16) {
-		for (U64 i = 0; i < string.size; i += 1) {
-			x *= radix;
-			x += integer_symbol_reverse[string.str[i]&0x7F];
-		}
-	}
-	return(x);
 }
 
 B32
@@ -364,16 +313,16 @@ String8
 str8_from_allocator_size(AllocatorInfo ainfo, U64 z) {
 	String8 result = {0};
 	if (z < KB(1)) {
-		result = str8f(ainfo, "%llu  b", z);
+		result = alloc_str8f(ainfo, "%llu  b", z);
 	}
 	else if (z < MB(1)) {
-		result = str8f(ainfo, "%llu.%02llu Kb", z/KB(1), ((100*z)/KB(1))%100);
+		result = alloc_str8f(ainfo, "%llu.%02llu Kb", z/KB(1), ((100*z)/KB(1))%100);
 	}
 	else if (z < GB(1)) {
-		result = str8f(ainfo, "%llu.%02llu Mb", z/MB(1), ((100*z)/MB(1))%100);
+		result = alloc_str8f(ainfo, "%llu.%02llu Mb", z/MB(1), ((100*z)/MB(1))%100);
 	}
 	else{
-		result = str8f(ainfo, "%llu.%02llu Gb", z/GB(1), ((100*z)/GB(1))%100);
+		result = alloc_str8f(ainfo, "%llu.%02llu Gb", z/GB(1), ((100*z)/GB(1))%100);
 	}
 	return(result);
 }
@@ -423,8 +372,8 @@ str8_from_u64(Arena* arena, U64 u64, U32 radix, U8 min_digits, U8 digit_group_se
 			U64 needed_separators = 0;
 			if (digit_group_separator != 0)
 			{
-				needed_separators = (needed_digits+needed_leading_0s)/digit_group_size;
-				if(needed_separators > 0 && (needed_digits+needed_leading_0s)%digit_group_size == 0)
+				needed_separators = (needed_digits + needed_leading_0s) / digit_group_size;
+				if(needed_separators > 0 && (needed_digits + needed_leading_0s) % digit_group_size == 0)
 				{
 					needed_separators -= 1;
 				}
@@ -442,10 +391,10 @@ str8_from_u64(Arena* arena, U64 u64, U32 radix, U8 min_digits, U8 digit_group_se
 			{
 				if(digits_until_separator == 0 && digit_group_separator != 0) {
 					result.str[result.size - idx - 1] = digit_group_separator;
-					digits_until_separator = digit_group_size+1;
+					digits_until_separator = digit_group_size + 1;
 				}
 				else {
-					result.str[result.size - idx - 1] = char_to_lower(integer_symbols[u64_reduce%radix]);
+					result.str[result.size - idx - 1] = char_to_lower(integer_symbols(u64_reduce % radix));
 					u64_reduce /= radix;
 				}
 				digits_until_separator -= 1;
@@ -515,8 +464,8 @@ str8_from_allocator_u64(AllocatorInfo ainfo, U64 u64, U32 radix, U8 min_digits, 
 			U64 needed_separators = 0;
 			if (digit_group_separator != 0)
 			{
-				needed_separators = (needed_digits+needed_leading_0s)/digit_group_size;
-				if(needed_separators > 0 && (needed_digits+needed_leading_0s)%digit_group_size == 0)
+				needed_separators = (needed_digits + needed_leading_0s) / digit_group_size;
+				if(needed_separators > 0 && (needed_digits + needed_leading_0s) % digit_group_size == 0)
 				{
 					needed_separators -= 1;
 				}
@@ -534,10 +483,10 @@ str8_from_allocator_u64(AllocatorInfo ainfo, U64 u64, U32 radix, U8 min_digits, 
 			{
 				if(digits_until_separator == 0 && digit_group_separator != 0) {
 					result.str[result.size - idx - 1] = digit_group_separator;
-					digits_until_separator = digit_group_size+1;
+					digits_until_separator = digit_group_size + 1;
 				}
 				else {
-					result.str[result.size - idx - 1] = char_to_lower(integer_symbols[u64_reduce%radix]);
+					result.str[result.size - idx - 1] = char_to_lower(integer_symbols(u64_reduce % radix));
 					u64_reduce /= radix;
 				}
 				digits_until_separator -= 1;
@@ -588,12 +537,12 @@ str8_from_alloctor_s64(AllocatorInfo ainfo, S64 s64, U32 radix, U8 min_digits, U
 	if(s64 < 0) {
 		// TODO(Ed): Review, we should just keep using thread scratch arenas (and provide them to teh context)
 		U8      bytes[KB(8)];
-		FArena  scratch = farena_from_memory(bytes, size_of(bytes));
+		FArena  scratch      = farena_from_memory(bytes, size_of(bytes));
 		String8 numeric_part = str8_from_allocator_u64(farena_allocator(scratch), (U64)(-s64), radix, min_digits, digit_group_separator);
-		result = str8f(ainfo, "-%S", numeric_part);
+		result = alloc_str8f(ainfo, "-%S", numeric_part);
 	}
 	else {
-		result = str8__from_allocator_u64(ainfo, (U64)s64, radix, min_digits, digit_group_separator);
+		result = str8_from_allocator_u64(ainfo, (U64)s64, radix, min_digits, digit_group_separator);
 	}
 	return result;
 }
@@ -743,7 +692,7 @@ str8_list_alloc_copy(AllocatorInfo ainfo, String8List* list) {
 	String8List result = {0};
 	for (String8Node* node = list->first; node != 0; node = node->next) {
 		String8Node* new_node   = alloc_array_no_zero(ainfo, String8Node, 1);
-		String8      new_string = str8_copy(ainfo, node->string);
+		String8      new_string = alloc_str8_copy(ainfo, node->string);
 		str8_list_push_node_set_string(&result, new_node, new_string);
 	}
 	return(result);
@@ -1313,7 +1262,7 @@ str8_from_16(AllocatorInfo ainfo, String16 in) {
 		size   += utf8_encode(str + size, consume.codepoint);
 	}
 	str[size] = 0;
-	resize(ainfo, str, (cap - size));
+	resize(ainfo, str, cap + 1, (cap - size));
 	return(str8(str, size));
 }
 
@@ -1330,7 +1279,7 @@ str16_from_8(AllocatorInfo ainfo, String8 in) {
 		size   += utf16_encode(str + size, consume.codepoint);
 	}
 	str[size] = 0;
-	resize(ainfo, str, (cap - size));
+	resize(ainfo, str, cap + 1, (cap - size));
 	return(str16(str, size));
 }
 
@@ -1345,7 +1294,7 @@ str8_from_32(AllocatorInfo ainfo, String32 in){
 		size += utf8_encode(str + size, *ptr);
 	}
 	str[size] = 0;
-	resize(ainfo, str, (cap - size));
+	resize(ainfo, str, cap + 1, (cap - size));
 	return(str8(str, size));
 }
 
@@ -1363,7 +1312,7 @@ str32_from_8(AllocatorInfo ainfo, String8 in){
 		size     += 1;
 	}
 	str[size] = 0;
-	resize(ainfo, str, (cap - size));
+	resize(ainfo, str, cap + 1, (cap - size));
 	return(str32(str, size));
 }
 
@@ -1481,7 +1430,7 @@ alloc_date_time_string(AllocatorInfo ainfo, DateTime* date_time) {
 		ampm = "pm";
 	}
 
-	String8 result = str8f(ainfo, 
+	String8 result = alloc_str8f(ainfo, 
 		"%d %s %d, %02d:%02d:%02d %s",
 		date_time->day, mon_str, date_time->year,
 		adjusted_hour, date_time->min, date_time->sec, ampm
@@ -1493,7 +1442,7 @@ String8
 alloc_file_name_date_time_string(AllocatorInfo ainfo, DateTime* date_time) {
 	char* mon_str = (char*)string_from_month(date_time->month).str;
 
-	String8 result = str8f(ainfo, 
+	String8 result = alloc_str8f(ainfo, 
 		"%d-%s-%0d--%02d-%02d-%02d",
 		date_time->year, mon_str, date_time->day,
 		date_time->hour, date_time->min, date_time->sec
@@ -1976,7 +1925,7 @@ wrapped_lines_from_string_alloc(AllocatorInfo ainfo, String8 string, U64 first_l
 			{
 				String8 line = str8_substr(string, line_range);
 				if (wrapped_indent_level > 0){
-					line = str8f(ainfo, "%.*s%S", wrapped_indent_level, spaces, line);
+					line = alloc_str8f(ainfo, "%.*s%S", wrapped_indent_level, spaces, line);
 				}
 				str8_list_alloc(ainfo, &list, line);
 				line_range           = r1u64(line_range.max + 1, candidate_line_range.max);
@@ -1990,7 +1939,7 @@ wrapped_lines_from_string_alloc(AllocatorInfo ainfo, String8 string, U64 first_l
 	if (line_range.min < string.size && line_range.max > line_range.min) {
 		String8 line = str8_substr(string, line_range);
 		if (wrapped_indent_level > 0) {
-			line = str8f(ainfo, "%.*s%S", wrapped_indent_level, spaces, line);
+			line = alloc_str8f(ainfo, "%.*s%S", wrapped_indent_level, spaces, line);
 		}
 		str8_list_alloc(ainfo, &list, line);
 	}
@@ -2197,7 +2146,7 @@ str8_serial_push_size(Arena* arena, String8List* srl, U64 size) {
 	}
 	return result;
 #else
-	return str8_serial_alloc_size(arena_allocator(arena, srl, size));
+	return str8_serial_alloc_size(arena_allocator(arena), srl, size);
 #endif
 }
 

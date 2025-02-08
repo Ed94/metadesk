@@ -211,7 +211,7 @@ os_get_current_path(Arena* arena) {
 inline String8
 os_get_current_path(AllocatorInfo ainfo) {
 	char*   cwdir  = getcwd(0, 0);
-	String8 string = str8_copy(ainfo, str8_cstring(cwdir));
+	String8 string = alloc_str8_copy(ainfo, str8_cstring(cwdir));
 	return  string;
 }
 

@@ -11,16 +11,15 @@
 #	include "math.h"
 #	include "toolchain.h"
 #	include "time.h"
+////////////////////////////////
+//~ rjf: Third Party Includes
+#	define STB_SPRINTF_DECORATE(name) md_##name
+#	include "third_party/stb/stb_sprintf.h"
+// Note(Ed): We should inject when generating the library segmented or singleheader
 #endif
 
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
-
-////////////////////////////////
-//~ rjf: Third Party Includes
-
-#define STB_SPRINTF_DECORATE(name) md_##name
-#include "third_party/stb/stb_sprintf.h"
 
 ////////////////////////////////
 //~ rjf: String Types
@@ -151,6 +150,65 @@ struct FuzzyMatchRangeList
 };
 
 ////////////////////////////////
+//~ NOTE(allen): String <-> Integer Tables
+
+inline U8
+integer_symbols(U8 value) {
+	read_only local_persist thread_local
+	U8 lookup_table[16] = {
+		'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F',
+	};
+	return lookup_table[value];
+}
+
+inline U8
+base64(U8 value) {
+	read_only local_persist thread_local
+	U8 lookup_table[64] = {
+		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+		'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+		'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+		'_', '$',
+	};
+	return lookup_table[value];
+}
+
+inline U8
+base64_reverse(U8 value) {
+	read_only local_persist thread_local
+	U8 lookup_table[128] = {
+		0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+		0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+		0xFF,0xFF,0xFF,0xFF,0x3F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+		0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0xFF,0xFF,0xFF,0xFF,0xFF,0x00,
+		0xFF,0x24,0x25,0x26,0x27,0x28,0x29,0x2A,0x2B,0x2C,0x2D,0x2E,0x2F,0x30,0x31,0x32,
+		0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x3A,0x3B,0x3C,0x3D,0xFF,0xFF,0xFF,0xFF,0x3E,
+		0xFF,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,
+		0x19,0x1A,0x1B,0x1C,0x1D,0x1E,0x1F,0x20,0x21,0x22,0x23,0xFF,0xFF,0xFF,0xFF,0xFF,
+	};
+	return lookup_table[value];
+}
+
+// NOTE(allen): Includes reverses for uppercase and lowercase hex.
+inline U8
+integer_symbol_reverse(U8 value) {
+	read_only local_persist thread_local
+	lookup_table[128] = {
+		0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+		0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+		0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+		0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+		0xFF,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+		0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+		0xFF,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+		0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+	};
+	return lookup_table[value];
+}
+
+////////////////////////////////
 //~ rjf: Character Classification & Conversion Functions
 
 inline B32 char_is_space        (U8 c) { return(c == ' ' || c == '\n' || c == '\t' || c == '\r' || c == '\f' || c == '\v'); }
@@ -162,7 +220,17 @@ inline U8  char_to_lower        (U8 c) { if (char_is_upper(c)) { c += ('a' - 'A'
 inline U8  char_to_upper        (U8 c) { if (char_is_lower(c)) { c += ('A' - 'a'); } return(c); }
 inline U8  char_to_correct_slash(U8 c) { if (char_is_slash(c)) { c = '/';          } return(c); }
 
-B32 char_is_digit(U8 c, U32 base);
+inline B32
+char_is_digit(U8 c, U32 base) {
+	B32 result = 0;
+	if (0 < base && base <= 16) {
+		U8 val = integer_symbol_reverse(c);
+		if (val < base) {
+			result = 1;
+		}
+	}
+	return(result);
+}
 
 ////////////////////////////////
 //~ rjf: C-String Measurement
@@ -170,6 +238,8 @@ B32 char_is_digit(U8 c, U32 base);
 inline U64 cstring8_length (U8*  c) { U8*  p = c; for (; *p != 0; p += 1); return(p - c); }
 inline U64 cstring16_length(U16* c) { U16* p = c; for (; *p != 0; p += 1); return(p - c); }
 inline U64 cstring32_length(U32 *c) { U32* p = c; for (; *p != 0; p += 1); return(p - c); }
+
+#define cstring_length(c) _Generic(c, U8: cstring8_length, U16: cstring16_length, U32: cstring32_length)(c)
 
 ////////////////////////////////
 //~ rjf: String Constructors
@@ -195,18 +265,49 @@ inline String8  str8_cstring (char* c)                        { String8  result 
 inline String16 str16_cstring(U16*  c)                        { String16 result = {(U16*)c, cstring16_length((U16*)c)};  return(result); }
 inline String32 str32_cstring(U32*  c)                        { String32 result = {(U32*)c, cstring32_length((U32*)c)};  return(result); }
 
-// TODO(Ed): review these
-internal String16 str16_cstring_capped(void *cstr, void *cap);
-internal String8  str8_cstring_capped_reverse(void *raw_start, void *raw_cap);
+#define str_range(str, one_past_last) _Generic(str, U8: str8_range,   U16: str16_range,   U32: str32_range  )(str, one_past_last)
+#define str_cstring(c)                _Generic(c,   U8: str8_cstring, U16: str16_cstring, U32: str32_cstring)(c)
+
+String8  str8_cstring_capped        (void* cstr,      void* cap);
+String16 str16_cstring_capped       (void* cstr,      void* cap);
+String8  str8_cstring_capped_reverse(void* raw_start, void* raw_cap);
 
 inline String8
-str8_cstring_capped(void *cstr, void *cap) {
-  char *ptr = (char*)cstr;
-  char *opl = (char*)cap;
-  for (;ptr < opl && *ptr != 0; ptr += 1);
-  U64 size = (U64)(ptr - (char *)cstr);
-  String8 result = {(U8*)cstr, size};
-  return(result);
+str8_cstring_capped(void* cstr, void* cap) {
+	char* ptr = (char*)cstr;
+	char* opl = (char*)cap;
+	for (;ptr < opl && *ptr != 0; ptr += 1);
+	U64     size   = (U64)(ptr - (char *)cstr);
+	String8 result = {(U8*)cstr, size};
+	return  result;
+}
+
+inline String16
+str16_cstring_capped(void* cstr, void* cap)
+{
+	U16* ptr = (U16*)cstr;
+	U16* opl = (U16*)cap;
+	for (;ptr < opl && *ptr != 0; ptr += 1);
+	U64      size   = (U64)(ptr - (U16 *)cstr);
+	String16 result = str16(cstr, size);
+	return   result;
+}
+
+inline String8
+str8_cstring_capped_reverse(void* raw_start, void* raw_cap)
+{
+	U8* start = raw_start;
+	U8* ptr   = raw_cap;
+	for (; ptr > start; )
+	{
+		ptr -= 1;
+		if (*ptr == '\0') { 
+			break;
+		}
+	}
+	U64     size    = (U64)(ptr - start);
+	String8 result  = str8(start, size);
+	return  result;
 }
 
 ////////////////////////////////
@@ -216,9 +317,9 @@ inline String8 upper_from_str8      (Arena* arena, String8 string) { string = pu
 inline String8 lower_from_str8      (Arena* arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
 inline String8 backslashed_from_str8(Arena *arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
 
-inline String8 upper_from_str8_alloc      (AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
-inline String8 lower_from_str8_alloc      (AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
-inline String8 backslashed_from_str8_alloc(AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
+inline String8 upper_from_str8_alloc      (AllocatorInfo ainfo, String8 string) { string = alloc_str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
+inline String8 lower_from_str8_alloc      (AllocatorInfo ainfo, String8 string) { string = alloc_str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
+inline String8 backslashed_from_str8_alloc(AllocatorInfo ainfo, String8 string) { string = alloc_str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
 
 ////////////////////////////////
 //~ rjf: String Matching
@@ -227,17 +328,16 @@ inline String8 backslashed_from_str8_alloc(AllocatorInfo ainfo, String8 string) 
 #define str8_match_cstr(a_cstr, b, flags) str8_match(str8_cstring(a_cstr), (b), (flags))
 #define str8_ends_with_lit(string, end_lit, flags) str8_ends_with((string), str8_lit(end_lit), (flags))
 
-MD_API B32 str8_match      (String8 a, String8 b,                          StringMatchFlags flags);
-MD_API U64 str8_find_needle(String8 string, U64 start_pos, String8 needle, StringMatchFlags flags);
-       B32 str8_ends_with  (String8 string, String8 end,                   StringMatchFlags flags);
-
-	   internal U64 str8_find_needle_reverse(String8 string, U64 start_pos, String8 needle, StringMatchFlags flags);
+MD_API B32 str8_match              (String8 a, String8 b,                          StringMatchFlags flags);
+MD_API U64 str8_find_needle        (String8 string, U64 start_pos, String8 needle, StringMatchFlags flags);
+MD_API U64 str8_find_needle_reverse(String8 string, U64 start_pos, String8 needle, StringMatchFlags flags);
+       B32 str8_ends_with          (String8 string, String8 end,                   StringMatchFlags flags);
 
 inline B32
 str8_ends_with(String8 string, String8 end, StringMatchFlags flags) {
-  String8 postfix  = str8_postfix(string, end.size);
-  B32     is_match = str8_match(end, postfix, flags);
-  return  is_match;
+	String8 postfix  = str8_postfix(string, end.size);
+	B32     is_match = str8_match(end, postfix, flags);
+	return  is_match;
 }
 
 ////////////////////////////////
@@ -253,40 +353,40 @@ String8 str8_chop   (String8 str, U64     amt);
 
 inline String8
 str8_substr(String8 str, Rng1U64 range){
-  range.min = clamp_top(range.min, str.size);
-  range.max = clamp_top(range.max, str.size);
-  str.str  += range.min;
-  str.size  = dim_1u64(range);
-  return(str);
+	range.min = clamp_top(range.min, str.size);
+	range.max = clamp_top(range.max, str.size);
+	str.str  += range.min;
+	str.size  = dim_1u64(range);
+	return(str);
 }
 
 inline String8 
 str8_prefix(String8 str, U64 size){
-  str.size = clamp_top(size, str.size);
-  return(str);
+	str.size = clamp_top(size, str.size);
+	return(str);
 }
 
 inline String8
 str8_skip(String8 str, U64 amt){
-  amt       = clamp_top(amt, str.size);
-  str.str  += amt;
-  str.size -= amt;
-  return(str);
+	amt       = clamp_top(amt, str.size);
+	str.str  += amt;
+	str.size -= amt;
+	return(str);
 }
 
 inline String8
 str8_postfix(String8 str, U64 size){
-  size     = clamp_top(size, str.size);
-  str.str  = (str.str + str.size) - size;
-  str.size = size;
-  return(str);
+	size     = clamp_top(size, str.size);
+	str.str  = (str.str + str.size) - size;
+	str.size = size;
+	return(str);
 }
 
 inline String8
 str8_chop(String8 str, U64 amt){
-  amt       = clamp_top(amt, str.size);
-  str.size -= amt;
-  return(str);
+	amt       = clamp_top(amt, str.size);
+	str.size -= amt;
+	return(str);
 }
 
 ////////////////////////////////
@@ -297,10 +397,10 @@ MD_API String8 push_str8_copy(Arena* arena, String8 s);
 MD_API String8 push_str8fv   (Arena* arena, char* fmt, va_list args);
        String8 push_str8f    (Arena* arena, char* fmt, ...);
 
-MD_API String8 str8_cat (AllocatorInfo ainfo, String8 s1, String8 s2);
-MD_API String8 str8_copy(AllocatorInfo ainfo, String8 s);
-MD_API String8 str8fv   (AllocatorInfo ainfo, char* fmt, va_list args);
-       String8 str8f    (AllocatorInfo ainfo, char* fmt, ...);
+MD_API String8 alloc_str8_cat (AllocatorInfo ainfo, String8 s1, String8 s2);
+MD_API String8 alloc_str8_copy(AllocatorInfo ainfo, String8 s);
+MD_API String8 alloc_str8fv   (AllocatorInfo ainfo, char* fmt, va_list args);
+       String8 alloc_str8f    (AllocatorInfo ainfo, char* fmt, ...);
 
 inline String8
 push_str8f(Arena *arena, char *fmt, ...){
@@ -312,10 +412,10 @@ push_str8f(Arena *arena, char *fmt, ...){
 }
 
 inline String8
-str8f(AllocatorInfo ainfo, char *fmt, ...){
+alloc_str8f(AllocatorInfo ainfo, char *fmt, ...){
 	va_list args;
 	va_start(args, fmt);
-	String8 result = str8fv(ainfo, fmt, args);
+	String8 result = alloc_str8fv(ainfo, fmt, args);
 	va_end(args);
 	return(result);
 }
@@ -324,26 +424,23 @@ str8f(AllocatorInfo ainfo, char *fmt, ...){
 //~ rjf: String <=> Integer Conversions
 
 //- rjf: string -> integer
-MD_API S64 sign_from_str8           (String8 string, String8* string_tail);
-MD_API B32 str8_is_integer          (String8 string, U32      radix);
-MD_API U64 u64_from_str8            (String8 string, U32      radix);
-       S64 s64_from_str8            (String8 string, U32      radix);
+MD_API S64 sign_from_str8 (String8 string, String8* string_tail);
+MD_API B32 str8_is_integer(String8 string, U32      radix);
+       U64 u64_from_str8  (String8 string, U32      radix);
+       S64 s64_from_str8  (String8 string, U32      radix);
+       U32 u32_from_str8  (String8 string, U32 radix);
+       S32 s32_from_str8  (String8 string, U32 radix);
 
-// TODO(Ed): review these
-internal U32 u32_from_str8(String8 string, U32 radix);
-internal S32 s32_from_str8(String8 string, U32 radix);
-
-MD_API B32 try_u64_from_str8_c_rules(String8 string, U64*     x);
-       B32 try_s64_from_str8_c_rules(String8 string, S64*     x);
+MD_API B32 try_u64_from_str8_c_rules(String8 string, U64* x);
+       B32 try_s64_from_str8_c_rules(String8 string, S64* x);
 
 //- rjf: integer -> string
 MD_API String8 str8_from_memory_size(Arena* arena, U64 z);
 MD_API String8 str8_from_u64        (Arena* arena, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
 MD_API String8 str8_from_s64        (Arena* arena, S64 s64, U32 radix, U8 min_digits, U8 digit_group_separator);
 
-// TODO(Ed): review these
-internal String8 str8_from_bits_u32(Arena *arena, U32 x);
-internal String8 str8_from_bits_u64(Arena *arena, U64 x);
+String8 str8_from_bits_u32(Arena* arena, U32 x);
+String8 str8_from_bits_u64(Arena* arena, U64 x);
 
 MD_API String8 str8_from_allocator_size(AllocatorInfo ainfo, U64 z);
 MD_API String8 str8_from_allocator_u64 (AllocatorInfo ainfo, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
@@ -356,14 +453,81 @@ s64_from_str8(String8 string, U32 radix) {
 	return(x);
 }
 
+inline U64
+u64_from_str8(String8 string, U32 radix) {
+	U64 x = 0;
+	if (1 < radix && radix <= 16) {
+		for (U64 i = 0; i < string.size; i += 1) {
+			x *= radix;
+			x += integer_symbol_reverse(string.str[i]&0x7F);
+		}
+	}
+	return(x);
+}
+
+inline U32
+u32_from_str8(String8 string, U32 radix) {
+	U64 x64 = u64_from_str8(string, radix);
+	U32 x32 = safe_cast_u32(x64);
+	return x32;
+}
+
+inline S32
+s32_from_str8(String8 string, U32 radix) {
+	S64 x64 = s64_from_str8(string, radix);
+	S32 x32 = safe_cast_s32(x64);
+	return x32;
+}
+
 inline B32
-try_s64_from_str8_c_rules(String8 string, S64 *x) {
+try_s64_from_str8_c_rules(String8 string, S64* x) {
   String8 string_tail = {0};
   S64     sign        = sign_from_str8(string, &string_tail);
   U64     x_u64       = 0;
   B32     is_integer  = try_u64_from_str8_c_rules(string_tail, &x_u64);
   *x = x_u64*sign;
   return(is_integer);
+}
+
+inline String8
+str8_from_bits_u32(Arena* arena, U32 x)
+{
+	U8 c0 = 'a' + ((x >> 28) & 0xf);
+	U8 c1 = 'a' + ((x >> 24) & 0xf);
+	U8 c2 = 'a' + ((x >> 20) & 0xf);
+	U8 c3 = 'a' + ((x >> 16) & 0xf);
+	U8 c4 = 'a' + ((x >> 12) & 0xf);
+	U8 c5 = 'a' + ((x >>  8) & 0xf);
+	U8 c6 = 'a' + ((x >>  4) & 0xf);
+	U8 c7 = 'a' + ((x >>  0) & 0xf);
+	String8 result = push_str8f(arena, "%c%c%c%c%c%c%c%c", c0, c1, c2, c3, c4, c5, c6, c7);
+	return result;
+}
+
+inline String8
+str8_from_bits_u64(Arena* arena, U64 x)
+{
+	U8 c0 = 'a' + ((x >> 60) & 0xf);
+	U8 c1 = 'a' + ((x >> 56) & 0xf);
+	U8 c2 = 'a' + ((x >> 52) & 0xf);
+	U8 c3 = 'a' + ((x >> 48) & 0xf);
+	U8 c4 = 'a' + ((x >> 44) & 0xf);
+	U8 c5 = 'a' + ((x >> 40) & 0xf);
+	U8 c6 = 'a' + ((x >> 36) & 0xf);
+	U8 c7 = 'a' + ((x >> 32) & 0xf);
+	U8 c8 = 'a' + ((x >> 28) & 0xf);
+	U8 c9 = 'a' + ((x >> 24) & 0xf);
+	U8 ca = 'a' + ((x >> 20) & 0xf);
+	U8 cb = 'a' + ((x >> 16) & 0xf);
+	U8 cc = 'a' + ((x >> 12) & 0xf);
+	U8 cd = 'a' + ((x >>  8) & 0xf);
+	U8 ce = 'a' + ((x >>  4) & 0xf);
+	U8 cf = 'a' + ((x >>  0) & 0xf);
+	String8 result = push_str8f(arena,
+		"%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
+		c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, ca, cb, cc, cd, ce, cf
+	);
+	return result;
 }
 
 ////////////////////////////////
@@ -492,7 +656,7 @@ inline String8Node*
 str8_list_allocf(AllocatorInfo ainfo, String8List* list, char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
-	String8      string = str8fv(ainfo, fmt, args);
+	String8      string = alloc_str8fv(ainfo, fmt, args);
 	String8Node* result = str8_list_alloc(ainfo, list, string);
 	va_end(args);
 	return(result);
@@ -502,7 +666,7 @@ inline String8Node*
 str8_list_alloc_frontf(AllocatorInfo ainfo, String8List* list, char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
-	String8      string = str8fv(ainfo, fmt, args);
+	String8      string = alloc_str8fv(ainfo, fmt, args);
 	String8Node* result = str8_list_alloc_front(ainfo, list, string);
 	va_end(args);
 	return(result);
@@ -861,7 +1025,7 @@ MD_API String8List wrapped_lines_from_string_alloc(AllocatorInfo ainfo, String8 
 //~ rjf: String <-> Color
 
 inline String8 hex_string_from_rgba_4f32      (Arena*        arena, Vec4F32 rgba) { String8 hex_string = push_str8f(arena, "%02x%02x%02x%02x", (U8)(rgba.x*255.f), (U8)(rgba.y*255.f), (U8)(rgba.z*255.f), (U8)(rgba.w*255.f));  return hex_string; }
-inline String8 hex_string_from_rgba_4f32_alloc(AllocatorInfo ainfo, Vec4F32 rgba) { String8 hex_string =      str8f(ainfo, "%02x%02x%02x%02x", (U8)(rgba.x*255.f), (U8)(rgba.y*255.f), (U8)(rgba.z*255.f), (U8)(rgba.w*255.f));  return hex_string; }
+inline String8 hex_string_from_rgba_4f32_alloc(AllocatorInfo ainfo, Vec4F32 rgba) { String8 hex_string =      alloc_str8f(ainfo, "%02x%02x%02x%02x", (U8)(rgba.x*255.f), (U8)(rgba.y*255.f), (U8)(rgba.z*255.f), (U8)(rgba.w*255.f));  return hex_string; }
 
 MD_API Vec4F32 rgba_from_hex_string_4f32(String8 hex_string);
 

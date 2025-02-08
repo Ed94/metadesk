@@ -82,7 +82,7 @@ cmd_line_insert_opt_alloc(AllocatorInfo ainfo, CmdLine* cmd_line, String8 string
 		var = alloc_array(ainfo, CmdLineOpt, 1);
 		var->hash_next    = *slot;
 		var->hash         = cmd_line_hash_from_string(string);
-		var->string       = str8_copy(ainfo, string);
+		var->string       = alloc_str8_copy(ainfo, string);
 		var->value_strings = values;
 
 		StringJoin join = {0};

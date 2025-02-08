@@ -8,6 +8,6 @@
 
 void
 set_thread_name(String8 string) {
-	ProfThreadName("%.*s", str8_varg(string));
+	prof_thread_name("%.*s", str8_varg(string));
 	os_set_thread_name(string);
 }

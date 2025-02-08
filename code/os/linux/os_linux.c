@@ -295,7 +295,7 @@ os_full_path_from_path_alloc(AllocatorInfo ainfo, String8 path)
 		realpath((char *)path_copy.str, buffer);
 	}
 	scratch_end(scratch);
-	String8 result = str8_copy(ainfo, str8_cstring(buffer));
+	String8 result = alloc_str8_copy(ainfo, str8_cstring(buffer));
 	return  result;
 }
 

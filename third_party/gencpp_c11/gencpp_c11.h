@@ -2962,8 +2962,8 @@ struct gen_Str
 
 #define gen_cast_to_str(str) *gen_rcast(gen_Str*, (str) - sizeof(gen_ssize))
 
-#ifndef txt
-#define txt(text)                \
+#ifndef gen_txt
+#define gen_txt(text)                \
 	(GEN_NS gen_Str)             \
 	{                            \
 		(text), sizeof(text) - 1 \
@@ -3397,22 +3397,22 @@ inline gen_Str gen_str_visualize_whitespace(gen_Str str, gen_AllocatorInfo alloc
 		switch (*c)
 		{
 			case ' ':
-				gen_strbuilder_append_str(&result, txt("·"));
+				gen_strbuilder_append_str(&result, gen_txt("·"));
 				break;
 			case '\t':
-				gen_strbuilder_append_str(&result, txt("→"));
+				gen_strbuilder_append_str(&result, gen_txt("→"));
 				break;
 			case '\n':
-				gen_strbuilder_append_str(&result, txt("↵"));
+				gen_strbuilder_append_str(&result, gen_txt("↵"));
 				break;
 			case '\r':
-				gen_strbuilder_append_str(&result, txt("⏎"));
+				gen_strbuilder_append_str(&result, gen_txt("⏎"));
 				break;
 			case '\v':
-				gen_strbuilder_append_str(&result, txt("⇕"));
+				gen_strbuilder_append_str(&result, gen_txt("⇕"));
 				break;
 			case '\f':
-				gen_strbuilder_append_str(&result, txt("⌂"));
+				gen_strbuilder_append_str(&result, gen_txt("⌂"));
 				break;
 			default:
 				gen_strbuilder_append_char(&result, *c);
@@ -9558,7 +9558,7 @@ GEN_API void gen_init(gen_Context* ctx);
 GEN_API void gen_deinit(gen_Context* ctx);
 
 // Retrieves the active context (not usually needed, but here in case...)
-GEN_API gen_Context* get_context();
+GEN_API gen_Context* gen_get_context();
 
 // Clears the allocations, but doesn't free the memoery, then calls gen_init() again.
 // Ease of use.
@@ -10072,7 +10072,7 @@ GEN_API extern gen_CodeTypename gen_t_f64;
 inline gen_StrBuilder gen_attributes_to_strbuilder(gen_CodeAttributes attributes)
 {
 	GEN_ASSERT(attributes);
-	char*          raw    = gen_ccast(char*, gen_str_duplicate(attributes->Content, get_context()->Allocator_Temp).Ptr);
+	char*          raw    = gen_ccast(char*, gen_str_duplicate(attributes->Content, gen_get_context()->Allocator_Temp).Ptr);
 	gen_StrBuilder result = { raw };
 	return result;
 }
@@ -10087,7 +10087,7 @@ inline void gen_attributes_to_strbuilder_ref(gen_CodeAttributes attributes, gen_
 inline gen_StrBuilder gen_comment_to_strbuilder(gen_CodeComment comment)
 {
 	GEN_ASSERT(comment);
-	char*          raw    = gen_ccast(char*, gen_str_duplicate(comment->Content, get_context()->Allocator_Temp).Ptr);
+	char*          raw    = gen_ccast(char*, gen_str_duplicate(comment->Content, gen_get_context()->Allocator_Temp).Ptr);
 	gen_StrBuilder result = { raw };
 	return result;
 }
@@ -10170,13 +10170,13 @@ inline void gen_friend_to_strbuilder_ref(gen_CodeFriend self, gen_StrBuilder* re
 
 	if (self->Declaration->Type != CT_Function && self->Declaration->Type != CT_Operator && (*result)[gen_strbuilder_length(*result) - 1] != ';')
 	{
-		gen_strbuilder_append_str(result, txt(";"));
+		gen_strbuilder_append_str(result, gen_txt(";"));
 	}
 
 	if (self->InlineCmt)
 		gen_strbuilder_append_fmt(result, "  %S", self->InlineCmt->Content);
 	else
-		gen_strbuilder_append_str(result, txt("\n"));
+		gen_strbuilder_append_str(result, gen_txt("\n"));
 }
 
 inline gen_StrBuilder gen_include_to_strbuilder(gen_CodeInclude include)
@@ -10213,7 +10213,7 @@ inline void namespace_to_strbuilder_ref(gen_CodeNS self, gen_StrBuilder* result)
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if (gen_bitfield_is_set(gen_u32, self->ModuleFlags, ModuleFlag_Export))
-		gen_strbuilder_append_str(result, txt("export "));
+		gen_strbuilder_append_str(result, gen_txt("export "));
 
 	gen_strbuilder_append_fmt(result, "namespace %S\n{\n%SB\n}\n", self->Name, gen_body_to_strbuilder(self->Body));
 }
@@ -10273,14 +10273,14 @@ inline void gen_preprocess_to_strbuilder_else(gen_CodePreprocessCond cond, gen_S
 {
 	GEN_ASSERT(cond);
 	GEN_ASSERT(result);
-	gen_strbuilder_append_str(result, txt("#else\n"));
+	gen_strbuilder_append_str(result, gen_txt("#else\n"));
 }
 
 inline void gen_preprocess_to_strbuilder_endif(gen_CodePreprocessCond cond, gen_StrBuilder* result)
 {
 	GEN_ASSERT(cond);
 	GEN_ASSERT(result);
-	gen_strbuilder_append_str(result, txt("#endif\n"));
+	gen_strbuilder_append_str(result, gen_txt("#endif\n"));
 }
 
 inline gen_StrBuilder gen_specifiers_to_strbuilder(gen_CodeSpecifiers self)
@@ -10310,7 +10310,7 @@ inline gen_StrBuilder gen_typedef_to_strbuilder(gen_CodeTypedef self)
 inline gen_StrBuilder gen_typename_to_strbuilder(gen_CodeTypename self)
 {
 	GEN_ASSERT(self);
-	gen_StrBuilder result = gen_strbuilder_make_str(gen__ctx->Allocator_Temp, txt(""));
+	gen_StrBuilder result = gen_strbuilder_make_str(gen__ctx->Allocator_Temp, gen_txt(""));
 	gen_typename_to_strbuilder_ref(self, &result);
 	return result;
 }
@@ -10344,7 +10344,7 @@ inline void gen_using_to_strbuilder_ns(gen_CodeUsing self, gen_StrBuilder* resul
 inline gen_StrBuilder gen_var_to_strbuilder(gen_CodeVar self)
 {
 	GEN_ASSERT(self);
-	gen_StrBuilder result = gen_strbuilder_make_reserve(get_context()->Allocator_Temp, 256);
+	gen_StrBuilder result = gen_strbuilder_make_reserve(gen_get_context()->Allocator_Temp, 256);
 	gen_var_to_strbuilder_ref(self, &result);
 	return result;
 }
@@ -12599,22 +12599,22 @@ gen_StrBuilder gen_strbuilder_visualize_whitespace(gen_StrBuilder const str)
 	switch ( * c )
 	{
 		case ' ':
-			gen_strbuilder_append_str(& result, txt("·"));
+			gen_strbuilder_append_str(& result, gen_txt("·"));
 		break;
 		case '\t':
-			gen_strbuilder_append_str(& result, txt("→"));
+			gen_strbuilder_append_str(& result, gen_txt("→"));
 		break;
 		case '\n':
-			gen_strbuilder_append_str(& result, txt("↵"));
+			gen_strbuilder_append_str(& result, gen_txt("↵"));
 		break;
 		case '\r':
-			gen_strbuilder_append_str(& result, txt("⏎"));
+			gen_strbuilder_append_str(& result, gen_txt("⏎"));
 		break;
 		case '\v':
-			gen_strbuilder_append_str(& result, txt("⇕"));
+			gen_strbuilder_append_str(& result, gen_txt("⇕"));
 		break;
 		case '\f':
-			gen_strbuilder_append_str(& result, txt("⌂"));
+			gen_strbuilder_append_str(& result, gen_txt("⌂"));
 		break;
 		default:
 			gen_strbuilder_append_char(& result, * c);
@@ -14740,11 +14740,11 @@ GEN_ASSERT(self != gen_nullptr);
 	gen_StrBuilder* result       = & result_stack;
 
 	if ( self->Parent )
-		gen_strbuilder_append_fmt( result, "\n\tParent       : %S %S", gen_code_type_str(self->Parent), self->Name.Len ? self->Name : txt("Null") );
+		gen_strbuilder_append_fmt( result, "\n\tParent       : %S %S", gen_code_type_str(self->Parent), self->Name.Len ? self->Name : gen_txt("Null") );
 	else
-		gen_strbuilder_append_fmt( result, "\n\tParent       : %S", txt("Null") );
+		gen_strbuilder_append_fmt( result, "\n\tParent       : %S", gen_txt("Null") );
 
-	gen_strbuilder_append_fmt( result, "\n\tName         : %S", self->Name.Len ? self->Name : txt("Null") );
+	gen_strbuilder_append_fmt( result, "\n\tName         : %S", self->Name.Len ? self->Name : gen_txt("Null") );
 	gen_strbuilder_append_fmt( result, "\n\tType         : %S", gen_code_type_str(self) );
 	gen_strbuilder_append_fmt( result, "\n\tModule Flags : %S", gen_module_flag_to_str( self->ModuleFlags ) );
 
@@ -14756,9 +14756,9 @@ GEN_ASSERT(self != gen_nullptr);
 		case CT_Access_Protected:
 		case CT_Access_Public:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 		break;
 
 		case CT_Untyped:
@@ -14773,9 +14773,9 @@ GEN_ASSERT(self != gen_nullptr);
 		case CT_Preprocess_IfDef:
 		case CT_Preprocess_IfNotDef:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
 			gen_strbuilder_append_fmt( result, "\n\tContent: %S", self->Content );
 		break;
@@ -14788,64 +14788,64 @@ GEN_ASSERT(self != gen_nullptr);
 		case CT_Class:
 		case CT_Struct:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt   : %S", self->InlineCmt  ? self->InlineCmt->Content                                  : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tAttributes  : %S", self->Attributes ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) ) : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tParentAccess: %S", self->ParentType ? gen_access_spec_to_str( self->ParentAccess )                  : txt("No Parent") );
-			gen_strbuilder_append_fmt( result, "\n\tParentType  : %S", self->ParentType ? gen_code_type_str(self->ParentType)                           : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tBody        : %S", self->Body       ? gen_code_debug_str(self->Body)                                : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt   : %S", self->InlineCmt  ? self->InlineCmt->Content                                  : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tAttributes  : %S", self->Attributes ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) ) : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tParentAccess: %S", self->ParentType ? gen_access_spec_to_str( self->ParentAccess )                  : gen_txt("No Parent") );
+			gen_strbuilder_append_fmt( result, "\n\tParentType  : %S", self->ParentType ? gen_code_type_str(self->ParentType)                           : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tBody        : %S", self->Body       ? gen_code_debug_str(self->Body)                                : gen_txt("Null") );
 		break;
 
 		case CT_Class_Fwd:
 		case CT_Struct_Fwd:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt   : %S", self->InlineCmt  ? self->InlineCmt->Content                                  : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tAttributes  : %S", self->Attributes ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) ) : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tParentAccess: %S", self->ParentType ? gen_access_spec_to_str( self->ParentAccess )                  : txt("No Parent") );
-			gen_strbuilder_append_fmt( result, "\n\tParentType  : %S", self->ParentType ? gen_code_type_str(self->ParentType)                           : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt   : %S", self->InlineCmt  ? self->InlineCmt->Content                                  : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tAttributes  : %S", self->Attributes ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) ) : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tParentAccess: %S", self->ParentType ? gen_access_spec_to_str( self->ParentAccess )                  : gen_txt("No Parent") );
+			gen_strbuilder_append_fmt( result, "\n\tParentType  : %S", self->ParentType ? gen_code_type_str(self->ParentType)                           : gen_txt("Null") );
 		break;
 
 		case CT_Constructor:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt      : %S", self->InlineCmt       ? self->InlineCmt->Content                                       : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tSpecs          : %S", self->Specs           ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs) )           : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tInitializerList: %S", self->InitializerList ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->InitializerList) ) : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tParams         : %S", self->Params          ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Params) )          : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tBody           : %S", self->Body            ? gen_code_debug_str(self->Body)                                     : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt      : %S", self->InlineCmt       ? self->InlineCmt->Content                                       : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tSpecs          : %S", self->Specs           ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs) )           : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInitializerList: %S", self->InitializerList ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->InitializerList) ) : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tParams         : %S", self->Params          ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Params) )          : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tBody           : %S", self->Body            ? gen_code_debug_str(self->Body)                                     : gen_txt("Null") );
 		break;
 
 		case CT_Constructor_Fwd:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt      : %S", self->InlineCmt       ? self->InlineCmt->Content                                       : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tSpecs          : %S", self->Specs           ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs) )           : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tInitializerList: %S", self->InitializerList ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->InitializerList) ) : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tParams         : %S", self->Params          ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Params) )          : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt      : %S", self->InlineCmt       ? self->InlineCmt->Content                                       : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tSpecs          : %S", self->Specs           ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs) )           : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInitializerList: %S", self->InitializerList ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->InitializerList) ) : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tParams         : %S", self->Params          ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Params) )          : gen_txt("Null") );
 		break;
 
 		case CT_Destructor:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt      : %S", self->InlineCmt       ? self->InlineCmt->Content                             : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tSpecs          : %S", self->Specs           ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs) ) : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tBody           : %S", self->Body            ? gen_code_debug_str(self->Body)                           : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt      : %S", self->InlineCmt       ? self->InlineCmt->Content                             : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tSpecs          : %S", self->Specs           ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs) ) : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tBody           : %S", self->Body            ? gen_code_debug_str(self->Body)                           : gen_txt("Null") );
 		break;
 
 		case CT_Destructor_Fwd:
@@ -14854,142 +14854,142 @@ GEN_ASSERT(self != gen_nullptr);
 		case CT_Enum:
 		case CT_Enum_Class:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt       : %S", self->InlineCmt      ? self->InlineCmt->Content                                     : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tAttributes      : %S", self->Attributes     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) )    : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tUnderlying Type : %S", self->UnderlyingType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->UnderlyingType)) : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tBody            : %S", self->Body           ? gen_code_debug_str(self->Body)                                   : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt       : %S", self->InlineCmt      ? self->InlineCmt->Content                                     : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tAttributes      : %S", self->Attributes     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) )    : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tUnderlying Type : %S", self->UnderlyingType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->UnderlyingType)) : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tBody            : %S", self->Body           ? gen_code_debug_str(self->Body)                                   : gen_txt("Null") );
 		break;
 
 		case CT_Enum_Fwd:
 		case CT_Enum_Class_Fwd:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt       : %S", self->InlineCmt      ? self->InlineCmt->Content                                     : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tAttributes      : %S", self->Attributes     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) )    : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tUnderlying Type : %S", self->UnderlyingType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->UnderlyingType)) : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt       : %S", self->InlineCmt      ? self->InlineCmt->Content                                     : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tAttributes      : %S", self->Attributes     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) )    : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tUnderlying Type : %S", self->UnderlyingType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->UnderlyingType)) : gen_txt("Null") );
 		break;
 
 		case CT_Extern_Linkage:
 		case CT_Namespace:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tBody: %S", self->Body ? gen_code_debug_str(self->Body) : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tBody: %S", self->Body ? gen_code_debug_str(self->Body) : gen_txt("Null") );
 		break;
 
 		case CT_Friend:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt  : %S", self->InlineCmt   ? self->InlineCmt->Content                                  : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tDeclaration: %S", self->Declaration ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Declaration)) : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt  : %S", self->InlineCmt   ? self->InlineCmt->Content                                  : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tDeclaration: %S", self->Declaration ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Declaration)) : gen_txt("Null") );
 		break;
 
 		case CT_Function:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt : %S", self->InlineCmt  ? self->InlineCmt->Content                                  : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tAttributes: %S", self->Attributes ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) ) : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tSpecs     : %S", self->Specs      ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs))       : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tReturnType: %S", self->ReturnType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ReturnType))  : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tParams    : %S", self->Params     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Params))      : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tBody      : %S", self->Body       ? gen_code_debug_str(self->Body)                                : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt : %S", self->InlineCmt  ? self->InlineCmt->Content                                  : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tAttributes: %S", self->Attributes ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) ) : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tSpecs     : %S", self->Specs      ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs))       : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tReturnType: %S", self->ReturnType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ReturnType))  : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tParams    : %S", self->Params     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Params))      : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tBody      : %S", self->Body       ? gen_code_debug_str(self->Body)                                : gen_txt("Null") );
 		break;
 
 		case CT_Function_Fwd:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt : %S", self->InlineCmt  ? self->InlineCmt->Content                                  : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tAttributes: %S", self->Attributes ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) ) : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tSpecs     : %S", self->Specs      ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs))       : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tReturnType: %S", self->ReturnType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ReturnType))  : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tParams    : %S", self->Params     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Params))      : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt : %S", self->InlineCmt  ? self->InlineCmt->Content                                  : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tAttributes: %S", self->Attributes ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) ) : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tSpecs     : %S", self->Specs      ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs))       : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tReturnType: %S", self->ReturnType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ReturnType))  : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tParams    : %S", self->Params     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Params))      : gen_txt("Null") );
 		break;
 
 		case CT_Module:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 		break;
 
 		case CT_Operator:
 		case CT_Operator_Member:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt : %S", self->InlineCmt  ? self->InlineCmt->Content                                  : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tAttributes: %S", self->Attributes ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) ) : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tSpecs     : %S", self->Specs      ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs))       : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tReturnType: %S", self->ReturnType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ReturnType))  : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tParams    : %S", self->Params     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Params))      : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tBody      : %S", self->Body       ? gen_code_debug_str(self->Body)                                : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt : %S", self->InlineCmt  ? self->InlineCmt->Content                                  : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tAttributes: %S", self->Attributes ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) ) : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tSpecs     : %S", self->Specs      ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs))       : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tReturnType: %S", self->ReturnType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ReturnType))  : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tParams    : %S", self->Params     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Params))      : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tBody      : %S", self->Body       ? gen_code_debug_str(self->Body)                                : gen_txt("Null") );
 			gen_strbuilder_append_fmt( result, "\n\tOp        : %S", gen_operator_to_str( self->Op ) );
 		break;
 
 		case CT_Operator_Fwd:
 		case CT_Operator_Member_Fwd:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt : %S", self->InlineCmt  ? self->InlineCmt->Content                                  : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tAttributes: %S", self->Attributes ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) ) : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tSpecs     : %S", self->Specs      ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs) )      : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tReturnType: %S", self->ReturnType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ReturnType) ) : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tParams    : %S", self->Params     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Params) )     : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt : %S", self->InlineCmt  ? self->InlineCmt->Content                                  : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tAttributes: %S", self->Attributes ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) ) : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tSpecs     : %S", self->Specs      ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs) )      : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tReturnType: %S", self->ReturnType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ReturnType) ) : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tParams    : %S", self->Params     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Params) )     : gen_txt("Null") );
 			gen_strbuilder_append_fmt( result, "\n\tOp        : %S", gen_operator_to_str( self->Op ) );
 		break;
 
 		case CT_Operator_Cast:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt : %S", self->InlineCmt  ? self->InlineCmt->Content                                : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tSpecs     : %S", self->Specs      ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs))     : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tValueType : %S", self->ValueType  ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ValueType)) : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tBody      : %S", self->Body       ? gen_code_debug_str(self->Body)                              : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt : %S", self->InlineCmt  ? self->InlineCmt->Content                                : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tSpecs     : %S", self->Specs      ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs))     : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tValueType : %S", self->ValueType  ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ValueType)) : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tBody      : %S", self->Body       ? gen_code_debug_str(self->Body)                              : gen_txt("Null") );
 		break;
 
 		case CT_Operator_Cast_Fwd:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt : %S", self->InlineCmt  ? self->InlineCmt->Content                                : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tSpecs     : %S", self->Specs      ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs))     : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tValueType : %S", self->ValueType  ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ValueType)) : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt : %S", self->InlineCmt  ? self->InlineCmt->Content                                : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tSpecs     : %S", self->Specs      ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs))     : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tValueType : %S", self->ValueType  ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ValueType)) : gen_txt("Null") );
 		break;
 
 		case CT_Parameters:
 			gen_strbuilder_append_fmt( result, "\n\tNumEntries: %d", self->NumEntries );
 			gen_strbuilder_append_fmt( result, "\n\tLast      : %S", self->Last->Name );
 			gen_strbuilder_append_fmt( result, "\n\tNext      : %S", self->Next->Name );
-			gen_strbuilder_append_fmt( result, "\n\tValueType : %S", self->ValueType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ValueType)) : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tValue     : %S", self->Value     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Value))     : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tValueType : %S", self->ValueType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ValueType)) : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tValue     : %S", self->Value     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Value))     : gen_txt("Null") );
 		break;
 
 		case CT_Parameters_Define:
@@ -15000,7 +15000,7 @@ GEN_ASSERT(self != gen_nullptr);
 		case CT_Specifiers:
 		{
 			gen_strbuilder_append_fmt( result, "\n\tNumEntries: %d", self->NumEntries );
-			gen_strbuilder_append_str( result, txt("\n\tArrSpecs: ") );
+			gen_strbuilder_append_str( result, gen_txt("\n\tArrSpecs: ") );
 
 			gen_s32 idx  = 0;
 			gen_s32 left = self->NumEntries;
@@ -15010,57 +15010,57 @@ GEN_ASSERT(self != gen_nullptr);
 				gen_strbuilder_append_fmt( result, "%.*s, ", spec.Len, spec.Ptr );
 				idx++;
 			}
-			gen_strbuilder_append_fmt( result, "\n\tNextSpecs: %S", self->NextSpecs ? gen_code_debug_str(self->NextSpecs) : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tNextSpecs: %S", self->NextSpecs ? gen_code_debug_str(self->NextSpecs) : gen_txt("Null") );
 		}
 		break;
 
 		case CT_Template:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tParams     : %S", self->Params      ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Params))      : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tDeclaration: %S", self->Declaration ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Declaration)) : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tParams     : %S", self->Params      ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Params))      : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tDeclaration: %S", self->Declaration ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Declaration)) : gen_txt("Null") );
 		break;
 
 		case CT_Typedef:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt     : %S", self->InlineCmt      ? self->InlineCmt->Content                                     : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tUnderlyingType: %S", self->UnderlyingType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->UnderlyingType)) : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt     : %S", self->InlineCmt      ? self->InlineCmt->Content                                     : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tUnderlyingType: %S", self->UnderlyingType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->UnderlyingType)) : gen_txt("Null") );
 		break;
 
 		case CT_Typename:
-			gen_strbuilder_append_fmt( result, "\n\tAttributes     : %S", self->Attributes ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) ) : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tSpecs          : %S", self->Specs      ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs))       : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tReturnType     : %S", self->ReturnType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ReturnType))  : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tParams         : %S", self->Params     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Params))      : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tArrExpr        : %S", self->ArrExpr    ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ArrExpr))     : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tAttributes     : %S", self->Attributes ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) ) : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tSpecs          : %S", self->Specs      ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs))       : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tReturnType     : %S", self->ReturnType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ReturnType))  : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tParams         : %S", self->Params     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Params))      : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tArrExpr        : %S", self->ArrExpr    ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ArrExpr))     : gen_txt("Null") );
 		break;
 
 		case CT_Union:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tAttributes: %S", self->Attributes ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) ) : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tBody      : %S", self->Body       ? gen_code_debug_str(self->Body)                                : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tAttributes: %S", self->Attributes ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) ) : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tBody      : %S", self->Body       ? gen_code_debug_str(self->Body)                                : gen_txt("Null") );
 		break;
 
 		case CT_Using:
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt     : %S", self->InlineCmt      ? self->InlineCmt->Content                                      : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tAttributes    : %S", self->Attributes     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) )     : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tUnderlyingType: %S", self->UnderlyingType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->UnderlyingType))  : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt     : %S", self->InlineCmt      ? self->InlineCmt->Content                                      : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tAttributes    : %S", self->Attributes     ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) )     : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tUnderlyingType: %S", self->UnderlyingType ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->UnderlyingType))  : gen_txt("Null") );
 		break;
 
 		case CT_Variable:
@@ -15068,25 +15068,25 @@ GEN_ASSERT(self != gen_nullptr);
 			if ( self->Parent && self->Parent->Type == CT_Variable )
 			{
 				// Its a NextVar
-				gen_strbuilder_append_fmt( result, "\n\tSpecs       : %S", self->Specs        ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs))        : txt("Null") );
-				gen_strbuilder_append_fmt( result, "\n\tValue       : %S", self->Value        ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Value))        : txt("Null") );
-				gen_strbuilder_append_fmt( result, "\n\tBitfieldSize: %S", self->BitfieldSize ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->BitfieldSize)) : txt("Null") );
-				gen_strbuilder_append_fmt( result, "\n\tNextVar     : %S", self->NextVar      ? gen_code_debug_str(self->NextVar)                              : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tSpecs       : %S", self->Specs        ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs))        : gen_txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tValue       : %S", self->Value        ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Value))        : gen_txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tBitfieldSize: %S", self->BitfieldSize ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->BitfieldSize)) : gen_txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNextVar     : %S", self->NextVar      ? gen_code_debug_str(self->NextVar)                              : gen_txt("Null") );
 				break;
 			}
 
 			if ( self->Prev )
-				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tPrev: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 			if ( self->Next )
-				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : txt("Null") );
+				gen_strbuilder_append_fmt( result, "\n\tNext: %S %S", gen_code_type_str(self->Prev), self->Prev->Name.Len ? self->Prev->Name : gen_txt("Null") );
 
-			gen_strbuilder_append_fmt( result, "\n\tInlineCmt   : %S", self->InlineCmt    ? self->InlineCmt->Content                                    : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tAttributes  : %S", self->Attributes   ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) )   : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tSpecs       : %S", self->Specs        ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs))         : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tValueType   : %S", self->ValueType    ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ValueType))     : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tBitfieldSize: %S", self->BitfieldSize ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->BitfieldSize))  : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tValue       : %S", self->Value        ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Value))         : txt("Null") );
-			gen_strbuilder_append_fmt( result, "\n\tNextVar     : %S", self->NextVar      ? gen_code_debug_str(self->NextVar)                               : txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tInlineCmt   : %S", self->InlineCmt    ? self->InlineCmt->Content                                    : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tAttributes  : %S", self->Attributes   ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Attributes) )   : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tSpecs       : %S", self->Specs        ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Specs))         : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tValueType   : %S", self->ValueType    ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->ValueType))     : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tBitfieldSize: %S", self->BitfieldSize ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->BitfieldSize))  : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tValue       : %S", self->Value        ? gen_strbuilder_to_str( gen_code_to_strbuilder(self->Value))         : gen_txt("Null") );
+			gen_strbuilder_append_fmt( result, "\n\tNextVar     : %S", self->NextVar      ? gen_code_debug_str(self->NextVar)                               : gen_txt("Null") );
 		break;
 	}
 
@@ -15107,7 +15107,7 @@ gen_Code result = gen_make_code();
 
 gen_StrBuilder gen_code__to_strbuilder( gen_Code self)
 {
-gen_StrBuilder result = gen_strbuilder_make_str( gen__ctx->Allocator_Temp, txt("") );
+gen_StrBuilder result = gen_strbuilder_make_str( gen__ctx->Allocator_Temp, gen_txt("") );
 	gen_code_to_strbuilder_ref( self, & result );
 	return result;
 }
@@ -15129,7 +15129,7 @@ GEN_ASSERT(self != gen_nullptr);
 		break;
 
 		case CT_NewLine:
-			gen_strbuilder_append_str( result, txt("\n"));
+			gen_strbuilder_append_str( result, gen_txt("\n"));
 		break;
 
 		case CT_Untyped:
@@ -16109,7 +16109,7 @@ void gen_constructor__to_strbuilder_def(gen_CodeConstructor self, gen_StrBuilder
 	if ( self->Params )
 		gen_strbuilder_append_fmt( result, "( %SB )", gen_params_to_strbuilder(self->Params) );
 	else
-		gen_strbuilder_append_str( result, txt("()") );
+		gen_strbuilder_append_str( result, gen_txt("()") );
 
 	if ( self->InitializerList )
 		gen_strbuilder_append_fmt( result, " : %SB", gen_code_to_strbuilder(self->InitializerList) );
@@ -16143,7 +16143,7 @@ void gen_constructor__to_strbuilder_fwd(gen_CodeConstructor self, gen_StrBuilder
 	if ( self->InlineCmt )
 		gen_strbuilder_append_fmt( result, "; // %S\n", self->InlineCmt->Content );
 	else
-		gen_strbuilder_append_str( result, txt(";\n") );
+		gen_strbuilder_append_str( result, gen_txt(";\n") );
 }
 
 gen_StrBuilder gen_class_to_strbuilder( gen_CodeClass self )
@@ -16168,9 +16168,9 @@ void gen_class_to_strbuilder_def( gen_CodeClass self, gen_StrBuilder* result )
 	GEN_ASSERT(result);
 
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
-	gen_strbuilder_append_str( result, txt("class ") );
+	gen_strbuilder_append_str( result, gen_txt("class ") );
 
 	if ( self->Attributes )
 	{
@@ -16181,7 +16181,7 @@ void gen_class_to_strbuilder_def( gen_CodeClass self, gen_StrBuilder* result )
 		gen_strbuilder_append_str( result, self->Name );
 
 	if (self->Specs && gen_specifiers_has(self->Specs, Spec_Final))
-		gen_strbuilder_append_str(result, txt(" final"));
+		gen_strbuilder_append_str(result, gen_txt(" final"));
 
 	if ( self->ParentType )
 	{
@@ -16190,7 +16190,7 @@ void gen_class_to_strbuilder_def( gen_CodeClass self, gen_StrBuilder* result )
 
 		gen_CodeTypename interface = gen_cast(gen_CodeTypename, self->ParentType->Next);
 		if ( interface )
-			gen_strbuilder_append_str( result, txt("\n") );
+			gen_strbuilder_append_str( result, gen_txt("\n") );
 
 		while ( interface )
 		{
@@ -16207,7 +16207,7 @@ void gen_class_to_strbuilder_def( gen_CodeClass self, gen_StrBuilder* result )
 	gen_strbuilder_append_fmt( result, "\n{\n%SB\n}", gen_body_to_strbuilder(self->Body) );
 
 	if ( self->Parent == gen_nullptr || ( self->Parent->Type != CT_Typedef && self->Parent->Type != CT_Variable ) )
-		gen_strbuilder_append_str( result, txt(";\n") );
+		gen_strbuilder_append_str( result, gen_txt(";\n") );
 }
 
 void gen_class_to_strbuilder_fwd( gen_CodeClass self, gen_StrBuilder* result )
@@ -16216,7 +16216,7 @@ void gen_class_to_strbuilder_fwd( gen_CodeClass self, gen_StrBuilder* result )
 	GEN_ASSERT(result);
 
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
 	if ( self->Attributes )
 		gen_strbuilder_append_fmt( result, "class %SB %S", gen_attributes_to_strbuilder(self->Attributes), self->Name );
@@ -16229,7 +16229,7 @@ void gen_class_to_strbuilder_fwd( gen_CodeClass self, gen_StrBuilder* result )
 		if ( self->InlineCmt )
 			gen_strbuilder_append_fmt( result, "; // %S\n", self->InlineCmt->Content );
 		else
-			gen_strbuilder_append_str( result, txt(";\n") );
+			gen_strbuilder_append_str( result, gen_txt(";\n") );
 	}
 }
 
@@ -16313,7 +16313,7 @@ void gen_destructor__to_strbuilder_fwd(gen_CodeDestructor self, gen_StrBuilder* 
 			gen_strbuilder_append_fmt( result, "~%S()", self->Parent->Name );
 
 		if ( gen_specifiers_has(self->Specs, Spec_Pure ) )
-			gen_strbuilder_append_str( result, txt(" = 0;") );
+			gen_strbuilder_append_str( result, gen_txt(" = 0;") );
 		else if (self->Body)
 			gen_strbuilder_append_fmt( result, " = %SB;", gen_code_to_strbuilder(self->Body) );
 	}
@@ -16323,7 +16323,7 @@ void gen_destructor__to_strbuilder_fwd(gen_CodeDestructor self, gen_StrBuilder* 
 	if ( self->InlineCmt )
 		gen_strbuilder_append_fmt( result, "  %S", self->InlineCmt->Content );
 	else
-		gen_strbuilder_append_str( result, txt("\n"));
+		gen_strbuilder_append_str( result, gen_txt("\n"));
 }
 
 gen_StrBuilder gen_enum_to_strbuilder(gen_CodeEnum self)
@@ -16353,11 +16353,11 @@ void gen_enum_to_strbuilder_def(gen_CodeEnum self, gen_StrBuilder* result )
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
 	if ( self->Attributes || self->UnderlyingType || self->UnderlyingTypeMacro )
 	{
-		gen_strbuilder_append_str( result, txt("enum ") );
+		gen_strbuilder_append_str( result, gen_txt("enum ") );
 
 		if ( self->Attributes )
 			gen_strbuilder_append_fmt( result, "%SB ", gen_attributes_to_strbuilder(self->Attributes) );
@@ -16380,7 +16380,7 @@ void gen_enum_to_strbuilder_def(gen_CodeEnum self, gen_StrBuilder* result )
 	else gen_strbuilder_append_fmt( result, "enum %S\n{\n%SB\n}", self->Name, gen_body_to_strbuilder(self->Body) );
 
 	if ( self->Parent == gen_nullptr || ( self->Parent->Type != CT_Typedef && self->Parent->Type != CT_Variable ) )
-		gen_strbuilder_append_str( result, txt(";\n"));
+		gen_strbuilder_append_str( result, gen_txt(";\n"));
 }
 
 void gen_enum_to_strbuilder_fwd(gen_CodeEnum self, gen_StrBuilder* result )
@@ -16388,7 +16388,7 @@ void gen_enum_to_strbuilder_fwd(gen_CodeEnum self, gen_StrBuilder* result )
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
 	if ( self->Attributes )
 		gen_strbuilder_append_fmt( result, "%SB ", gen_attributes_to_strbuilder(self->Attributes) );
@@ -16408,7 +16408,7 @@ void gen_enum_to_strbuilder_fwd(gen_CodeEnum self, gen_StrBuilder* result )
 		if ( self->InlineCmt )
 			gen_strbuilder_append_fmt( result, ";  %S", self->InlineCmt->Content );
 		else
-			gen_strbuilder_append_str( result, txt(";\n"));
+			gen_strbuilder_append_str( result, gen_txt(";\n"));
 	}
 }
 
@@ -16417,11 +16417,11 @@ void gen_enum_to_strbuilder_class_def(gen_CodeEnum self, gen_StrBuilder* result 
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
 	if ( self->Attributes || self->UnderlyingType )
 	{
-		gen_strbuilder_append_str( result, txt("enum class ") );
+		gen_strbuilder_append_str( result, gen_txt("enum class ") );
 
 		if ( self->Attributes )
 		{
@@ -16443,7 +16443,7 @@ void gen_enum_to_strbuilder_class_def(gen_CodeEnum self, gen_StrBuilder* result 
 	}
 
 	if ( self->Parent == gen_nullptr || ( self->Parent->Type != CT_Typedef && self->Parent->Type != CT_Variable ) )
-		gen_strbuilder_append_str( result, txt(";\n"));
+		gen_strbuilder_append_str( result, gen_txt(";\n"));
 }
 
 void gen_enum_to_strbuilder_class_fwd(gen_CodeEnum self, gen_StrBuilder* result )
@@ -16451,9 +16451,9 @@ void gen_enum_to_strbuilder_class_fwd(gen_CodeEnum self, gen_StrBuilder* result 
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
-	gen_strbuilder_append_str( result, txt("enum class ") );
+	gen_strbuilder_append_str( result, gen_txt("enum class ") );
 
 	if ( self->Attributes )
 		gen_strbuilder_append_fmt( result, "%SB ", gen_attributes_to_strbuilder(self->Attributes) );
@@ -16465,7 +16465,7 @@ void gen_enum_to_strbuilder_class_fwd(gen_CodeEnum self, gen_StrBuilder* result 
 		if ( self->InlineCmt )
 			gen_strbuilder_append_fmt( result, ";  %S", self->InlineCmt->Content );
 		else
-			gen_strbuilder_append_str( result, txt(";\n"));
+			gen_strbuilder_append_str( result, gen_txt(";\n"));
 	}
 }
 
@@ -16490,7 +16490,7 @@ void gen_fn_to_strbuilder_def(gen_CodeFn self, gen_StrBuilder* result )
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export") );
+		gen_strbuilder_append_str( result, gen_txt("export") );
 
 	if ( self->Attributes )
 		gen_strbuilder_append_fmt( result, " %SB ", gen_attributes_to_strbuilder(self->Attributes) );
@@ -16511,7 +16511,7 @@ void gen_fn_to_strbuilder_def(gen_CodeFn self, gen_StrBuilder* result )
 	}
 
 	if ( self->Attributes || prefix_specs )
-		gen_strbuilder_append_str( result, txt("\n") );
+		gen_strbuilder_append_str( result, gen_txt("\n") );
 
 	if ( self->ReturnType )
 		gen_strbuilder_append_fmt( result, "%SB %S(", gen_typename_to_strbuilder(self->ReturnType), self->Name );
@@ -16523,7 +16523,7 @@ void gen_fn_to_strbuilder_def(gen_CodeFn self, gen_StrBuilder* result )
 		gen_strbuilder_append_fmt( result, "%SB)", gen_params_to_strbuilder(self->Params) );
 
 	else
-		gen_strbuilder_append_str( result, txt(")") );
+		gen_strbuilder_append_str( result, gen_txt(")") );
 
 	if ( self->Specs )
 	{
@@ -16549,7 +16549,7 @@ void gen_fn_to_strbuilder_fwd(gen_CodeFn self, gen_StrBuilder* result )
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
 	if ( self->Attributes )
 		gen_strbuilder_append_fmt( result, "%SB ", gen_attributes_to_strbuilder(self->Attributes) );
@@ -16571,7 +16571,7 @@ void gen_fn_to_strbuilder_fwd(gen_CodeFn self, gen_StrBuilder* result )
 
 	if ( self->Attributes || prefix_specs )
 	{
-		gen_strbuilder_append_str( result, txt("\n") );
+		gen_strbuilder_append_str( result, gen_txt("\n") );
 	}
 
 	if ( self->ReturnType )
@@ -16584,7 +16584,7 @@ void gen_fn_to_strbuilder_fwd(gen_CodeFn self, gen_StrBuilder* result )
 		gen_strbuilder_append_fmt( result, "%SB)", gen_params_to_strbuilder(self->Params) );
 
 	else
-		gen_strbuilder_append_str( result, txt(")") );
+		gen_strbuilder_append_str( result, gen_txt(")") );
 
 	if ( self->Specs )
 	{
@@ -16598,9 +16598,9 @@ void gen_fn_to_strbuilder_fwd(gen_CodeFn self, gen_StrBuilder* result )
 		}
 
 		if ( gen_specifiers_has(self->Specs, Spec_Pure ) )
-			gen_strbuilder_append_str( result, txt(" = 0") );
+			gen_strbuilder_append_str( result, gen_txt(" = 0") );
 		else if ( gen_specifiers_has(self->Specs, Spec_Delete ) )
-			gen_strbuilder_append_str( result, txt(" = delete") );
+			gen_strbuilder_append_str( result, gen_txt(" = delete") );
 	}
 
 	// This is bodged in for now SOLEY for Unreal's PURE_VIRTUAL functional macro (I kept it open ended for other jank)
@@ -16613,7 +16613,7 @@ void gen_fn_to_strbuilder_fwd(gen_CodeFn self, gen_StrBuilder* result )
 	if ( self->InlineCmt )
 		gen_strbuilder_append_fmt( result, ";  %S", self->InlineCmt->Content );
 	else
-		gen_strbuilder_append_str( result, txt(";\n") );
+		gen_strbuilder_append_str( result, gen_txt(";\n") );
 }
 
 void gen_module_to_strbuilder_ref(gen_CodeModule self, gen_StrBuilder* result )
@@ -16621,10 +16621,10 @@ void gen_module_to_strbuilder_ref(gen_CodeModule self, gen_StrBuilder* result )
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if (((gen_scast(gen_u32, ModuleFlag_Export) & gen_scast(gen_u32, self->ModuleFlags)) == gen_scast(gen_u32, ModuleFlag_Export)))
-		gen_strbuilder_append_str( result, txt("export "));
+		gen_strbuilder_append_str( result, gen_txt("export "));
 
 	if (((gen_scast(gen_u32, ModuleFlag_Import) & gen_scast(gen_u32, self->ModuleFlags)) == gen_scast(gen_u32, ModuleFlag_Import)))
-		gen_strbuilder_append_str( result, txt("import "));
+		gen_strbuilder_append_str( result, gen_txt("import "));
 
 	gen_strbuilder_append_fmt( result, "%S;\n", self->Name );
 }
@@ -16652,7 +16652,7 @@ void gen_code_op_to_strbuilder_def(gen_CodeOperator self, gen_StrBuilder* result
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
 	if ( self->Attributes )
 		gen_strbuilder_append_fmt( result, "%SB ", gen_attributes_to_strbuilder(self->Attributes) );
@@ -16674,7 +16674,7 @@ void gen_code_op_to_strbuilder_def(gen_CodeOperator self, gen_StrBuilder* result
 
 	if ( self->Attributes || self->Specs )
 	{
-		gen_strbuilder_append_str( result, txt("\n") );
+		gen_strbuilder_append_str( result, gen_txt("\n") );
 	}
 
 	if ( self->ReturnType )
@@ -16684,7 +16684,7 @@ void gen_code_op_to_strbuilder_def(gen_CodeOperator self, gen_StrBuilder* result
 		gen_strbuilder_append_fmt( result, "%SB)", gen_params_to_strbuilder(self->Params) );
 
 	else
-		gen_strbuilder_append_str( result, txt(")") );
+		gen_strbuilder_append_str( result, gen_txt(")") );
 
 	if ( self->Specs )
 	{
@@ -16708,7 +16708,7 @@ void gen_code_op_to_strbuilder_fwd(gen_CodeOperator self, gen_StrBuilder* result
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
 	if ( self->Attributes )
 		gen_strbuilder_append_fmt( result, "%SB\n", gen_attributes_to_strbuilder(self->Attributes) );
@@ -16727,7 +16727,7 @@ void gen_code_op_to_strbuilder_fwd(gen_CodeOperator self, gen_StrBuilder* result
 
 	if ( self->Attributes || self->Specs )
 	{
-		gen_strbuilder_append_str( result, txt("\n") );
+		gen_strbuilder_append_str( result, gen_txt("\n") );
 	}
 
 	gen_strbuilder_append_fmt( result, "%SB %S (", gen_typename_to_strbuilder(self->ReturnType), self->Name );
@@ -16753,7 +16753,7 @@ void gen_code_op_to_strbuilder_fwd(gen_CodeOperator self, gen_StrBuilder* result
 	if ( self->InlineCmt )
 		gen_strbuilder_append_fmt( result, ";  %S", self->InlineCmt->Content );
 	else
-		gen_strbuilder_append_str( result, txt(";\n") );
+		gen_strbuilder_append_str( result, gen_txt(";\n") );
 }
 
 gen_StrBuilder gen_opcast_to_strbuilder(gen_CodeOpCast self)
@@ -16840,7 +16840,7 @@ void gen_opcast_to_strbuilder_fwd(gen_CodeOpCast self, gen_StrBuilder* result )
 		if ( self->InlineCmt )
 			gen_strbuilder_append_fmt( result, ";  %S", self->InlineCmt->Content );
 		else
-			gen_strbuilder_append_str( result, txt(";\n") );
+			gen_strbuilder_append_str( result, gen_txt(";\n") );
 		return;
 	}
 
@@ -16934,13 +16934,13 @@ void gen_specifiers_to_strbuilder_ref( gen_CodeSpecifiers self, gen_StrBuilder* 
 			break;
 
 			default:
-				gen_strbuilder_append_str(result, txt(" "));
+				gen_strbuilder_append_str(result, gen_txt(" "));
 			break;
 		}
 		gen_strbuilder_append_fmt( result, "%S", gen_spec_str );
 		idx++;
 	}
-	gen_strbuilder_append_str(result, txt(" "));
+	gen_strbuilder_append_str(result, gen_txt(" "));
 }
 
 gen_StrBuilder gen_struct_to_strbuilder(gen_CodeStruct self)
@@ -16965,9 +16965,9 @@ void gen_struct_to_strbuilder_def( gen_CodeStruct self, gen_StrBuilder* result )
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
-	gen_strbuilder_append_str( result, txt("struct ") );
+	gen_strbuilder_append_str( result, gen_txt("struct ") );
 
 	if ( self->Attributes )
 	{
@@ -16978,7 +16978,7 @@ void gen_struct_to_strbuilder_def( gen_CodeStruct self, gen_StrBuilder* result )
 		gen_strbuilder_append_str( result, self->Name );
 
 	if (self->Specs && gen_specifiers_has(self->Specs, Spec_Final))
-		gen_strbuilder_append_str( result, txt(" final"));
+		gen_strbuilder_append_str( result, gen_txt(" final"));
 
 	if ( self->ParentType )
 	{
@@ -16988,7 +16988,7 @@ void gen_struct_to_strbuilder_def( gen_CodeStruct self, gen_StrBuilder* result )
 
 		gen_CodeTypename interface = gen_cast(gen_CodeTypename, self->ParentType->Next);
 		if ( interface )
-			gen_strbuilder_append_str( result, txt("\n") );
+			gen_strbuilder_append_str( result, gen_txt("\n") );
 
 		while ( interface )
 		{
@@ -17005,7 +17005,7 @@ void gen_struct_to_strbuilder_def( gen_CodeStruct self, gen_StrBuilder* result )
 	gen_strbuilder_append_fmt( result, "\n{\n%SB\n}", gen_body_to_strbuilder(self->Body) );
 
 	if ( self->Parent == gen_nullptr || ( self->Parent->Type != CT_Typedef && self->Parent->Type != CT_Variable ) )
-		gen_strbuilder_append_str( result, txt(";\n"));
+		gen_strbuilder_append_str( result, gen_txt(";\n"));
 }
 
 void gen_struct_to_strbuilder_fwd( gen_CodeStruct self, gen_StrBuilder* result )
@@ -17013,7 +17013,7 @@ void gen_struct_to_strbuilder_fwd( gen_CodeStruct self, gen_StrBuilder* result )
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
 	if ( self->Attributes )
 		gen_strbuilder_append_fmt( result, "struct %SB %S", gen_attributes_to_strbuilder(self->Attributes), self->Name );
@@ -17025,7 +17025,7 @@ void gen_struct_to_strbuilder_fwd( gen_CodeStruct self, gen_StrBuilder* result )
 		if ( self->InlineCmt )
 			gen_strbuilder_append_fmt( result, ";  %S", self->InlineCmt->Content );
 		else
-			gen_strbuilder_append_str( result, txt( ";\n") );
+			gen_strbuilder_append_str( result, gen_txt( ";\n") );
 	}
 }
 
@@ -17034,7 +17034,7 @@ void gen_template_to_strbuilder_ref(gen_CodeTemplate self, gen_StrBuilder* resul
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
 	if ( self->Params )
 		gen_strbuilder_append_fmt( result, "template< %SB >\n%SB", gen_params_to_strbuilder(self->Params), gen_code_to_strbuilder(self->Declaration) );
@@ -17047,9 +17047,9 @@ void gen_typedef_to_strbuilder_ref(gen_CodeTypedef self, gen_StrBuilder* result 
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
-	gen_strbuilder_append_str( result, txt("typedef "));
+	gen_strbuilder_append_str( result, gen_txt("typedef "));
 
 	// Determines if the typedef is a function typename
 	if ( self->UnderlyingType->ReturnType )
@@ -17070,13 +17070,13 @@ void gen_typedef_to_strbuilder_ref(gen_CodeTypedef self, gen_StrBuilder* result 
 	}
 	else
 	{
-		gen_strbuilder_append_str( result, txt(";") );
+		gen_strbuilder_append_str( result, gen_txt(";") );
 	}
 
 	if ( self->InlineCmt )
 		gen_strbuilder_append_fmt( result, "  %S", self->InlineCmt->Content);
 	else
-		gen_strbuilder_append_str( result, txt("\n"));
+		gen_strbuilder_append_str( result, gen_txt("\n"));
 }
 
 void gen_typename_to_strbuilder_ref(gen_CodeTypename self, gen_StrBuilder* result )
@@ -17120,10 +17120,10 @@ void gen_typename_to_strbuilder_ref(gen_CodeTypename self, gen_StrBuilder* resul
 
 	switch ( self->TypeTag )
 	{
-		case Tag_Class  : gen_strbuilder_append_str( result, txt("class "));  break;
-		case Tag_Enum   : gen_strbuilder_append_str( result, txt("enum "));   break;
-		case Tag_Struct : gen_strbuilder_append_str( result, txt("struct ")); break;
-		case Tag_Union  : gen_strbuilder_append_str( result, txt("union "));  break;
+		case Tag_Class  : gen_strbuilder_append_str( result, gen_txt("class "));  break;
+		case Tag_Enum   : gen_strbuilder_append_str( result, gen_txt("enum "));   break;
+		case Tag_Struct : gen_strbuilder_append_str( result, gen_txt("struct ")); break;
+		case Tag_Union  : gen_strbuilder_append_str( result, gen_txt("union "));  break;
 		default:
 			break;
 	}
@@ -17134,7 +17134,7 @@ void gen_typename_to_strbuilder_ref(gen_CodeTypename self, gen_StrBuilder* resul
 		gen_strbuilder_append_fmt( result, "%S", self->Name );
 
 	if ( self->IsParamPack )
-		gen_strbuilder_append_str( result, txt("..."));
+		gen_strbuilder_append_str( result, gen_txt("..."));
 }
 
 gen_StrBuilder union_to_strbuilder(gen_CodeUnion self)
@@ -17158,9 +17158,9 @@ void union_to_strbuilder_def(gen_CodeUnion self, gen_StrBuilder* result )
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
-	gen_strbuilder_append_str( result, txt("union ") );
+	gen_strbuilder_append_str( result, gen_txt("union ") );
 
 	if ( self->Attributes )
 		gen_strbuilder_append_fmt( result, "%SB ", gen_attributes_to_strbuilder(self->Attributes) );
@@ -17181,7 +17181,7 @@ void union_to_strbuilder_def(gen_CodeUnion self, gen_StrBuilder* result )
 	}
 
 	if ( self->Parent == gen_nullptr || ( self->Parent->Type != CT_Typedef && self->Parent->Type != CT_Variable ) )
-		gen_strbuilder_append_str( result, txt(";\n"));
+		gen_strbuilder_append_str( result, gen_txt(";\n"));
 }
 
 void union_to_strbuilder_fwd(gen_CodeUnion self, gen_StrBuilder* result )
@@ -17189,9 +17189,9 @@ void union_to_strbuilder_fwd(gen_CodeUnion self, gen_StrBuilder* result )
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
-	gen_strbuilder_append_str( result, txt("union ") );
+	gen_strbuilder_append_str( result, gen_txt("union ") );
 
 	if ( self->Attributes )
 		gen_strbuilder_append_fmt( result, "%SB ", gen_attributes_to_strbuilder(self->Attributes) );
@@ -17202,7 +17202,7 @@ void union_to_strbuilder_fwd(gen_CodeUnion self, gen_StrBuilder* result )
 	}
 
 	if ( self->Parent == gen_nullptr || ( self->Parent->Type != CT_Typedef && self->Parent->Type != CT_Variable ) )
-		gen_strbuilder_append_str( result, txt(";\n"));
+		gen_strbuilder_append_str( result, gen_txt(";\n"));
 }
 
 void gen_using_to_strbuilder_ref(gen_CodeUsing self, gen_StrBuilder* result )
@@ -17210,7 +17210,7 @@ void gen_using_to_strbuilder_ref(gen_CodeUsing self, gen_StrBuilder* result )
 	GEN_ASSERT(self);
 	GEN_ASSERT(result);
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
 	if ( self->Attributes )
 		gen_strbuilder_append_fmt( result, "%SB ", gen_attributes_to_strbuilder(self->Attributes) );
@@ -17231,7 +17231,7 @@ void gen_using_to_strbuilder_ref(gen_CodeUsing self, gen_StrBuilder* result )
 			}
 		}
 
-		gen_strbuilder_append_str( result, txt(";") );
+		gen_strbuilder_append_str( result, gen_txt(";") );
 	}
 	else
 		gen_strbuilder_append_fmt( result, "using %S;", self->Name );
@@ -17239,7 +17239,7 @@ void gen_using_to_strbuilder_ref(gen_CodeUsing self, gen_StrBuilder* result )
 	if ( self->InlineCmt )
 		gen_strbuilder_append_fmt( result, "  %S\n", self->InlineCmt->Content );
 	else
-		gen_strbuilder_append_str( result, txt("\n"));
+		gen_strbuilder_append_str( result, gen_txt("\n"));
 }
 
 gen_neverinline
@@ -17281,13 +17281,13 @@ void gen_var_to_strbuilder_ref(gen_CodeVar self, gen_StrBuilder* result )
 			gen_strbuilder_append_fmt( result, ", %SB", gen_var_to_strbuilder(self->NextVar) );
 
 		if ( self->VarParenthesizedInit )
-			gen_strbuilder_append_str( result, txt(" )"));
+			gen_strbuilder_append_str( result, gen_txt(" )"));
 
 		return;
 	}
 
 	if ( gen_bitfield_is_set( gen_u32, self->ModuleFlags, ModuleFlag_Export ))
-		gen_strbuilder_append_str( result, txt("export ") );
+		gen_strbuilder_append_str( result, gen_txt("export ") );
 
 	if ( self->Attributes || self->Specs )
 	{
@@ -17326,12 +17326,12 @@ void gen_var_to_strbuilder_ref(gen_CodeVar self, gen_StrBuilder* result )
 			gen_strbuilder_append_fmt( result, ", %SB", gen_var_to_strbuilder(self->NextVar) );
 
 		if ( self->VarParenthesizedInit )
-			gen_strbuilder_append_str( result, txt(" )"));
+			gen_strbuilder_append_str( result, gen_txt(" )"));
 
 		if ( self->InlineCmt )
 			gen_strbuilder_append_fmt( result, ";  %S", self->InlineCmt->Content);
 		else
-			gen_strbuilder_append_str( result, txt(";\n") );
+			gen_strbuilder_append_str( result, gen_txt(";\n") );
 
 		return;
 	}
@@ -17366,14 +17366,14 @@ void gen_var_to_strbuilder_ref(gen_CodeVar self, gen_StrBuilder* result )
 		gen_strbuilder_append_fmt( result, ", %SB", gen_var_to_strbuilder( self->NextVar) );
 
 	if ( self->VarParenthesizedInit )
-		gen_strbuilder_append_str( result, txt(" )"));
+		gen_strbuilder_append_str( result, gen_txt(" )"));
 
-	gen_strbuilder_append_str( result, txt(";") );
+	gen_strbuilder_append_str( result, gen_txt(";") );
 
 	if ( self->InlineCmt )
 		gen_strbuilder_append_fmt( result, "  %S", self->InlineCmt->Content);
 	else
-		gen_strbuilder_append_str( result, txt("\n"));
+		gen_strbuilder_append_str( result, gen_txt("\n"));
 }
 #pragma endregion AST
 
@@ -17461,7 +17461,7 @@ gen_internal void gen_define_constants()
 		return;
 
 	gen_Code_Global          = gen_make_code();
-	gen_Code_Global->Name    = gen_cache_str(txt("Global gen_Code"));
+	gen_Code_Global->Name    = gen_cache_str(gen_txt("Global gen_Code"));
 	gen_Code_Global->Content = gen_Code_Global->Name;
 
 	gen_Code_Invalid         = gen_make_code();
@@ -17469,22 +17469,22 @@ gen_internal void gen_define_constants()
 
 	gen_t_empty       = (gen_CodeTypename)gen_make_code();
 	gen_t_empty->Type = CT_Typename;
-	gen_t_empty->Name = gen_cache_str(txt(""));
+	gen_t_empty->Name = gen_cache_str(gen_txt(""));
 	gen_code_set_global(gen_cast(gen_Code, gen_t_empty));
 
 	gen_access_private       = gen_make_code();
 	gen_access_private->Type = CT_Access_Private;
-	gen_access_private->Name = gen_cache_str(txt("private:\n"));
+	gen_access_private->Name = gen_cache_str(gen_txt("private:\n"));
 	gen_code_set_global(gen_cast(gen_Code, gen_access_private));
 
 	gen_access_protected       = gen_make_code();
 	gen_access_protected->Type = CT_Access_Protected;
-	gen_access_protected->Name = gen_cache_str(txt("protected:\n"));
+	gen_access_protected->Name = gen_cache_str(gen_txt("protected:\n"));
 	gen_code_set_global(gen_access_protected);
 
 	gen_access_public       = gen_make_code();
 	gen_access_public->Type = CT_Access_Public;
-	gen_access_public->Name = gen_cache_str(txt("public:\n"));
+	gen_access_public->Name = gen_cache_str(gen_txt("public:\n"));
 	gen_code_set_global(gen_access_public);
 
 	gen_Str api_export_str = code(GEN_API_Export_Code);
@@ -17497,13 +17497,13 @@ gen_internal void gen_define_constants()
 
 	gen_module_global_fragment          = gen_make_code();
 	gen_module_global_fragment->Type    = CT_Untyped;
-	gen_module_global_fragment->Name    = gen_cache_str(txt("module;"));
+	gen_module_global_fragment->Name    = gen_cache_str(gen_txt("module;"));
 	gen_module_global_fragment->Content = gen_module_global_fragment->Name;
 	gen_code_set_global(gen_cast(gen_Code, gen_module_global_fragment));
 
 	gen_module_private_fragment          = gen_make_code();
 	gen_module_private_fragment->Type    = CT_Untyped;
-	gen_module_private_fragment->Name    = gen_cache_str(txt("module : private;"));
+	gen_module_private_fragment->Name    = gen_cache_str(gen_txt("module : private;"));
 	gen_module_private_fragment->Content = gen_module_private_fragment->Name;
 	gen_code_set_global(gen_cast(gen_Code, gen_module_private_fragment));
 
@@ -17513,13 +17513,13 @@ gen_internal void gen_define_constants()
 
 	gen_pragma_once          = (gen_CodePragma)gen_make_code();
 	gen_pragma_once->Type    = CT_Preprocess_Pragma;
-	gen_pragma_once->Name    = gen_cache_str(txt("once"));
+	gen_pragma_once->Name    = gen_cache_str(gen_txt("once"));
 	gen_pragma_once->Content = gen_pragma_once->Name;
 	gen_code_set_global((gen_Code)gen_pragma_once);
 
 	gen_param_varadic            = (gen_CodeParams)gen_make_code();
 	gen_param_varadic->Type      = CT_Parameters;
-	gen_param_varadic->Name      = gen_cache_str(txt("..."));
+	gen_param_varadic->Name      = gen_cache_str(gen_txt("..."));
 	gen_param_varadic->ValueType = gen_t_empty;
 	gen_code_set_global((gen_Code)gen_param_varadic);
 
@@ -17531,28 +17531,28 @@ gen_internal void gen_define_constants()
 	gen_preprocess_endif->Type = CT_Preprocess_EndIf;
 	gen_code_set_global((gen_Code)gen_preprocess_endif);
 
-	gen_Str auto_str = txt("auto");
+	gen_Str auto_str = gen_txt("auto");
 	gen_t_auto       = gen_def_type(auto_str);
 	gen_code_set_global(gen_t_auto);
-	gen_Str void_str = txt("void");
+	gen_Str void_str = gen_txt("void");
 	gen_t_void       = gen_def_type(void_str);
 	gen_code_set_global(gen_t_void);
-	gen_Str int_str = txt("int");
+	gen_Str int_str = gen_txt("int");
 	gen_t_int       = gen_def_type(int_str);
 	gen_code_set_global(gen_t_int);
-	gen_Str bool_str = txt("bool");
+	gen_Str bool_str = gen_txt("bool");
 	gen_t_bool       = gen_def_type(bool_str);
 	gen_code_set_global(gen_t_bool);
-	gen_Str gen_char_str = txt("char");
+	gen_Str gen_char_str = gen_txt("char");
 	gen_t_char           = gen_def_type(gen_char_str);
 	gen_code_set_global(gen_t_char);
-	gen_Str wchar_str = txt("wchar_t");
+	gen_Str wchar_str = gen_txt("wchar_t");
 	gen_t_wchar_t     = gen_def_type(wchar_str);
 	gen_code_set_global(gen_t_wchar_t);
-	gen_Str gen_class_str = txt("class");
+	gen_Str gen_class_str = gen_txt("class");
 	gen_t_class           = gen_def_type(gen_class_str);
 	gen_code_set_global(gen_t_class);
-	gen_Str gen_typename_str = txt("typename");
+	gen_Str gen_typename_str = gen_txt("typename");
 	gen_t_typename           = gen_def_type(gen_typename_str);
 	gen_code_set_global(gen_t_typename);
 
@@ -17560,43 +17560,43 @@ gen_internal void gen_define_constants()
 	gen_t_b32 = gen_def_type(name(gen_b32));
 	gen_code_set_global(gen_t_b32);
 
-	gen_Str s8_str = txt("gen_s8");
+	gen_Str s8_str = gen_txt("gen_s8");
 	gen_t_s8       = gen_def_type(s8_str);
 	gen_code_set_global(gen_t_s8);
-	gen_Str s16_str = txt("gen_s16");
+	gen_Str s16_str = gen_txt("gen_s16");
 	gen_t_s16       = gen_def_type(s16_str);
 	gen_code_set_global(gen_t_s16);
-	gen_Str s32_str = txt("gen_s32");
+	gen_Str s32_str = gen_txt("gen_s32");
 	gen_t_s32       = gen_def_type(s32_str);
 	gen_code_set_global(gen_t_s32);
-	gen_Str s64_str = txt("gen_s64");
+	gen_Str s64_str = gen_txt("gen_s64");
 	gen_t_s64       = gen_def_type(s64_str);
 	gen_code_set_global(gen_t_s64);
 
-	gen_Str u8_str = txt("gen_u8");
+	gen_Str u8_str = gen_txt("gen_u8");
 	gen_t_u8       = gen_def_type(u8_str);
 	gen_code_set_global(gen_t_u8);
-	gen_Str u16_str = txt("gen_u16");
+	gen_Str u16_str = gen_txt("gen_u16");
 	gen_t_u16       = gen_def_type(u16_str);
 	gen_code_set_global(gen_t_u16);
-	gen_Str u32_str = txt("gen_u32");
+	gen_Str u32_str = gen_txt("gen_u32");
 	gen_t_u32       = gen_def_type(u32_str);
 	gen_code_set_global(gen_t_u32);
-	gen_Str u64_str = txt("gen_u64");
+	gen_Str u64_str = gen_txt("gen_u64");
 	gen_t_u64       = gen_def_type(u64_str);
 	gen_code_set_global(gen_t_u64);
 
-	gen_Str ssize_str = txt("gen_ssize");
+	gen_Str ssize_str = gen_txt("gen_ssize");
 	gen_t_ssize       = gen_def_type(ssize_str);
 	gen_code_set_global(gen_t_ssize);
-	gen_Str usize_str = txt("gen_usize");
+	gen_Str usize_str = gen_txt("gen_usize");
 	gen_t_usize       = gen_def_type(usize_str);
 	gen_code_set_global(gen_t_usize);
 
-	gen_Str f32_str = txt("gen_f32");
+	gen_Str f32_str = gen_txt("gen_f32");
 	gen_t_f32       = gen_def_type(f32_str);
 	gen_code_set_global(gen_t_f32);
-	gen_Str f64_str = txt("gen_f64");
+	gen_Str f64_str = gen_txt("gen_f64");
 	gen_t_f64       = gen_def_type(f64_str);
 	gen_code_set_global(gen_t_f64);
 #endif
@@ -17655,7 +17655,7 @@ gen_internal void gen_define_constants()
 
 	if (gen_enum_underlying_macro.Name.Len == 0)
 	{
-		gen_enum_underlying_macro.Name  = txt("gen_enum_underlying");
+		gen_enum_underlying_macro.Name  = gen_txt("gen_enum_underlying");
 		gen_enum_underlying_macro.Type  = MT_Expression;
 		gen_enum_underlying_macro.Flags = MF_Functional;
 	}
@@ -17841,7 +17841,7 @@ void gen_deinit(gen_Context* ctx)
 	*ctx             = wipe;
 }
 
-gen_Context* get_context()
+gen_Context* gen_get_context()
 {
 	return gen__ctx;
 }
@@ -18469,7 +18469,7 @@ gen_CodeComment gen_def_comment(gen_Str content)
 	} while (scanner <= end);
 
 	if (*gen_strbuilder_back(cmt_formatted) != '\n')
-		gen_strbuilder_append_str(&cmt_formatted, txt("\n"));
+		gen_strbuilder_append_str(&cmt_formatted, gen_txt("\n"));
 
 	gen_Str name    = gen_strbuilder_to_str(cmt_formatted);
 
@@ -18591,7 +18591,7 @@ gen_CodeDefine gen_def__define(gen_Str name, gen_MacroType type, gen_Opts_def_de
 	result->Name          = gen_cache_str(name);
 	result->Params        = p.params;
 	if (p.content.Len <= 0 || p.content.Ptr == gen_nullptr)
-		result->Body = gen_untyped_str(txt("\n"));
+		result->Body = gen_untyped_str(gen_txt("\n"));
 	else
 		result->Body = gen_untyped_str(gen_strbuilder_to_str(gen_strbuilder_fmt_buf(gen__ctx->Allocator_Temp, "%S\n", p.content)));
 
@@ -20453,7 +20453,7 @@ gen_s32 gen_lex_preprocessor_define(gen_LexContext* ctx)
 			skip_whitespace();
 
 			gen_Str possible_varadic = { ctx->scanner, 3 };
-			if (ctx->left > 3 && gen_str_are_equal(txt("..."), possible_varadic))
+			if (ctx->left > 3 && gen_str_are_equal(gen_txt("..."), possible_varadic))
 			{
 				gen_Token parameter = {
 					{ ctx->scanner, 3 },
@@ -22268,7 +22268,7 @@ bool _check_parse_args(gen_Str def, char const* func_name)
 
 #define push_scope()                                                                                                                              \
 	gen_Str       null_name = {};                                                                                                                 \
-	gen_StackNode scope     = { gen_nullptr, gen_lex_current(&gen__ctx->parser.Tokens, gen_lex_dont_skip_formatting), null_name, txt(__func__) }; \
+	gen_StackNode scope     = { gen_nullptr, gen_lex_current(&gen__ctx->parser.Tokens, gen_lex_dont_skip_formatting), null_name, gen_txt(__func__) }; \
 	gen_parser_push(&gen__ctx->parser, &scope)
 
 #pragma endregion Helper Macros
@@ -22593,7 +22593,7 @@ gen_internal gen_Code gen_parse_array_decl()
 
 	if (check(Tok_Operator) && currtok.Text.Ptr[0] == '[' && currtok.Text.Ptr[1] == ']')
 	{
-		gen_Code gen_array_expr = gen_untyped_str(txt(" "));
+		gen_Code gen_array_expr = gen_untyped_str(gen_txt(" "));
 		eat(Tok_Operator);
 		// []
 
@@ -23619,7 +23619,7 @@ gen_internal inline gen_CodeFn gen_parse_function_after_name(
 			specifiers       = (gen_CodeSpecifiers)gen_make_code();
 			specifiers->Type = CT_Specifiers;
 		}
-		if (gen_str_are_equal(nexttok.Text, txt("delete")))
+		if (gen_str_are_equal(nexttok.Text, gen_txt("delete")))
 		{
 			gen_specifiers_append(specifiers, Spec_Delete);
 			eat(currtok.Type);
@@ -24241,7 +24241,7 @@ gen_internal gen_Token gen_parse_identifier(bool* possible_member_function)
 
 		if (currtok.Type == Tok_Operator && currtok.Text.Ptr[0] == '~')
 		{
-			bool is_destructor = gen_str_are_equal(gen__ctx->parser.Scope->Prev->ProcName, txt("gen_parser_parse_destructor"));
+			bool is_destructor = gen_str_are_equal(gen__ctx->parser.Scope->Prev->ProcName, gen_txt("gen_parser_parse_destructor"));
 			if (is_destructor)
 			{
 				name.Text.Len = ((gen_sptr)prevtok.Text.Ptr + prevtok.Text.Len) - (gen_sptr)name.Text.Ptr;
@@ -24647,7 +24647,7 @@ gen_internal gen_CodeOperator
 	if (check(Tok_Operator) && currtok.Text.Ptr[0] == '=')
 	{
 		eat(currtok.Type);
-		if (! gen_str_are_equal(currtok.Text, txt("delete")))
+		if (! gen_str_are_equal(currtok.Text, gen_txt("delete")))
 		{
 			gen_log_failure("Expected delete after = in operator forward instead found \"%S\"\n%SB", currtok.Text, gen_parser_to_strbuilder(gen__ctx->parser));
 			gen_parser_pop(&gen__ctx->parser);
@@ -24858,8 +24858,8 @@ gen_internal gen_Code gen_parse_macro_as_definiton(gen_CodeAttributes attributes
 	gen_StrBuilder resolved_definition = gen_strbuilder_fmt_buf(
 	    gen__ctx->Allocator_Temp,
 	    "%S %S %S",
-	    attributes ? gen_strbuilder_to_str(gen_attributes_to_strbuilder(attributes)) : txt(""),
-	    specifiers ? gen_strbuilder_to_str(gen_specifiers_to_strbuilder(specifiers)) : txt(""),
+	    attributes ? gen_strbuilder_to_str(gen_attributes_to_strbuilder(attributes)) : gen_txt(""),
+	    specifiers ? gen_strbuilder_to_str(gen_specifiers_to_strbuilder(specifiers)) : gen_txt(""),
 	    code->Content
 	);
 	gen_Code result = gen_untyped_str(gen_strbuilder_to_str(resolved_definition));
@@ -25290,12 +25290,12 @@ gen_internal gen_Code gen_parse_simple_preprocess(gen_TokType which)
 		// (especially for functional macros)
 		gen_Str calling_proc = gen__ctx->parser.Scope->Prev->ProcName;
 
-		if (gen_str_contains(gen__ctx->parser.Scope->Prev->ProcName, txt("gen_parser_parse_enum")))
+		if (gen_str_contains(gen__ctx->parser.Scope->Prev->ProcName, gen_txt("gen_parser_parse_enum")))
 		{
 			// Do nothing
 			goto Leave_Scope_Early;
 		}
-		else if (macro && macro->Type == MT_Typename && gen_str_contains(gen__ctx->parser.Scope->Prev->ProcName, txt("gen_parser_parse_typedef")))
+		else if (macro && macro->Type == MT_Typename && gen_str_contains(gen__ctx->parser.Scope->Prev->ProcName, gen_txt("gen_parser_parse_typedef")))
 		{
 			if (peektok.Type == Tok_Statement_End)
 			{
@@ -25315,7 +25315,7 @@ gen_internal gen_Code gen_parse_simple_preprocess(gen_TokType which)
 				}
 			}
 		}
-		else if (gen_str_contains(calling_proc, txt("gen_parse_global_nspace")) || gen_str_contains(calling_proc, txt("gen_parse_class_struct_body")))
+		else if (gen_str_contains(calling_proc, gen_txt("gen_parse_global_nspace")) || gen_str_contains(calling_proc, gen_txt("gen_parse_class_struct_body")))
 		{
 			if (left && peektok.Type == Tok_Statement_End)
 			{
@@ -25825,7 +25825,7 @@ gen_internal inline gen_CodeDefine gen_parser_parse_define()
 
 	if (currtok.Text.Len == 0)
 	{
-		define->Body = gen_untyped_str(txt("\n"));
+		define->Body = gen_untyped_str(gen_txt("\n"));
 		eat(Tok_Preprocess_Content);
 		// #define <Name> ( <params> ) <Content>
 
@@ -25846,7 +25846,7 @@ gen_internal gen_CodeDestructor gen_parser_parse_destructor(gen_CodeSpecifiers s
 	push_scope();
 
 	bool has_context         = gen__ctx->parser.Scope && gen__ctx->parser.Scope->Prev;
-	bool is_in_global_nspace = has_context && gen_str_are_equal(gen__ctx->parser.Scope->Prev->ProcName, txt("gen_parse_global_nspace"));
+	bool is_in_global_nspace = has_context && gen_str_are_equal(gen__ctx->parser.Scope->Prev->ProcName, gen_txt("gen_parse_global_nspace"));
 
 	if (check(Tok_Spec_Virtual))
 	{
@@ -26775,7 +26775,7 @@ gen_internal gen_CodeTemplate gen_parser_parse_template()
 
 
 		bool has_context         = gen__ctx->parser.Scope && gen__ctx->parser.Scope->Prev;
-		bool is_in_global_nspace = has_context && gen_str_are_equal(gen__ctx->parser.Scope->Prev->ProcName, txt("gen_parse_global_nspace"));
+		bool is_in_global_nspace = has_context && gen_str_are_equal(gen__ctx->parser.Scope->Prev->ProcName, gen_txt("gen_parse_global_nspace"));
 		// Possible gen_constructor_ implemented at gen_global file scope.
 		if (is_in_global_nspace)
 		{
@@ -27085,7 +27085,7 @@ else if ( currtok.Type == Tok_DeclType )
 		}
 
 		bool has_context   = gen__ctx->parser.Scope && gen__ctx->parser.Scope->Prev;
-		bool is_for_opcast = has_context && gen_str_are_equal(gen__ctx->parser.Scope->Prev->ProcName, txt("gen_parser_parse_operator_cast"));
+		bool is_for_opcast = has_context && gen_str_are_equal(gen__ctx->parser.Scope->Prev->ProcName, gen_txt("gen_parser_parse_operator_cast"));
 		if (is_for_opcast && is_function_typename && last_capture)
 		{
 			// If we're parsing for an operator gen_cast, having one capture start is not enough
@@ -28392,7 +28392,7 @@ gen_Builder gen_builder_open(char const* path)
 		return result;
 	}
 
-	gen_Context* ctx = get_context();
+	gen_Context* ctx = gen_get_context();
 	GEN_ASSERT_NOT_NULL(ctx);
 	result.Buffer = gen_strbuilder_make_reserve(ctx->Allocator_Temp, ctx->InitSize_BuilderBuffer);
 
@@ -28402,7 +28402,7 @@ gen_Builder gen_builder_open(char const* path)
 
 void gen_builder_pad_lines(gen_Builder* builder, gen_s32 num)
 {
-	gen_strbuilder_append_str(&builder->Buffer, txt("\n"));
+	gen_strbuilder_append_str(&builder->Buffer, gen_txt("\n"));
 }
 
 void gen_builder__print(gen_Builder* builder, gen_Code code)
@@ -28455,7 +28455,7 @@ gen_Code gen_scan_file(char const* path)
 		GEN_FATAL("gen_scan_file: %s is empty", path);
 	}
 
-	gen_StrBuilder str = gen_strbuilder_make_reserve(get_context()->Allocator_Temp, fsize);
+	gen_StrBuilder str = gen_strbuilder_make_reserve(gen_get_context()->Allocator_Temp, fsize);
 	gen_file_read(&file, str, fsize);
 	gen_strbuilder_get_header(str)->Length = fsize;
 
@@ -28471,9 +28471,9 @@ gen_Code gen_scan_file(char const* path)
 		++scanner; \
 		--left;    \
 	} while (0)
-		const gen_Str directive_start      = txt("ifdef");
-		const gen_Str directive_end        = txt("endif");
-		const gen_Str gen_def_intellisense = txt("INTELLISENSE_DIRECTIVES");
+		const gen_Str directive_start      = gen_txt("ifdef");
+		const gen_Str directive_end        = gen_txt("endif");
+		const gen_Str gen_def_intellisense = gen_txt("INTELLISENSE_DIRECTIVES");
 
 		bool        found_directive        = false;
 		char const* scanner                = (char const*)str;
@@ -28558,7 +28558,7 @@ gen_Code gen_scan_file(char const* path)
 
 gen_CodeBody gen_parse_file(const char* path)
 {
-	FileContents file    = gen_file_read_contents(get_context()->Allocator_Temp, true, path);
+	FileContents file    = gen_file_read_contents(gen_get_context()->Allocator_Temp, true, path);
 	gen_Str      content = { (char const*)file.data, file.size };
 	gen_CodeBody code    = gen_parse_global_body(content);
 	gen_log_fmt("\nParsed: %s\n", path);

@@ -70,7 +70,10 @@
 		"math.h": "c",
 		"command_line.h": "c",
 		"sort.h": "c",
-		"chrono": "c"
+		"chrono": "c",
+		"misc.h": "c",
+		"gencpp_c11.h": "c",
+		"push_ignores.inline.h": "c"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

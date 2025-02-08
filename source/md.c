@@ -3245,7 +3245,7 @@ MD_FUNCTION MD_i64
 MD_ChildCountFromNode(Node *node)
 {
     MD_i64 result = 0;
-    for(MD_EachNode(child, node->first_child))
+    for(each_node(child, node->first_child))
     {
         result += 1;
     }
@@ -3256,7 +3256,7 @@ MD_FUNCTION MD_i64
 MD_TagCountFromNode(Node *node)
 {
     MD_i64 result = 0;
-    for(MD_EachNode(tag, node->first_tag))
+    for(each_node(tag, node->first_tag))
     {
         result += 1;
     }
@@ -3867,7 +3867,7 @@ MD_S8ListPush(arena, out, indent_string);\
     //- rjf: tags of node
     if(flags & MD_GenerateFlag_Tags)
     {
-        for(MD_EachNode(tag, node->first_tag))
+        for(each_node(tag, node->first_tag))
         {
             MD_PrintIndent(indent);
             MD_S8ListPush(arena, out, MD_S8Lit("@"));
@@ -3876,7 +3876,7 @@ MD_S8ListPush(arena, out, indent_string);\
             {
                 int tag_arg_indent = (int)(indent + 1 + tag->string.size + 1);
                 MD_S8ListPush(arena, out, MD_S8Lit("("));
-                for(MD_EachNode(child, tag->first_child))
+                for(each_node(child, tag->first_child))
                 {
                     int child_indent = tag_arg_indent;
                     if(MD_NodeIsNil(child->prev))
@@ -3955,7 +3955,7 @@ MD_S8ListPush(arena, out, indent_string);\
         }
         MD_PrintIndent(indent);
         MD_S8ListPush(arena, out, MD_S8Lit("{\n"));
-        for(MD_EachNode(child, node->first_child))
+        for(each_node(child, node->first_child))
         {
             MD_DebugDumpFromNode(arena, out, child, indent+1, indent_string, flags);
             MD_S8ListPush(arena, out, MD_S8Lit(",\n"));
@@ -4023,7 +4023,7 @@ MD_S8ListPush(arena, out, indent_string);\
     MD_u32 tag_first_line = MD_CodeLocFromNode(node->first_tag).line;
     MD_u32 tag_last_line = tag_first_line;
     {
-        for(MD_EachNode(tag, node->first_tag))
+        for(each_node(tag, node->first_tag))
         {
             MD_u32 tag_line = MD_CodeLocFromNode(tag).line;
             if(tag_line != tag_last_line)
@@ -4044,7 +4044,7 @@ MD_S8ListPush(arena, out, indent_string);\
                 int tag_arg_indent = (int)(indent + 1 + tag->string.size + 1);
                 MD_S8ListPush(arena, out, MD_S8Lit("("));
                 MD_u32 last_line = MD_CodeLocFromNode(tag).line;
-                for(MD_EachNode(child, tag->first_child))
+                for(each_node(child, tag->first_child))
                 {
                     MD_CodeLoc child_loc = MD_CodeLocFromNode(child);
                     if(child_loc.line != last_line)
@@ -4113,7 +4113,7 @@ MD_S8ListPush(arena, out, indent_string);\
         else if(node->flags & NodeFlag_HasBraceRight)  { closer_char = '}'; }
         
         MD_b32 multiline = 0;
-        for(MD_EachNode(child, node->first_child))
+        for(each_node(child, node->first_child))
         {
             MD_CodeLoc child_loc = MD_CodeLocFromNode(child);
             if(child_loc.line != code_loc.line)
@@ -4142,7 +4142,7 @@ MD_S8ListPush(arena, out, indent_string);\
             }
         }
         MD_u32 last_line = MD_CodeLocFromNode(node->first_child).line;
-        for(MD_EachNode(child, node->first_child))
+        for(each_node(child, node->first_child))
         {
             int child_indent = 0;
             MD_CodeLoc child_loc = MD_CodeLocFromNode(child);

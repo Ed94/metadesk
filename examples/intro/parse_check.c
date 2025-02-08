@@ -70,7 +70,7 @@ int main(int argc, char **argv)
     //  list. The second parameter is a pointer to the first node of the list.
     //  Generally we past the `first_child` of a list or parent Node, but we
     //  don't always have to.
-    for (MD_EachNode(root_it, list->first_child))
+    for (each_node(root_it, list->first_child))
     {
         
         // @notes The `list` we have been building does not contain a normal
@@ -81,7 +81,7 @@ int main(int argc, char **argv)
         //  get the root of the parse tree.
         Node *root = MD_ResolveNodeFromReference(root_it);
         
-        for (MD_EachNode(node, root->first_child))
+        for (each_node(node, root->first_child))
         {
             // @notes The Metadesk library likes to use MD_String8List for
             //  functions that build and return big strings. This simplifies

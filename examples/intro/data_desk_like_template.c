@@ -71,10 +71,10 @@ int main(int argument_count, char **arguments)
     if (!failed_parse)
     {
         Initialize();
-        for(MD_EachNode(ref, list->first_child))
+        for(each_node(ref, list->first_child))
         {
             Node *root = MD_ResolveNodeFromReference(ref);
-            for(MD_EachNode(node, root->first_child))
+            for(each_node(node, root->first_child))
             {
                 TopLevel(node);
             }

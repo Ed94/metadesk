@@ -210,13 +210,13 @@ int main(int argc, char **argv)
     }
     
     // apply expression parsing to each top level node
-    for (MD_EachNode(root_it, list->first_child))
+    for (each_node(root_it, list->first_child))
     {
         // init eval map
         eval_map = MD_MapMake(arena);
         
         Node *root = MD_ResolveNodeFromReference(root_it);
-        for (MD_EachNode(node, root->first_child))
+        for (each_node(node, root->first_child))
         {
             // @notes An expression parse is an extra stage of analysis on top
             //  of the initial Metadesk parse. It takes in a range of Metadesk

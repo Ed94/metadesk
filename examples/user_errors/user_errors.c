@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     }
     
     // check for custom errors
-    for(MD_EachNode(ref, list->first_child))
+    for(each_node(ref, list->first_child))
     {
         Node *root = MD_ResolveNodeFromReference(ref);
         
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
         //  so we can check for them by visiting each node from the root.
         //  The example "type metadata" includes more advanced custom errors
         //  that are only discovered after more analysis.
-        for(MD_EachNode(node, root->first_child))
+        for(each_node(node, root->first_child))
         {
             
             // top level node should have one or zero tags.

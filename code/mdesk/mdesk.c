@@ -79,24 +79,23 @@ string_list_from_token_flags(Arena* arena, TokenFlags flags)
 	return strs;
 }
 
-internal void
+void
 token_chunk_list_push(Arena* arena, TokenChunkList* list, U64 cap, Token token)
 {
-  TokenChunkNode *node = list->last;
-  if(node == 0 || node->count >= node->cap)
-  {
-    node = push_array(arena, TokenChunkNode, 1);
-    node->cap = cap;
-    node->v = push_array_no_zero(arena, Token, cap);
-    sll_queue_push(list->first, list->last, node);
-    list->chunk_count += 1;
-  }
-  memory_copy_struct(&node->v[node->count], &token);
-  node->count += 1;
-  list->total_token_count += 1;
+	TokenChunkNode* node = list->last;
+	if (node == 0 || node->count >= node->cap) {
+		node      = push_array(arena, TokenChunkNode, 1);
+		node->cap = cap;
+		node->v   = push_array_no_zero(arena, Token, cap);
+		sll_queue_push(list->first, list->last, node);
+		list->chunk_count += 1;
+	}
+	memory_copy_struct(&node->v[node->count], &token);
+	node->count             += 1;
+	list->total_token_count += 1;
 }
 
-internal TokenArray
+TokenArray
 token_array_from_chunk_list(Arena* arena, TokenChunkList* chunks)
 {
 	TokenArray result = {0};
@@ -114,115 +113,46 @@ token_array_from_chunk_list(Arena* arena, TokenChunkList* chunks)
 ////////////////////////////////
 //~ rjf: Node Type Functions
 
-//- rjf: flag conversions
-
-internal NodeFlags
-node_flags_from_token_flags(TokenFlags flags)
-{
-  NodeFlags result = 0;
-  result |=         NodeFlag_Identifier*!!(flags&TokenFlag_Identifier);
-  result |=            NodeFlag_Numeric*!!(flags&TokenFlag_Numeric);
-  result |=      NodeFlag_StringLiteral*!!(flags&TokenFlag_StringLiteral);
-  result |=             NodeFlag_Symbol*!!(flags&TokenFlag_Symbol);
-  result |= NodeFlag_StringSingleQuote *!!(flags&TokenFlag_StringSingleQuote);
-  result |= NodeFlag_StringDoubleQuote *!!(flags&TokenFlag_StringDoubleQuote);
-  result |=         NodeFlag_StringTick*!!(flags&TokenFlag_StringTick);
-  result |=      NodeFlag_StringTriplet*!!(flags&TokenFlag_StringTriplet);
-  return result;
-}
-
-//- rjf: nil
-
-internal B32
-node_is_nil(Node *node)
-{
-  return (node == 0 || node == nil_node() || node->kind == NodeKind_Nil);
-}
-
 //- rjf: iteration
 
-internal NodeRec
-node_rec_depth_first(Node *node, Node *subtree_root, U64 child_off, U64 sib_off)
+NodeRec
+node_rec_depth_first(Node* node, Node* subtree_root, U64 child_off, U64 sib_off)
 {
-  NodeRec rec = {0};
-  rec.next = nil_node();
-  if(!node_is_nil(*member_from_offset(Node **, node, child_off)))
-  {
-    rec.next = *member_from_offset(Node **, node, child_off);
-    rec.push_count = 1;
-  }
-  else for(Node *p = node; !node_is_nil(p) && p != subtree_root; p = p->parent, rec.pop_count += 1)
-  {
-    if(!node_is_nil(*member_from_offset(Node **, p, sib_off)))
-    {
-      rec.next = *member_from_offset(Node **, p, sib_off);
-      break;
-    }
-  }
-  return rec;
+	NodeRec 
+	rec      = {0};
+	rec.next = nil_node();
+	if (!node_is_nil(*member_from_offset(Node**, node, child_off))) {
+		rec.next       = *member_from_offset(Node**, node, child_off);
+		rec.push_count = 1;
+	}
+	else for (Node* p = node; !node_is_nil(p) && p != subtree_root; p = p->parent, rec.pop_count += 1)
+	{
+		if (!node_is_nil(*member_from_offset(Node**, p, sib_off))) {
+			rec.next = *member_from_offset(Node**, p, sib_off);
+			break;
+		}
+	}
+	return rec;
 }
 
 //- rjf: tree building
 
-internal Node *
-push_node(Arena *arena, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset)
+void
+unhook(Node* node)
 {
-  Node *node = push_array(arena, Node, 1);
-  node->first = node->last = node->parent = node->next = node->prev = node->first_tag = node->last_tag = nil_node();
-  node->kind       = kind;
-  node->flags      = flags;
-  node->string     = string;
-  node->raw_string = raw_string;
-  node->src_offset = src_offset;
-  return node;
-}
-
-internal void
-node_insert_child(Node *parent, Node *prev_child, Node *node)
-{
-  node->parent = parent;
-  dll_insert_npz(nil_node(), parent->first, parent->last, prev_child, node, next, prev);
-}
-
-internal void
-node_insert_tag(Node *parent, Node *prev_child, Node *node)
-{
-  node->kind = NodeKind_Tag;
-  node->parent = parent;
-  dll_insert_npz(nil_node(), parent->first_tag, parent->last_tag, prev_child, node, next, prev);
-}
-
-internal void
-node_push_child(Node *parent, Node *node)
-{
-  node->parent = parent;
-  dll_push_back_npz(nil_node(), parent->first, parent->last, node, next, prev);
-}
-
-internal void
-node_push_tag(Node *parent, Node *node)
-{
-  node->kind = NodeKind_Tag;
-  node->parent = parent;
-  dll_push_back_npz(nil_node(), parent->first_tag, parent->last_tag, node, next, prev);
-}
-
-internal void
-unhook(Node *node)
-{
-  Node *parent = node->parent;
-  if(!node_is_nil(parent))
-  {
-    if(node->kind == NodeKind_Tag)
-    {
-      dll_remove_npz(nil_node(), parent->first_tag, parent->last_tag, node, next, prev);
-    }
-    else
-    {
-      dll_remove_npz(nil_node(), parent->first, parent->last, node, next, prev);
-    }
-    node->parent = nil_node();
-  }
+	Node* parent = node->parent;
+	if (!node_is_nil(parent))
+	{
+		if(node->kind == NodeKind_Tag)
+		{
+			dll_remove_npz(nil_node(), parent->first_tag, parent->last_tag, node, next, prev);
+		}
+		else
+		{
+			dll_remove_npz(nil_node(), parent->first, parent->last, node, next, prev);
+		}
+		node->parent = nil_node();
+	}
 }
 
 //- rjf: tree introspection
@@ -373,7 +303,7 @@ string_from_children(Arena *arena, Node *root)
 {
   TempArena scratch = scratch_begin(&arena, 1);
   String8List strs = {0};
-  for MD_EachNode(child, root->first)
+  for each_node(child, root->first)
   {
     if(child->flags == child->prev->flags)
     {

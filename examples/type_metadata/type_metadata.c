@@ -208,10 +208,10 @@ gen_check_and_do_duplicate_symbol_error(Node *new_node)
 void
 gen_gather_types_and_maps(Node *list)
 {
-    for(MD_EachNode(ref, list->first_child))
+    for(each_node(ref, list->first_child))
     {
         Node *root = MD_ResolveNodeFromReference(ref);
-        for(MD_EachNode(node, root->first_child))
+        for(each_node(node, root->first_child))
         {
             // gather type
             Node *type_tag =  MD_TagFromString(node, MD_S8Lit("type"), 0);
@@ -275,10 +275,10 @@ gen_check_duplicate_member_names(void)
          type = type->next)
     {
         Node *type_root_node = type->node;
-        for (MD_EachNode(member_node, type_root_node->first_child))
+        for (each_node(member_node, type_root_node->first_child))
         {
             MD_String8 name = member_node->string;
-            for (MD_EachNode(check_node, type_root_node->first_child))
+            for (each_node(check_node, type_root_node->first_child))
             {
                 if (member_node == check_node)
                 {
@@ -362,7 +362,7 @@ gen_equip_struct_members(void)
             int member_count = 0;
             
             Node *type_root_node = type->node;
-            for (MD_EachNode(member_node, type_root_node->first_child))
+            for (each_node(member_node, type_root_node->first_child))
             {
                 Node *type_name_node = member_node->first_child;
                 
@@ -523,7 +523,7 @@ gen_equip_enum_members(void)
             int next_implicit_value = 0;
             
             Node *type_root_node = type->node;
-            for (MD_EachNode(enumerant_node, type_root_node->first_child))
+            for (each_node(enumerant_node, type_root_node->first_child))
             {
                 Node *value_node = enumerant_node->first_child;
                 int value = 0;

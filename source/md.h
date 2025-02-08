@@ -1149,7 +1149,7 @@ MD_FUNCTION MD_String8 MD_PrevCommentFromNode(Node *node);
 MD_FUNCTION MD_String8 MD_NextCommentFromNode(Node *node);
 
 // NOTE(rjf): For-Loop Helpers
-#define MD_EachNode(it, first) Node *it = (first); !MD_NodeIsNil(it); it = it->next
+#define each_node(it, first) Node *it = (first); !MD_NodeIsNil(it); it = it->next
 
 //~ Error/Warning Helpers
 

@@ -231,10 +231,10 @@ MD_ExprOprPush(arena, &list, MD_ExprOprKind_##k, p, MD_S8Lit(t), Op##e, 0);
     }
     
     // print the verbose parse results
-    for (MD_EachNode(root_it, list->first_child))
+    for (each_node(root_it, list->first_child))
     {
         Node *root = MD_ResolveNodeFromReference(root_it);
-        for (MD_EachNode(node, root->first_child))
+        for (each_node(node, root->first_child))
         {
             MD_ExprParseResult parse = MD_ExprParse(arena, &table, node->first_child, MD_NilNode());
             

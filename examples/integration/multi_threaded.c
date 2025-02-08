@@ -184,7 +184,7 @@ main(int argc, char **argv)
         fprintf(stdout, "on thread %d:\n", i);
         
         // print the name of each root
-        for (MD_EachNode(root_it, threads[i].list->first_child))
+        for (each_node(root_it, threads[i].list->first_child))
         {
             Node *root = MD_ResolveNodeFromReference(root_it);
             fprintf(stdout, "%.*s\n", MD_S8VArg(root->string));

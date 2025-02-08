@@ -10,7 +10,6 @@
 #	include <intrin.h>
 #	include <tmmintrin.h>
 #	include <wmmintrin.h>
-
 #endif
 
 #if LANG_C

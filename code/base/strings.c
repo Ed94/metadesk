@@ -287,6 +287,18 @@ str8_is_integer(String8 string, U32 radix){
 	return(result);
 }
 
+U64
+u64_from_str8(String8 string, U32 radix) {
+	U64 x = 0;
+	if (1 < radix && radix <= 16) {
+		for (U64 i = 0; i < string.size; i += 1) {
+			x *= radix;
+			x += integer_symbol_reverse[string.str[i]&0x7F];
+		}
+	}
+	return(x);
+}
+
 B32
 try_u64_from_str8_c_rules(String8 string, U64 *x) 
 {

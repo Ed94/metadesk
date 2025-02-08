@@ -191,20 +191,27 @@ os_lnx_safe_call_sig_handler(int x) {
 //~ rjf: Entities
 
 MD_API OS_LNX_Entity* os_lnx_entity_alloc  (OS_LNX_EntityKind kind);
-MD_API void           os_lnx_entity_release(OS_LNX_Entity* entity);
+MD_API void           os_lnx_entity_release(OS_LNX_Entity*    entity);
 
 ////////////////////////////////
 //~ rjf: Thread Entry Point
 
-void* os_lnx_thread_entry_point(void* ptr);
+MD_API void* os_lnx_thread_entry_point(void* ptr);
 
 ////////////////////////////////
 //~ rjf: @os_hooks System/Process Info (Implemented Per-OS)
 
-String8
+inline String8
 os_get_current_path(Arena* arena) {
 	char*   cwdir  = getcwd(0, 0);
 	String8 string = push_str8_copy(arena, str8_cstring(cwdir));
+	return  string;
+}
+
+inline String8
+os_get_current_path(AllocatorInfo ainfo) {
+	char*   cwdir  = getcwd(0, 0);
+	String8 string = str8_copy(ainfo, str8_cstring(cwdir));
 	return  string;
 }
 
@@ -236,10 +243,3 @@ os_tid(void) {
 #endif
 	return result;
 }
-
-////////////////////////////////
-//~ rjf: @os_hooks Aborting (Implemented Per-OS)
-
-inline void os_abort(S32 exit_code) { exit(exit_code); }
-
-

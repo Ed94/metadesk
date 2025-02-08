@@ -154,14 +154,14 @@ os_w32_date_time_from_system_time(DateTime* out, SYSTEMTIME* in)
 inline void
 os_w32_system_time_from_date_time(SYSTEMTIME* out, DateTime* in)
 {
-  out->wYear         = (WORD)(in->year);
-  out->wMonth        = in->mon + 1;
-  out->wDay          = in->day;
+	out->wYear         = (WORD)(in->year);
+	out->wMonth        = in->mon + 1;
+	out->wDay          = in->day;
 
-  out->wHour         = in->hour;
-  out->wMinute       = in->min;
-  out->wSecond       = in->sec;
-  out->wMilliseconds = in->msec;
+	out->wHour         = in->hour;
+	out->wMinute       = in->min;
+	out->wSecond       = in->sec;
+	out->wMilliseconds = in->msec;
 }
 
 inline void
@@ -201,28 +201,43 @@ os_get_current_path(Arena* arena) {
 	return name;
 }
 
+inline String8
+os_get_current_path(AllocatorInfo ainfo) {
+	String8 name;
+	// TODO(Ed): Review
+	TempArena scratch = scratch_begin(0, 0);
+	{
+		DWORD   length  = GetCurrentDirectoryW(0, 0);
+		U16*    memory  = push_array_no_zero(scratch.arena, U16, length + 1);
+				length  = GetCurrentDirectoryW(length + 1, (WCHAR*)memory);
+		        name    = str8_from_16_alloc(ainfo, str16(memory, length));
+	}
+	scratch_end(scratch);
+	return name;
+}
+
 ////////////////////////////////
 //~ rjf: @os_hooks Memory Allocation (Implemented Per-OS)
 
 //- rjf: basic
 
-force_inline void* os_reserve (           U64 size) { void* result =  VirtualAlloc(  0, size, MEM_RESERVE, PAGE_READWRITE);       return result; }
-force_inline B32   os_commit  (void* ptr, U64 size) { B32   result = (VirtualAlloc(ptr, size, MEM_COMMIT,  PAGE_READWRITE) != 0); return result; }
-force_inline void  os_decommit(void* ptr, U64 size) {                 VirtualFree (ptr, size, MEM_DECOMMIT); }
+inline void* os_reserve (           U64 size) { void* result =  VirtualAlloc(  0, size, MEM_RESERVE, PAGE_READWRITE);       return result; }
+inline B32   os_commit  (void* ptr, U64 size) { B32   result = (VirtualAlloc(ptr, size, MEM_COMMIT,  PAGE_READWRITE) != 0); return result; }
+inline void  os_decommit(void* ptr, U64 size) {                 VirtualFree (ptr, size, MEM_DECOMMIT); }
 
 inline void
 os_release(void* ptr, U64 size) { 
-  // NOTE(rjf): size not used - not necessary on Windows, but necessary for other OSes.
-  VirtualFree(ptr, 0, MEM_RELEASE);
+	// NOTE(rjf): size not used - not necessary on Windows, but necessary for other OSes.
+	VirtualFree(ptr, 0, MEM_RELEASE);
 }
 
 //- rjf: large pages
 
 inline void*
 os_reserve_large(U64 size) { 
-  // we commit on reserve because windows
-  void* result = VirtualAlloc(0, size, MEM_RESERVE|MEM_COMMIT|MEM_LARGE_PAGES, PAGE_READWRITE);
-  return result;
+	// we commit on reserve because windows
+	void* result = VirtualAlloc(0, size, MEM_RESERVE|MEM_COMMIT|MEM_LARGE_PAGES, PAGE_READWRITE);
+	return result;
 }
 
 inline B32 os_commit_large(void *ptr, U64 size) { return 1; } 
@@ -231,14 +246,3 @@ inline B32 os_commit_large(void *ptr, U64 size) { return 1; }
 //~ rjf: @os_hooks Thread Info (Implemented Per-OS)
 
 inline U32 os_tid(void) { DWORD id = GetCurrentThreadId(); return (U32)id; }
-
-////////////////////////////////
-//~ rjf: @os_hooks Aborting (Implemented Per-OS)
-
-inline void os_abort(S32 exit_code) { ExitProcess(exit_code); }
-
-////////////////////////////////
-//~ rjf: @os_hooks File System (Implemented Per-OS)
-
-//- rjf: files
-

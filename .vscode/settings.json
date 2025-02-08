@@ -52,7 +52,20 @@
 		"os_win32.h": "c",
 		"windows.h": "c",
 		"base.h": "c",
-		"os_linux.h": "c"
+		"os_linux.h": "c",
+		"array": "c",
+		"vector": "c",
+		"dbghelp.h": "c",
+		"namespace.h": "c",
+		"space.h": "c",
+		"logger.h": "c",
+		"entry_point.h": "c",
+		"markup.h": "c",
+		"generic_macros.h": "c",
+		"profiling.h": "c",
+		"ring.h": "c",
+		"debug.h": "c",
+		"arena.h": "c"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

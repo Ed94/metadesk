@@ -28,7 +28,7 @@
 	{                                                                                                 \
 		if ( ! ( cond ) )                                                                             \
 		{                                                                                             \
-			assert_handler( #cond, __FILE__, __func__, scast( s64, __LINE__ ), msg, ##__VA_ARGS__ );  \
+			assert_handler( #cond, __FILE__, __func__, scast( S64, __LINE__ ), msg, ##__VA_ARGS__ );  \
 			GEN_DEBUG_TRAP();                                                                         \
 		}                                                                                             \
 	} while ( 0 )

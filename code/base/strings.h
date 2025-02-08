@@ -349,18 +349,6 @@ MD_API String8 str8_from_allocator_size(AllocatorInfo ainfo, U64 z);
 MD_API String8 str8_from_allocator_u64 (AllocatorInfo ainfo, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
 MD_API String8 str8_from_alloctor_s64  (AllocatorInfo ainfo, S64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
 
-inline U64
-u64_from_str8(String8 string, U32 radix) {
-	U64 x = 0;
-	if (1 < radix && radix <= 16) {
-		for (U64 i = 0; i < string.size; i += 1) {
-			x *= radix;
-			x += integer_symbol_reverse[string.str[i]&0x7F];
-		}
-	}
-	return(x);
-}
-
 inline S64
 s64_from_str8(String8 string, U32 radix) {
 	S64 sign = sign_from_str8(string, &string);

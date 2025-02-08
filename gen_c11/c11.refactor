@@ -992,6 +992,16 @@ word FileProperties,    MD_FileProperties
 
 namespace FilePropertyFlag_, MD_FilePropertyFlag_
 
+
+
+// os/os.h
+
+namespace OS_, MD_OS_
+namespace os_, md_os_
+
+namespace entry_point, md_entry_point
+
+
 // metadesk module
 
 // word MsgKind,            MD_MsgKind
@@ -1001,6 +1011,7 @@ namespace FilePropertyFlag_, MD_FilePropertyFlag_
 // word MsgKind_Error,      MD_MsgKind_Error
 // word MsgKind_FatalError, MD_MsgKind_FatalError
 namespace MsgKind, MD_MsgKind
+
 
 word Msg,     MD_Msg
 word MsgList, MD_MsgList

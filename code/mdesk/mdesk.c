@@ -8,89 +8,79 @@
 ////////////////////////////////
 //~ rjf: Message Type Functions
 
-internal void
-md_msg_list_push(Arena *arena, MsgList *msgs, Node *node, MsgKind kind, String8 string)
+void
+msg_list_push(Arena* arena, MsgList* msgs, Node* node, MsgKind kind, String8 string)
 {
-  Msg*
-  msg = push_array(arena, Msg, 1);
-  msg->node   = node;
-  msg->kind   = kind;
-  msg->string = string;
+	Msg*
+	msg = push_array(arena, Msg, 1);
+	msg->node   = node;
+	msg->kind   = kind;
+	msg->string = string;
 
-  SLLQueuePush(msgs->first, msgs->last, msg);
+	sll_queue_push(msgs->first, msgs->last, msg);
 
-  msgs->count += 1;
-  msgs->worst_message_kind = Max(kind, msgs->worst_message_kind);
+	msgs->count             += 1;
+	msgs->worst_message_kind = Max(kind, msgs->worst_message_kind);
 }
 
-internal void
-md_msg_list_pushf(Arena *arena, MsgList *msgs, Node *node, MsgKind kind, char *fmt, ...)
+void
+msg_list_concat_in_place(MsgList* dst, MsgList* to_push)
 {
-  va_list args;
-  va_start(args, fmt);
-  String8 string = push_str8fv(arena, fmt, args);
-  md_msg_list_push(arena, msgs, node, kind, string);
-  va_end(args);
-}
-
-internal void
-md_msg_list_concat_in_place(MsgList *dst, MsgList *to_push)
-{
-  if(to_push->first != 0)
-  {
-    if(dst->last)
-    {
-      dst->last->next = to_push->first;
-      dst->last = to_push->last;
-      dst->count += to_push->count;
-      dst->worst_message_kind = Max(dst->worst_message_kind, to_push->worst_message_kind);
-    }
-    else
-    {
-      MemoryCopyStruct(dst, to_push);
-    }
-  }
-  MemoryZeroStruct(to_push);
+	if (to_push->first != 0)
+	{
+		if (dst->last) {
+			dst->last->next         = to_push->first;
+			dst->last               = to_push->last;
+			dst->count             += to_push->count;
+			dst->worst_message_kind = md_max(dst->worst_message_kind, to_push->worst_message_kind);
+		}
+		else {
+			memory_copy_struct(dst, to_push);
+		}
+	}
+	memory_zero_struct(to_push);
 }
 
 ////////////////////////////////
 //~ rjf: Token Type Functions
 
-internal Token
-md_token_make(Rng1U64 range, TokenFlags flags)
+String8
+content_string_from_token_flags_str8(TokenFlags flags, String8 string)
 {
-  Token token = {range, flags};
-  return token;
+	U64 num_chop = 0;
+	U64 num_skip = 0;
+	{
+		num_skip += 3 * !!(flags & TokenFlag_StringTriplet);
+		num_chop += 3 * !!(flags & TokenFlag_StringTriplet);
+		num_skip += 1 * (!(flags & TokenFlag_StringTriplet) && flags & TokenFlag_StringLiteral);
+		num_chop += 1 * (!(flags & TokenFlag_StringTriplet) && flags & TokenFlag_StringLiteral);
+	}
+	String8 result = string;
+	result = str8_chop(result, num_chop);
+	result = str8_skip(result, num_skip);
+	return result;
 }
 
-internal B32
-md_token_match(Token a, Token b)
+String8List
+string_list_from_token_flags(Arena* arena, TokenFlags flags)
 {
-  return (a.range.min == b.range.min &&
-          a.range.max == b.range.max &&
-          a.flags == b.flags);
-}
-
-internal String8List
-md_string_list_from_token_flags(Arena *arena, TokenFlags flags)
-{
-  String8List strs = {0};
-  if(flags & TokenFlag_Identifier          ){str8_list_push(arena, &strs, str8_lit("Identifier"));}
-  if(flags & TokenFlag_Numeric             ){str8_list_push(arena, &strs, str8_lit("Numeric"));}
-  if(flags & TokenFlag_StringLiteral       ){str8_list_push(arena, &strs, str8_lit("StringLiteral"));}
-  if(flags & TokenFlag_Symbol              ){str8_list_push(arena, &strs, str8_lit("Symbol"));}
-  if(flags & TokenFlag_Reserved            ){str8_list_push(arena, &strs, str8_lit("Reserved"));}
-  if(flags & TokenFlag_Comment             ){str8_list_push(arena, &strs, str8_lit("Comment"));}
-  if(flags & TokenFlag_Whitespace          ){str8_list_push(arena, &strs, str8_lit("Whitespace"));}
-  if(flags & TokenFlag_Newline             ){str8_list_push(arena, &strs, str8_lit("Newline"));}
-  if(flags & TokenFlag_BrokenComment       ){str8_list_push(arena, &strs, str8_lit("BrokenComment"));}
-  if(flags & TokenFlag_BrokenStringLiteral ){str8_list_push(arena, &strs, str8_lit("BrokenStringLiteral"));}
-  if(flags & TokenFlag_BadCharacter        ){str8_list_push(arena, &strs, str8_lit("BadCharacter"));}
-  return strs;
+	String8List strs = {0};
+	if (flags & TokenFlag_Identifier          ){ str8_list_push(arena, &strs, str8_lit("Identifier"         )); }
+	if (flags & TokenFlag_Numeric             ){ str8_list_push(arena, &strs, str8_lit("Numeric"            )); }
+	if (flags & TokenFlag_StringLiteral       ){ str8_list_push(arena, &strs, str8_lit("StringLiteral"      )); }
+	if (flags & TokenFlag_Symbol              ){ str8_list_push(arena, &strs, str8_lit("Symbol"             )); }
+	if (flags & TokenFlag_Reserved            ){ str8_list_push(arena, &strs, str8_lit("Reserved"           )); }
+	if (flags & TokenFlag_Comment             ){ str8_list_push(arena, &strs, str8_lit("Comment"            )); }
+	if (flags & TokenFlag_Whitespace          ){ str8_list_push(arena, &strs, str8_lit("Whitespace"         )); }
+	if (flags & TokenFlag_Newline             ){ str8_list_push(arena, &strs, str8_lit("Newline"            )); }
+	if (flags & TokenFlag_BrokenComment       ){ str8_list_push(arena, &strs, str8_lit("BrokenComment"      )); }
+	if (flags & TokenFlag_BrokenStringLiteral ){ str8_list_push(arena, &strs, str8_lit("BrokenStringLiteral")); }
+	if (flags & TokenFlag_BadCharacter        ){ str8_list_push(arena, &strs, str8_lit("BadCharacter"       )); }
+	return strs;
 }
 
 internal void
-md_token_chunk_list_push(Arena *arena, TokenChunkList *list, U64 cap, Token token)
+token_chunk_list_push(Arena* arena, TokenChunkList* list, U64 cap, Token token)
 {
   TokenChunkNode *node = list->last;
   if(node == 0 || node->count >= node->cap)
@@ -98,44 +88,27 @@ md_token_chunk_list_push(Arena *arena, TokenChunkList *list, U64 cap, Token toke
     node = push_array(arena, TokenChunkNode, 1);
     node->cap = cap;
     node->v = push_array_no_zero(arena, Token, cap);
-    SLLQueuePush(list->first, list->last, node);
+    sll_queue_push(list->first, list->last, node);
     list->chunk_count += 1;
   }
-  MemoryCopyStruct(&node->v[node->count], &token);
+  memory_copy_struct(&node->v[node->count], &token);
   node->count += 1;
   list->total_token_count += 1;
 }
 
 internal TokenArray
-md_token_array_from_chunk_list(Arena *arena, TokenChunkList *chunks)
+token_array_from_chunk_list(Arena* arena, TokenChunkList* chunks)
 {
-  TokenArray result = {0};
-  result.count = chunks->total_token_count;
-  result.v = push_array_no_zero(arena, Token, result.count);
-  U64 write_idx = 0;
-  for(TokenChunkNode *n = chunks->first; n != 0; n = n->next)
-  {
-    MemoryCopy(result.v+write_idx, n->v, sizeof(Token)*n->count);
-    write_idx += n->count;
-  }
-  return result;
-}
-
-internal String8
-md_content_string_from_token_flags_str8(TokenFlags flags, String8 string)
-{
-  U64 num_chop = 0;
-  U64 num_skip = 0;
-  {
-    num_skip += 3*!!(flags & TokenFlag_StringTriplet);
-    num_chop += 3*!!(flags & TokenFlag_StringTriplet);
-    num_skip += 1*(!(flags & TokenFlag_StringTriplet) && flags & TokenFlag_StringLiteral);
-    num_chop += 1*(!(flags & TokenFlag_StringTriplet) && flags & TokenFlag_StringLiteral);
-  }
-  String8 result = string;
-  result = str8_chop(result, num_chop);
-  result = str8_skip(result, num_skip);
-  return result;
+	TokenArray result = {0};
+	result.count = chunks->total_token_count;
+	result.v     = push_array_no_zero(arena, Token, result.count);
+	U64 write_idx = 0;
+	for(TokenChunkNode *n = chunks->first; n != 0; n = n->next)
+	{
+		memory_copy(result.v + write_idx, n->v, size_of(Token) * n->count);
+		write_idx += n->count;
+	}
+	return result;
 }
 
 ////////////////////////////////
@@ -144,7 +117,7 @@ md_content_string_from_token_flags_str8(TokenFlags flags, String8 string)
 //- rjf: flag conversions
 
 internal NodeFlags
-md_node_flags_from_token_flags(TokenFlags flags)
+node_flags_from_token_flags(TokenFlags flags)
 {
   NodeFlags result = 0;
   result |=         NodeFlag_Identifier*!!(flags&TokenFlag_Identifier);
@@ -161,7 +134,7 @@ md_node_flags_from_token_flags(TokenFlags flags)
 //- rjf: nil
 
 internal B32
-md_node_is_nil(Node *node)
+node_is_nil(Node *node)
 {
   return (node == 0 || node == nil_node() || node->kind == NodeKind_Nil);
 }
@@ -173,14 +146,14 @@ node_rec_depth_first(Node *node, Node *subtree_root, U64 child_off, U64 sib_off)
 {
   NodeRec rec = {0};
   rec.next = nil_node();
-  if(!md_node_is_nil(*member_from_offset(Node **, node, child_off)))
+  if(!node_is_nil(*member_from_offset(Node **, node, child_off)))
   {
     rec.next = *member_from_offset(Node **, node, child_off);
     rec.push_count = 1;
   }
-  else for(Node *p = node; !md_node_is_nil(p) && p != subtree_root; p = p->parent, rec.pop_count += 1)
+  else for(Node *p = node; !node_is_nil(p) && p != subtree_root; p = p->parent, rec.pop_count += 1)
   {
-    if(!md_node_is_nil(*member_from_offset(Node **, p, sib_off)))
+    if(!node_is_nil(*member_from_offset(Node **, p, sib_off)))
     {
       rec.next = *member_from_offset(Node **, p, sib_off);
       break;
@@ -192,7 +165,7 @@ node_rec_depth_first(Node *node, Node *subtree_root, U64 child_off, U64 sib_off)
 //- rjf: tree building
 
 internal Node *
-md_push_node(Arena *arena, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset)
+push_node(Arena *arena, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset)
 {
   Node *node = push_array(arena, Node, 1);
   node->first = node->last = node->parent = node->next = node->prev = node->first_tag = node->last_tag = nil_node();
@@ -205,14 +178,14 @@ md_push_node(Arena *arena, NodeKind kind, NodeFlags flags, String8 string, Strin
 }
 
 internal void
-md_node_insert_child(Node *parent, Node *prev_child, Node *node)
+node_insert_child(Node *parent, Node *prev_child, Node *node)
 {
   node->parent = parent;
   dll_insert_npz(nil_node(), parent->first, parent->last, prev_child, node, next, prev);
 }
 
 internal void
-md_node_insert_tag(Node *parent, Node *prev_child, Node *node)
+node_insert_tag(Node *parent, Node *prev_child, Node *node)
 {
   node->kind = NodeKind_Tag;
   node->parent = parent;
@@ -220,14 +193,14 @@ md_node_insert_tag(Node *parent, Node *prev_child, Node *node)
 }
 
 internal void
-md_node_push_child(Node *parent, Node *node)
+node_push_child(Node *parent, Node *node)
 {
   node->parent = parent;
   dll_push_back_npz(nil_node(), parent->first, parent->last, node, next, prev);
 }
 
 internal void
-md_node_push_tag(Node *parent, Node *node)
+node_push_tag(Node *parent, Node *node)
 {
   node->kind = NodeKind_Tag;
   node->parent = parent;
@@ -235,10 +208,10 @@ md_node_push_tag(Node *parent, Node *node)
 }
 
 internal void
-md_unhook(Node *node)
+unhook(Node *node)
 {
   Node *parent = node->parent;
-  if(!md_node_is_nil(parent))
+  if(!node_is_nil(parent))
   {
     if(node->kind == NodeKind_Tag)
     {
@@ -255,10 +228,10 @@ md_unhook(Node *node)
 //- rjf: tree introspection
 
 internal Node *
-md_node_from_chain_string(Node *first, Node *opl, String8 string, StringMatchFlags flags)
+node_from_chain_string(Node *first, Node *opl, String8 string, StringMatchFlags flags)
 {
   Node *result = nil_node();
-  for(Node *n = first; !md_node_is_nil(n) && n != opl; n = n->next)
+  for(Node *n = first; !node_is_nil(n) && n != opl; n = n->next)
   {
     if(str8_match(n->string, string, flags))
     {
@@ -270,11 +243,11 @@ md_node_from_chain_string(Node *first, Node *opl, String8 string, StringMatchFla
 }
 
 internal Node *
-md_node_from_chain_index(Node *first, Node *opl, U64 index)
+node_from_chain_index(Node *first, Node *opl, U64 index)
 {
   Node *result = nil_node();
   S64 idx = 0;
-  for(Node *n = first; !md_node_is_nil(n) && n != opl; n = n->next, idx += 1)
+  for(Node *n = first; !node_is_nil(n) && n != opl; n = n->next, idx += 1)
   {
     if(index == idx)
     {
@@ -286,10 +259,10 @@ md_node_from_chain_index(Node *first, Node *opl, U64 index)
 }
 
 internal Node *
-md_node_from_chain_flags(Node *first, Node *opl, NodeFlags flags)
+node_from_chain_flags(Node *first, Node *opl, NodeFlags flags)
 {
   Node *result = nil_node();
-  for(Node *n = first; !md_node_is_nil(n) && n != opl; n = n->next)
+  for(Node *n = first; !node_is_nil(n) && n != opl; n = n->next)
   {
     if(n->flags & flags)
     {
@@ -301,10 +274,10 @@ md_node_from_chain_flags(Node *first, Node *opl, NodeFlags flags)
 }
 
 internal U64
-md_index_from_node(Node *node)
+index_from_node(Node *node)
 {
   U64 index = 0;
-  for(Node *n = node->prev; !md_node_is_nil(n); n = n->prev)
+  for(Node *n = node->prev; !node_is_nil(n); n = n->prev)
   {
     index += 1;
   }
@@ -312,10 +285,10 @@ md_index_from_node(Node *node)
 }
 
 internal Node *
-md_root_from_node(Node *node)
+root_from_node(Node *node)
 {
   Node *result = node;
-  for(Node *p = node->parent; (p->kind == NodeKind_Main || p->kind == NodeKind_Tag) && !md_node_is_nil(p); p = p->parent)
+  for(Node *p = node->parent; (p->kind == NodeKind_Main || p->kind == NodeKind_Tag) && !node_is_nil(p); p = p->parent)
   {
     result = p;
   }
@@ -323,61 +296,61 @@ md_root_from_node(Node *node)
 }
 
 internal Node *
-md_child_from_string(Node *node, String8 child_string, StringMatchFlags flags)
+child_from_string(Node *node, String8 child_string, StringMatchFlags flags)
 {
-  return md_node_from_chain_string(node->first, nil_node(), child_string, flags);
+  return node_from_chain_string(node->first, nil_node(), child_string, flags);
 }
 
 internal Node *
-md_tag_from_string(Node *node, String8 tag_string, StringMatchFlags flags)
+tag_from_string(Node *node, String8 tag_string, StringMatchFlags flags)
 {
-  return md_node_from_chain_string(node->first_tag, nil_node(), tag_string, flags);
+  return node_from_chain_string(node->first_tag, nil_node(), tag_string, flags);
 }
 
 internal Node *
-md_child_from_index(Node *node, U64 index)
+child_from_index(Node *node, U64 index)
 {
-  return md_node_from_chain_index(node->first, nil_node(), index);
+  return node_from_chain_index(node->first, nil_node(), index);
 }
 
 internal Node *
-md_tag_from_index(Node *node, U64 index)
+tag_from_index(Node *node, U64 index)
 {
-  return md_node_from_chain_index(node->first_tag, nil_node(), index);
+  return node_from_chain_index(node->first_tag, nil_node(), index);
 }
 
 internal Node *
-md_tag_arg_from_index(Node *node, String8 tag_string, StringMatchFlags flags, U64 index)
+tag_arg_from_index(Node *node, String8 tag_string, StringMatchFlags flags, U64 index)
 {
-  Node *tag = md_tag_from_string(node, tag_string, flags);
-  return md_child_from_index(tag, index);
+  Node *tag = tag_from_string(node, tag_string, flags);
+  return child_from_index(tag, index);
 }
 
 internal Node *
-md_tag_arg_from_string(Node *node, String8 tag_string, StringMatchFlags tag_str_flags, String8 arg_string, StringMatchFlags arg_str_flags)
+tag_arg_from_string(Node *node, String8 tag_string, StringMatchFlags tag_str_flags, String8 arg_string, StringMatchFlags arg_str_flags)
 {
-  Node *tag = md_tag_from_string(node, tag_string, tag_str_flags);
-  Node *arg = md_child_from_string(tag, arg_string, arg_str_flags);
+  Node *tag = tag_from_string(node, tag_string, tag_str_flags);
+  Node *arg = child_from_string(tag, arg_string, arg_str_flags);
   return arg;
 }
 
 internal B32
-md_node_has_child(Node *node, String8 string, StringMatchFlags flags)
+node_has_child(Node *node, String8 string, StringMatchFlags flags)
 {
-  return !md_node_is_nil(md_child_from_string(node, string, flags));
+  return !node_is_nil(child_from_string(node, string, flags));
 }
 
 internal B32
-md_node_has_tag(Node *node, String8 string, StringMatchFlags flags)
+node_has_tag(Node *node, String8 string, StringMatchFlags flags)
 {
-  return !md_node_is_nil(md_tag_from_string(node, string, flags));
+  return !node_is_nil(tag_from_string(node, string, flags));
 }
 
 internal U64
-md_child_count_from_node(Node *node)
+child_count_from_node(Node *node)
 {
   U64 result = 0;
-  for(Node *child = node->first; !md_node_is_nil(child); child = child->next)
+  for(Node *child = node->first; !node_is_nil(child); child = child->next)
   {
     result += 1;
   }
@@ -385,10 +358,10 @@ md_child_count_from_node(Node *node)
 }
 
 internal U64
-md_tag_count_from_node(Node *node)
+tag_count_from_node(Node *node)
 {
   U64 result = 0;
-  for(Node *child = node->first_tag; !md_node_is_nil(child); child = child->next)
+  for(Node *child = node->first_tag; !node_is_nil(child); child = child->next)
   {
     result += 1;
   }
@@ -396,7 +369,7 @@ md_tag_count_from_node(Node *node)
 }
 
 internal String8
-md_string_from_children(Arena *arena, Node *root)
+string_from_children(Arena *arena, Node *root)
 {
   TempArena scratch = scratch_begin(&arena, 1);
   String8List strs = {0};
@@ -416,7 +389,7 @@ md_string_from_children(Arena *arena, Node *root)
 //- rjf: tree comparison
 
 internal B32
-md_node_match(Node *a, Node *b, StringMatchFlags flags)
+node_match(Node *a, Node *b, StringMatchFlags flags)
 {
   B32 result = 0;
   if(a->kind == b->kind && str8_match(a->string, b->string, flags))
@@ -429,16 +402,16 @@ md_node_match(Node *a, Node *b, StringMatchFlags flags)
     if(result && a->kind != NodeKind_Tag)
     {
       for(Node *a_tag = a->first_tag, *b_tag = b->first_tag;
-          !md_node_is_nil(a_tag) || !md_node_is_nil(b_tag);
+          !node_is_nil(a_tag) || !node_is_nil(b_tag);
           a_tag = a_tag->next, b_tag = b_tag->next)
       {
-        if(md_node_match(a_tag, b_tag, flags))
+        if(node_match(a_tag, b_tag, flags))
         {
           for(Node *a_tag_arg = a_tag->first, *b_tag_arg = b_tag->first;
-              !md_node_is_nil(a_tag_arg) || !md_node_is_nil(b_tag_arg);
+              !node_is_nil(a_tag_arg) || !node_is_nil(b_tag_arg);
               a_tag_arg = a_tag_arg->next, b_tag_arg = b_tag_arg->next)
           {
-            if(!md_tree_match(a_tag_arg, b_tag_arg, flags))
+            if(!tree_match(a_tag_arg, b_tag_arg, flags))
             {
               result = 0;
               goto end;
@@ -458,16 +431,16 @@ md_node_match(Node *a, Node *b, StringMatchFlags flags)
 }
 
 internal B32
-md_tree_match(Node *a, Node *b, StringMatchFlags flags)
+tree_match(Node *a, Node *b, StringMatchFlags flags)
 {
-  B32 result = md_node_match(a, b, flags);
+  B32 result = node_match(a, b, flags);
   if(result)
   {
     for(Node *a_child = a->first, *b_child = b->first;
-        !md_node_is_nil(a_child) || !md_node_is_nil(b_child);
+        !node_is_nil(a_child) || !node_is_nil(b_child);
         a_child = a_child->next, b_child = b_child->next)
     {
-      if(!md_tree_match(a_child, b_child, flags))
+      if(!tree_match(a_child, b_child, flags))
       {
         result = 0;
         goto end;
@@ -481,13 +454,13 @@ md_tree_match(Node *a, Node *b, StringMatchFlags flags)
 //- rjf: tree duplication
 
 internal Node *
-md_tree_copy(Arena *arena, Node *src_root)
+tree_copy(Arena *arena, Node *src_root)
 {
   Node *dst_root = nil_node();
   Node *dst_parent = dst_root;
   {
     NodeRec rec = {0};
-    for(Node *src = src_root; !md_node_is_nil(src); src = rec.next)
+    for(Node *src = src_root; !node_is_nil(src); src = rec.next)
     {
       Node *dst = push_array(arena, Node, 1);
       dst->first = dst->last = dst->parent = dst->next = dst->prev = nil_node();
@@ -524,7 +497,7 @@ md_tree_copy(Arena *arena, Node *src_root)
 //~ rjf: Text -> Tokens Functions
 
 internal TokenizeResult
-md_tokenize_from_text(Arena *arena, String8 text)
+tokenize_from_text(Arena *arena, String8 text)
 {
   TempArena scratch = scratch_begin(&arena, 1);
   TokenChunkList tokens = {0};
@@ -788,30 +761,30 @@ md_tokenize_from_text(Arena *arena, String8 text)
     if(token_flags != 0 && token_start != 0 && token_opl > token_start)
     {
       Token token = {{(U64)(token_start - byte_first), (U64)(token_opl - byte_first)}, token_flags};
-      md_token_chunk_list_push(scratch.arena, &tokens, 4096, token);
+      token_chunk_list_push(scratch.arena, &tokens, 4096, token);
     }
     
     //- rjf: push errors on unterminated comments
     if(token_flags & TokenFlag_BrokenComment)
     {
-      Node *error = md_push_node(arena, NodeKind_ErrorMarker, 0, str8_lit(""), str8_lit(""), token_start - byte_first);
+      Node *error = push_node(arena, NodeKind_ErrorMarker, 0, str8_lit(""), str8_lit(""), token_start - byte_first);
       String8 error_string = str8_lit("Unterminated comment.");
-      md_msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
+      msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
     }
     
     //- rjf: push errors on unterminated strings
     if(token_flags & TokenFlag_BrokenStringLiteral)
     {
-      Node *error = md_push_node(arena, NodeKind_ErrorMarker, 0, str8_lit(""), str8_lit(""), token_start - byte_first);
+      Node *error = push_node(arena, NodeKind_ErrorMarker, 0, str8_lit(""), str8_lit(""), token_start - byte_first);
       String8 error_string = str8_lit("Unterminated string literal.");
-      md_msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
+      msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
     }
   }
   
   //- rjf: bake, fill & return
   TokenizeResult result = {0};
   {
-    result.tokens = md_token_array_from_chunk_list(arena, &tokens);
+    result.tokens = token_array_from_chunk_list(arena, &tokens);
     result.msgs = msgs;
   }
   scratch_end(scratch);
@@ -822,13 +795,13 @@ md_tokenize_from_text(Arena *arena, String8 text)
 //~ rjf: Tokens -> Tree Functions
 
 internal ParseResult
-md_parse_from_text_tokens(Arena *arena, String8 filename, String8 text, TokenArray tokens)
+parse_from_text_tokens(Arena *arena, String8 filename, String8 text, TokenArray tokens)
 {
   TempArena scratch = scratch_begin(&arena, 1);
   
   //- rjf: set up outputs
   MsgList msgs = {0};
-  Node *root = md_push_node(arena, NodeKind_File, 0, filename, text, 0);
+  Node *root = push_node(arena, NodeKind_File, 0, filename, text, 0);
   
   //- rjf: set up parse rule stack
   typedef enum MD_ParseWorkKind
@@ -922,7 +895,7 @@ if(work_top == 0) {work_top = &broken_work;}\
         str8_match(token_string, str8_lit(";"), 0)))
     {
       Node *parent = work_top->parent;
-      if(!md_node_is_nil(parent->last))
+      if(!node_is_nil(parent->last))
       {
         parent->last->flags |=     NodeFlag_IsBeforeComma*!!str8_match(token_string, str8_lit(","), 0);
         parent->last->flags |= NodeFlag_IsBeforeSemicolon*!!str8_match(token_string, str8_lit(";"), 0);
@@ -949,9 +922,9 @@ if(work_top == 0) {work_top = &broken_work;}\
         str8_match(token_string, str8_lit("\\"), 0) ||
         str8_match(token_string, str8_lit(":"), 0)))
     {
-      Node *error = md_push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
+      Node *error = push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
       String8 error_string = push_str8f(arena, "Unexpected reserved symbol \"%S\".", token_string);
-      md_msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
+      msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
       token += 1;
       goto end_consume;
     }
@@ -963,17 +936,17 @@ if(work_top == 0) {work_top = &broken_work;}\
       if(token+1 >= tokens_opl ||
          !(token[1].flags & TokenGroup_Label))
       {
-        Node *error = md_push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
+        Node *error = push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
         String8 error_string = str8_lit("Tag label expected after @ symbol.");
-        md_msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
+        msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
         token += 1;
         goto end_consume;
       }
       else
       {
         String8 tag_name_raw = str8_substr(text, token[1].range);
-        String8 tag_name = md_content_string_from_token_flags_str8(token[1].flags, tag_name_raw);
-        Node *node = md_push_node(arena, NodeKind_Tag, md_node_flags_from_token_flags(token[1].flags), tag_name, tag_name_raw, token[0].range.min);
+        String8 tag_name = content_string_from_token_flags_str8(token[1].flags, tag_name_raw);
+        Node *node = push_node(arena, NodeKind_Tag, node_flags_from_token_flags(token[1].flags), tag_name, tag_name_raw, token[0].range.min);
         dll_push_back_npz(nil_node(), work_top->first_gathered_tag, work_top->last_gathered_tag, node, next, prev);
         if(token+2 < tokens_opl && token[2].flags & TokenFlag_Reserved && str8_match(str8_substr(text, token[2].range), str8_lit("("), 0))
         {
@@ -993,18 +966,18 @@ if(work_top == 0) {work_top = &broken_work;}\
        token->flags & TokenGroup_Label)
     {
       String8 node_string_raw = token_string;
-      String8 node_string = md_content_string_from_token_flags_str8(token->flags, node_string_raw);
-      NodeFlags flags = md_node_flags_from_token_flags(token->flags)|work_top->gathered_node_flags;
+      String8 node_string = content_string_from_token_flags_str8(token->flags, node_string_raw);
+      NodeFlags flags = node_flags_from_token_flags(token->flags)|work_top->gathered_node_flags;
       work_top->gathered_node_flags = 0;
-      Node *node = md_push_node(arena, NodeKind_Main, flags, node_string, node_string_raw, token[0].range.min);
+      Node *node = push_node(arena, NodeKind_Main, flags, node_string, node_string_raw, token[0].range.min);
       node->first_tag = work_top->first_gathered_tag;
       node->last_tag = work_top->last_gathered_tag;
-      for(Node *tag = work_top->first_gathered_tag; !md_node_is_nil(tag); tag = tag->next)
+      for(Node *tag = work_top->first_gathered_tag; !node_is_nil(tag); tag = tag->next)
       {
         tag->parent = node;
       }
       work_top->first_gathered_tag = work_top->last_gathered_tag = nil_node();
-      md_node_push_child(work_top->parent, node);
+      node_push_child(work_top->parent, node);
       MD_ParseWorkPush(MD_ParseWorkKind_NodeOptionalFollowUp, node);
       token += 1;
       goto end_consume;
@@ -1016,20 +989,20 @@ if(work_top == 0) {work_top = &broken_work;}\
         str8_match(token_string, str8_lit("["), 0) ||
         str8_match(token_string, str8_lit("("), 0)))
     {
-      NodeFlags flags = md_node_flags_from_token_flags(token->flags)|work_top->gathered_node_flags;
+      NodeFlags flags = node_flags_from_token_flags(token->flags)|work_top->gathered_node_flags;
       flags |=   NodeFlag_HasBraceLeft*!!str8_match(token_string, str8_lit("{"), 0);
       flags |= NodeFlag_HasBracketLeft*!!str8_match(token_string, str8_lit("["), 0);
       flags |=   NodeFlag_HasParenLeft*!!str8_match(token_string, str8_lit("("), 0);
       work_top->gathered_node_flags = 0;
-      Node *node = md_push_node(arena, NodeKind_Main, flags, str8_lit(""), str8_lit(""), token[0].range.min);
+      Node *node = push_node(arena, NodeKind_Main, flags, str8_lit(""), str8_lit(""), token[0].range.min);
       node->first_tag = work_top->first_gathered_tag;
       node->last_tag = work_top->last_gathered_tag;
-      for(Node *tag = work_top->first_gathered_tag; !md_node_is_nil(tag); tag = tag->next)
+      for(Node *tag = work_top->first_gathered_tag; !node_is_nil(tag); tag = tag->next)
       {
         tag->parent = node;
       }
       work_top->first_gathered_tag = work_top->last_gathered_tag = nil_node();
-      md_node_push_child(work_top->parent, node);
+      node_push_child(work_top->parent, node);
       MD_ParseWorkPush(MD_ParseWorkKind_Main, node);
       token += 1;
       goto end_consume;
@@ -1081,9 +1054,9 @@ if(work_top == 0) {work_top = &broken_work;}\
       if(work_top->counted_newlines >= 2)
       {
         Node *node = work_top->parent;
-        Node *error = md_push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
+        Node *error = push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
         String8 error_string = push_str8f(arena, "More than two newlines following \"%S\", which has implicitly-delimited children, resulting in an empty list of children.", node->string);
-        md_msg_list_push(arena, &msgs, error, MsgKind_Warning, error_string);
+        msg_list_push(arena, &msgs, error, MsgKind_Warning, error_string);
         MD_ParseWorkPop();
       }
       else
@@ -1122,9 +1095,9 @@ if(work_top == 0) {work_top = &broken_work;}\
     
     //- rjf: no consumption -> unexpected token! we don't know what to do with this.
     {
-      Node *error = md_push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
+      Node *error = push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
       String8 error_string = push_str8f(arena, "Unexpected \"%S\" token.", token_string);
-      md_msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
+      msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
       token += 1;
     }
     
@@ -1143,11 +1116,11 @@ if(work_top == 0) {work_top = &broken_work;}\
 //~ rjf: Bundled Text -> Tree Functions
 
 internal ParseResult
-md_parse_from_text(Arena *arena, String8 filename, String8 text)
+parse_from_text(Arena *arena, String8 filename, String8 text)
 {
   TempArena scratch = scratch_begin(&arena, 1);
-  TokenizeResult tokenize = md_tokenize_from_text(scratch.arena, text);
-  ParseResult parse = md_parse_from_text_tokens(arena, filename, text, tokenize.tokens); 
+  TokenizeResult tokenize = tokenize_from_text(scratch.arena, text);
+  ParseResult parse = parse_from_text_tokens(arena, filename, text, tokenize.tokens); 
   scratch_end(scratch);
   return parse;
 }
@@ -1156,13 +1129,13 @@ md_parse_from_text(Arena *arena, String8 filename, String8 text)
 //~ rjf: Tree -> Text Functions
 
 internal String8List
-md_debug_string_list_from_tree(Arena *arena, Node *root)
+debug_string_list_from_tree(Arena *arena, Node *root)
 {
   String8List strings = {0};
   {
     char *indentation = "                                                                                                                                ";
     S32 depth = 0;
-    for(Node *node = root, *next = nil_node(); !md_node_is_nil(node); node = next)
+    for(Node *node = root, *next = nil_node(); !node_is_nil(node); node = next)
     {
       // rjf: get next recursion
       NodeRec rec = node_rec_depth_first_pre(node, root);

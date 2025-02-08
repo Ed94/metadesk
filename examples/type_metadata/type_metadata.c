@@ -144,7 +144,7 @@ gen_map_case_from_enumerant(GEN_MapInfo *map, GEN_TypeEnumerant *enumerant)
 }
 
 Node*
-gen_get_symbol_md_node_by_name(MD_String8 name)
+gen_get_symbol_node_by_name(MD_String8 name)
 {
     Node *result = MD_NilNode();
     MD_MapSlot *type_slot = MD_MapLookup(&type_map, MD_MapKeyStr(name));
@@ -186,7 +186,7 @@ gen_duplicate_symbol_error(Node *new_node, Node *existing_node)
 void
 gen_check_and_do_duplicate_symbol_error(Node *new_node)
 {
-    Node *existing = gen_get_symbol_md_node_by_name(new_node->string);
+    Node *existing = gen_get_symbol_node_by_name(new_node->string);
     if (!MD_NodeIsNil(existing))
     {
         gen_duplicate_symbol_error(new_node, existing);

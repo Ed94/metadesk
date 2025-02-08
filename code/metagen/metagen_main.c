@@ -92,8 +92,8 @@ entry_point(CmdLine *cmdline)
       if(str8_match(file_ext, str8_lit("mdesk"), 0))
       {
         String8 data = os_data_from_file_path(mg_arena, file_path);
-        TokenizeResult tokenize = md_tokenize_from_text(mg_arena, data);
-        ParseResult parse = md_parse_from_text_tokens(mg_arena, file_path, data, tokenize.tokens);
+        TokenizeResult tokenize = tokenize_from_text(mg_arena, data);
+        ParseResult parse = parse_from_text_tokens(mg_arena, file_path, data, tokenize.tokens);
         for(Msg *m = parse.msgs.first; m != 0; m = m->next)
         {
           TxtPt pt = mg_txt_pt_from_string_off(data, m->node->src_offset);
@@ -131,8 +131,8 @@ entry_point(CmdLine *cmdline)
       Node *file = n->v.root;
       for MD_EachNode(node, file->first)
       {
-        Node *table_tag = md_tag_from_string(node, str8_lit("table"), 0);
-        if(!md_node_is_nil(table_tag))
+        Node *table_tag = tag_from_string(node, str8_lit("table"), 0);
+        if(!node_is_nil(table_tag))
         {
           MG_NodeGrid *table = push_array(mg_arena, MG_NodeGrid, 1);
           MG_ColumnDescArray *col_descs = push_array(mg_arena, MG_ColumnDescArray, 1);
@@ -156,26 +156,26 @@ entry_point(CmdLine *cmdline)
     MG_Layer *layer = mg_layer_from_key(layer_key);
     for MD_EachNode(node, file->first)
     {
-      if(md_node_has_tag(node, str8_lit("option"), 0))
+      if(node_has_tag(node, str8_lit("option"), 0))
       {
         if(str8_match(node->string, str8_lit("library"), 0))
         {
           layer->is_library = 1;
         }
       }
-      if(md_node_has_tag(node, str8_lit("gen_folder"), 0))
+      if(node_has_tag(node, str8_lit("gen_folder"), 0))
       {
         layer->gen_folder_name = node->string;
       }
-      if(md_node_has_tag(node, str8_lit("h_name"), 0))
+      if(node_has_tag(node, str8_lit("h_name"), 0))
       {
         layer->h_name_override = node->string;
       }
-      if(md_node_has_tag(node, str8_lit("c_name"), 0))
+      if(node_has_tag(node, str8_lit("c_name"), 0))
       {
         layer->c_name_override = node->string;
       }
-      if(md_node_has_tag(node, str8_lit("h_header"), 0))
+      if(node_has_tag(node, str8_lit("h_header"), 0))
       {
         String8List gen_strings = mg_string_list_from_table_gen(mg_arena, table_grid_map, table_col_map, str8_lit(""), node);
         for(String8Node *n = gen_strings.first; n != 0; n = n->next)
@@ -184,7 +184,7 @@ entry_point(CmdLine *cmdline)
           str8_list_push(mg_arena, &layer->h_header, str8_lit("\n"));
         }
       }
-      if(md_node_has_tag(node, str8_lit("h_footer"), 0))
+      if(node_has_tag(node, str8_lit("h_footer"), 0))
       {
         String8List gen_strings = mg_string_list_from_table_gen(mg_arena, table_grid_map, table_col_map, str8_lit(""), node);
         for(String8Node *n = gen_strings.first; n != 0; n = n->next)
@@ -193,7 +193,7 @@ entry_point(CmdLine *cmdline)
           str8_list_push(mg_arena, &layer->h_footer, str8_lit("\n"));
         }
       }
-      if(md_node_has_tag(node, str8_lit("c_header"), 0))
+      if(node_has_tag(node, str8_lit("c_header"), 0))
       {
         String8List gen_strings = mg_string_list_from_table_gen(mg_arena, table_grid_map, table_col_map, str8_lit(""), node);
         for(String8Node *n = gen_strings.first; n != 0; n = n->next)
@@ -202,7 +202,7 @@ entry_point(CmdLine *cmdline)
           str8_list_push(mg_arena, &layer->c_header, str8_lit("\n"));
         }
       }
-      if(md_node_has_tag(node, str8_lit("c_footer"), 0))
+      if(node_has_tag(node, str8_lit("c_footer"), 0))
       {
         String8List gen_strings = mg_string_list_from_table_gen(mg_arena, table_grid_map, table_col_map, str8_lit(""), node);
         for(String8Node *n = gen_strings.first; n != 0; n = n->next)
@@ -222,8 +222,8 @@ entry_point(CmdLine *cmdline)
     Node *file = n->v.root;
     for MD_EachNode(node, file->first)
     {
-      Node *tag = md_tag_from_string(node, str8_lit("enum"), 0);
-      if(!md_node_is_nil(tag))
+      Node *tag = tag_from_string(node, str8_lit("enum"), 0);
+      if(!node_is_nil(tag))
       {
         String8 enum_name = node->string;
         String8 enum_member_prefix = enum_name;
@@ -269,8 +269,8 @@ entry_point(CmdLine *cmdline)
     Node *file = n->v.root;
     for MD_EachNode(node, file->first)
     {
-      Node *tag = md_tag_from_string(node, str8_lit("xlist"), 0);
-      if(!md_node_is_nil(tag))
+      Node *tag = tag_from_string(node, str8_lit("xlist"), 0);
+      if(!node_is_nil(tag))
       {
         String8 layer_key = mg_layer_key_from_path(file->string);
         MG_Layer *layer = mg_layer_from_key(layer_key);
@@ -294,7 +294,7 @@ entry_point(CmdLine *cmdline)
     Node *file = n->v.root;
     for MD_EachNode(node, file->first)
     {
-      if(md_node_has_tag(node, str8_lit("struct"), 0))
+      if(node_has_tag(node, str8_lit("struct"), 0))
       {
         String8 layer_key = mg_layer_key_from_path(file->string);
         MG_Layer *layer = mg_layer_from_key(layer_key);
@@ -319,14 +319,14 @@ entry_point(CmdLine *cmdline)
     Node *file = n->v.root;
     for MD_EachNode(node, file->first)
     {
-      Node *tag = md_tag_from_string(node, str8_lit("data"), 0);
-      if(!md_node_is_nil(tag))
+      Node *tag = tag_from_string(node, str8_lit("data"), 0);
+      if(!node_is_nil(tag))
       {
         String8 element_type = tag->first->string;
         String8 layer_key = mg_layer_key_from_path(file->string);
         MG_Layer *layer = mg_layer_from_key(layer_key);
         String8List gen_strings = mg_string_list_from_table_gen(mg_arena, table_grid_map, table_col_map, str8_lit(""), node);
-        if(!md_node_has_tag(node, str8_lit("c_file"), 0))
+        if(!node_has_tag(node, str8_lit("c_file"), 0))
         {
           str8_list_pushf(mg_arena, &layer->h_tables, "extern %S %S[%I64u];\n", element_type, node->string, gen_strings.node_count);
         }
@@ -349,8 +349,8 @@ entry_point(CmdLine *cmdline)
     Node *file = n->v.root;
     for MD_EachNode(node, file->first)
     {
-      Node *tag = md_tag_from_string(node, str8_lit("enum2string_switch"), 0);
-      if(!md_node_is_nil(tag))
+      Node *tag = tag_from_string(node, str8_lit("enum2string_switch"), 0);
+      if(!node_is_nil(tag))
       {
         String8 enum_type = tag->first->string;
         String8 layer_key = mg_layer_key_from_path(file->string);
@@ -382,12 +382,12 @@ entry_point(CmdLine *cmdline)
     Node *file = n->v.root;
     for MD_EachNode(node, file->first)
     {
-      Node *tag = md_tag_from_string(node, str8_lit("gen"), 0);
-      if(!md_node_is_nil(tag))
+      Node *tag = tag_from_string(node, str8_lit("gen"), 0);
+      if(!node_is_nil(tag))
       {
         String8 layer_key = mg_layer_key_from_path(file->string);
         MG_Layer *layer = mg_layer_from_key(layer_key);
-        B32 prefer_c_file = md_node_has_tag(node, str8_lit("c_file"), 0);
+        B32 prefer_c_file = node_has_tag(node, str8_lit("c_file"), 0);
         String8List *out = prefer_c_file ? &layer->c_catchall : &layer->h_catchall;
         if(tag->first->string.size == 0){}
         else if(str8_match(tag->first->string, str8_lit("enums"), 0))     { out = &layer->enums; }
@@ -414,7 +414,7 @@ entry_point(CmdLine *cmdline)
     Node *file = n->v.root;
     for MD_EachNode(node, file->first)
     {
-      if(md_node_has_tag(node, str8_lit("embed_string"), 0))
+      if(node_has_tag(node, str8_lit("embed_string"), 0))
       {
         String8 layer_key = mg_layer_key_from_path(file->string);
         MG_Layer *layer = mg_layer_from_key(layer_key);
@@ -423,7 +423,7 @@ entry_point(CmdLine *cmdline)
         str8_list_push (mg_arena, &layer->h_tables, embed_string);
         str8_list_pushf(mg_arena, &layer->h_tables, ");\n\n");
       }
-      if(md_node_has_tag(node, str8_lit("embed_file"), 0))
+      if(node_has_tag(node, str8_lit("embed_file"), 0))
       {
         String8 layer_key = mg_layer_key_from_path(file->string);
         MG_Layer *layer = mg_layer_from_key(layer_key);
@@ -449,20 +449,20 @@ entry_point(CmdLine *cmdline)
     for MD_EachNode(node, file->first)
     {
       //- rjf: generate markdown page
-      if(md_node_has_tag(node, str8_lit("markdown"), 0))
+      if(node_has_tag(node, str8_lit("markdown"), 0))
       {
         String8List md_strs = {0};
-        for(Node *piece = node->first; !md_node_is_nil(piece); piece = piece->next)
+        for(Node *piece = node->first; !node_is_nil(piece); piece = piece->next)
         {
-          if(md_node_has_tag(piece, str8_lit("title"), 0))
+          if(node_has_tag(piece, str8_lit("title"), 0))
           {
             str8_list_pushf(mg_arena, &md_strs, "# %S\n\n", piece->string);
           }
-          if(md_node_has_tag(piece, str8_lit("subtitle"), 0))
+          if(node_has_tag(piece, str8_lit("subtitle"), 0))
           {
             str8_list_pushf(mg_arena, &md_strs, "## %S\n\n", piece->string);
           }
-          if(md_node_has_tag(piece, str8_lit("p"), 0))
+          if(node_has_tag(piece, str8_lit("p"), 0))
           {
             String8 paragraph_text = piece->string;
             String8List paragraph_lines = mg_wrapped_lines_from_string(mg_arena, paragraph_text, 80, 80, 0);
@@ -473,7 +473,7 @@ entry_point(CmdLine *cmdline)
             }
             str8_list_push(mg_arena, &md_strs, str8_lit("\n"));
           }
-          if(md_node_has_tag(piece, str8_lit("unordered_list"), 0))
+          if(node_has_tag(piece, str8_lit("unordered_list"), 0))
           {
             String8List gen_strings = mg_string_list_from_table_gen(mg_arena, table_grid_map, table_col_map, str8_lit(""), piece);
             for(String8Node *n = gen_strings.first; n != 0; n = n->next)

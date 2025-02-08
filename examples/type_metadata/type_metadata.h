@@ -109,7 +109,7 @@ GEN_TypeEnumerant* gen_enumerant_from_name(GEN_TypeInfo *enum_type, MD_String8 n
 
 GEN_MapCase* gen_map_case_from_enumerant(GEN_MapInfo *map, GEN_TypeEnumerant *enumerant);
 
-Node* gen_get_symbol_md_node_by_name(MD_String8 name);
+Node* gen_get_symbol_node_by_name(MD_String8 name);
 
 void gen_type_resolve_error(Node *reference);
 void gen_duplicate_symbol_error(Node *new_node, Node *existing_node);

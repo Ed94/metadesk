@@ -1,7 +1,6 @@
 #ifdef INTELLISENSE_DIRECTIVES
-#pragma once
-#include "base/macros.h"
-#include "base/base_types.h"
+#	pragma once
+#	include "base/base.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools
@@ -45,7 +44,7 @@ struct OS_LNX_FileIter
   struct dirent* dp;
   String8        path;
 };
-StaticAssert(sizeof(Member(OS_FileIter, memory)) >= sizeof(OS_LNX_FileIter), os_lnx_file_iter_size_check);
+md_assert(sizeof(Member(OS_FileIter, memory)) >= sizeof(OS_LNX_FileIter), os_lnx_file_iter_size_check);
 
 ////////////////////////////////
 //~ rjf: Safe Call Handler Chain

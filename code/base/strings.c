@@ -21,12 +21,12 @@
 ////////////////////////////////
 //~ NOTE(allen): String <-> Integer Tables
 
-read_only global U8 integer_symbols[16] = {
+MD_API_C read_only global U8 integer_symbols[16] = {
 	'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F',
 };
 
 // NOTE(allen): Includes reverses for uppercase and lowercase hex.
-read_only global U8 integer_symbol_reverse[128] = {
+MD_API_C read_only global U8 integer_symbol_reverse[128] = {
 	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
@@ -37,7 +37,7 @@ read_only global U8 integer_symbol_reverse[128] = {
 	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 };
 
-read_only global U8 base64[64] = {
+MD_API_C read_only global U8 base64[64] = {
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
 	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
@@ -46,7 +46,7 @@ read_only global U8 base64[64] = {
 	'_', '$',
 };
 
-read_only global U8 base64_reverse[128] = {
+MD_API_C read_only global U8 base64_reverse[128] = {
 	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 	0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 	0xFF,0xFF,0xFF,0xFF,0x3F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
@@ -574,6 +574,7 @@ str8_from_alloctor_s64(AllocatorInfo ainfo, S64 s64, U32 radix, U8 min_digits, U
 {
 	String8 result = {0};
 	if(s64 < 0) {
+		// TODO(Ed): Review, we should just keep using thread scratch arenas (and provide them to teh context)
 		U8      bytes[KB(8)];
 		FArena  scratch = farena_from_memory(bytes, size_of(bytes));
 		String8 numeric_part = str8_from_allocator_u64(farena_allocator(scratch), (U64)(-s64), radix, min_digits, digit_group_separator);
@@ -969,6 +970,7 @@ path_style_from_str8(String8 string) {
 void
 str8_path_list_resolve_dots_in_place(String8List* path, PathStyle style)
 {
+	// TODO(Ed): Review
 	TempArena scratch = scratch_begin(0, 0);
 	String8MetaNode* stack          = 0;
 	String8MetaNode* free_meta_node = 0;
@@ -1605,6 +1607,7 @@ indented_from_string(Arena* arena, String8 string)
 String8
 indented_from_string_alloc(AllocatorInfo ainfo, String8 string)
 {
+	// TODO(Ed): Review, we should just keep using thread scratch arenas (and provide them to teh context)
 	Arena*    arena   = arena_alloc(.backing = ainfo, .block_size = MB(1));
 	TempArena scratch = scratch_begin(&arena, 1);
 
@@ -1697,6 +1700,7 @@ escaped_from_raw_str8(Arena* arena, String8 string)
 String8
 escaped_from_raw_str8_alloc(AllocatorInfo ainfo, String8 string)
 {
+	// TODO(Ed): Review, we should just keep using thread scratch arenas (and provide them to teh context)
 	Arena*    arena   = arena_alloc(.backing = ainfo, .block_size = MB(1));
 	TempArena scratch = scratch_begin(&arena, 1);
 
@@ -1796,6 +1800,7 @@ raw_from_escaped_str8(Arena* arena, String8 string)
 String8
 raw_from_escaped_str8_alloc(AllocatorInfo ainfo, String8 string)
 {
+	// TODO(Ed): Review, we should just keep using thread scratch arenas (and provide them to teh context)
 	Arena*    arena   = arena_alloc(.backing = ainfo, .block_size = MB(1));
 	TempArena scratch = scratch_begin(&arena, 1);
 
@@ -2054,6 +2059,7 @@ fuzzy_match_find(Arena *arena, String8 needle, String8 haystack)
 FuzzyMatchRangeList
 fuzzy_match_find_alloc(AllocatorInfo ainfo, String8 needle, String8 haystack)
 {
+	// TODO(Ed): Review, we should just keep using thread scratch arenas (and provide them to teh context)
 	Arena*    arena   = arena_alloc(.backing = ainfo, .block_size = MB(1));
 	TempArena scratch = temp_begin(&arena, 1);
 

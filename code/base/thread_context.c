@@ -9,10 +9,10 @@
 ////////////////////////////////
 // NOTE(allen): Thread Context Functions
 
-thread_static TCTX* tctx_thread_local;
+MD_API_C thread_static TCTX* tctx_thread_local;
 
 #if ! MD_BUILD_SUPPLEMENTARY_UNIT
-thread_static TCTX* tctx_thread_local = 0;
+MD_API_C thread_static TCTX* tctx_thread_local = 0;
 #endif
 
 void

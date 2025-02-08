@@ -47,7 +47,11 @@
 		"thread": "c",
 		"cmath": "c",
 		"string.h": "c",
-		"time.h": "c"
+		"time.h": "c",
+		"sstream": "c",
+		"os_win32.h": "c",
+		"windows.h": "c",
+		"base.h": "c"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

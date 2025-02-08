@@ -1017,9 +1017,9 @@ word Msg,     MD_Msg
 word MsgList, MD_MsgList
 
 word      TokenFlags,     MD_MsgFlags
-namespace TokenFlag,      MD_TokenFlag
+namespace TokenFlag_,     MD_TokenFlag_
 word      TokenGroups,    MD_TokenGroups
-namespace TokenGroup,     MD_TokenGroup
+namespace TokenGroup_,    MD_TokenGroup_
 word      Token,          MD_Token
 word      TokenChunkNode, MD_TokenChunkNode
 word      TokenChunkList, MD_TokenChunkList

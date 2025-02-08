@@ -113,7 +113,8 @@ struct TokenArray
 ////////////////////////////////
 //~ rjf: Node Types
 
-typedef enum NodeKind
+typedef enum NodeKind NodeKind;
+enum NodeKind
 {
 	NodeKind_Nil,
 	NodeKind_File,
@@ -123,37 +124,36 @@ typedef enum NodeKind
 	NodeKind_List,
 	NodeKind_Reference,
 	NodeKind_COUNT
-}
-NodeKind;
+};
 
 typedef U32 NodeFlags;
 enum
 {
-	NodeFlag_MaskSetDelimiters          = (0x3F<<0),
-	NodeFlag_HasParenLeft               = (1<<0),
-	NodeFlag_HasParenRight              = (1<<1),
-	NodeFlag_HasBracketLeft             = (1<<2),
-	NodeFlag_HasBracketRight            = (1<<3),
-	NodeFlag_HasBraceLeft               = (1<<4),
-	NodeFlag_HasBraceRight              = (1<<5),
+	NodeFlag_MaskSetDelimiters          = (0x3F << 0),
+	NodeFlag_HasParenLeft               = (1    << 0),
+	NodeFlag_HasParenRight              = (1    << 1),
+	NodeFlag_HasBracketLeft             = (1    << 2),
+	NodeFlag_HasBracketRight            = (1    << 3),
+	NodeFlag_HasBraceLeft               = (1    << 4),
+	NodeFlag_HasBraceRight              = (1    << 5),
 	
-	NodeFlag_MaskSeparators             = (0xF<<6),
-	NodeFlag_IsBeforeSemicolon          = (1<<6),
-	NodeFlag_IsAfterSemicolon           = (1<<7),
-	NodeFlag_IsBeforeComma              = (1<<8),
-	NodeFlag_IsAfterComma               = (1<<9),
+	NodeFlag_MaskSeparators             = (0xF << 6),
+	NodeFlag_IsBeforeSemicolon          = (1   << 6),
+	NodeFlag_IsAfterSemicolon           = (1   << 7),
+	NodeFlag_IsBeforeComma              = (1   << 8),
+	NodeFlag_IsAfterComma               = (1   << 9),
 	
-	NodeFlag_MaskStringDelimiters       = (0xF<<10),
-	NodeFlag_StringSingleQuote          = (1<<10),
-	NodeFlag_StringDoubleQuote          = (1<<11),
-	NodeFlag_StringTick                 = (1<<12),
-	NodeFlag_StringTriplet              = (1<<13),
+	NodeFlag_MaskStringDelimiters       = (0xF << 10),
+	NodeFlag_StringSingleQuote          = (1   << 10),
+	NodeFlag_StringDoubleQuote          = (1   << 11),
+	NodeFlag_StringTick                 = (1   << 12),
+	NodeFlag_StringTriplet              = (1   << 13),
 	
-	NodeFlag_MaskLabelKind              = (0xF<<14),
-	NodeFlag_Numeric                    = (1<<14),
-	NodeFlag_Identifier                 = (1<<15),
-	NodeFlag_StringLiteral              = (1<<16),
-	NodeFlag_Symbol                     = (1<<17),
+	NodeFlag_MaskLabelKind              = (0xF << 14),
+	NodeFlag_Numeric                    = (1   << 14),
+	NodeFlag_Identifier                 = (1   << 15),
+	NodeFlag_StringLiteral              = (1   << 16),
+	NodeFlag_Symbol                     = (1   << 17),
 };
 #define NodeFlag_AfterFromBefore(f) ((f) << 1)
 
@@ -502,10 +502,10 @@ MD_API ParseResult parse_from_text_tokens(Arena* arena, String8 filename, String
 ////////////////////////////////
 //~ rjf: Bundled Text -> Tree Functions
 
-ParseResult parse_from_text(Arena* arena, String8 filename, String8 text);
+MD_API ParseResult parse_from_text(Arena* arena, String8 filename, String8 text);
 #define tree_from_string(arena, string) (parse_from_text((arena), str8_zero(), (string)).root)
 
 ////////////////////////////////
 //~ rjf: Tree -> Text Functions
 
-String8List debug_string_list_from_tree(Arena* arena, Node* root);
+MD_API String8List debug_string_list_from_tree(Arena* arena, Node* root);

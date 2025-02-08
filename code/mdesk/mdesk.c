@@ -907,7 +907,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 		
 		//- rjf: [main] }s, ]s, and )s -> pop
 		if (work_top->kind == ParseWorkKind_Main && token->flags & TokenFlag_Reserved && (str8_match(token_string, str8_lit("}"), 0) || str8_match(token_string, str8_lit("]"), 0) || str8_match(token_string, str8_lit(")"), 0))) {
-			Node *parent = work_top->parent;
+			Node* parent = work_top->parent;
 			parent->flags |= NodeFlag_HasBraceRight   *!! str8_match(token_string, str8_lit("}"), 0);
 			parent->flags |= NodeFlag_HasBracketRight *!! str8_match(token_string, str8_lit("]"), 0);
 			parent->flags |= NodeFlag_HasParenRight   *!! str8_match(token_string, str8_lit(")"), 0);
@@ -945,65 +945,65 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 //~ rjf: Bundled Text -> Tree Functions
 
 ParseResult
-parse_from_text(Arena* arena, String8 filename, String8 text)
-{
-  TempArena      scratch  = scratch_begin(&arena, 1);
-  TokenizeResult tokenize = tokenize_from_text(scratch.arena, text);
-  ParseResult    parse    = parse_from_text_tokens(arena, filename, text, tokenize.tokens); 
-  scratch_end(scratch);
-  return parse;
+parse_from_text(Arena* arena, String8 filename, String8 text) {
+	TempArena      scratch  = scratch_begin(&arena, 1);
+	TokenizeResult tokenize = tokenize_from_text(scratch.arena, text);
+	ParseResult    parse    = parse_from_text_tokens(arena, filename, text, tokenize.tokens); 
+	scratch_end(scratch);
+	return parse;
 }
 
 ////////////////////////////////
 //~ rjf: Tree -> Text Functions
 
-internal String8List
-debug_string_list_from_tree(Arena *arena, Node *root)
+String8List
+debug_string_list_from_tree(Arena* arena, Node* root)
 {
-  String8List strings = {0};
-  {
-    char *indentation = "                                                                                                                                ";
-    S32 depth = 0;
-    for(Node *node = root, *next = nil_node(); !node_is_nil(node); node = next)
-    {
-      // rjf: get next recursion
-      NodeRec rec = node_rec_depth_first_pre(node, root);
-      next = rec.next;
-      
-      // rjf: extract node info
-      String8 kind_string = str8_lit("Unknown");
-      switch(node->kind)
-      {
-        default:{}break;
-        case NodeKind_File:       {kind_string = str8_lit("File");       }break;
-        case NodeKind_ErrorMarker:{kind_string = str8_lit("ErrorMarker");}break;
-        case NodeKind_Main:       {kind_string = str8_lit("Main");       }break;
-        case NodeKind_Tag:        {kind_string = str8_lit("Tag");        }break;
-        case NodeKind_List:       {kind_string = str8_lit("List");       }break;
-        case NodeKind_Reference:  {kind_string = str8_lit("Reference");  }break;
-      }
-      
-      // rjf: push node line
-      str8_list_pushf(arena, &strings, "%.*s\"%S\" : %S", depth, indentation, node->string, kind_string);
-      
-      // rjf: children -> open brace
-      if(rec.push_count != 0)
-      {
-        str8_list_pushf(arena, &strings, "%.*s{", depth, indentation);
-      }
-      
-      // rjf: descend
-      depth += rec.push_count;
-      
-      // rjf: popping -> close braces
-      for(S32 pop_idx = 0; pop_idx < rec.pop_count; pop_idx += 1)
-      {
-        str8_list_pushf(arena, &strings, "%.*s}", depth-1-pop_idx, indentation);
-      }
-      
-      // rjf: ascend
-      depth -= rec.pop_count;
-    }
-  }
-  return strings;
+	String8List strings = {0};
+	{
+		// Depth-first traversal of tree.
+		char* indentation = "                                                                                                                                ";
+		S32   depth       = 0;
+		for (Node* node = root, *next = nil_node(); !node_is_nil(node); node = next)
+		{
+			// rjf: get next recursion
+			NodeRec 
+			rec  = node_rec_depth_first_pre(node, root);
+			next = rec.next;
+			
+			// rjf: extract node info
+			String8 kind_string = str8_lit("Unknown");
+			switch (node->kind)
+			{
+				default: {} break;
+
+				case NodeKind_File:        { kind_string = str8_lit("File"       ); } break;
+				case NodeKind_ErrorMarker: { kind_string = str8_lit("ErrorMarker"); } break;
+				case NodeKind_Main:        { kind_string = str8_lit("Main"       ); } break;
+				case NodeKind_Tag:         { kind_string = str8_lit("Tag"        ); } break;
+				case NodeKind_List:        { kind_string = str8_lit("List"       ); } break;
+				case NodeKind_Reference:   { kind_string = str8_lit("Reference"  ); } break;
+			}
+			
+			// rjf: push node line
+			str8_list_pushf(arena, &strings, "%.*s\"%S\" : %S", depth, indentation, node->string, kind_string);
+			
+			// rjf: children -> open brace
+			if (rec.push_count != 0) {
+				str8_list_pushf(arena, &strings, "%.*s\n{", depth, indentation);
+			}
+			
+			// rjf: descend
+			depth += rec.push_count;
+			
+			// rjf: popping -> close braces
+			for (S32 pop_idx = 0; pop_idx < rec.pop_count; pop_idx += 1) {
+				str8_list_pushf(arena, &strings, "%.*s\n}", depth - 1 - pop_idx, indentation);
+			}
+			
+			// rjf: ascend
+			depth -= rec.pop_count;
+		}
+	}
+	return strings;
 }

@@ -11,3 +11,11 @@ The library will be provided in 3 forms:
 * cpp17: Setup ergonoically for usage as a C++ 17 library (both segregated and as a single-header)
 
 docs will be updated referencing content procued by Ryan Fleury and content based on studying or resolving this library for this repo.
+
+## Documentation
+
+* [docs](./docs/Readme.md)
+* [examples](./examples/Readme.md)
+* [gen_c11](./gen_c11/Readme.md)
+* [gen_cpp17](./gen_cpp17/Readme.md)
+

@@ -25,12 +25,12 @@ struct TCTX
 ////////////////////////////////
 // NOTE(allen): Thread Context Functions
 
-MD_API void    tctx_init_and_equip(TCTX* tctx);
-MD_API void    tctx_init_and_equip_ainfos(TCTX* tctx, AllocatorInfo ainfos[2]);
-MD_API void    tctx_release(void);
-MD_API TCTX*   tctx_get_equipped(void);
+MD_API void  tctx_init_and_equip(TCTX* tctx);
+MD_API void  tctx_init_and_equip_ainfos(TCTX* tctx, AllocatorInfo ainfos[2]);
+MD_API void  tctx_release(void);
+MD_API TCTX* tctx_get_equipped(void);
 
-MD_API Arena*  tctx_get_scratch(Arena** conflicts, U64 count);
+MD_API Arena* tctx_get_scratch(Arena** conflicts, U64 count);
 
 void    tctx_set_thread_name(String8 name);
 String8 tctx_get_thread_name(void);
@@ -40,7 +40,7 @@ void    tctx_read_srcloc (char** file_name, U64* line_number);
 #define tctx_write_this_srcloc() tctx_write_srcloc(__FILE__, __LINE__)
 
 #define scratch_begin(conflicts, count) temp_begin(tctx_get_scratch((conflicts), (count)))
-#define scratch_end(scratch) temp_end(scratch)
+#define scratch_end(scratch)            temp_end(scratch)
 
 inline void
 tctx_set_thread_name(String8 string){

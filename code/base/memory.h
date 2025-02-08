@@ -357,24 +357,78 @@ void* mem_set( void* destination, U8 fill_byte, SSIZE byte_count )
 //- rjf: linked list macro helpers
 
 #ifndef check_nil
-#define check_nil(nil,p) ((p) == 0 || (p) == nil)
+#define check_nil(nil, p) ((p) == 0 || (p) == nil)
 #endif
 #ifndef set_nil
-#define set_nil(nil,p)   ((p) = nil)
+#define set_nil(nil, p)   ((p) = nil)
 #endif
 
 //- rjf: doubly-linked-lists
 
+#ifndef MD_LINKED_LIST_PURE_MACRO
+#define MD_LINKED_LIST_PURE_MACRO 0
+#endif
+
 #ifndef dll_insert_npz
+// TODO(Ed): Review...
+inline void
+dll__insert_npz(
+	void*  nil, 
+	void** f, void** f_prev,
+	void** l, void** l_next,
+	void*  p, void** p_next, void** p_next_prev,
+	void*  n, void** n_prev, void** n_next 
+)
+{
+	if (*f == nil) {
+		*f      = n;
+		*l      = n;
+		*n_prev = nil;
+		*n_next = nil;
+	}
+	else
+	{
+		if (p == nil) {
+			*n_next = *f;
+			*f_prev =  n;
+			*f      =  n;
+			*n_prev =  nil;
+		}
+		else 
+		{
+			if (p == *l) {
+				*l_next =  n;
+				*n_prev = *l;
+				*l      =  n;
+				*n_next =  nil;
+			}
+			else
+			{
+				if ( ! (! (p == nil) && *p_next == nil)) {
+					*p_next_prev = n;
+				}
+				*n_next = *p_next;
+				*p_next =  n;
+				*n_prev =  p;
+			}
+		}
+	}
+}
+
+#if ! MD_LINKED_LIST_PURE_MACRO
 // insert next-previous with nil
-#define dll_insert_npz(nil, f, l, p, n, next, prev) (                      \
+#define dll_insert_npz(nil, f, l, p, n, next, prev) dll__insert_npz(nil, &f, &f->prev, &l, &l->next, p, &p->next, &p->next->prev, n, &n->prev, &n->next)
+#else
+// insert next-previous with nil
+#define dll_insert_npz(nil, f, l, p, n, next, prev)                        \
+(                                                                          \
 	check_nil(nil, f) ? (                                                  \
 		(f) = (l) = (n),                                                   \
 		set_nil(nil, (n)->next),                                           \
 		set_nil(nil, (n)->prev)                                            \
 	)                                                                      \
 	: (                                                                    \
-		check_nil(nil,p) ? (                                               \
+		check_nil(nil, p) ? (                                              \
 			(n)->next = (f),                                               \
 			(f)->prev = (n),                                               \
 			(f) = (n),                                                     \
@@ -399,15 +453,46 @@ void* mem_set( void* destination, U8 fill_byte, SSIZE byte_count )
 	)                                                                      \
 )
 #endif
+
+#endif
 #ifndef dll_push_back_npz
 // push-back next-previous with nil
 #define dll_push_back_npz(nil, f, l, n, next, prev)  dll_insert_npz(nil, f, l, l, n, next, prev)
 #endif
+
 #ifndef dll_push_front_npz
 // push-fornt next-previous with nil
 #define dll_push_front_npz(nil, f, l, n, next, prev) dll_insert_npz(nil, l, f, f, n, prev, next)
 #endif
+
 #ifndef dll_remove_npz
+inline void
+dll__remove_npz(
+	void*  nil, 
+	void** f, 
+	void** l, void* l_prev, 
+	void*  n, void* n_next, void** n_next_prev, 
+	          void* n_prev, void** n_prev_next
+)
+{
+	if (n == *f) {
+		*f = n_next;
+	}
+	if (n == *l) {
+		*l = l_prev;
+	}
+	if (n_prev != nil) {
+		*n_prev_next = n_next;
+	}
+	if (n_next != nil) {
+		*n_next_prev = n_prev;
+	}
+}
+
+#if ! MD_LINKED_LIST_PURE_MACRO
+// remove next-previous with nil
+#define dll_remove_npz(nil, f, l, n, next, prev) dll__remove_npz(nil, &f, &l, l->prev, n, n->next, &n->next->prev, n->prev, &n->prev->next)
+#else
 // remove next-previous with nil
 #define dll_remove_npz(nil, f, l, n, next, prev) \
 (                                                \
@@ -433,11 +518,34 @@ void* mem_set( void* destination, U8 fill_byte, SSIZE byte_count )
 	)                                            \
 )
 #endif
+#endif
 
 //- rjf: singly-linked, doubly-headed lists (queues)
 
 #ifndef sll_queue_push_nz
+inline void
+sll__queue_push_nz(
+	void* nil, 
+	void** f, 
+	void** l, void** l_next, 
+	void*  n, void** n_next
+) 
+{
+	if (*f == nil) {
+		*f      = n;
+		*n_next = nil;
+	}
+	else {
+		*l_next = n;
+		*l      = n;
+		n_next  = nil;
+	}
+}
+
 // queue-push next with nil
+#if ! MD_LINKED_LIST_PURE_MACRO
+#define sll_queue_push_nz(nil, f, l, n, next) sll__queue_push_nz(nil, &f, &l, &l->next, n, &n->next)
+#else
 #define sll_queue_push_nz(nil, f, l, n, next) \
 (                                             \
 	check_nil(nil, f) ? (                     \
@@ -451,8 +559,25 @@ void* mem_set( void* destination, U8 fill_byte, SSIZE byte_count )
 	)                                         \
 )
 #endif
+#endif
+
 #ifndef sll_queue_push_front_nz
+inline void
+sll__queue_push_front_nz(void* nil, void** f, void** l, void* n, void** n_next) {
+	if (*f == nil) {
+		*f = n;
+		*l = n;
+	}
+	else {
+		*n_next = f;
+		*f      = n;
+	}
+}
+
 // queue-push-front next with nil
+#if ! MD_LINKED_LIST_PURE_MACRO
+#define sll_queue_push_front_nz(nil, f, l, n, next) sll__queue_push_front_nz(nil, &f, &l, n, &n->next)
+#else
 #define sll_queue_push_front_nz(nil, f, l, n, next) \
 (                                                   \
 	check_nil(nil, f) ? (                           \
@@ -465,8 +590,24 @@ void* mem_set( void* destination, U8 fill_byte, SSIZE byte_count )
 	)                                               \
 )
 #endif
+
 #ifndef sll_queue_pop_nz
+inline void
+sll__queue_pop_nz(void* nil, void** f, void* f_next, void** l)
+{
+	if (*f == *l) {
+		*f == nil;
+		*l == nil;
+	}
+	else {
+		*f = f_next;
+	}
+}
+
 // queue-pop next with nil
+#if ! MD_LINKED_LIST_PURE_MACRO
+#define sll_queue_pop_nz(nil, f, l, next) sll__queue_pop_nz(nil, &f, f->next, &l)
+#else
 #define sll_queue_pop_nz(nil, f, l, next) \
 (                                         \
 	(f) == (l) ? (                        \

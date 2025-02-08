@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     arena = MD_ArenaAlloc();
     
     // parse all files passed to the command line
-    MD_Node *list = MD_MakeList(arena);
+    Node *list = MD_MakeList(arena);
     for (int i = 1; i < argc; i += 1)
     {
         
@@ -35,7 +35,7 @@ int main(int argc, char **argv)
         //  this metadesk's default implementations for the overrides make
         //  this work.
         MD_String8 file_name = MD_S8CString(argv[i]);
-        MD_ParseResult parse_result = MD_ParseWholeFile(arena, file_name);
+        ParseResult parse_result = MD_ParseWholeFile(arena, file_name);
         
         // print metadesk errors
         for (MD_Message *message = parse_result.errors.first;
@@ -65,21 +65,21 @@ int main(int argc, char **argv)
     
     // print the verbose parse results
     // @notes The Metadesk library provides a macros for iterating chains of
-    //  MD_Node as shown here. The first parameter to the macro names an
-    //  MD_Node pointer in the for loop that iterates through each node in the
+    //  Node as shown here. The first parameter to the macro names an
+    //  Node pointer in the for loop that iterates through each node in the
     //  list. The second parameter is a pointer to the first node of the list.
-    //  Generally we past the `first_child` of a list or parent MD_Node, but we
+    //  Generally we past the `first_child` of a list or parent Node, but we
     //  don't always have to.
     for (MD_EachNode(root_it, list->first_child))
     {
         
         // @notes The `list` we have been building does not contain a normal
-        //  MD_Node chain like in the trees returned from the parser. Instead
+        //  Node chain like in the trees returned from the parser. Instead
         //  it contains a chain of 'reference' nodes, which can point to any
         //  metadesk node from a previous parse. So our `root_it` is iterating
         //  a list of reference nodes. Here we resolve the reference node to
         //  get the root of the parse tree.
-        MD_Node *root = MD_ResolveNodeFromReference(root_it);
+        Node *root = MD_ResolveNodeFromReference(root_it);
         
         for (MD_EachNode(node, root->first_child))
         {

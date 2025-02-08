@@ -36,7 +36,7 @@ struct MG_MsgList
 typedef struct MG_FileParse MG_FileParse;
 struct MG_FileParse
 {
-  MD_Node *root;
+  Node *root;
 };
 
 typedef struct MG_FileParseNode MG_FileParseNode;
@@ -133,15 +133,15 @@ struct MG_StrExpr
   MG_StrExpr *left;
   MG_StrExpr *right;
   MG_StrExprOp op;
-  MD_Node *node;
+  Node *node;
 };
 
 typedef struct MG_StrExprParseResult MG_StrExprParseResult;
 struct MG_StrExprParseResult
 {
   MG_StrExpr *root;
-  MD_MsgList msgs;
-  MD_Node *next_node;
+  MsgList msgs;
+  Node *next_node;
 };
 
 ////////////////////////////////
@@ -150,7 +150,7 @@ struct MG_StrExprParseResult
 typedef struct MG_NodeArray MG_NodeArray;
 struct MG_NodeArray
 {
-  MD_Node **v;
+  Node **v;
   U64 count;
 };
 
@@ -295,30 +295,30 @@ internal void mg_map_insert_ptr(Arena *arena, MG_Map *map, String8 string, void 
 ////////////////////////////////
 //~ rjf: String Expression Parsing
 
-internal MG_StrExpr *mg_push_str_expr(Arena *arena, MG_StrExprOp op, MD_Node *node);
-internal MG_StrExprParseResult mg_str_expr_parse_from_first_opl__min_prec(Arena *arena, MD_Node *first, MD_Node *opl, S8 min_prec);
-internal MG_StrExprParseResult mg_str_expr_parse_from_first_opl(Arena *arena, MD_Node *first, MD_Node *opl);
-internal MG_StrExprParseResult mg_str_expr_parse_from_root(Arena *arena, MD_Node *root);
+internal MG_StrExpr *mg_push_str_expr(Arena *arena, MG_StrExprOp op, Node *node);
+internal MG_StrExprParseResult mg_str_expr_parse_from_first_opl__min_prec(Arena *arena, Node *first, Node *opl, S8 min_prec);
+internal MG_StrExprParseResult mg_str_expr_parse_from_first_opl(Arena *arena, Node *first, Node *opl);
+internal MG_StrExprParseResult mg_str_expr_parse_from_root(Arena *arena, Node *root);
 
 ////////////////////////////////
 //~ rjf: Table Generation Functions
 
 internal MG_NodeArray mg_node_array_make(Arena *arena, U64 count);
-internal MG_NodeArray mg_child_array_from_node(Arena *arena, MD_Node *node);
-internal MG_NodeGrid mg_node_grid_make_from_node(Arena *arena, MD_Node *root);
+internal MG_NodeArray mg_child_array_from_node(Arena *arena, Node *node);
+internal MG_NodeGrid mg_node_grid_make_from_node(Arena *arena, Node *root);
 internal MG_NodeArray mg_row_from_index(MG_NodeGrid grid, U64 index);
 internal MG_NodeArray mg_column_from_index(Arena *arena, MG_NodeGrid grid, U64 index);
-internal MD_Node *mg_node_from_grid_xy(MG_NodeGrid grid, U64 x, U64 y);
+internal Node *mg_node_from_grid_xy(MG_NodeGrid grid, U64 x, U64 y);
 
 internal MG_ColumnDescArray mg_column_desc_array_make(Arena *arena, U64 count, MG_ColumnDesc *descs);
-internal MG_ColumnDescArray mg_column_desc_array_from_tag(Arena *arena, MD_Node *tag);
+internal MG_ColumnDescArray mg_column_desc_array_from_tag(Arena *arena, Node *tag);
 internal U64 mg_column_index_from_name(MG_ColumnDescArray descs, String8 name);
-internal String8 mg_string_from_row_desc_idx(MD_Node *row_parent, MG_ColumnDescArray descs, U64 idx);
+internal String8 mg_string_from_row_desc_idx(Node *row_parent, MG_ColumnDescArray descs, U64 idx);
 
 internal S64 mg_eval_table_expand_expr__numeric(MG_StrExpr *expr, MG_TableExpandInfo *info);
 internal void mg_eval_table_expand_expr__string(Arena *arena, MG_StrExpr *expr, MG_TableExpandInfo *info, String8List *out);
 internal void mg_loop_table_column_expansion(Arena *arena, String8 strexpr, MG_TableExpandInfo *info, MG_TableExpandTask *task, String8List *out);
-internal String8List mg_string_list_from_table_gen(Arena *arena, MG_Map grid_name_map, MG_Map grid_column_desc_map, String8 fallback, MD_Node *gen);
+internal String8List mg_string_list_from_table_gen(Arena *arena, MG_Map grid_name_map, MG_Map grid_column_desc_map, String8 fallback, Node *gen);
 
 ////////////////////////////////
 //~ rjf: Layer Lookup Functions

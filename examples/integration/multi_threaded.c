@@ -67,7 +67,7 @@ typedef struct ThreadData
     
     // unique-to-thread
     MD_Arena *arena;
-    MD_Node *list;
+    Node *list;
     MD_MessageList errors;
 } ThreadData;
 
@@ -86,7 +86,7 @@ parse_worker_loop(ThreadData *thread_data)
         
         // load and parse the file specified by this task.
         MD_String8 file_name = MD_S8CString(task->tasks[task_index]);
-        MD_ParseResult parse = MD_ParseWholeFile(thread_data->arena, file_name);
+        ParseResult parse = MD_ParseWholeFile(thread_data->arena, file_name);
         MD_MessageListConcat(&thread_data->errors, &parse.errors);
         MD_PushNewReference(thread_data->arena, thread_data->list, parse.node);
     }
@@ -186,7 +186,7 @@ main(int argc, char **argv)
         // print the name of each root
         for (MD_EachNode(root_it, threads[i].list->first_child))
         {
-            MD_Node *root = MD_ResolveNodeFromReference(root_it);
+            Node *root = MD_ResolveNodeFromReference(root_it);
             fprintf(stdout, "%.*s\n", MD_S8VArg(root->string));
         }
         
@@ -221,7 +221,7 @@ main(int argc, char **argv)
     
     // combine results
     MD_Arena *arena = threads[0].arena;
-    MD_Node *list = threads[0].list;
+    Node *list = threads[0].list;
     MD_MessageList errors = threads[0].errors; 
     for (int i = 1; i < THREAD_COUNT; i += 1)
     {

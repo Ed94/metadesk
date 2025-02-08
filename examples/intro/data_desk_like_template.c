@@ -27,7 +27,7 @@ static MD_Arena *arena = 0;
 //~ Declare user defined functions (the data desk "custom layer") //////////////
 
 static void Initialize(void);        // Runs at the beginning of generation.
-static void TopLevel(MD_Node *node); // Runs once for each top-level node from each file.
+static void TopLevel(Node *node); // Runs once for each top-level node from each file.
 static void CleanUp(void);           // Runs at the end of generation.
 
 
@@ -40,13 +40,13 @@ int main(int argument_count, char **arguments)
     
     // parse all files passed to the command line
     MD_b32 failed_parse = 0;
-    MD_Node *list = MD_MakeList(arena);
+    Node *list = MD_MakeList(arena);
     for(int i = 1; i < argument_count; i += 1)
     {
         
         // parse the file
         MD_String8 file_name = MD_S8CString(arguments[i]);
-        MD_ParseResult parse_result = MD_ParseWholeFile(arena, file_name);
+        ParseResult parse_result = MD_ParseWholeFile(arena, file_name);
         
         // print metadesk errors
         for (MD_Message *message = parse_result.errors.first;
@@ -73,7 +73,7 @@ int main(int argument_count, char **arguments)
         Initialize();
         for(MD_EachNode(ref, list->first_child))
         {
-            MD_Node *root = MD_ResolveNodeFromReference(ref);
+            Node *root = MD_ResolveNodeFromReference(ref);
             for(MD_EachNode(node, root->first_child))
             {
                 TopLevel(node);
@@ -95,7 +95,7 @@ Initialize(void)
 }
 
 static void
-TopLevel(MD_Node *node)
+TopLevel(Node *node)
 {
     /*TODO*/
 }

@@ -86,7 +86,7 @@ typedef enum{
 } Op;
 #undef X
 
-static MD_String8 node_raw_contents(MD_Node *node, MD_b32 exclude_outer)
+static MD_String8 node_raw_contents(Node *node, MD_b32 exclude_outer)
 {
     MD_String8 result = {0};
     
@@ -98,7 +98,7 @@ static MD_String8 node_raw_contents(MD_Node *node, MD_b32 exclude_outer)
     
     MD_u64 end = beg;
     {
-        MD_Node *last_descendant = node;
+        Node *last_descendant = node;
         for(;!MD_NodeIsNil(last_descendant->last_child);)
         {
             last_descendant = last_descendant->last_child;
@@ -106,7 +106,7 @@ static MD_String8 node_raw_contents(MD_Node *node, MD_b32 exclude_outer)
         end = last_descendant->offset + last_descendant->raw_string.size;
     }
     
-    MD_Node *root = node;
+    Node *root = node;
     for(;!MD_NodeIsNil(root->parent);)
     {
         root = root->parent;
@@ -185,29 +185,29 @@ static void parenthesize_exclude_outer(MD_Arena *arena, OperatorDescription *des
         }
         else
         {
-            if(node->md_node->flags & MD_NodeFlag_HasParenLeft)
+            if(node->md_node->flags & NodeFlag_HasParenLeft)
             {
                 MD_S8ListPush(arena, l, MD_S8Lit("("));
             }
-            else if(node->md_node->flags & MD_NodeFlag_HasBraceLeft)
+            else if(node->md_node->flags & NodeFlag_HasBraceLeft)
             {
                 MD_S8ListPush(arena, l, MD_S8Lit("{"));
             }
-            else if(node->md_node->flags & MD_NodeFlag_HasBracketLeft)
+            else if(node->md_node->flags & NodeFlag_HasBracketLeft)
             {
                 MD_S8ListPush(arena, l, MD_S8Lit("["));
             }
             
             MD_S8ListPush(arena, l, MD_S8Lit("..."));
             
-            if(node->md_node->flags & MD_NodeFlag_HasParenRight)
+            if(node->md_node->flags & NodeFlag_HasParenRight)
             {
                 MD_S8ListPush(arena, l, MD_S8Lit(")"));
             }
-            else if(node->md_node->flags & MD_NodeFlag_HasBraceRight){
+            else if(node->md_node->flags & NodeFlag_HasBraceRight){
                 MD_S8ListPush(arena, l, MD_S8Lit("}"));
             }
-            else if(node->md_node->flags & MD_NodeFlag_HasBracketRight){
+            else if(node->md_node->flags & NodeFlag_HasBracketRight){
                 MD_S8ListPush(arena, l, MD_S8Lit("]"));
             }
         }
@@ -259,10 +259,10 @@ operator_array[Op_##name].op = (MD_ExprOpr){ .op_id = Op_##name, .kind = MD_Expr
         MD_String8 plus = MD_S8Lit("+");
         MD_String8 minus = MD_S8Lit("-");
         MD_String8 cast = MD_S8Lit("()");
-        MD_Node *plus_node = MD_MakeNode(g_arena, MD_NodeKind_Main, plus, plus, 0);
-        MD_Node *cast_node = MD_MakeNode(g_arena, MD_NodeKind_Main, cast, cast, 0);
-        MD_Node *minus_node = MD_MakeNode(g_arena, MD_NodeKind_Main, minus, minus, 0);
-        MD_Node *plus_node_bis = MD_MakeNode(g_arena, MD_NodeKind_Main, plus, plus, 0);
+        Node *plus_node = MD_MakeNode(g_arena, NodeKind_Main, plus, plus, 0);
+        Node *cast_node = MD_MakeNode(g_arena, NodeKind_Main, cast, cast, 0);
+        Node *minus_node = MD_MakeNode(g_arena, NodeKind_Main, minus, minus, 0);
+        Node *plus_node_bis = MD_MakeNode(g_arena, NodeKind_Main, plus, plus, 0);
         
         MD_ExprSetBakeOperatorErrorHandler(bake_operator_error_handler);
         
@@ -341,7 +341,7 @@ operator_array[Op_##name].op = (MD_ExprOpr){ .op_id = Op_##name, .kind = MD_Expr
     for(Op op = Op_Null+1; op < Op_COUNT; ++op)
     {
         OperatorDescription *desc = operator_array + op;
-        MD_Node *node = MD_MakeNode(g_arena, MD_NodeKind_Main, desc->s, desc->s, 0);
+        Node *node = MD_MakeNode(g_arena, NodeKind_Main, desc->s, desc->s, 0);
         MD_ExprOprPush(g_arena, &operator_list, desc->op.kind, desc->op.precedence, desc->s,
                        op, node);
     }
@@ -417,7 +417,7 @@ operator_array[Op_##name].op = (MD_ExprOpr){ .op_id = Op_##name, .kind = MD_Expr
         MD_String8 q = MD_S8CString(test.q);
         MD_String8 a = MD_S8CString(test.a);
         
-        MD_ParseResult parse = MD_ParseWholeString(g_arena, MD_S8Lit("test"), q);
+        ParseResult parse = MD_ParseWholeString(g_arena, MD_S8Lit("test"), q);
         if(parse.errors.max_message_kind == MD_MessageKind_Null)
         {
             MD_ExprParseResult expr_parse = MD_ExprParse(g_arena, &op_table, parse.node->first_child, MD_NilNode());

@@ -63,21 +63,21 @@ EndTest(void)
 
 #define Test(name) for(int _i_ = (BeginTest(name), 0); !_i_; _i_ += 1, EndTest())
 
-static MD_Node *
-MakeTestNode(MD_NodeKind kind, MD_String8 string)
+static Node *
+MakeTestNode(NodeKind kind, MD_String8 string)
 {
     return MD_MakeNode(arena, kind, string, string, 0);
 }
 
 static MD_b32
-MatchParsedWithNode(MD_String8 string, MD_Node *tree)
+MatchParsedWithNode(MD_String8 string, Node *tree)
 {
-    MD_ParseResult parse = MD_ParseOneNode(arena, string, 0);
+    ParseResult parse = MD_ParseOneNode(arena, string, 0);
     return MD_NodeDeepMatch(tree, parse.node, MD_NodeMatchFlag_Tags | MD_NodeMatchFlag_TagArguments);
 }
 
 static MD_b32
-TokenMatch(MD_Token token, MD_String8 string, MD_TokenKind kind)
+TokenMatch(Token token, MD_String8 string, MD_TokenKind kind)
 {
     return MD_S8Match(string, token.string, 0) && token.kind == kind;
 }
@@ -89,10 +89,10 @@ int main(void)
     Test("Lexer")
     {
         MD_String8 string = MD_S8Lit("abc def 123 456 123_456 abc123 123abc +-*");
-        MD_Token tokens[100];
+        Token tokens[100];
         
-        MD_Token *token = tokens;
-        MD_Token *token_opl = tokens + MD_ArrayCount(tokens);
+        Token *token = tokens;
+        Token *token_opl = tokens + MD_ArrayCount(tokens);
         MD_u64 pos = 0;
         for (; pos < string.size && token < token_opl; )
         {
@@ -120,37 +120,37 @@ int main(void)
     
     Test("Empty Sets")
     {
-        TestResult(MatchParsedWithNode(MD_S8Lit("{}"), MakeTestNode(MD_NodeKind_Main, MD_S8Lit(""))));
-        TestResult(MatchParsedWithNode(MD_S8Lit("()"), MakeTestNode(MD_NodeKind_Main, MD_S8Lit(""))));
-        TestResult(MatchParsedWithNode(MD_S8Lit("[]"), MakeTestNode(MD_NodeKind_Main, MD_S8Lit(""))));
-        TestResult(MatchParsedWithNode(MD_S8Lit("[)"), MakeTestNode(MD_NodeKind_Main, MD_S8Lit(""))));
-        TestResult(MatchParsedWithNode(MD_S8Lit("(]"), MakeTestNode(MD_NodeKind_Main, MD_S8Lit(""))));
+        TestResult(MatchParsedWithNode(MD_S8Lit("{}"), MakeTestNode(NodeKind_Main, MD_S8Lit(""))));
+        TestResult(MatchParsedWithNode(MD_S8Lit("()"), MakeTestNode(NodeKind_Main, MD_S8Lit(""))));
+        TestResult(MatchParsedWithNode(MD_S8Lit("[]"), MakeTestNode(NodeKind_Main, MD_S8Lit(""))));
+        TestResult(MatchParsedWithNode(MD_S8Lit("[)"), MakeTestNode(NodeKind_Main, MD_S8Lit(""))));
+        TestResult(MatchParsedWithNode(MD_S8Lit("(]"), MakeTestNode(NodeKind_Main, MD_S8Lit(""))));
     }
     
     Test("Simple Unnamed Sets")
     {
         {
             MD_String8 string = MD_S8Lit("{a, b, c}");
-            MD_Node *tree = MakeTestNode(MD_NodeKind_Main, MD_S8Lit(""));
-            MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("a")));
-            MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("b")));
-            MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("c")));
+            Node *tree = MakeTestNode(NodeKind_Main, MD_S8Lit(""));
+            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("a")));
+            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("b")));
+            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("c")));
             TestResult(MatchParsedWithNode(string, tree));
         }
         {
             MD_String8 string = MD_S8Lit("(1 2 3 4 5)");
-            MD_Node *tree = MakeTestNode(MD_NodeKind_Main, MD_S8Lit(""));
-            MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("1")));
-            MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("2")));
-            MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("3")));
-            MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("4")));
-            MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("5")));
+            Node *tree = MakeTestNode(NodeKind_Main, MD_S8Lit(""));
+            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("1")));
+            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("2")));
+            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("3")));
+            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("4")));
+            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("5")));
             TestResult(MatchParsedWithNode(string, tree));
         }
         {
             MD_String8 string = MD_S8Lit("{a}");
-            MD_Node *tree = MakeTestNode(MD_NodeKind_Main, MD_S8Lit(""));
-            MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("a")));
+            Node *tree = MakeTestNode(NodeKind_Main, MD_S8Lit(""));
+            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("a")));
             TestResult(MatchParsedWithNode(string, tree));
         }
     }
@@ -158,10 +158,10 @@ int main(void)
     Test("Simple Named Sets")
     {
         MD_String8 string = MD_S8Lit("simple_set: {a, b, c}");
-        MD_Node *tree = MakeTestNode(MD_NodeKind_Main, MD_S8Lit("simple_set"));
-        MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("a")));
-        MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("b")));
-        MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("c")));
+        Node *tree = MakeTestNode(NodeKind_Main, MD_S8Lit("simple_set"));
+        MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("a")));
+        MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("b")));
+        MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("c")));
         TestResult(MatchParsedWithNode(string, tree));
     }
     
@@ -169,128 +169,128 @@ int main(void)
     {
         {
             MD_String8 string = MD_S8Lit("{a b:{1 2 3} c}");
-            MD_Node *tree = MakeTestNode(MD_NodeKind_Main, MD_S8Lit(""));
-            MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("a")));
+            Node *tree = MakeTestNode(NodeKind_Main, MD_S8Lit(""));
+            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("a")));
             {
-                MD_Node *sub = MakeTestNode(MD_NodeKind_Main, MD_S8Lit("b"));
-                MD_PushChild(sub, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("1")));
-                MD_PushChild(sub, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("2")));
-                MD_PushChild(sub, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("3")));
+                Node *sub = MakeTestNode(NodeKind_Main, MD_S8Lit("b"));
+                MD_PushChild(sub, MakeTestNode(NodeKind_Main, MD_S8Lit("1")));
+                MD_PushChild(sub, MakeTestNode(NodeKind_Main, MD_S8Lit("2")));
+                MD_PushChild(sub, MakeTestNode(NodeKind_Main, MD_S8Lit("3")));
                 MD_PushChild(tree, sub);
             }
-            MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("c")));
+            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("c")));
             TestResult(MatchParsedWithNode(string, tree));
         }
         
         {
             MD_String8 string = MD_S8Lit("foo: { (size: u64) -> *void }");
-            MD_Node *tree = MakeTestNode(MD_NodeKind_Main, MD_S8Lit("foo"));
-            MD_Node *params = MakeTestNode(MD_NodeKind_Main, MD_S8Lit(""));
-            MD_Node *size = MakeTestNode(MD_NodeKind_Main, MD_S8Lit("size"));
-            MD_PushChild(size, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("u64")));
+            Node *tree = MakeTestNode(NodeKind_Main, MD_S8Lit("foo"));
+            Node *params = MakeTestNode(NodeKind_Main, MD_S8Lit(""));
+            Node *size = MakeTestNode(NodeKind_Main, MD_S8Lit("size"));
+            MD_PushChild(size, MakeTestNode(NodeKind_Main, MD_S8Lit("u64")));
             MD_PushChild(params, size);
             MD_PushChild(tree, params);
-            MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("->")));
-            MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("*")));
-            MD_PushChild(tree, MakeTestNode(MD_NodeKind_Main, MD_S8Lit("void")));
+            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("->")));
+            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("*")));
+            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("void")));
             TestResult(MatchParsedWithNode(string, tree));
         }
     }
     
     Test("Non-Sets")
     {
-        TestResult(MatchParsedWithNode(MD_S8Lit("foo"), MakeTestNode(MD_NodeKind_Main, MD_S8Lit("foo"))));
-        TestResult(MatchParsedWithNode(MD_S8Lit("123"), MakeTestNode(MD_NodeKind_Main, MD_S8Lit("123"))));
-        TestResult(MatchParsedWithNode(MD_S8Lit("+"),   MakeTestNode(MD_NodeKind_Main, MD_S8Lit("+"))));
+        TestResult(MatchParsedWithNode(MD_S8Lit("foo"), MakeTestNode(NodeKind_Main, MD_S8Lit("foo"))));
+        TestResult(MatchParsedWithNode(MD_S8Lit("123"), MakeTestNode(NodeKind_Main, MD_S8Lit("123"))));
+        TestResult(MatchParsedWithNode(MD_S8Lit("+"),   MakeTestNode(NodeKind_Main, MD_S8Lit("+"))));
     }
     
     Test("Set Border Flags")
     {
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(0, 100)"), 0);
-            TestResult(parse.node->flags & MD_NodeFlag_HasParenLeft &&
-                       parse.node->flags & MD_NodeFlag_HasParenRight);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(0, 100)"), 0);
+            TestResult(parse.node->flags & NodeFlag_HasParenLeft &&
+                       parse.node->flags & NodeFlag_HasParenRight);
         }
         
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(0, 100]"), 0);
-            TestResult(parse.node->flags & MD_NodeFlag_HasParenLeft &&
-                       parse.node->flags & MD_NodeFlag_HasBracketRight);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(0, 100]"), 0);
+            TestResult(parse.node->flags & NodeFlag_HasParenLeft &&
+                       parse.node->flags & NodeFlag_HasBracketRight);
         }
         
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("[0, 100)"), 0);
-            TestResult(parse.node->flags & MD_NodeFlag_HasBracketLeft &&
-                       parse.node->flags & MD_NodeFlag_HasParenRight);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("[0, 100)"), 0);
+            TestResult(parse.node->flags & NodeFlag_HasBracketLeft &&
+                       parse.node->flags & NodeFlag_HasParenRight);
         }
         
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("[0, 100]"), 0);
-            TestResult(parse.node->flags & MD_NodeFlag_HasBracketLeft &&
-                       parse.node->flags & MD_NodeFlag_HasBracketRight);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("[0, 100]"), 0);
+            TestResult(parse.node->flags & NodeFlag_HasBracketLeft &&
+                       parse.node->flags & NodeFlag_HasBracketRight);
         }
         
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("{0, 100}"), 0);
-            TestResult(parse.node->flags & MD_NodeFlag_HasBraceLeft &&
-                       parse.node->flags & MD_NodeFlag_HasBraceRight);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("{0, 100}"), 0);
+            TestResult(parse.node->flags & NodeFlag_HasBraceLeft &&
+                       parse.node->flags & NodeFlag_HasBraceRight);
         }
     }
     
     Test("Node Separator Flags")
     {
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a, b)"), 0);
-            TestResult(parse.node->first_child->flags & MD_NodeFlag_IsBeforeComma);
-            TestResult(parse.node->first_child->next->flags & MD_NodeFlag_IsAfterComma);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a, b)"), 0);
+            TestResult(parse.node->first_child->flags & NodeFlag_IsBeforeComma);
+            TestResult(parse.node->first_child->next->flags & NodeFlag_IsAfterComma);
         }
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a; b)"), 0);
-            TestResult(parse.node->first_child->flags & MD_NodeFlag_IsBeforeSemicolon);
-            TestResult(parse.node->first_child->next->flags & MD_NodeFlag_IsAfterSemicolon);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a; b)"), 0);
+            TestResult(parse.node->first_child->flags & NodeFlag_IsBeforeSemicolon);
+            TestResult(parse.node->first_child->next->flags & NodeFlag_IsAfterSemicolon);
         }
     }
     
     Test("Node Text Flags")
     {
         TestResult(MD_ParseOneNode(arena, MD_S8Lit("123"), 0).node->flags &
-                   MD_NodeFlag_Numeric);
+                   NodeFlag_Numeric);
         TestResult(MD_ParseOneNode(arena, MD_S8Lit("123_456_789"), 0).node->flags &
-                   MD_NodeFlag_Numeric);
+                   NodeFlag_Numeric);
         TestResult(MD_ParseOneNode(arena, MD_S8Lit("abc"), 0).node->flags &
-                   MD_NodeFlag_Identifier);
+                   NodeFlag_Identifier);
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("\"foo\""), 0);
-            TestResult(parse.node->flags & MD_NodeFlag_StringLiteral &&
-                       parse.node->flags & MD_NodeFlag_StringDoubleQuote);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("\"foo\""), 0);
+            TestResult(parse.node->flags & NodeFlag_StringLiteral &&
+                       parse.node->flags & NodeFlag_StringDoubleQuote);
         }
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("'foo'"), 0);
-            TestResult(parse.node->flags & MD_NodeFlag_StringLiteral &&
-                       parse.node->flags & MD_NodeFlag_StringSingleQuote);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("'foo'"), 0);
+            TestResult(parse.node->flags & NodeFlag_StringLiteral &&
+                       parse.node->flags & NodeFlag_StringSingleQuote);
         }
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("`foo`"), 0);
-            TestResult(parse.node->flags & MD_NodeFlag_StringLiteral &&
-                       parse.node->flags & MD_NodeFlag_StringTick);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("`foo`"), 0);
+            TestResult(parse.node->flags & NodeFlag_StringLiteral &&
+                       parse.node->flags & NodeFlag_StringTick);
         }
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("\"\"\"foo\"\"\""), 0);
-            TestResult(parse.node->flags & MD_NodeFlag_StringLiteral &&
-                       parse.node->flags & MD_NodeFlag_StringDoubleQuote &&
-                       parse.node->flags & MD_NodeFlag_StringTriplet);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("\"\"\"foo\"\"\""), 0);
+            TestResult(parse.node->flags & NodeFlag_StringLiteral &&
+                       parse.node->flags & NodeFlag_StringDoubleQuote &&
+                       parse.node->flags & NodeFlag_StringTriplet);
         }
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("'''foo'''"), 0);
-            TestResult(parse.node->flags & MD_NodeFlag_StringLiteral &&
-                       parse.node->flags & MD_NodeFlag_StringSingleQuote &&
-                       parse.node->flags & MD_NodeFlag_StringTriplet);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("'''foo'''"), 0);
+            TestResult(parse.node->flags & NodeFlag_StringLiteral &&
+                       parse.node->flags & NodeFlag_StringSingleQuote &&
+                       parse.node->flags & NodeFlag_StringTriplet);
         }
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("```foo```"), 0);
-            TestResult(parse.node->flags & MD_NodeFlag_StringLiteral &&
-                       parse.node->flags & MD_NodeFlag_StringTick &&
-                       parse.node->flags & MD_NodeFlag_StringTriplet);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("```foo```"), 0);
+            TestResult(parse.node->flags & NodeFlag_StringLiteral &&
+                       parse.node->flags & NodeFlag_StringTick &&
+                       parse.node->flags & NodeFlag_StringTriplet);
         }
     }
     
@@ -320,12 +320,12 @@ int main(void)
     
     Test("Enum Strings")
     {
-        TestResult(MD_S8Match(MD_StringFromNodeKind(MD_NodeKind_Main), MD_S8Lit("Main"), 0));
-        TestResult(MD_S8Match(MD_StringFromNodeKind(MD_NodeKind_Main), MD_S8Lit("Main"), 0));
+        TestResult(MD_S8Match(MD_StringFromNodeKind(NodeKind_Main), MD_S8Lit("Main"), 0));
+        TestResult(MD_S8Match(MD_StringFromNodeKind(NodeKind_Main), MD_S8Lit("Main"), 0));
         MD_String8List list = MD_StringListFromNodeFlags(arena, 
-                                                         MD_NodeFlag_StringLiteral |
-                                                         MD_NodeFlag_HasParenLeft |
-                                                         MD_NodeFlag_IsBeforeSemicolon);
+                                                         NodeFlag_StringLiteral |
+                                                         NodeFlag_HasParenLeft |
+                                                         NodeFlag_IsBeforeSemicolon);
         MD_b32 match = 1;
         for(MD_String8Node *node = list.first; node; node = node->next)
         {
@@ -346,18 +346,18 @@ int main(void)
         // NOTE(rjf): Pre-Comments:
         {
             {
-                MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("/*foobar*/ (a b c)"), 0);
-                TestResult(parse.node->kind == MD_NodeKind_Main &&
+                ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("/*foobar*/ (a b c)"), 0);
+                TestResult(parse.node->kind == NodeKind_Main &&
                            MD_S8Match(parse.node->prev_comment, MD_S8Lit("foobar"), 0));
             }
             {
-                MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("// foobar\n(a b c)"), 0);
-                TestResult(parse.node->kind == MD_NodeKind_Main &&
+                ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("// foobar\n(a b c)"), 0);
+                TestResult(parse.node->kind == NodeKind_Main &&
                            MD_S8Match(parse.node->prev_comment, MD_S8Lit(" foobar"), 0));
             }
             {
-                MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("// foobar\n\n(a b c)"), 0);
-                TestResult(parse.node->kind == MD_NodeKind_Main &&
+                ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("// foobar\n\n(a b c)"), 0);
+                TestResult(parse.node->kind == NodeKind_Main &&
                            MD_S8Match(parse.node->prev_comment, MD_S8Lit(""), 0));
             }
         }
@@ -365,23 +365,23 @@ int main(void)
         // NOTE(rjf): Post-Comments:
         {
             {
-                MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a b c) /*foobar*/"), 0);
-                TestResult(parse.node->kind == MD_NodeKind_Main &&
+                ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a b c) /*foobar*/"), 0);
+                TestResult(parse.node->kind == NodeKind_Main &&
                            MD_S8Match(parse.node->next_comment, MD_S8Lit("foobar"), 0));
             }
             {
-                MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a b c) // foobar"), 0);
-                TestResult(parse.node->kind == MD_NodeKind_Main &&
+                ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a b c) // foobar"), 0);
+                TestResult(parse.node->kind == NodeKind_Main &&
                            MD_S8Match(parse.node->next_comment, MD_S8Lit(" foobar"), 0));
             }
             {
-                MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a b c)\n// foobar"), 0);
-                TestResult(parse.node->kind == MD_NodeKind_Main &&
+                ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a b c)\n// foobar"), 0);
+                TestResult(parse.node->kind == NodeKind_Main &&
                            MD_S8Match(parse.node->next_comment, MD_S8Lit(""), 0));
             }
             {
-                MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a b c)\n\n// foobar"), 0);
-                TestResult(parse.node->kind == MD_NodeKind_Main &&
+                ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a b c)\n\n// foobar"), 0);
+                TestResult(parse.node->kind == NodeKind_Main &&
                            MD_S8Match(parse.node->next_comment, MD_S8Lit(""), 0));
             }
         }
@@ -404,7 +404,7 @@ int main(void)
         
         for(int i_test = 0; i_test < MD_ArrayCount(tests); ++i_test)
         {
-            MD_ParseResult parse = MD_ParseWholeString(arena, MD_S8Lit("test.mdesk"), MD_S8CString(tests[i_test].s));
+            ParseResult parse = MD_ParseWholeString(arena, MD_S8Lit("test.mdesk"), MD_S8CString(tests[i_test].s));
             
             MD_b32 columns_match = 1;
             {
@@ -428,8 +428,8 @@ int main(void)
         }
         
         {
-            MD_ParseResult parse = MD_ParseWholeFile(arena, MD_S8Lit("__does_not_exist.mdesk"));
-            TestResult(parse.node->kind == MD_NodeKind_File && parse.errors.first != 0);
+            ParseResult parse = MD_ParseWholeFile(arena, MD_S8Lit("__does_not_exist.mdesk"));
+            TestResult(parse.node->kind == NodeKind_File && parse.errors.first != 0);
         }
         
     }
@@ -487,10 +487,10 @@ int main(void)
             MD_S8LitComp("```foo-bar```"),
         };
         
-        MD_Node *nodes[MD_ArrayCount(samples)];
+        Node *nodes[MD_ArrayCount(samples)];
         for (int i = 0; i < MD_ArrayCount(samples); i += 1)
         {
-            MD_ParseResult result = MD_ParseOneNode(arena, samples[i], 0);
+            ParseResult result = MD_ParseOneNode(arena, samples[i], 0);
             nodes[i] = result.node;
         }
         
@@ -512,41 +512,41 @@ int main(void)
     Test("String escaping")
     {
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("`\\``"), 0);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("`\\``"), 0);
             TestResult(MD_S8Match(parse.node->string, MD_S8Lit("\\`"), 0));
         }
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("``` \\``` ```"), 0);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("``` \\``` ```"), 0);
             TestResult(MD_S8Match(parse.node->string, MD_S8Lit(" \\``` "), 0));
         }
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("`````\\````"), 0);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("`````\\````"), 0);
             TestResult(MD_S8Match(parse.node->string, MD_S8Lit("``\\`"), 0));
         }
         
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("`\\'`"), 0);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("`\\'`"), 0);
             TestResult(MD_S8Match(parse.node->string, MD_S8Lit("\\'"), 0));
         }
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("''' \\''' '''"), 0);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("''' \\''' '''"), 0);
             TestResult(MD_S8Match(parse.node->string, MD_S8Lit(" \\''' "), 0));
         }
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("'''''\\''''"), 0);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("'''''\\''''"), 0);
             TestResult(MD_S8Match(parse.node->string, MD_S8Lit("''\\'"), 0));
         }
         
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("`\\\"`"), 0);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("`\\\"`"), 0);
             TestResult(MD_S8Match(parse.node->string, MD_S8Lit("\\\""), 0));
         }
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("\"\"\" \\\"\"\" \"\"\""), 0);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("\"\"\" \\\"\"\" \"\"\""), 0);
             TestResult(MD_S8Match(parse.node->string, MD_S8Lit(" \\\"\"\" "), 0));
         }
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("\"\"\"\"\"\\\"\"\"\""), 0);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("\"\"\"\"\"\\\"\"\"\""), 0);
             TestResult(MD_S8Match(parse.node->string, MD_S8Lit("\"\"\\\""), 0));
         }
     }
@@ -555,10 +555,10 @@ int main(void)
     {
         
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("foo:{x y z; a b c}"), 0);
-            MD_Node *node = parse.node;
-            MD_Node *group_first = node->first_child;
-            MD_Node *group_opl = MD_FirstNodeWithFlags(group_first->next, MD_NodeFlag_IsAfterSemicolon);
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("foo:{x y z; a b c}"), 0);
+            Node *node = parse.node;
+            Node *group_first = node->first_child;
+            Node *group_opl = MD_FirstNodeWithFlags(group_first->next, NodeFlag_IsAfterSemicolon);
             
             TestResult(MD_S8Match(group_first->string,                    MD_S8Lit("x"), 0));
             TestResult(MD_S8Match(group_first->next->string,              MD_S8Lit("y"), 0));
@@ -566,7 +566,7 @@ int main(void)
             TestResult(group_opl == group_first->next->next->next);
             
             group_first = group_opl;
-            group_opl = MD_FirstNodeWithFlags(group_first->next, MD_NodeFlag_IsAfterSemicolon);
+            group_opl = MD_FirstNodeWithFlags(group_first->next, NodeFlag_IsAfterSemicolon);
             
             TestResult(MD_S8Match(group_first->string,                    MD_S8Lit("a"), 0));
             TestResult(MD_S8Match(group_first->next->string,              MD_S8Lit("b"), 0));
@@ -575,27 +575,27 @@ int main(void)
         }
         
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("foo:{a b c , d e f , g h i}"), 0);
-            MD_Node *node = parse.node;
-            MD_Node *group_first = 0;
-            MD_Node *group_opl = 0;
+            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("foo:{a b c , d e f , g h i}"), 0);
+            Node *node = parse.node;
+            Node *group_first = 0;
+            Node *group_opl = 0;
             
             group_first = node->first_child;
-            group_opl = MD_FirstNodeWithFlags(group_first->next, MD_NodeFlag_IsAfterComma);
+            group_opl = MD_FirstNodeWithFlags(group_first->next, NodeFlag_IsAfterComma);
             TestResult(MD_S8Match(group_first->string,                    MD_S8Lit("a"), 0));
             TestResult(MD_S8Match(group_first->next->string,              MD_S8Lit("b"), 0));
             TestResult(MD_S8Match(group_first->next->next->string,        MD_S8Lit("c"), 0));
             TestResult(group_opl == group_first->next->next->next);
             
             group_first = group_opl;
-            group_opl = MD_FirstNodeWithFlags(group_first->next, MD_NodeFlag_IsAfterComma);
+            group_opl = MD_FirstNodeWithFlags(group_first->next, NodeFlag_IsAfterComma);
             TestResult(MD_S8Match(group_first->string,                    MD_S8Lit("d"), 0));
             TestResult(MD_S8Match(group_first->next->string,              MD_S8Lit("e"), 0));
             TestResult(MD_S8Match(group_first->next->next->string,        MD_S8Lit("f"), 0));
             TestResult(group_opl == group_first->next->next->next);
             
             group_first = group_opl;
-            group_opl = MD_FirstNodeWithFlags(group_first->next, MD_NodeFlag_IsAfterComma);
+            group_opl = MD_FirstNodeWithFlags(group_first->next, NodeFlag_IsAfterComma);
             TestResult(MD_S8Match(group_first->string,                    MD_S8Lit("g"), 0));
             TestResult(MD_S8Match(group_first->next->string,              MD_S8Lit("h"), 0));
             TestResult(MD_S8Match(group_first->next->next->string,        MD_S8Lit("i"), 0));
@@ -612,16 +612,16 @@ int main(void)
         {
             MD_String8 text = MD_S8Lit("a:\nb:\nc\nd");
             
-            MD_Node *tree = MD_MakeNode(arena, MD_NodeKind_File, file_name, text, 0);
-            MD_Node *a = MakeTestNode(MD_NodeKind_Main, MD_S8Lit("a"));
-            MD_Node *b = MakeTestNode(MD_NodeKind_Main, MD_S8Lit("b"));
-            MD_Node *c = MakeTestNode(MD_NodeKind_Main, MD_S8Lit("c"));
-            MD_Node *d = MakeTestNode(MD_NodeKind_Main, MD_S8Lit("d"));
+            Node *tree = MD_MakeNode(arena, NodeKind_File, file_name, text, 0);
+            Node *a = MakeTestNode(NodeKind_Main, MD_S8Lit("a"));
+            Node *b = MakeTestNode(NodeKind_Main, MD_S8Lit("b"));
+            Node *c = MakeTestNode(NodeKind_Main, MD_S8Lit("c"));
+            Node *d = MakeTestNode(NodeKind_Main, MD_S8Lit("d"));
             MD_PushChild(a, b);
             MD_PushChild(b, c);
             MD_PushChild(tree, a);
             MD_PushChild(tree, d);
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, text);
+            ParseResult result = MD_ParseWholeString(arena, file_name, text);
             TestResult(result.errors.first == 0);
             TestResult(MD_NodeDeepMatch(tree, result.node, 0));
         }
@@ -629,7 +629,7 @@ int main(void)
         // finished unscoped set
         {
             MD_String8 text = MD_S8Lit("a:\nb:\nc");
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, text);
+            ParseResult result = MD_ParseWholeString(arena, file_name, text);
             TestResult(result.errors.first == 0);
             TestResult(result.node->first_child == result.node->last_child);
         }
@@ -637,31 +637,31 @@ int main(void)
         // unfinished unscoped set
         {
             MD_String8 text = MD_S8Lit("a:\nb:\n\n");
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, text);
+            ParseResult result = MD_ParseWholeString(arena, file_name, text);
             TestResult(result.errors.first != 0);
         }
         {
             MD_String8 text = MD_S8Lit("a:\nb:\n");
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, text);
+            ParseResult result = MD_ParseWholeString(arena, file_name, text);
             TestResult(result.errors.first != 0);
         }
         {
             MD_String8 text = MD_S8Lit("a:\nb:");
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, text);
+            ParseResult result = MD_ParseWholeString(arena, file_name, text);
             TestResult(result.errors.first != 0);
         }
         
         // labeled scoped set in unscoped set
         {
             MD_String8 text = MD_S8Lit("a: b: {\nx\n} c");
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, text);
+            ParseResult result = MD_ParseWholeString(arena, file_name, text);
             TestResult(result.errors.first == 0);
             TestResult(MD_ChildCountFromNode(result.node) == 1);
             TestResult(MD_ChildCountFromNode(result.node->first_child) == 2);
         }
         {
             MD_String8 text = MD_S8Lit("a: b: {\nx\n}\nc");
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, text);
+            ParseResult result = MD_ParseWholeString(arena, file_name, text);
             TestResult(result.errors.first == 0);
             TestResult(MD_ChildCountFromNode(result.node) == 2);
             TestResult(MD_ChildCountFromNode(result.node->first_child) == 1);
@@ -670,7 +670,7 @@ int main(void)
         // scoped set is not unscoped
         {
             MD_String8 text = MD_S8Lit("a: {\nx\ny\n} c");
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, text);
+            ParseResult result = MD_ParseWholeString(arena, file_name, text);
             TestResult(result.errors.first == 0);
             TestResult(result.node->first_child != result.node->last_child);
         }
@@ -681,19 +681,19 @@ int main(void)
         MD_String8 file_name = MD_S8Lit("raw_text");
         
         {
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("@foo bar"));
+            ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("@foo bar"));
             TestResult(MD_NodeHasTag(result.node->first_child, MD_S8Lit("foo"), 0));
         }
         {
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("@+ bar"));
+            ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("@+ bar"));
             TestResult(MD_NodeHasTag(result.node->first_child, MD_S8Lit("+"), 0));
         }
         {
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("@'a b c' bar"));
+            ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("@'a b c' bar"));
             TestResult(MD_NodeHasTag(result.node->first_child, MD_S8Lit("a b c"), 0));
         }
         {
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("@100 bar"));
+            ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("@100 bar"));
             TestResult(MD_NodeHasTag(result.node->first_child, MD_S8Lit("100"), 0));
         }
     }
@@ -704,27 +704,27 @@ int main(void)
         
         // tagged in scoped set always legal
         {
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("foo:{@tag {bar}}\n"));
+            ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("foo:{@tag {bar}}\n"));
             TestResult(result.errors.first == 0);
         }
         
         // tagged label in unscoped set legal
         {
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("foo:@tag bar\n"));
+            ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("foo:@tag bar\n"));
             TestResult(result.errors.first == 0);
         }
         
         // unlabeled scoped set in unscoped set illegal
         {
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("foo:bar {bar}\n"));
+            ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("foo:bar {bar}\n"));
             TestResult(result.errors.first != 0);
         }
         {
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("foo:bar @tag {bar}\n"));
+            ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("foo:bar @tag {bar}\n"));
             TestResult(result.errors.first != 0);
         }
         {
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("foo:@tag {bar}\n"));
+            ParseResult result = MD_ParseWholeString(arena, file_name, MD_S8Lit("foo:@tag {bar}\n"));
             TestResult(result.errors.first != 0);
         }
     }
@@ -743,10 +743,10 @@ int main(void)
         MD_String8 *string = test_strings;
         for (int i = 0; i < MD_ArrayCount(test_strings); i += 1, string += 1)
         {
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, *string);
+            ParseResult result = MD_ParseWholeString(arena, file_name, *string);
             TestResult((result.errors.first == 0) &&
                        (result.node->first_child == result.node->last_child) &&
-                       (result.node->first_child->flags & MD_NodeFlag_Numeric));
+                       (result.node->first_child->flags & NodeFlag_Numeric));
         }
     }
     
@@ -769,10 +769,10 @@ int main(void)
         MD_String8 *string = test_strings;
         for (int i = 0; i < MD_ArrayCount(test_strings); i += 1, string += 1)
         {
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name, *string);
+            ParseResult result = MD_ParseWholeString(arena, file_name, *string);
             TestResult((result.errors.first == 0) &&
                        (result.node->first_child == result.node->last_child) &&
-                       (result.node->first_child->flags & MD_NodeFlag_Numeric));
+                       (result.node->first_child->flags & NodeFlag_Numeric));
         }
     }
     
@@ -781,24 +781,24 @@ int main(void)
         MD_String8 file_name = MD_S8Lit("raw_text");
         
         {
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name,
+            ParseResult result = MD_ParseWholeString(arena, file_name,
                                                         MD_S8Lit("foo: '(' )"));
             TestResult(result.errors.first != 0);
         }
         {
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name,
+            ParseResult result = MD_ParseWholeString(arena, file_name,
                                                         MD_S8Lit("foo ':' ( )"));
             TestResult(result.errors.first == 0);
             TestResult(MD_ChildCountFromNode(result.node) == 3);
         }
         {
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name,
+            ParseResult result = MD_ParseWholeString(arena, file_name,
                                                         MD_S8Lit("'@'bar foo"));
             TestResult(result.errors.first == 0);
             TestResult(MD_ChildCountFromNode(result.node) == 3);
         }
         {
-            MD_ParseResult result = MD_ParseWholeString(arena, file_name,
+            ParseResult result = MD_ParseWholeString(arena, file_name,
                                                         MD_S8Lit("foo: '(' ')'"));
             TestResult(result.errors.first == 0);
             TestResult(MD_ChildCountFromNode(result.node) == 1);
@@ -811,7 +811,7 @@ int main(void)
         {
             MD_String8 code     = MD_S8Lit("@foo @bar @baz a: { b c d e f }");
             MD_String8 expected = MD_S8Lit("@foo\n@bar\n@baz\na:\n{\n b,\n c,\n d,\n e,\n f,\n}");
-            MD_ParseResult parse = MD_ParseOneNode(arena, code, 0);
+            ParseResult parse = MD_ParseOneNode(arena, code, 0);
             MD_String8List actual_strings = {0};
             MD_DebugDumpFromNode(arena, &actual_strings, parse.node,
                                  0, MD_S8Lit(" "), MD_GenerateFlags_Tree);
@@ -821,7 +821,7 @@ int main(void)
         {
             MD_String8 code     = MD_S8Lit("@foo(1, 2, 3) a: { x y }");
             MD_String8 expected = MD_S8Lit("@foo(1,\n     2,\n     3)\na:\n{\n x,\n y,\n}");
-            MD_ParseResult parse = MD_ParseOneNode(arena, code, 0);
+            ParseResult parse = MD_ParseOneNode(arena, code, 0);
             MD_String8List actual_strings = {0};
             MD_DebugDumpFromNode(arena, &actual_strings, parse.node,
                                  0, MD_S8Lit(" "), MD_GenerateFlags_Tree);
@@ -831,7 +831,7 @@ int main(void)
         {
             MD_String8 code     = MD_S8Lit("// foo\na");
             MD_String8 expected = MD_S8Lit("/*\n foo\n*/\na");
-            MD_ParseResult parse = MD_ParseOneNode(arena, code, 0);
+            ParseResult parse = MD_ParseOneNode(arena, code, 0);
             MD_String8List actual_strings = {0};
             MD_DebugDumpFromNode(arena, &actual_strings, parse.node, 0, MD_S8Lit(" "),
                                  MD_GenerateFlags_Tree|MD_GenerateFlag_Comments);
@@ -840,20 +840,20 @@ int main(void)
         }
         {
             MD_String8 code = MD_S8Lit("@foo @bar @baz a: { b c d e f }");
-            MD_ParseResult parse1 = MD_ParseOneNode(arena, code, 0);
+            ParseResult parse1 = MD_ParseOneNode(arena, code, 0);
             MD_String8List reconstruction_strs = {0};
             MD_ReconstructionFromNode(arena, &reconstruction_strs, parse1.node, 0, MD_S8Lit(" "));
             MD_String8 reconstruction = MD_S8ListJoin(arena, reconstruction_strs, 0);
-            MD_ParseResult parse2 = MD_ParseOneNode(arena, reconstruction, 0);
+            ParseResult parse2 = MD_ParseOneNode(arena, reconstruction, 0);
             TestResult(MD_NodeDeepMatch(parse1.node, parse2.node, MD_NodeMatchFlag_TagArguments|MD_NodeMatchFlag_NodeFlags));
         }
         {
             MD_String8 code = MD_S8Lit("@foo(x: y: z) @bar(a: b: c) @baz(1: 2: 3) abcdefg: { b: 4, c d: 5; e; f, }");
-            MD_ParseResult parse1 = MD_ParseOneNode(arena, code, 0);
+            ParseResult parse1 = MD_ParseOneNode(arena, code, 0);
             MD_String8List reconstruction_strs = {0};
             MD_ReconstructionFromNode(arena, &reconstruction_strs, parse1.node, 0, MD_S8Lit(" "));
             MD_String8 reconstruction = MD_S8ListJoin(arena, reconstruction_strs, 0);
-            MD_ParseResult parse2 = MD_ParseOneNode(arena, reconstruction, 0);
+            ParseResult parse2 = MD_ParseOneNode(arena, reconstruction, 0);
             TestResult(MD_NodeDeepMatch(parse1.node, parse2.node, MD_NodeMatchFlag_TagArguments|MD_NodeMatchFlag_NodeFlags));
         }
         {
@@ -868,11 +868,11 @@ int main(void)
                                        "  e;\n"
                                        "  f,\n"
                                        "}\n");
-            MD_ParseResult parse1 = MD_ParseOneNode(arena, code, 0);
+            ParseResult parse1 = MD_ParseOneNode(arena, code, 0);
             MD_String8List reconstruction_strs = {0};
             MD_ReconstructionFromNode(arena, &reconstruction_strs, parse1.node, 0, MD_S8Lit(" "));
             MD_String8 reconstruction = MD_S8ListJoin(arena, reconstruction_strs, 0);
-            MD_ParseResult parse2 = MD_ParseOneNode(arena, reconstruction, 0);
+            ParseResult parse2 = MD_ParseOneNode(arena, reconstruction, 0);
             TestResult(MD_NodeDeepMatch(parse1.node, parse2.node, MD_NodeMatchFlag_TagArguments|MD_NodeMatchFlag_NodeFlags));
         }
     }

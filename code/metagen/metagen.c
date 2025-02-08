@@ -354,7 +354,7 @@ mg_map_insert_ptr(Arena *arena, MG_Map *map, String8 string, void *val)
 //~ rjf: String Expression Parsing
 
 internal MG_StrExpr *
-mg_push_str_expr(Arena *arena, MG_StrExprOp op, MD_Node *node)
+mg_push_str_expr(Arena *arena, MG_StrExprOp op, Node *node)
 {
   MG_StrExpr *expr = push_array(arena, MG_StrExpr, 1);
   MemoryCopyStruct(expr, &mg_str_expr_nil);
@@ -364,11 +364,11 @@ mg_push_str_expr(Arena *arena, MG_StrExprOp op, MD_Node *node)
 }
 
 internal MG_StrExprParseResult
-mg_str_expr_parse_from_first_opl__min_prec(Arena *arena, MD_Node *first, MD_Node *opl, S8 min_prec)
+mg_str_expr_parse_from_first_opl__min_prec(Arena *arena, Node *first, Node *opl, S8 min_prec)
 {
   MG_StrExprParseResult parse = {&mg_str_expr_nil};
   {
-    MD_Node *it = first;
+    Node *it = first;
     
     //- rjf: consume prefix operators
     MG_StrExpr *leafmost_op = &mg_str_expr_nil;
@@ -407,7 +407,7 @@ mg_str_expr_parse_from_first_opl__min_prec(Arena *arena, MD_Node *first, MD_Node
     //- rjf: parse atom
     {
       MG_StrExpr *atom = &mg_str_expr_nil;
-      if(it->flags & (MD_NodeFlag_Identifier|MD_NodeFlag_Numeric|MD_NodeFlag_StringLiteral) &&
+      if(it->flags & (NodeFlag_Identifier|NodeFlag_Numeric|NodeFlag_StringLiteral) &&
          md_node_is_nil(it->first))
       {
         atom = mg_push_str_expr(arena, MG_StrExprOp_Null, it);
@@ -415,7 +415,7 @@ mg_str_expr_parse_from_first_opl__min_prec(Arena *arena, MD_Node *first, MD_Node
       }
       else if(!md_node_is_nil(it->first))
       {
-        MG_StrExprParseResult subparse = mg_str_expr_parse_from_first_opl__min_prec(arena, it->first, &md_nil_node, 0);
+        MG_StrExprParseResult subparse = mg_str_expr_parse_from_first_opl__min_prec(arena, it->first, &nil_node(), 0);
         atom = subparse.root;
         md_msg_list_concat_in_place(&parse.msgs, &subparse.msgs);
         it = it->next;
@@ -471,7 +471,7 @@ mg_str_expr_parse_from_first_opl__min_prec(Arena *arena, MD_Node *first, MD_Node
       md_msg_list_concat_in_place(&parse.msgs, &subparse.msgs);
       if(subparse.root == &mg_str_expr_nil)
       {
-        md_msg_list_pushf(arena, &parse.msgs, it, MD_MsgKind_Error, "Missing right-hand-side of '%S'.", mg_str_expr_op_symbol_string_table[found_op]);
+        md_msg_list_pushf(arena, &parse.msgs, it, MsgKind_Error, "Missing right-hand-side of '%S'.", mg_str_expr_op_symbol_string_table[found_op]);
       }
       it = subparse.next_node;
     }
@@ -483,16 +483,16 @@ mg_str_expr_parse_from_first_opl__min_prec(Arena *arena, MD_Node *first, MD_Node
 }
 
 internal MG_StrExprParseResult
-mg_str_expr_parse_from_first_opl(Arena *arena, MD_Node *first, MD_Node *opl)
+mg_str_expr_parse_from_first_opl(Arena *arena, Node *first, Node *opl)
 {
   MG_StrExprParseResult parse = mg_str_expr_parse_from_first_opl__min_prec(arena, first, opl, 0);
   return parse;
 }
 
 internal MG_StrExprParseResult
-mg_str_expr_parse_from_root(Arena *arena, MD_Node *root)
+mg_str_expr_parse_from_root(Arena *arena, Node *root)
 {
-  MG_StrExprParseResult parse = mg_str_expr_parse_from_first_opl__min_prec(arena, root->first, &md_nil_node, 0);
+  MG_StrExprParseResult parse = mg_str_expr_parse_from_first_opl__min_prec(arena, root->first, &nil_node(), 0);
   return parse;
 }
 
@@ -504,16 +504,16 @@ mg_node_array_make(Arena *arena, U64 count)
 {
   MG_NodeArray result = {0};
   result.count = count;
-  result.v = push_array(arena, MD_Node *, result.count);
+  result.v = push_array(arena, Node *, result.count);
   for(U64 idx = 0; idx < result.count; idx += 1)
   {
-    result.v[idx] = &md_nil_node;
+    result.v[idx] = &nil_node();
   }
   return result;
 }
 
 internal MG_NodeArray
-mg_child_array_from_node(Arena *arena, MD_Node *node)
+mg_child_array_from_node(Arena *arena, Node *node)
 {
   MG_NodeArray children = mg_node_array_make(arena, md_child_count_from_node(node));
   U64 idx = 0;
@@ -526,7 +526,7 @@ mg_child_array_from_node(Arena *arena, MD_Node *node)
 }
 
 internal MG_NodeGrid
-mg_node_grid_make_from_node(Arena *arena, MD_Node *root)
+mg_node_grid_make_from_node(Arena *arena, Node *root)
 {
   MG_NodeGrid grid = {0};
   
@@ -593,10 +593,10 @@ mg_column_from_index(Arena *arena, MG_NodeGrid grid, U64 index)
   return result;
 }
 
-internal MD_Node *
+internal Node *
 mg_node_from_grid_xy(MG_NodeGrid grid, U64 x, U64 y)
 {
-  MD_Node *result = &md_nil_node;
+  Node *result = &nil_node();
   U64 idx = x*grid.x_stride + y*grid.y_stride;
   if(0 <= idx && idx < grid.cells.count)
   {
@@ -616,7 +616,7 @@ mg_column_desc_array_make(Arena *arena, U64 count, MG_ColumnDesc *descs)
 }
 
 internal MG_ColumnDescArray
-mg_column_desc_array_from_tag(Arena *arena, MD_Node *tag)
+mg_column_desc_array_from_tag(Arena *arena, Node *tag)
 {
   MG_ColumnDescArray result = {0};
   result.count = md_child_count_from_node(tag);
@@ -657,7 +657,7 @@ mg_column_index_from_name(MG_ColumnDescArray descs, String8 name)
 }
 
 internal String8
-mg_string_from_row_desc_idx(MD_Node *row_parent, MG_ColumnDescArray descs, U64 idx)
+mg_string_from_row_desc_idx(Node *row_parent, MG_ColumnDescArray descs, U64 idx)
 {
   String8 result = {0};
   
@@ -686,21 +686,21 @@ mg_string_from_row_desc_idx(MD_Node *row_parent, MG_ColumnDescArray descs, U64 i
             cell_idx -= 1;
           }
         }
-        MD_Node *node = md_child_from_index(row_parent, cell_idx);
+        Node *node = md_child_from_index(row_parent, cell_idx);
         result = node->string;
       }break;
       
       case MG_ColumnKind_CheckForTag:
       {
         String8 tag_name = desc->name;
-        MD_Node *tag = md_tag_from_string(row_parent, tag_name, 0);
+        Node *tag = md_tag_from_string(row_parent, tag_name, 0);
         result = md_node_is_nil(tag) ? str8_lit("0") : str8_lit("1");
       }break;
       
       case MG_ColumnKind_TagChild:
       {
         String8 tag_name = desc->tag_name;
-        MD_Node *tag = md_tag_from_string(row_parent, tag_name, 0);
+        Node *tag = md_tag_from_string(row_parent, tag_name, 0);
         result = tag->first->string;
       }break;
     }
@@ -836,9 +836,9 @@ mg_eval_table_expand_expr__string(Arena *arena, MG_StrExpr *expr, MG_TableExpand
     {
       // rjf: grab left/right
       MG_StrExpr *left_expr = expr->left;
-      MD_Node *left_node = left_expr->node;
+      Node *left_node = left_expr->node;
       MG_StrExpr *right_expr = expr->right;
-      MD_Node *right_node = right_expr->node;
+      Node *right_node = right_expr->node;
       
       // rjf: grab table name (LHS of .) and column lookup string (RHS of .)
       String8 expand_label = left_node->string;
@@ -862,7 +862,7 @@ mg_eval_table_expand_expr__string(Arena *arena, MG_StrExpr *expr, MG_TableExpand
       }
       
       // rjf: grab row parent
-      MD_Node *row_parent = &md_nil_node;
+      Node *row_parent = &nil_node();
       if(grid && (0 <= row_idx && row_idx < grid->row_parents.count))
       {
         row_parent = grid->row_parents.v[row_idx];
@@ -880,13 +880,13 @@ mg_eval_table_expand_expr__string(Arena *arena, MG_StrExpr *expr, MG_TableExpand
         else
         {
           // NOTE(rjf): numeric column lookup (column index)
-          if(right_node->flags & MD_NodeFlag_Numeric)
+          if(right_node->flags & NodeFlag_Numeric)
           {
             try_u64_from_str8_c_rules(column_lookup, &column_idx);
           }
           
           // NOTE(rjf): string column lookup (column name)
-          if(right_node->flags & (MD_NodeFlag_Identifier|MD_NodeFlag_StringLiteral))
+          if(right_node->flags & (NodeFlag_Identifier|NodeFlag_StringLiteral))
           {
             column_idx = mg_column_index_from_name(column_descs, column_lookup);
           }
@@ -999,8 +999,8 @@ mg_loop_table_column_expansion(Arena *arena, String8 strexpr, MG_TableExpandInfo
             }
           }
           String8 expr_string = str8_substr(string, expr_range);
-          MD_TokenizeResult expr_tokenize = md_tokenize_from_text(scratch.arena, expr_string);
-          MD_ParseResult expr_base_parse = md_parse_from_text_tokens(scratch.arena, str8_lit(""), expr_string, expr_tokenize.tokens);
+          TokenizeResult expr_tokenize = md_tokenize_from_text(scratch.arena, expr_string);
+          ParseResult expr_base_parse = md_parse_from_text_tokens(scratch.arena, str8_lit(""), expr_string, expr_tokenize.tokens);
           MG_StrExprParseResult expr_parse = mg_str_expr_parse_from_root(scratch.arena, expr_base_parse.root->first);
           mg_eval_table_expand_expr__string(arena, expr_parse.root, info, &expansion_strs);
           char_idx = start = char_idx + 1 + expr_range.max;
@@ -1022,7 +1022,7 @@ mg_loop_table_column_expansion(Arena *arena, String8 strexpr, MG_TableExpandInfo
 }
 
 internal String8List
-mg_string_list_from_table_gen(Arena *arena, MG_Map grid_name_map, MG_Map grid_column_desc_map, String8 fallback, MD_Node *gen)
+mg_string_list_from_table_gen(Arena *arena, MG_Map grid_name_map, MG_Map grid_column_desc_map, String8 fallback, Node *gen)
 {
   String8List result = {0};
   Temp scratch = scratch_begin(&arena, 1);
@@ -1041,8 +1041,8 @@ mg_string_list_from_table_gen(Arena *arena, MG_Map grid_name_map, MG_Map grid_co
       if(str8_match(tag->string, str8_lit("expand"), 0))
       {
         // rjf: grab args for this expansion
-        MD_Node *table_name_node = md_child_from_index(tag, 0);
-        MD_Node *expand_label_node = md_child_from_index(tag, 1);
+        Node *table_name_node = md_child_from_index(tag, 0);
+        Node *expand_label_node = md_child_from_index(tag, 1);
         String8 table_name = table_name_node->string;
         String8 expand_label = expand_label_node->string;
         

@@ -24,7 +24,7 @@ struct GEN_TypeInfo
 {
     GEN_TypeInfo *next;
     GEN_TypeKind kind;
-    MD_Node *node;
+    Node *node;
     
     // basic
     int size;
@@ -45,10 +45,10 @@ typedef struct GEN_TypeMember GEN_TypeMember;
 struct GEN_TypeMember
 {
     GEN_TypeMember *next;
-    MD_Node *node;
+    Node *node;
     GEN_TypeInfo *type;
     struct GEN_TypeMember *array_count;
-    //MD_Node *array_count;
+    //Node *array_count;
     int member_index;
 };
 
@@ -56,7 +56,7 @@ typedef struct GEN_TypeEnumerant GEN_TypeEnumerant;
 struct GEN_TypeEnumerant
 {
     GEN_TypeEnumerant *next;
-    MD_Node *node;
+    Node *node;
     int value;
 };
 
@@ -64,13 +64,13 @@ typedef struct GEN_MapInfo GEN_MapInfo;
 struct GEN_MapInfo
 {
     GEN_MapInfo *next;
-    MD_Node *node;
+    Node *node;
     
     struct GEN_TypedMapInfo *typed_map;
     
     int is_complete;
-    MD_Node *default_val;
-    MD_Node *auto_val;
+    Node *default_val;
+    Node *auto_val;
     
     struct GEN_MapCase *first_case;
     struct GEN_MapCase *last_case;
@@ -95,29 +95,29 @@ struct GEN_MapCase
 {
     GEN_MapCase *next;
     GEN_TypeEnumerant *in_enumerant;
-    MD_Node *out;
+    Node *out;
 };
 
 
 //~ helpers ///////////////////////////////////////////////////////////////////
-MD_Node* gen_get_child_value(MD_Node *parent, MD_String8 child_name);
+Node* gen_get_child_value(Node *parent, MD_String8 child_name);
 
 GEN_TypeInfo* gen_resolve_type_info_from_string(MD_String8 name);
-GEN_TypeInfo* gen_resolve_type_info_from_referencer(MD_Node *reference);
+GEN_TypeInfo* gen_resolve_type_info_from_referencer(Node *reference);
 
 GEN_TypeEnumerant* gen_enumerant_from_name(GEN_TypeInfo *enum_type, MD_String8 name);
 
 GEN_MapCase* gen_map_case_from_enumerant(GEN_MapInfo *map, GEN_TypeEnumerant *enumerant);
 
-MD_Node* gen_get_symbol_md_node_by_name(MD_String8 name);
+Node* gen_get_symbol_md_node_by_name(MD_String8 name);
 
-void gen_type_resolve_error(MD_Node *reference);
-void gen_duplicate_symbol_error(MD_Node *new_node, MD_Node *existing_node);
+void gen_type_resolve_error(Node *reference);
+void gen_duplicate_symbol_error(Node *new_node, Node *existing_node);
 
-void gen_check_and_do_duplicate_symbol_error(MD_Node *new_node);
+void gen_check_and_do_duplicate_symbol_error(Node *new_node);
 
 //~ analyzers /////////////////////////////////////////////////////////////////
-void gen_gather_types_and_maps(MD_Node *list);
+void gen_gather_types_and_maps(Node *list);
 void gen_check_duplicate_member_names(void);
 void gen_equip_basic_type_size(void);
 void gen_equip_struct_members(void);

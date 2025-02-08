@@ -61,7 +61,7 @@ typedef struct ConfigFile{
     MD_Arena *arena;
     MD_String8 file_name;
     MD_String8 contents;
-    MD_Node *root;
+    Node *root;
     MD_MessageList errors;
 } ConfigFile;
 
@@ -86,7 +86,7 @@ new_config_file_from_file_name(char *file_name_cstr)
     //  explicitly so that we can save the contents and the parse in the
     //  ConfigFile.
     MD_String8 contents = MD_LoadEntireFile(arena, file_name);
-    MD_ParseResult parse = MD_ParseWholeString(arena, file_name, contents);
+    ParseResult parse = MD_ParseWholeString(arena, file_name, contents);
     
     // @notes This part can be a little bit subtle. First we allocated the
     //  arena with MD_ArenaAlloc. Then we used the arena to allocate a 

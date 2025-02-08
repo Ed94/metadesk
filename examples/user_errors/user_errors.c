@@ -28,12 +28,12 @@ int main(int argc, char **argv)
     arena = MD_ArenaAlloc();
     
     // parse all files passed to the command line
-    MD_Node *list = MD_MakeList(arena);
+    Node *list = MD_MakeList(arena);
     for(int i = 1; i < argc; i += 1)
     {
         // parse the file
         MD_String8 file_name = MD_S8CString(argv[i]);
-        MD_ParseResult parse_result = MD_ParseWholeFile(arena, file_name);
+        ParseResult parse_result = MD_ParseWholeFile(arena, file_name);
         
         // @notes Here we are printing out all the messages that came back from
         //  the parser. We could try to wait and print all the errors at once,
@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     // check for custom errors
     for(MD_EachNode(ref, list->first_child))
     {
-        MD_Node *root = MD_ResolveNodeFromReference(ref);
+        Node *root = MD_ResolveNodeFromReference(ref);
         
         // @notes The custom rules in this example apply to the top level nodes
         //  so we can check for them by visiting each node from the root.
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
             //  as an array and access it by index. If there's a tag at index 1
             //  then we know there are at least two tags, which is against
             //  the first custom rule.
-            MD_Node *tag_2 = MD_TagFromIndex(node, 1);
+            Node *tag_2 = MD_TagFromIndex(node, 1);
             if (!MD_NodeIsNil(tag_2))
             {
                 // @notes The MD_PrintMessage helper formats a message for us
@@ -97,8 +97,8 @@ int main(int argc, char **argv)
             // @notes The second custom rule applies to sets with "[]"
             //  delimiters. We can easily detect nodes for those sets by
             //  checking the node flags:
-            if ((node->flags & MD_NodeFlag_HasBracketLeft) ||
-                (node->flags & MD_NodeFlag_HasBracketRight))
+            if ((node->flags & NodeFlag_HasBracketLeft) ||
+                (node->flags & NodeFlag_HasBracketRight))
             {
                 if (node->string.size > 0)
                 {

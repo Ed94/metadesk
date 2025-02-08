@@ -59,7 +59,7 @@ FILE *error_file = 0;
 // @notes As we analyze the Metadesk tree we create more data. In this example
 //  the new data is stored in two major types GEN_TypeInfo and GEN_MapInfo.
 //  We form a list for each type of these "processed" types holds a pointer
-//  back to the original MD_Node that generated it, and room for information
+//  back to the original Node that generated it, and room for information
 //  that will be equiped to the "processed" type in later stages of analysis.
 //  We also use the MD_Map helper to create a string -> pointer mapping so that
 //  we can look up the "processed" info pointers by name after the initial
@@ -76,11 +76,11 @@ MD_Map map_map = {0};
 
 //~ helpers ///////////////////////////////////////////////////////////////////
 
-MD_Node*
-gen_get_child_value(MD_Node *parent, MD_String8 child_name)
+Node*
+gen_get_child_value(Node *parent, MD_String8 child_name)
 {
-    MD_Node *child = MD_ChildFromString(parent, child_name, 0);
-    MD_Node *result = child->first_child;
+    Node *child = MD_ChildFromString(parent, child_name, 0);
+    Node *result = child->first_child;
     return(result);
 }
 
@@ -103,7 +103,7 @@ gen_resolve_type_info_from_string(MD_String8 name)
 }
 
 GEN_TypeInfo*
-gen_resolve_type_info_from_referencer(MD_Node *reference)
+gen_resolve_type_info_from_referencer(Node *reference)
 {
     GEN_TypeInfo *result = gen_resolve_type_info_from_string(reference->string);
     return(result);
@@ -143,10 +143,10 @@ gen_map_case_from_enumerant(GEN_MapInfo *map, GEN_TypeEnumerant *enumerant)
     return(result);
 }
 
-MD_Node*
+Node*
 gen_get_symbol_md_node_by_name(MD_String8 name)
 {
-    MD_Node *result = MD_NilNode();
+    Node *result = MD_NilNode();
     MD_MapSlot *type_slot = MD_MapLookup(&type_map, MD_MapKeyStr(name));
     if (type_slot != 0)
     {
@@ -163,7 +163,7 @@ gen_get_symbol_md_node_by_name(MD_String8 name)
 }
 
 void
-gen_type_resolve_error(MD_Node *reference)
+gen_type_resolve_error(Node *reference)
 {
     MD_CodeLoc loc = MD_CodeLocFromNode(reference);
     MD_PrintMessageFmt(error_file, loc, MD_MessageKind_Error,
@@ -171,7 +171,7 @@ gen_type_resolve_error(MD_Node *reference)
 }
 
 void
-gen_duplicate_symbol_error(MD_Node *new_node, MD_Node *existing_node)
+gen_duplicate_symbol_error(Node *new_node, Node *existing_node)
 {
     MD_CodeLoc loc = MD_CodeLocFromNode(new_node);
     MD_PrintMessageFmt(error_file, loc, MD_MessageKind_Error,
@@ -184,9 +184,9 @@ gen_duplicate_symbol_error(MD_Node *new_node, MD_Node *existing_node)
 }
 
 void
-gen_check_and_do_duplicate_symbol_error(MD_Node *new_node)
+gen_check_and_do_duplicate_symbol_error(Node *new_node)
 {
-    MD_Node *existing = gen_get_symbol_md_node_by_name(new_node->string);
+    Node *existing = gen_get_symbol_md_node_by_name(new_node->string);
     if (!MD_NodeIsNil(existing))
     {
         gen_duplicate_symbol_error(new_node, existing);
@@ -206,22 +206,22 @@ gen_check_and_do_duplicate_symbol_error(MD_Node *new_node)
 //  where the kind field is not one of the expected values.
 
 void
-gen_gather_types_and_maps(MD_Node *list)
+gen_gather_types_and_maps(Node *list)
 {
     for(MD_EachNode(ref, list->first_child))
     {
-        MD_Node *root = MD_ResolveNodeFromReference(ref);
+        Node *root = MD_ResolveNodeFromReference(ref);
         for(MD_EachNode(node, root->first_child))
         {
             // gather type
-            MD_Node *type_tag =  MD_TagFromString(node, MD_S8Lit("type"), 0);
+            Node *type_tag =  MD_TagFromString(node, MD_S8Lit("type"), 0);
             
             if (!MD_NodeIsNil(type_tag))
             {
                 gen_check_and_do_duplicate_symbol_error(node);
                 
                 GEN_TypeKind kind = GEN_TypeKind_Null;
-                MD_Node   *tag_arg_node = type_tag->first_child;
+                Node   *tag_arg_node = type_tag->first_child;
                 MD_String8 tag_arg_str = tag_arg_node->string;
                 if (MD_S8Match(tag_arg_str, MD_S8Lit("basic"), 0))
                 {
@@ -274,7 +274,7 @@ gen_check_duplicate_member_names(void)
          type != 0;
          type = type->next)
     {
-        MD_Node *type_root_node = type->node;
+        Node *type_root_node = type->node;
         for (MD_EachNode(member_node, type_root_node->first_child))
         {
             MD_String8 name = member_node->string;
@@ -315,8 +315,8 @@ gen_equip_basic_type_size(void)
             // extract the size
             int size = 0;
             
-            MD_Node *size_node = type->node->first_child;
-            MD_Node *error_at = 0;
+            Node *size_node = type->node->first_child;
+            Node *error_at = 0;
             if (MD_NodeIsNil(size_node))
             {
                 error_at = type->node;
@@ -361,10 +361,10 @@ gen_equip_struct_members(void)
             GEN_TypeMember *last_member = 0;
             int member_count = 0;
             
-            MD_Node *type_root_node = type->node;
+            Node *type_root_node = type->node;
             for (MD_EachNode(member_node, type_root_node->first_child))
             {
-                MD_Node *type_name_node = member_node->first_child;
+                Node *type_name_node = member_node->first_child;
                 
                 // missing type node?
                 if (MD_NodeIsNil(type_name_node))
@@ -392,10 +392,10 @@ gen_equip_struct_members(void)
                 if (got_list)
                 {
                     GEN_TypeMember *array_count = 0;
-                    MD_Node *array_tag = MD_TagFromString(type_name_node, MD_S8Lit("array"), 0);
+                    Node *array_tag = MD_TagFromString(type_name_node, MD_S8Lit("array"), 0);
                     if (!MD_NodeIsNil(array_tag))
                     {
-                        MD_Node *array_count_referencer = array_tag->first_child;
+                        Node *array_count_referencer = array_tag->first_child;
                         if (array_count_referencer->string.size == 0)
                         {
                             MD_CodeLoc loc = MD_CodeLocFromNode(array_tag);
@@ -404,7 +404,7 @@ gen_equip_struct_members(void)
                         }
                         else
                         {
-                            MD_Node *array_count_member_node =
+                            Node *array_count_member_node =
                                 MD_ChildFromString(type_root_node, array_count_referencer->string, 0);
                             if (MD_NodeIsNil(array_count_member_node))
                             {
@@ -471,10 +471,10 @@ gen_equip_enum_underlying_type(void)
             // extract underlying type
             GEN_TypeInfo *underlying_type = 0;
             
-            MD_Node *type_node = type->node;
-            MD_Node *type_tag = MD_TagFromString(type_node, MD_S8Lit("type"), 0);
-            MD_Node *type_tag_param = type_tag->first_child;
-            MD_Node *underlying_type_ref = type_tag_param->first_child;
+            Node *type_node = type->node;
+            Node *type_tag = MD_TagFromString(type_node, MD_S8Lit("type"), 0);
+            Node *type_tag_param = type_tag->first_child;
+            Node *underlying_type_ref = type_tag_param->first_child;
             if (!MD_NodeIsNil(underlying_type_ref))
             {
                 GEN_TypeInfo *resolved_type = gen_resolve_type_info_from_referencer(underlying_type_ref);
@@ -522,10 +522,10 @@ gen_equip_enum_members(void)
             
             int next_implicit_value = 0;
             
-            MD_Node *type_root_node = type->node;
+            Node *type_root_node = type->node;
             for (MD_EachNode(enumerant_node, type_root_node->first_child))
             {
-                MD_Node *value_node = enumerant_node->first_child;
+                Node *value_node = enumerant_node->first_child;
                 int value = 0;
                 
                 // missing value node?
@@ -581,19 +581,19 @@ gen_equip_map_in_out_types(void)
          map != 0;
          map = map->next)
     {
-        MD_Node *map_root_node = map->node;
-        MD_Node *map_tag = MD_TagFromString(map_root_node, MD_S8Lit("map"), 0);
+        Node *map_root_node = map->node;
+        Node *map_tag = MD_TagFromString(map_root_node, MD_S8Lit("map"), 0);
         
         // NOTE we could use an expression parser here to make this fancier
         // and check for the 'In -> Out' semicolon delimited syntax more
         // carefully, this isn't checking it very rigorously. But there are
         // no other cases we need to expect so far so being a bit sloppy
         // buys us a lot of simplicity.
-        MD_Node *in_node = map_tag->first_child;
-        MD_Node *arrow = in_node->next;
-        MD_Node *out_node = arrow->next;
+        Node *in_node = map_tag->first_child;
+        Node *arrow = in_node->next;
+        Node *out_node = arrow->next;
         {
-            MD_Node *error_at = 0;
+            Node *error_at = 0;
             if (MD_NodeIsNil(in_node))
             {
                 error_at = map_tag;
@@ -666,8 +666,8 @@ gen_equip_map_in_out_types(void)
         
         // check for named children in the map tag
         int is_complete = MD_NodeHasChild(map_tag, MD_S8Lit("complete"), 0);
-        MD_Node *default_val = gen_get_child_value(map_tag, MD_S8Lit("default"));
-        MD_Node *auto_val = gen_get_child_value(map_tag, MD_S8Lit("auto"));
+        Node *default_val = gen_get_child_value(map_tag, MD_S8Lit("default"));
+        Node *auto_val = gen_get_child_value(map_tag, MD_S8Lit("auto"));
         
         // save to map
         map->typed_map = typed_map;
@@ -697,16 +697,16 @@ gen_equip_map_cases(void)
             GEN_MapCase *last_case = 0;
             int case_count = 0;
             
-            MD_Node *map_root_node = map->node;
+            Node *map_root_node = map->node;
             
-            for (MD_Node *case_node = map_root_node->first_child;
+            for (Node *case_node = map_root_node->first_child;
                  !MD_NodeIsNil(case_node);
-                 case_node = MD_FirstNodeWithFlags(case_node->next, MD_NodeFlag_IsAfterComma))
+                 case_node = MD_FirstNodeWithFlags(case_node->next, NodeFlag_IsAfterComma))
             {
                 // extract in & out
-                MD_Node *in = case_node;
-                MD_Node *arrow = in->next;
-                MD_Node *out = arrow->next;
+                Node *in = case_node;
+                Node *arrow = in->next;
+                Node *out = arrow->next;
                 if (!MD_S8Match(arrow->string, MD_S8Lit("->"), 0) ||
                     MD_NodeIsNil(out))
                 {
@@ -1237,12 +1237,12 @@ main(int argc, char **argv)
     error_file = stderr;
     
     // parse all files passed to the command line
-    MD_Node *list = MD_MakeList(arena);
+    Node *list = MD_MakeList(arena);
     for (int i = 1; i < argc; i += 1)
     {
         // parse the file
         MD_String8 file_name = MD_S8CString(argv[i]);
-        MD_ParseResult parse_result = MD_ParseWholeFile(arena, file_name);
+        ParseResult parse_result = MD_ParseWholeFile(arena, file_name);
         
         // print metadesk errors
         for (MD_Message *message = parse_result.errors.first;
@@ -1323,7 +1323,7 @@ main(int argc, char **argv)
             case GEN_TypeKind_Enum:   kind_string = "enum"; break;
         }
         
-        MD_Node *node = type->node;
+        Node *node = type->node;
         printf("%.*s: %s\n", MD_S8VArg(node->string), kind_string);
         
         // print member lists
@@ -1351,7 +1351,7 @@ main(int argc, char **argv)
          map != 0;
          map = map->next)
     {
-        MD_Node *node = map->node;
+        Node *node = map->node;
         printf("%.*s: map\n", MD_S8VArg(node->string));
         
         // print case list

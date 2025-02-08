@@ -1057,16 +1057,12 @@ str8_path_list_join_by_style_alloc(AllocatorInfo ainfo, String8List* path, PathS
 ////////////////////////////////
 //~ rjf: UTF-8 & UTF-16 Decoding/Encoding
 
-read_only global U8 utf8_class[32] = {
-	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,2,2,2,2,3,3,4,5,
-};
-
 UnicodeDecode
 utf8_decode(U8* str, U64 max)
 {
 	UnicodeDecode result = {1, MAX_U32};
 	U8 byte       = str[0];
-	U8 byte_class = utf8_class[byte >> 3];
+	U8 byte_class = utf8_class(byte >> 3);
 	switch (byte_class)
 	{
 		case 1:
@@ -1080,7 +1076,7 @@ utf8_decode(U8* str, U64 max)
 			if (2 < max)
 			{
 				U8 cont_byte = str[1];
-				if (utf8_class[cont_byte >> 3] == 0)
+				if (utf8_class(cont_byte >> 3) == 0)
 				{
 					result.codepoint =   (byte      & BITMASK5) << 6;
 					result.codepoint |=  (cont_byte & BITMASK6);
@@ -1095,8 +1091,8 @@ utf8_decode(U8* str, U64 max)
 			if (2 < max)
 			{
 				U8 cont_byte[2] = {str[1], str[2]};
-				if (utf8_class[cont_byte[0] >> 3] == 0 &&
-					utf8_class[cont_byte[1] >> 3] == 0)
+				if (utf8_class(cont_byte[0] >> 3) == 0 &&
+					utf8_class(cont_byte[1] >> 3) == 0)
 				{
 					result.codepoint =   (byte         & BITMASK4) << 12;
 					result.codepoint |= ((cont_byte[0] & BITMASK6) << 6);
@@ -1112,9 +1108,9 @@ utf8_decode(U8* str, U64 max)
 			if (3 < max)
 			{
 				U8 cont_byte[3] = {str[1], str[2], str[3]};
-				if (utf8_class[cont_byte[0] >> 3] == 0 &&
-					utf8_class[cont_byte[1] >> 3] == 0 &&
-					utf8_class[cont_byte[2] >> 3] == 0)
+				if (utf8_class(cont_byte[0] >> 3) == 0 &&
+					utf8_class(cont_byte[1] >> 3) == 0 &&
+					utf8_class(cont_byte[2] >> 3) == 0)
 				{
 					result.codepoint =   (byte         & BITMASK3) << 18;
 					result.codepoint |= ((cont_byte[0] & BITMASK6) << 12);

@@ -40,8 +40,8 @@ print_expression(FILE *out, MD_Expr *expr)
         //  whether it is a leaf or an operator. This node gives us a way to
         //  see information about this leaf, and also gives a way to create an
         //  MD_CodeLoc for error messages. The same works on operator nodes.
-        MD_Node *node = expr->md_node;
-        if ((node->flags & MD_NodeFlag_MaskSetDelimiters) == 0)
+        Node *node = expr->md_node;
+        if ((node->flags & NodeFlag_MaskSetDelimiters) == 0)
         {
             fprintf(out, "%.*s", MD_S8VArg(node->raw_string));
         }
@@ -86,12 +86,12 @@ eval_expression(MD_Expr *expr)
     MD_ExprOpr *op = expr->op;
     if (op == 0)
     {
-        MD_Node *node = expr->md_node;
-        if (node->flags & MD_NodeFlag_Numeric)
+        Node *node = expr->md_node;
+        if (node->flags & NodeFlag_Numeric)
         {
             result = MD_CStyleIntFromString(node->string);
         }
-        else if (node->flags & MD_NodeFlag_Identifier)
+        else if (node->flags & NodeFlag_Identifier)
         {
             MD_MapSlot *slot = MD_MapLookup(&eval_map, MD_MapKeyStr(node->string));
             if (slot != 0)
@@ -140,13 +140,13 @@ int main(int argc, char **argv)
     arena = MD_ArenaAlloc();
     
     // parse all files passed to the command line
-    MD_Node *list = MD_MakeList(arena);
+    Node *list = MD_MakeList(arena);
     for (int i = 1; i < argc; i += 1)
     {
         
         // parse the file
         MD_String8 file_name = MD_S8CString(argv[i]);
-        MD_ParseResult parse_result = MD_ParseWholeFile(arena, file_name);
+        ParseResult parse_result = MD_ParseWholeFile(arena, file_name);
         
         // print metadesk errors
         for (MD_Message *message = parse_result.errors.first;
@@ -215,7 +215,7 @@ int main(int argc, char **argv)
         // init eval map
         eval_map = MD_MapMake(arena);
         
-        MD_Node *root = MD_ResolveNodeFromReference(root_it);
+        Node *root = MD_ResolveNodeFromReference(root_it);
         for (MD_EachNode(node, root->first_child))
         {
             // @notes An expression parse is an extra stage of analysis on top

@@ -83,7 +83,7 @@ print_expression(FILE *out, MD_Expr *expr)
     MD_ExprOpr *op = expr->op;
     if (op == 0)
     {
-        MD_Node *node = expr->md_node;
+        Node *node = expr->md_node;
         if (node->raw_string.size != 0)
         {
             fprintf(out, "%.*s", MD_S8VArg(node->raw_string));
@@ -92,27 +92,27 @@ print_expression(FILE *out, MD_Expr *expr)
         {
             char c1 = 0;
             char c2 = 0;
-            if (node->flags & MD_NodeFlag_HasParenLeft)
+            if (node->flags & NodeFlag_HasParenLeft)
             {
                 c1 = '(';
             }
-            if (node->flags & MD_NodeFlag_HasBraceLeft)
+            if (node->flags & NodeFlag_HasBraceLeft)
             {
                 c1 = '{';
             }
-            if (node->flags & MD_NodeFlag_HasBracketLeft)
+            if (node->flags & NodeFlag_HasBracketLeft)
             {
                 c1 = '[';
             }
-            if (node->flags & MD_NodeFlag_HasParenRight)
+            if (node->flags & NodeFlag_HasParenRight)
             {
                 c2 = ')';
             }
-            if (node->flags & MD_NodeFlag_HasBraceRight)
+            if (node->flags & NodeFlag_HasBraceRight)
             {
                 c2 = '}';
             }
-            if (node->flags & MD_NodeFlag_HasBracketRight)
+            if (node->flags & NodeFlag_HasBracketRight)
             {
                 c2 = ']';
             }
@@ -131,7 +131,7 @@ print_expression(FILE *out, MD_Expr *expr)
         {
             default:
             {
-                MD_Node *node = expr->md_node;
+                Node *node = expr->md_node;
                 MD_CodeLoc loc = MD_CodeLocFromNode(node);
                 MD_PrintMessage(stderr, loc, MD_MessageKind_FatalError,
                                 MD_S8Lit("this is an unknown kind of operator"));
@@ -139,7 +139,7 @@ print_expression(FILE *out, MD_Expr *expr)
             
             case MD_ExprOprKind_Prefix:
             {
-                MD_Node *node = expr->md_node;
+                Node *node = expr->md_node;
                 fprintf(out, "%.*s(", MD_S8VArg(op->string));
                 print_expression(out, expr->unary_operand);
                 fprintf(out, ")");
@@ -150,7 +150,7 @@ print_expression(FILE *out, MD_Expr *expr)
                 fprintf(out, "(");
                 print_expression(out, expr->unary_operand);
                 MD_String8 op_string = op->string;
-                if ((expr->md_node->flags & MD_NodeFlag_MaskSetDelimiters) != 0)
+                if ((expr->md_node->flags & NodeFlag_MaskSetDelimiters) != 0)
                 {
                     fprintf(out, ")%c...%c", op_string.str[0], op_string.str[1]);
                 }
@@ -191,13 +191,13 @@ int main(int argc, char **argv)
     arena = MD_ArenaAlloc();
     
     // parse all files passed to the command line
-    MD_Node *list = MD_MakeList(arena);
+    Node *list = MD_MakeList(arena);
     for (int i = 1; i < argc; i += 1)
     {
         
         // parse the file
         MD_String8 file_name = MD_S8CString(argv[i]);
-        MD_ParseResult parse_result = MD_ParseWholeFile(arena, file_name);
+        ParseResult parse_result = MD_ParseWholeFile(arena, file_name);
         
         // print metadesk errors
         for (MD_Message *message = parse_result.errors.first;
@@ -233,7 +233,7 @@ MD_ExprOprPush(arena, &list, MD_ExprOprKind_##k, p, MD_S8Lit(t), Op##e, 0);
     // print the verbose parse results
     for (MD_EachNode(root_it, list->first_child))
     {
-        MD_Node *root = MD_ResolveNodeFromReference(root_it);
+        Node *root = MD_ResolveNodeFromReference(root_it);
         for (MD_EachNode(node, root->first_child))
         {
             MD_ExprParseResult parse = MD_ExprParse(arena, &table, node->first_child, MD_NilNode());

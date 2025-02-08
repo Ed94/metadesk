@@ -92,9 +92,9 @@ entry_point(CmdLine *cmdline)
       if(str8_match(file_ext, str8_lit("mdesk"), 0))
       {
         String8 data = os_data_from_file_path(mg_arena, file_path);
-        MD_TokenizeResult tokenize = md_tokenize_from_text(mg_arena, data);
-        MD_ParseResult parse = md_parse_from_text_tokens(mg_arena, file_path, data, tokenize.tokens);
-        for(MD_Msg *m = parse.msgs.first; m != 0; m = m->next)
+        TokenizeResult tokenize = md_tokenize_from_text(mg_arena, data);
+        ParseResult parse = md_parse_from_text_tokens(mg_arena, file_path, data, tokenize.tokens);
+        for(Msg *m = parse.msgs.first; m != 0; m = m->next)
         {
           TxtPt pt = mg_txt_pt_from_string_off(data, m->node->src_offset);
           String8 msg_kind_string = {0};
@@ -102,8 +102,8 @@ entry_point(CmdLine *cmdline)
           {
             default:{}break;
             case MD_MsgKind_Note:        {msg_kind_string = str8_lit("note");}break;
-            case MD_MsgKind_Warning:     {msg_kind_string = str8_lit("warning");}break;
-            case MD_MsgKind_Error:       {msg_kind_string = str8_lit("error");}break;
+            case MsgKind_Warning:     {msg_kind_string = str8_lit("warning");}break;
+            case MsgKind_Error:       {msg_kind_string = str8_lit("error");}break;
             case MD_MsgKind_FatalError:  {msg_kind_string = str8_lit("fatal error");}break;
           }
           String8 location = push_str8f(mg_arena, "%S:%I64d:%I64d", file_path, pt.line, pt.column);
@@ -128,10 +128,10 @@ entry_point(CmdLine *cmdline)
   {
     for(MG_FileParseNode *n = parses.first; n != 0; n = n->next)
     {
-      MD_Node *file = n->v.root;
+      Node *file = n->v.root;
       for MD_EachNode(node, file->first)
       {
-        MD_Node *table_tag = md_tag_from_string(node, str8_lit("table"), 0);
+        Node *table_tag = md_tag_from_string(node, str8_lit("table"), 0);
         if(!md_node_is_nil(table_tag))
         {
           MG_NodeGrid *table = push_array(mg_arena, MG_NodeGrid, 1);
@@ -151,7 +151,7 @@ entry_point(CmdLine *cmdline)
   //
   for(MG_FileParseNode *n = parses.first; n != 0; n = n->next)
   {
-    MD_Node *file = n->v.root;
+    Node *file = n->v.root;
     String8 layer_key = mg_layer_key_from_path(file->string);
     MG_Layer *layer = mg_layer_from_key(layer_key);
     for MD_EachNode(node, file->first)
@@ -219,10 +219,10 @@ entry_point(CmdLine *cmdline)
   //
   for(MG_FileParseNode *n = parses.first; n != 0; n = n->next)
   {
-    MD_Node *file = n->v.root;
+    Node *file = n->v.root;
     for MD_EachNode(node, file->first)
     {
-      MD_Node *tag = md_tag_from_string(node, str8_lit("enum"), 0);
+      Node *tag = md_tag_from_string(node, str8_lit("enum"), 0);
       if(!md_node_is_nil(tag))
       {
         String8 enum_name = node->string;
@@ -266,10 +266,10 @@ entry_point(CmdLine *cmdline)
   //
   for(MG_FileParseNode *n = parses.first; n != 0; n = n->next)
   {
-    MD_Node *file = n->v.root;
+    Node *file = n->v.root;
     for MD_EachNode(node, file->first)
     {
-      MD_Node *tag = md_tag_from_string(node, str8_lit("xlist"), 0);
+      Node *tag = md_tag_from_string(node, str8_lit("xlist"), 0);
       if(!md_node_is_nil(tag))
       {
         String8 layer_key = mg_layer_key_from_path(file->string);
@@ -291,7 +291,7 @@ entry_point(CmdLine *cmdline)
   //
   for(MG_FileParseNode *n = parses.first; n != 0; n = n->next)
   {
-    MD_Node *file = n->v.root;
+    Node *file = n->v.root;
     for MD_EachNode(node, file->first)
     {
       if(md_node_has_tag(node, str8_lit("struct"), 0))
@@ -316,10 +316,10 @@ entry_point(CmdLine *cmdline)
   //
   for(MG_FileParseNode *n = parses.first; n != 0; n = n->next)
   {
-    MD_Node *file = n->v.root;
+    Node *file = n->v.root;
     for MD_EachNode(node, file->first)
     {
-      MD_Node *tag = md_tag_from_string(node, str8_lit("data"), 0);
+      Node *tag = md_tag_from_string(node, str8_lit("data"), 0);
       if(!md_node_is_nil(tag))
       {
         String8 element_type = tag->first->string;
@@ -346,10 +346,10 @@ entry_point(CmdLine *cmdline)
   //
   for(MG_FileParseNode *n = parses.first; n != 0; n = n->next)
   {
-    MD_Node *file = n->v.root;
+    Node *file = n->v.root;
     for MD_EachNode(node, file->first)
     {
-      MD_Node *tag = md_tag_from_string(node, str8_lit("enum2string_switch"), 0);
+      Node *tag = md_tag_from_string(node, str8_lit("enum2string_switch"), 0);
       if(!md_node_is_nil(tag))
       {
         String8 enum_type = tag->first->string;
@@ -379,10 +379,10 @@ entry_point(CmdLine *cmdline)
   //
   for(MG_FileParseNode *n = parses.first; n != 0; n = n->next)
   {
-    MD_Node *file = n->v.root;
+    Node *file = n->v.root;
     for MD_EachNode(node, file->first)
     {
-      MD_Node *tag = md_tag_from_string(node, str8_lit("gen"), 0);
+      Node *tag = md_tag_from_string(node, str8_lit("gen"), 0);
       if(!md_node_is_nil(tag))
       {
         String8 layer_key = mg_layer_key_from_path(file->string);
@@ -411,7 +411,7 @@ entry_point(CmdLine *cmdline)
   //
   for(MG_FileParseNode *n = parses.first; n != 0; n = n->next)
   {
-    MD_Node *file = n->v.root;
+    Node *file = n->v.root;
     for MD_EachNode(node, file->first)
     {
       if(md_node_has_tag(node, str8_lit("embed_string"), 0))
@@ -445,14 +445,14 @@ entry_point(CmdLine *cmdline)
   //
   for(MG_FileParseNode *n = parses.first; n != 0; n = n->next)
   {
-    MD_Node *file = n->v.root;
+    Node *file = n->v.root;
     for MD_EachNode(node, file->first)
     {
       //- rjf: generate markdown page
       if(md_node_has_tag(node, str8_lit("markdown"), 0))
       {
         String8List md_strs = {0};
-        for(MD_Node *piece = node->first; !md_node_is_nil(piece); piece = piece->next)
+        for(Node *piece = node->first; !md_node_is_nil(piece); piece = piece->next)
         {
           if(md_node_has_tag(piece, str8_lit("title"), 0))
           {

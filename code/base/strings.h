@@ -822,6 +822,16 @@ MD_API String8     str8_path_list_join_by_style_alloc  (AllocatorInfo ainfo, Str
 ////////////////////////////////
 //~ rjf: UTF-8 & UTF-16 Decoding/Encoding
 
+inline U8
+utf8_class(U8 value)
+{
+	read_only local_persist thread_local 
+	U8 lookup_table[32] = {
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,2,2,2,2,3,3,4,5,
+	};
+	return lookup_table[value];
+}
+
 MD_API UnicodeDecode utf8_decode           (U8*  str,    U64 max);
        UnicodeDecode utf16_decode          (U16* str,    U64 max);
 MD_API U32           utf8_encode           (U8*  str,    U32 codepoint);

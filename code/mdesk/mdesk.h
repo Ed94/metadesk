@@ -54,7 +54,7 @@ enum
 	TokenFlag_Comment             = (1<<5),
 	TokenFlag_Whitespace          = (1<<6),
 	TokenFlag_Newline             = (1<<7),
-	
+
 	// rjf: decoration info
 	TokenFlag_StringSingleQuote   = (1<<8),
 	TokenFlag_StringDoubleQuote   = (1<<9),
@@ -482,32 +482,30 @@ tag_count_from_node(Node* node) {
 
 //- rjf: tree comparison
 
-internal B32 tree_match(Node *a, Node *b, StringMatchFlags flags);
-internal B32 node_match(Node *a, Node *b, StringMatchFlags flags);
+MD_API B32 tree_match(Node* a, Node* b, StringMatchFlags flags);
+MD_API B32 node_match(Node* a, Node* b, StringMatchFlags flags);
 
 //- rjf: tree duplication
 
-internal Node* tree_copy(Arena *arena, Node *src_root);
-// Node* tree_copy_arena(Node* src_root, Arena* arena);
-// Node* tree_copy_ainfo(Node* src_root, AllocatorInfo info);
+MD_API Node* tree_copy(Arena* arena, Node* src_root);
 
 ////////////////////////////////
 //~ rjf: Text -> Tokens Functions
 
-internal TokenizeResult tokenize_from_text(Arena *arena, String8 text);
+MD_API TokenizeResult tokenize_from_text(Arena* arena, String8 text);
 
 ////////////////////////////////
 //~ rjf: Tokens -> Tree Functions
 
-internal ParseResult parse_from_text_tokens(Arena *arena, String8 filename, String8 text, TokenArray tokens);
+MD_API ParseResult parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray tokens);
 
 ////////////////////////////////
 //~ rjf: Bundled Text -> Tree Functions
 
-internal ParseResult parse_from_text(Arena *arena, String8 filename, String8 text);
+ParseResult parse_from_text(Arena* arena, String8 filename, String8 text);
 #define tree_from_string(arena, string) (parse_from_text((arena), str8_zero(), (string)).root)
 
 ////////////////////////////////
 //~ rjf: Tree -> Text Functions
 
-internal String8List debug_string_list_from_tree(Arena *arena, Node *root);
+String8List debug_string_list_from_tree(Arena* arena, Node* root);

@@ -6,15 +6,17 @@
 #	include "base_types.h"
 #endif
 
+// TODO(Ed): Review this
+
 ////////////////////////////////
 //~ rjf: Asserts
 
 #ifndef trap
 #	if COMPILER_MSVC
 #		if _MSC_VER < 1300
-#			define GEN_DEBUG_TRAP() __asm int 3 /* Trap to debugger! */
+#			define MD_DEBUG_TRAP() __asm int 3 /* Trap to debugger! */
 #		else
-#			define GEN_DEBUG_TRAP() __debugbreak()
+#			define MD_DEBUG_TRAP() __debugbreak()
 #		endif
 #	elif COMPILER_CLANG || COMPILER_GCC
 #		define trap() __builtin_trap()
@@ -23,14 +25,14 @@
 #	endif
 #endif
 
-#define assert_msg( cond, msg, ... )                                                                  \
-	do                                                                                                \
-	{                                                                                                 \
-		if ( ! ( cond ) )                                                                             \
-		{                                                                                             \
-			assert_handler( #cond, __FILE__, __func__, scast( S64, __LINE__ ), msg, ##__VA_ARGS__ );  \
-			GEN_DEBUG_TRAP();                                                                         \
-		}                                                                                             \
+#define assert_msg( cond, msg, ... )                                                                 \
+	do                                                                                               \
+	{                                                                                                \
+		if ( ! ( cond ) )                                                                            \
+		{                                                                                            \
+			assert_handler( #cond, __FILE__, __func__, scast( S64, __LINE__ ), msg, ##__VA_ARGS__ ); \
+			MD_DEBUG_TRAP();                                                                         \
+		}                                                                                            \
 	} while ( 0 )
 
 #ifndef assert_always

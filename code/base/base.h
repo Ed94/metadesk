@@ -23,6 +23,7 @@ MD_NS_BEGIN
 #include "sort.h"
 #include "toolchain.h"
 #include "strings.h"
+#include "text.h"
 #include "thread_context.h"
 #include "command_line.h"
 #include "markup.h"

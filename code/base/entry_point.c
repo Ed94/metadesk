@@ -25,15 +25,13 @@ void main_thread_base_entry_point(MainThread_EntryPointProc* entry_point, char**
 	String8List command_line_argument_strings = os_string_list_from_argcv(scratch.arena, (int)arguments_count, arguments);
 	CmdLine     cmdline                       = cmd_line_from_string_list(scratch.arena, command_line_argument_strings);
 	B32         capture                       = cmd_line_has_flag(&cmdline, str8_lit("capture"));
-	if(capture)
-	{
+	if (capture) {
 		prof_begin_capture(arguments[0]);
 	}
 
 	entry_point(&cmdline);
 
-	if(capture)
-	{
+	if (capture) {
 		prof_end_capture();
 	}
 

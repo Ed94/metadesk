@@ -287,34 +287,3 @@ resize_align( AllocatorInfo a, void* ptr, SSIZE old_size, SSIZE new_size, SSIZE 
 	}
 	return a.proc( a.data, AllocatorMode_Resize, new_size, alignment, ptr, old_size, MD_DEFAULT_ALLOCATOR_FLAGS );
 }
-
-inline void*
-default_resize_align( AllocatorInfo a, void* old_memory, SSIZE old_size, SSIZE new_size, SSIZE alignment )
-{
-	if ( ! old_memory )
-		return alloc_align( a, new_size, alignment );
-
-	if ( new_size == 0 )
-	{
-		allocator_free( a, old_memory );
-		return nullptr;
-	}
-
-	if ( new_size < old_size )
-		new_size = old_size;
-
-	if ( old_size == new_size )
-	{
-		return old_memory;
-	}
-	else
-	{
-		void*  new_memory = alloc_align( a, new_size, alignment );
-		if ( ! new_memory )
-			return nullptr;
-
-		mem_move( new_memory, old_memory, min( new_size, old_size ) );
-		allocator_free( a, old_memory );
-		return new_memory;
-	}
-}

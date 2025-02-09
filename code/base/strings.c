@@ -2093,7 +2093,7 @@ fuzzy_match_range_list_copy_alloc(AllocatorInfo ainfo, FuzzyMatchRangeList* src)
 U64
 str8_serial_push_align(Arena* arena, String8List* srl, U64 align) {
 #if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
-	Assert(is_pow2(align));
+	assert(is_pow2(align));
 	U64 pos     = srl->total_size;
 	U64 new_pos = align_pow2(pos, align);
 	U64 size    = (new_pos - pos);
@@ -2178,7 +2178,7 @@ str8_serial_push_u32(Arena* arena, String8List* srl, U32 x) {
 
 U64
 str8_serial_alloc_align(AllocatorInfo ainfo, String8List* srl, U64 align) {
-	Assert(is_pow2(align));
+	assert(is_pow2(align));
 	U64 pos     = srl->total_size;
 	U64 new_pos = align_pow2(pos, align);
 	U64 size    = (new_pos - pos);

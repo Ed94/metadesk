@@ -202,7 +202,7 @@ void* mem_move( void* destination, void const* source, SSIZE byte_count )
 
 	if ( dest_ptr < src_ptr )
 	{
-		if ( to_uptr(src_ptr) % size_of( SSIZE ) == to_uptr(dest_ptr) % size_of( SSIZE ) )
+		if ( scast(UPTR, src_ptr) % size_of( SSIZE ) == scast(UPTR, dest_ptr) % size_of( SSIZE ) )
 		{
 			while ( pcast( UPTR, dest_ptr) % size_of( SSIZE ) )
 			{
@@ -224,9 +224,9 @@ void* mem_move( void* destination, void const* source, SSIZE byte_count )
 	}
 	else
 	{
-		if ( ( to_uptr(src_ptr) % size_of( SSIZE ) ) == ( to_uptr(dest_ptr) % size_of( SSIZE ) ) )
+		if ( ( scast(UPTR, src_ptr) % size_of( SSIZE ) ) == ( scast(UPTR, dest_ptr) % size_of( SSIZE ) ) )
 		{
-			while ( to_uptr( dest_ptr + byte_count ) % size_of( SSIZE ) )
+			while ( scast(UPTR, dest_ptr + byte_count ) % size_of( SSIZE ) )
 			{
 				if ( ! byte_count-- )
 					return destination;
@@ -274,7 +274,7 @@ void* mem_set( void* destination, U8 fill_byte, SSIZE byte_count )
 	if ( byte_count < 9 )
 		return destination;
 
-	align_offset  = -to_sptr( dest_ptr ) & 3;
+	align_offset  = -scast(SPTR, dest_ptr ) & 3;
 	dest_ptr     += align_offset;
 	byte_count   -= align_offset;
 	byte_count   &= -4;
@@ -300,7 +300,7 @@ void* mem_set( void* destination, U8 fill_byte, SSIZE byte_count )
 	* rcast( U32*, dest_ptr + byte_count - 20 ) = fill_word;
 	* rcast( U32*, dest_ptr + byte_count - 16 ) = fill_word;
 
-	align_offset  = 24 + to_uptr( dest_ptr ) & 4;
+	align_offset  = 24 + scast(UPTR, dest_ptr ) & 4;
 	dest_ptr     += align_offset;
 	byte_count   -= align_offset;
 

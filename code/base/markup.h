@@ -2,6 +2,7 @@
 #	pragma once
 #	include "linkage.h"
 #	include "strings.h"
+#	include "thread_context.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools

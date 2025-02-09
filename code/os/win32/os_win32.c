@@ -859,7 +859,7 @@ os_thread_launch(OS_ThreadFunctionType* func, void* ptr, void* params) {
 	entity->thread.func   = func;
 	entity->thread.ptr    = ptr;
 	entity->thread.handle = CreateThread(0, 0, os_w32_thread_entry_point, entity, 0, &entity->thread.tid);
-	OS_Handle result = {IntFromPtr(entity)};
+	OS_Handle result = {int_from_ptr(entity)};
 	return result;
 }
 
@@ -891,7 +891,7 @@ OS_Handle
 os_mutex_alloc(void) {
 	OS_W32_Entity* entity = os_w32_entity_alloc(OS_W32_EntityKind_Mutex);
 	InitializeCriticalSection(&entity->mutex);
-	OS_Handle result = {IntFromPtr(entity)};
+	OS_Handle result = {int_from_ptr(entity)};
 	return result;
 }
 
@@ -920,7 +920,7 @@ OS_Handle
 os_rw_mutex_alloc(void) {
 	OS_W32_Entity* entity = os_w32_entity_alloc(OS_W32_EntityKind_RWMutex);
 	InitializeSRWLock(&entity->rw_mutex);
-	OS_Handle result = {IntFromPtr(entity)};
+	OS_Handle result = {int_from_ptr(entity)};
 	return    result;
 }
 
@@ -960,7 +960,7 @@ OS_Handle
 os_condition_variable_alloc(void) {
 	OS_W32_Entity* entity = os_w32_entity_alloc(OS_W32_EntityKind_ConditionVariable);
 	InitializeConditionVariable(&entity->cv);
-	OS_Handle result = {IntFromPtr(entity)};
+	OS_Handle result = {int_from_ptr(entity)};
 	return    result;
 }
 
@@ -1178,7 +1178,7 @@ win32_exception_filter(EXCEPTION_POINTERS* exception_ptrs)
 	int buflen = 0;
   
 	DWORD exception_code = exception_ptrs->ExceptionRecord->ExceptionCode;
-	buflen += wnsprintfW(buffer + buflen, ArrayCount(buffer) - buflen, L"A fatal exception (code 0x%x) occurred. The process is terminating.\n", exception_code);
+	buflen += wnsprintfW(buffer + buflen, array_count(buffer) - buflen, L"A fatal exception (code 0x%x) occurred. The process is terminating.\n", exception_code);
   
 	// load dbghelp dynamically just in case if it is missing
 	HMODULE dbghelp = LoadLibraryA("dbghelp.dll");
@@ -1267,7 +1267,7 @@ win32_exception_filter(EXCEPTION_POINTERS* exception_ptrs)
 						const U32 max_frames = 32;
 						if(idx == max_frames)
 						{
-							buflen += wnsprintfW(buffer + buflen, ArrayCount(buffer) - buflen, L"...");
+							buflen += wnsprintfW(buffer + buflen, array_count(buffer) - buflen, L"...");
 							break;
 						}
 					
@@ -1285,16 +1285,16 @@ win32_exception_filter(EXCEPTION_POINTERS* exception_ptrs)
 						if(idx==0)
 						{
 						#if BUILD_CONSOLE_INTERFACE
-							buflen += wnsprintfW(buffer + buflen, ArrayCount(buffer) - buflen, L"\nCreate a new issue with this report at %S.\n\n", BUILD_ISSUES_LINK_STRING_LITERAL);
+							buflen += wnsprintfW(buffer + buflen, array_count(buffer) - buflen, L"\nCreate a new issue with this report at %S.\n\n", BUILD_ISSUES_LINK_STRING_LITERAL);
 						#else
-							buflen += wnsprintfW(buffer + buflen, ArrayCount(buffer) - buflen,
+							buflen += wnsprintfW(buffer + buflen, array_count(buffer) - buflen,
 								L"\nPress Ctrl+C to copy this text to clipboard, then create a new issue at\n"
 								L"<a href=\"%S\">%S</a>\n\n", BUILD_ISSUES_LINK_STRING_LITERAL, BUILD_ISSUES_LINK_STRING_LITERAL);
 						#endif
-							buflen += wnsprintfW(buffer + buflen, ArrayCount(buffer) - buflen, L"Call stack:\n");
+							buflen += wnsprintfW(buffer + buflen, array_count(buffer) - buflen, L"Call stack:\n");
 						}
 					
-						buflen += wnsprintfW(buffer + buflen, ArrayCount(buffer) - buflen, L"%u. [0x%I64x]", idx + 1, address);
+						buflen += wnsprintfW(buffer + buflen, array_count(buffer) - buflen, L"%u. [0x%I64x]", idx + 1, address);
 						
 						struct 
 						{
@@ -1308,7 +1308,7 @@ win32_exception_filter(EXCEPTION_POINTERS* exception_ptrs)
 						DWORD64 displacement = 0;
 						if (dbg_SymFromAddrW(process, address, &displacement, &symbol.info))
 						{
-							buflen += wnsprintfW(buffer + buflen, ArrayCount(buffer) - buflen, L" %s +%u", symbol.info.Name, (DWORD)displacement);
+							buflen += wnsprintfW(buffer + buflen, array_count(buffer) - buflen, L" %s +%u", symbol.info.Name, (DWORD)displacement);
 						
 							IMAGEHLP_LINEW64 
 							line = {0};
@@ -1316,7 +1316,7 @@ win32_exception_filter(EXCEPTION_POINTERS* exception_ptrs)
 						
 							DWORD line_displacement = 0;
 							if(dbg_SymGetLineFromAddrW64(process, address, &line_displacement, &line)) {
-								buflen += wnsprintfW(buffer + buflen, ArrayCount(buffer) - buflen, L", %s line %u", PathFindFileNameW(line.FileName), line.LineNumber);
+								buflen += wnsprintfW(buffer + buflen, array_count(buffer) - buflen, L", %s line %u", PathFindFileNameW(line.FileName), line.LineNumber);
 							}
 						}
 						else
@@ -1325,18 +1325,18 @@ win32_exception_filter(EXCEPTION_POINTERS* exception_ptrs)
 							module = {0};
 							module.SizeOfStruct = sizeof(module);
 							if (dbg_SymGetModuleInfoW64(process, address, &module)) {
-								buflen += wnsprintfW(buffer + buflen, ArrayCount(buffer) - buflen, L" %s", module.ModuleName);
+								buflen += wnsprintfW(buffer + buflen, array_count(buffer) - buflen, L" %s", module.ModuleName);
 							}
 						}
 					
-						buflen += wnsprintfW(buffer + buflen, ArrayCount(buffer) - buflen, L"\n");
+						buflen += wnsprintfW(buffer + buflen, array_count(buffer) - buflen, L"\n");
 					}
 				}
 			}
 		}
 	}
   
-	buflen += wnsprintfW(buffer + buflen, ArrayCount(buffer) - buflen, L"\nVersion: %S%S", BUILD_VERSION_STRING_LITERAL, BUILD_GIT_HASH_STRING_LITERAL_APPEND);
+	buflen += wnsprintfW(buffer + buflen, array_count(buffer) - buflen, L"\nVersion: %S%S", BUILD_VERSION_STRING_LITERAL, BUILD_GIT_HASH_STRING_LITERAL_APPEND);
   
 	#if BUILD_CONSOLE_INTERFACE
 		fwprintf(stderr, L"\n--- Fatal Exception ---\n");

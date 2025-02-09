@@ -38,7 +38,7 @@ msg_list_push(Arena* arena, MsgList* msgs, Node* node, MsgKind kind, String8 str
 	sll_queue_push(msgs->first, msgs->last, msg);
 
 	msgs->count             += 1;
-	msgs->worst_message_kind = Max(kind, msgs->worst_message_kind);
+	msgs->worst_message_kind = md_max(kind, msgs->worst_message_kind);
 }
 
 void
@@ -912,7 +912,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 				Node*   error        = push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
 				String8 error_string = push_str8f(arena, "More than two newlines following \"%S\", which has implicitly-delimited children, resulting in an empty list of children.", node->string);
 				msg_list_push(arena, &msgs, error, MsgKind_Warning, error_string);
-				MD_ParseWorkPop();
+				parse_work_pop();
 			}
 			else
 			{

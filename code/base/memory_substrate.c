@@ -4,6 +4,37 @@
 #	include "../os/os.h"
 #endif
 
+void*
+default_resize_align( AllocatorInfo a, void* old_memory, SSIZE old_size, SSIZE new_size, SSIZE alignment )
+{
+	if ( ! old_memory )
+		return alloc_align( a, new_size, alignment );
+
+	if ( new_size == 0 )
+	{
+		alloc_free( a, old_memory );
+		return nullptr;
+	}
+
+	if ( new_size < old_size )
+		new_size = old_size;
+
+	if ( old_size == new_size )
+	{
+		return old_memory;
+	}
+	else
+	{
+		void*  new_memory = alloc_align( a, new_size, alignment );
+		if ( ! new_memory )
+			return nullptr;
+
+		mem_move( new_memory, old_memory, md_min( new_size, old_size ) );
+		alloc_free( a, old_memory );
+		return new_memory;
+	}
+}
+
 #ifdef MD_HEAP_ANALYSIS
 #define GEN_HEAP_STATS_MAGIC 0xDEADC0DE
 
@@ -96,7 +127,7 @@ heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE
 		{
 			ptr = _aligned_malloc( size, alignment );
 			if ( flags & ALLOCATOR_FLAG_CLEAR_TO_ZERO )
-				zero_size( ptr, size );
+				memory_zero( ptr, size );
 		}
 		break;
 

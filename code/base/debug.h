@@ -14,9 +14,9 @@
 #ifndef trap
 #	if COMPILER_MSVC
 #		if _MSC_VER < 1300
-#			define MD_DEBUG_TRAP() __asm int 3 /* Trap to debugger! */
+#			define trap() __asm int 3 /* Trap to debugger! */
 #		else
-#			define MD_DEBUG_TRAP() __debugbreak()
+#			define trap() __debugbreak()
 #		endif
 #	elif COMPILER_CLANG || COMPILER_GCC
 #		define trap() __builtin_trap()
@@ -31,7 +31,7 @@
 		if ( ! ( cond ) )                                                                            \
 		{                                                                                            \
 			assert_handler( #cond, __FILE__, __func__, scast( S64, __LINE__ ), msg, ##__VA_ARGS__ ); \
-			MD_DEBUG_TRAP();                                                                         \
+			trap();                                                                         \
 		}                                                                                            \
 	} while ( 0 )
 

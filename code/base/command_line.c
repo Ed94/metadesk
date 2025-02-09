@@ -171,7 +171,7 @@ cmd_line_from_string_list(Arena* arena, String8List command_line)
 					}
 					
 					U8          splits[] = { ',' };
-					String8List args_in_this_string = str8_split(arena, string, splits, ArrayCount(splits), 0);
+					String8List args_in_this_string = str8_split(arena, string, splits, array_count(splits), 0);
 					for (String8Node* sub_arg = args_in_this_string.first; sub_arg; sub_arg = sub_arg->next) {
 						str8_list_push(arena, &arguments, sub_arg->string);
 					}
@@ -273,7 +273,7 @@ cmd_line_from_string_list_alloc(AllocatorInfo ainfo, String8List command_line)
 					}
 					
 					U8          splits[] = { ',' };
-					String8List args_in_this_string = str8_split_alloc(ainfo, string, splits, ArrayCount(splits), 0);
+					String8List args_in_this_string = str8_split_alloc(ainfo, string, splits, array_count(splits), 0);
 					for (String8Node* sub_arg = args_in_this_string.first; sub_arg; sub_arg = sub_arg->next) {
 						str8_list_alloc(ainfo, &arguments, sub_arg->string);
 					}

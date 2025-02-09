@@ -19,6 +19,7 @@ MD_NS_BEGIN
 #include "base/strings.c"
 #include "base/text.c"
 #include "base/thread_context.c"
+#include "base/markup.c"
 #include "base/command_line.c"
 #include "base/logger.c"
 #include "base/entry_point.c"

@@ -370,10 +370,10 @@ struct Rng1S64Array
 #endif
 
 #ifndef clamp_top
-#define clamp_top(A, X) Min(A, X)
+#define clamp_top(A, X) md_min(A, X)
 #endif
 #ifndef clamp_bot
-#define clamp_bot(X, B) Max(X, B)
+#define clamp_bot(X, B) md_max(X, B)
 #endif
 
 #define clamp(A, X, B) (((X) < (A)) ? (A) : ((X) > (B)) ? (B) : (X))

@@ -536,7 +536,7 @@ mg_node_grid_make_from_node(Arena *arena, Node *root)
   for each_node(row, root->first)
   {
     U64 cell_count_this_row = child_count_from_node(row);
-    column_count = Max(column_count, cell_count_this_row);
+    column_count = md_max(column_count, cell_count_this_row);
   }
   
   // rjf: fill grid

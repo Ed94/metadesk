@@ -17,7 +17,7 @@ void main_thread_base_entry_point(MainThread_EntryPointProc* entry_point, char**
 	tmSetMaxThreadCount(256);
 	tmInitialize(sizeof(tm_data), (char *)tm_data);
 #endif
-	ThreadNameF("[main thread]");
+	thread_namef("[main thread]");
 
 	// TODO(Ed): Review?
 	TempArena   scratch = scratch_begin(0, 0);

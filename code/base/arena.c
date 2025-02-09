@@ -12,22 +12,22 @@
 //- rjf: arena creation/destruction
 
 Arena*
-arena_alloc_(ArenaParams* params)
+arena__alloc(ArenaParams params)
 {
 	SPTR const header_size = align_pow2(size_of(Arena), MD_DEFAULT_MEMORY_ALIGNMENT);
 
 	// TODO(Ed): Do we need to be slapping the arena onto the memory now?
 	// (its technically not needed a its no longer always backed by vmem)
-	void* base = alloc(params->backing, params->block_size);
+	void* base = alloc(params.backing, params.block_size);
 	// rjf: extract arena header & fill
 	Arena* arena      = (Arena*) base;
 	arena->prev       = nullptr;
 	arena->current    = arena;
-	arena->backing    = params->backing;
+	arena->backing    = params.backing;
 	arena->base_pos   = 0;
 	arena->pos        = header_size;
-	arena->block_size = params->block_size;
-	arena->flags      = params->flags;
+	arena->block_size = params.block_size;
+	arena->flags      = params.flags;
 	asan_unpoison_memory_region(base, sizeof(Arena));
 	return arena;
 }

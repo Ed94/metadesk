@@ -6,7 +6,7 @@
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
 
-MD_API_C global OS_W32_State os_w32_state = {0};
+MD_API global OS_W32_State os_w32_state = {0};
 
 ////////////////////////////////
 //~ rjf: Modern Windows SDK Functions
@@ -14,7 +14,7 @@ MD_API_C global OS_W32_State os_w32_state = {0};
 // (We must dynamically link to them, since they can be missing in older SDKs)
 
 typedef HRESULT W32_SetThreadDescription_Type(HANDLE hThread, PCWSTR lpThreadDescription);
-MD_API_C global W32_SetThreadDescription_Type* w32_SetThreadDescription_func = 0;
+MD_API global W32_SetThreadDescription_Type* w32_SetThreadDescription_func = 0;
 
 ////////////////////////////////
 //~ rjf: Time Conversion Helpers
@@ -867,7 +867,7 @@ B32
 os_thread_join(OS_Handle handle, U64 endt_us)
 {
 	DWORD          sleep_ms    = os_w32_sleep_ms_from_endt_us(endt_us);
-	OS_W32_Entity* entity      = (OS_W32_Entity*)PtrFromInt(handle.u64[0]);
+	OS_W32_Entity* entity      = (OS_W32_Entity*)ptr_from_int(handle.u64[0]);
 	DWORD          wait_result = WAIT_OBJECT_0;
 	if (entity != 0) {
 		wait_result = WaitForSingleObject(entity->thread.handle, sleep_ms);
@@ -878,7 +878,7 @@ os_thread_join(OS_Handle handle, U64 endt_us)
 
 void
 os_thread_detach(OS_Handle thread) {
-	OS_W32_Entity* entity = (OS_W32_Entity*)PtrFromInt(thread.u64[0]);
+	OS_W32_Entity* entity = (OS_W32_Entity*)ptr_from_int(thread.u64[0]);
 	os_w32_entity_release(entity);
 }
 
@@ -897,20 +897,20 @@ os_mutex_alloc(void) {
 
 void
 os_mutex_release(OS_Handle mutex) {
-	OS_W32_Entity* entity = (OS_W32_Entity*)PtrFromInt(mutex.u64[0]);
+	OS_W32_Entity* entity = (OS_W32_Entity*)ptr_from_int(mutex.u64[0]);
 	os_w32_entity_release(entity);
 }
 
 void
 os_mutex_take(OS_Handle mutex) {
-	OS_W32_Entity* entity = (OS_W32_Entity*)PtrFromInt(mutex.u64[0]);
+	OS_W32_Entity* entity = (OS_W32_Entity*)ptr_from_int(mutex.u64[0]);
 	EnterCriticalSection(&entity->mutex);
 }
 
 void
 os_mutex_drop(OS_Handle mutex)
 {
-  OS_W32_Entity *entity = (OS_W32_Entity*)PtrFromInt(mutex.u64[0]);
+  OS_W32_Entity *entity = (OS_W32_Entity*)ptr_from_int(mutex.u64[0]);
   LeaveCriticalSection(&entity->mutex);
 }
 
@@ -926,31 +926,31 @@ os_rw_mutex_alloc(void) {
 
 void
 os_rw_mutex_release(OS_Handle rw_mutex) {
-	OS_W32_Entity* entity = (OS_W32_Entity*)PtrFromInt(rw_mutex.u64[0]);
+	OS_W32_Entity* entity = (OS_W32_Entity*)ptr_from_int(rw_mutex.u64[0]);
 	os_w32_entity_release(entity);
 }
 
 void
 os_rw_mutex_take_r(OS_Handle rw_mutex) {
-	OS_W32_Entity* entity = (OS_W32_Entity*)PtrFromInt(rw_mutex.u64[0]);
+	OS_W32_Entity* entity = (OS_W32_Entity*)ptr_from_int(rw_mutex.u64[0]);
 	AcquireSRWLockShared(&entity->rw_mutex);
 }
 
 void
 os_rw_mutex_drop_r(OS_Handle rw_mutex) {
-	OS_W32_Entity* entity = (OS_W32_Entity*)PtrFromInt(rw_mutex.u64[0]);
+	OS_W32_Entity* entity = (OS_W32_Entity*)ptr_from_int(rw_mutex.u64[0]);
 	ReleaseSRWLockShared(&entity->rw_mutex);
 }
 
 void
 os_rw_mutex_take_w(OS_Handle rw_mutex) {
-	OS_W32_Entity* entity = (OS_W32_Entity*)PtrFromInt(rw_mutex.u64[0]);
+	OS_W32_Entity* entity = (OS_W32_Entity*)ptr_from_int(rw_mutex.u64[0]);
 	AcquireSRWLockExclusive(&entity->rw_mutex);
 }
 
 void
 os_rw_mutex_drop_w(OS_Handle rw_mutex) {
-	OS_W32_Entity* entity = (OS_W32_Entity*)PtrFromInt(rw_mutex.u64[0]);
+	OS_W32_Entity* entity = (OS_W32_Entity*)ptr_from_int(rw_mutex.u64[0]);
 	ReleaseSRWLockExclusive(&entity->rw_mutex);
 }
 
@@ -966,7 +966,7 @@ os_condition_variable_alloc(void) {
 
 void
 os_condition_variable_release(OS_Handle cv) {
-	OS_W32_Entity* entity = (OS_W32_Entity*)PtrFromInt(cv.u64[0]);
+	OS_W32_Entity* entity = (OS_W32_Entity*)ptr_from_int(cv.u64[0]);
 	os_w32_entity_release(entity);
 }
 
@@ -975,8 +975,8 @@ os_condition_variable_wait(OS_Handle cv, OS_Handle mutex, U64 endt_us) {
 	U32  sleep_ms = os_w32_sleep_ms_from_endt_us(endt_us);
 	BOOL result   = 0;
 	if (sleep_ms > 0) {
-		OS_W32_Entity* entity       = (OS_W32_Entity*)PtrFromInt(cv.u64[0]);
-		OS_W32_Entity* mutex_entity = (OS_W32_Entity*)PtrFromInt(mutex.u64[0]);
+		OS_W32_Entity* entity       = (OS_W32_Entity*)ptr_from_int(cv.u64[0]);
+		OS_W32_Entity* mutex_entity = (OS_W32_Entity*)ptr_from_int(mutex.u64[0]);
 		result = SleepConditionVariableCS(&entity->cv, &mutex_entity->mutex, sleep_ms);
 	}
 	return result;
@@ -987,8 +987,8 @@ os_condition_variable_wait_rw_r(OS_Handle cv, OS_Handle mutex_rw, U64 endt_us) {
 	U32  sleep_ms = os_w32_sleep_ms_from_endt_us(endt_us);
 	BOOL result   = 0;
 	if (sleep_ms > 0) {
-		OS_W32_Entity* entity       = (OS_W32_Entity*)PtrFromInt(cv.u64[0]);
-		OS_W32_Entity* mutex_entity = (OS_W32_Entity*)PtrFromInt(mutex_rw.u64[0]);
+		OS_W32_Entity* entity       = (OS_W32_Entity*)ptr_from_int(cv.u64[0]);
+		OS_W32_Entity* mutex_entity = (OS_W32_Entity*)ptr_from_int(mutex_rw.u64[0]);
 		result = SleepConditionVariableSRW(&entity->cv, &mutex_entity->rw_mutex, sleep_ms, CONDITION_VARIABLE_LOCKMODE_SHARED);
 	}
 	return result;
@@ -1000,8 +1000,8 @@ os_condition_variable_wait_rw_w(OS_Handle cv, OS_Handle mutex_rw, U64 endt_us) {
 	BOOL result   = 0;
 	if(sleep_ms > 0)
 	{
-		OS_W32_Entity* entity       = (OS_W32_Entity*)PtrFromInt(cv.u64[0]);
-		OS_W32_Entity* mutex_entity = (OS_W32_Entity*)PtrFromInt(mutex_rw.u64[0]);
+		OS_W32_Entity* entity       = (OS_W32_Entity*)ptr_from_int(cv.u64[0]);
+		OS_W32_Entity* mutex_entity = (OS_W32_Entity*)ptr_from_int(mutex_rw.u64[0]);
 		result = SleepConditionVariableSRW(&entity->cv, &mutex_entity->rw_mutex, sleep_ms, 0);
 	}
 	return result;
@@ -1009,13 +1009,13 @@ os_condition_variable_wait_rw_w(OS_Handle cv, OS_Handle mutex_rw, U64 endt_us) {
 
 void
 os_condition_variable_signal(OS_Handle cv) {
-	OS_W32_Entity* entity = (OS_W32_Entity*)PtrFromInt(cv.u64[0]);
+	OS_W32_Entity* entity = (OS_W32_Entity*)ptr_from_int(cv.u64[0]);
 	WakeConditionVariable(&entity->cv);
 }
 
 void
 os_condition_variable_broadcast(OS_Handle cv) {
-	OS_W32_Entity* entity = (OS_W32_Entity*)PtrFromInt(cv.u64[0]);
+	OS_W32_Entity* entity = (OS_W32_Entity*)ptr_from_int(cv.u64[0]);
 	WakeAllConditionVariable(&entity->cv);
 }
 

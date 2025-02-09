@@ -181,4 +181,6 @@ void* arena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size,
 		}
 		break;
 	}
+
+	return allocated_ptr;
 }

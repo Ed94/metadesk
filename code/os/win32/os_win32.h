@@ -81,7 +81,7 @@ struct OS_W32_State
 ////////////////////////////////
 //~ rjf: Globals
 
-MD_API extern OS_W32_State os_w32_state = {0};
+MD_API extern OS_W32_State os_w32_state;
 
 
 ////////////////////////////////

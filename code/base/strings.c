@@ -2016,10 +2016,7 @@ fuzzy_match_find(Arena *arena, String8 needle, String8 haystack)
 FuzzyMatchRangeList
 fuzzy_match_find_alloc(AllocatorInfo ainfo, String8 needle, String8 haystack)
 {
-	// TODO(Ed): Review, we should just keep using thread scratch arenas (and provide them to teh context)
-	Arena*    arena   = arena_alloc(.backing = ainfo, .block_size = MB(1));
-	TempArena scratch = temp_begin(&arena, 1);
-
+	TempArena   scratch = scratch_begin(0, 0);
 	String8List needles = str8_split(scratch.arena, needle, (U8*)" ", 1, 0);
 	FuzzyMatchRangeList 
 	result = {0};
@@ -2045,7 +2042,7 @@ fuzzy_match_find_alloc(AllocatorInfo ainfo, String8 needle, String8 haystack)
 		}
 		if (find_pos < haystack.size) {
 			Rng1U64             range = r1u64(find_pos, find_pos+needle_n->string.size);
-			FuzzyMatchRangeNode* n    = push_array(arena, FuzzyMatchRangeNode, 1);
+			FuzzyMatchRangeNode* n    = push_array(scratch.arena, FuzzyMatchRangeNode, 1);
 			n->range = range;
 			sll_queue_push(result.first, result.last, n);
 			result.count     += 1;
@@ -2053,7 +2050,6 @@ fuzzy_match_find_alloc(AllocatorInfo ainfo, String8 needle, String8 haystack)
 		}
 	}
 	temp_end(scratch);
-	arena_release(arena);
 	return result;
 }
 
@@ -2239,7 +2235,7 @@ str8_serial_alloc_u64(AllocatorInfo ainfo, String8List* srl, U64 x) {
 }
 
 void
-str8_serial_push_u32(AllocatorInfo ainfo, String8List* srl, U32 x) {
+str8_serial_alloc_u32(AllocatorInfo ainfo, String8List* srl, U32 x) {
 	U8* buf = alloc_array_no_zero(ainfo, U8, 4);
 	memory_copy(buf, &x, 4);
 	String8 *str = &srl->last->string;

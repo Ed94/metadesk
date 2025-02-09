@@ -6,6 +6,24 @@
 // Licensed under the MIT license (https://opensource.org/license/mit/)
 
 ////////////////////////////////
+// Context
+
+void init(Context* ctx)
+{
+	if (ctx->backing[0].proc != nullptr) {
+		tctx_init_and_equip_alloc(& ctx->thread_ctx, ctx->backing[0]);
+	}
+	else {
+		tctx_init_and_equip(& ctx->thread_ctx);
+	}
+}
+
+void deinit(Context* ctx)
+{
+	tctx_release();
+}
+
+////////////////////////////////
 //~ rjf: Message Type Functions
 
 void

@@ -86,7 +86,7 @@ os_string_from_file_range_alloc(AllocatorInfo ainfo, OS_Handle file, Rng1U64 ran
 		// TODO(Ed): It may be better to actually wrap the alloation in an arena and then rewind it.
 		// This would ensure resize isn't doing an expensive shrink (from a bad heap realloc, or something else)
 		// That or we just leave it up to the user to make sure to pass in an arena.
-		resize(ainfo, result.str, result.size, result.str + actual_read_size);
+		resize(ainfo, result.str, result.size, scast(U64, result.str) + actual_read_size);
 		result.size = actual_read_size;
 	}
 	return result;

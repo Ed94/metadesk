@@ -16,24 +16,34 @@ MD_API_C thread_static TCTX* tctx_thread_local = 0;
 #endif
 
 void
-tctx_init_and_equip(TCTX* tctx){
+tctx_init_and_equip(TCTX* tctx)
+{
 	memory_zero_struct(tctx);
+
 	Arena** arena_ptr = tctx->arenas;
-	for (U64 i = 0; i < array_count(tctx->arenas); i += 1, arena_ptr += 1) {
-		// TODO(Ed): Review this, we are not exposing a way for the user to defining the backing of these thread-context arenas.
-		VArena* vm = varena_alloc(.reserve_size = VARENA_DEFAULT_RESERVE, .commit_size = VARENA_DEFAULT_COMMIT);
-		*arena_ptr = arena_alloc(.backing = varena_allocator(vm));
+	for (U64 i = 0; i < array_count(tctx->arenas); i += 1, arena_ptr += 1)
+	{
+		if (*arena_ptr == nullptr)
+		{
+			VArena* vm = varena_alloc(.reserve_size = VARENA_DEFAULT_RESERVE, .commit_size = VARENA_DEFAULT_COMMIT);
+			*arena_ptr = arena_alloc(.backing = varena_allocator(vm));
+		}
 	}
 	tctx_thread_local = tctx;
 }
 
 void
-tctx_init_and_equip_ainfos(TCTX* tctx, AllocatorInfo ainfos[2]) {
+tctx_init_and_equip_alloc(TCTX* tctx, AllocatorInfo ainfo)
+{
 	memory_zero_struct(tctx);
+
 	Arena** arena_ptr = tctx->arenas;
-	for (U64 i = 0; i < array_count(tctx->arenas); i += 1, arena_ptr += 1) {
-		// TODO(Ed): Is this ok? Is it alright that the thread context can use Arenas?
-		*arena_ptr = arena_alloc(.backing = ainfos[i]);
+	for (U64 i = 0; i < array_count(tctx->arenas); i += 1, arena_ptr += 1)
+	{
+		if (*arena_ptr == nullptr)
+		{
+			*arena_ptr = arena_alloc(.backing = ainfo);
+		}
 	}
 	tctx_thread_local = tctx;
 }

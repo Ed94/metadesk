@@ -222,6 +222,22 @@ struct ParseResult
 };
 
 ////////////////////////////////
+// Context
+
+typedef struct Context Context;
+struct Context
+{
+	// Note: Only used so far as the first fallback if the user did not preset the thread_context's arenas
+	// Otherwise it will just reserve its own Arena backed by chained virutal address space
+	AllocatorInfo backing[2];
+
+	// Its recommended that the user hooks up 
+	// their own arena allocators to the thread context
+	//  which will be utilized for thread local scratch arena
+	TCTX thread_ctx;
+};
+
+////////////////////////////////
 //~ rjf: Globals
 
 inline Node*
@@ -240,6 +256,12 @@ nil_node()
 	};
 	return &nil;
 }
+
+////////////////////////////////
+// Context lifetime Functios
+
+MD_API void init  (Context* ctx);
+MD_API void deinit(Context* ctx);
 
 ////////////////////////////////
 //~ rjf: Message Type Functions

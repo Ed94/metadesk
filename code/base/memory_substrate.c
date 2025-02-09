@@ -242,6 +242,7 @@ varena__alloc(VArenaParams params)
 	vm->committed     = commit_size;
 	vm->commit_used   = 0;
 	vm->flags         = params.flags;
+	return vm;
 }
 
 void

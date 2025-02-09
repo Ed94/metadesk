@@ -25,10 +25,10 @@ struct TCTX
 ////////////////////////////////
 // NOTE(allen): Thread Context Functions
 
-MD_API void  tctx_init_and_equip(TCTX* tctx);
-MD_API void  tctx_init_and_equip_ainfos(TCTX* tctx, AllocatorInfo ainfos[2]);
-MD_API void  tctx_release(void);
-MD_API TCTX* tctx_get_equipped(void);
+MD_API void  tctx_init_and_equip      (TCTX* tctx);
+MD_API void  tctx_init_and_equip_alloc(TCTX* tctx, AllocatorInfo ainfo);
+MD_API void  tctx_release             (void);
+MD_API TCTX* tctx_get_equipped        (void);
 
 MD_API Arena* tctx_get_scratch(Arena** conflicts, U64 count);
 

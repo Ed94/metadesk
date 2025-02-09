@@ -48,6 +48,8 @@ struct Log
 ////////////////////////////////
 //~ rjf: Log Creation/Selection
 
+		
+
        Log* log_alloc(AllocatorInfo ainfo, U64 arena_block_size);
        void log_release(Log* log);
 MD_API void log_select (Log* log);
@@ -82,5 +84,5 @@ MD_API void log_msgf(LogMsgKind kind, char* fmt, ...);
 ////////////////////////////////
 //~ rjf: Log Scopes
 
-MD_API void           log_scope_begin(void);
+       void           log_scope_begin(void);
 MD_API LogScopeResult log_scope_end(Arena* arena);

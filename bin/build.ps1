@@ -39,8 +39,9 @@ write-host "Core Count - Physical: $CoreCount_Physical Logical: $CoreCount_Logic
 #region Arguments
 $vendor       = $null
 $release      = $null
-[bool] $verbose      = $false
-[bool] $code_sanity  = $false
+[bool] $verbose         = $false
+[bool] $code_sanity     = $false
+[bool] $compile_sanity  = $false
 
 [array] $vendors = @( "clang", "msvc" )
 
@@ -48,11 +49,12 @@ $release      = $null
 
 if ( $args ) { $args | ForEach-Object {
 	switch ($_) {
-		{ $_ -in $vendors } { $vendor       = $_; break }
-		"verbose"			{ $verbose      = $true }
-		"release"           { $release      = $true }
-		"debug"             { $release      = $false }
-		"code_sanity"       { $code_sanity  = $true }
+		{ $_ -in $vendors } { $vendor         = $_; break }
+		"verbose"			{ $verbose        = $true }
+		"release"           { $release        = $true }
+		"debug"             { $release        = $false }
+		"code_sanity"       { $code_sanity    = $true }
+		"compile_sanity"    { $compile_sanity = $true }
 		}
 	}
 }
@@ -79,7 +81,8 @@ else {
 	$optimize = $true
 }
 
-$cannot_build = $code_snaity -eq $false
+$cannot_build =                    $code_sanity    -eq $false
+$cannot_build = $cannot_build -and $compile_sanity -eq $false
 if ( $cannot_build ) {
 	throw "No build target specified. One must be specified, this script will not assume one"
 }
@@ -98,9 +101,30 @@ $path_third_party = join-path $path_root third_party
 
 verify-path $path_build
 
-if ($code_sanity)
+if ($compile_sanity)
 {
 	write-host "Building code/metadesk.c (sanity compile) with $vendor"
+
+	$compiler_args = @()
+	$compiler_args += $flag_all_c
+	$compiler_args += $flag_updated_cpp_macro
+	$compiler_args += $flag_c11
+
+	$linker_args = @()
+	$linker_args += $flag_link_win_subsystem_console
+
+	$path_base = join-path $path_code base
+
+	$includes   = @( $path_base )
+	$unit       = join-path $path_code  'metadesk.c'
+	$executable = join-path $path_build 'metadesk.lib'
+
+	$result = build-simple $path_build $includes $compiler_args $linker_args $unit $executable
+}
+
+if ($code_sanity)
+{
+	write-host "Building test/code_sanity.c"
 
 	$compiler_args = @()
 	$compiler_args += $flag_all_c

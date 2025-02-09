@@ -139,7 +139,7 @@ arena_pop(Arena* arena, SSIZE amt) {
 //- rjf: temporary arena scopes
 
 inline TempArena
-temp_begin(Arena *arena) {
+temp_begin(Arena* arena) {
 	U64       pos  = arena_pos(arena);
 	TempArena temp = {arena, pos};
 	return temp;

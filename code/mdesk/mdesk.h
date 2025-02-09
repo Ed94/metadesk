@@ -45,26 +45,29 @@ struct MsgList
 typedef U32 TokenFlags;
 enum
 {
+	// TODO(Ed): Track type of comment, and opening/closing main delimiter. 
+	// (The parser needs that info later and just forces str_matches that werent necessary)
+
 	// rjf: base kind info
-	TokenFlag_Identifier          = (1<<0),
-	TokenFlag_Numeric             = (1<<1),
-	TokenFlag_StringLiteral       = (1<<2),
-	TokenFlag_Symbol              = (1<<3),
-	TokenFlag_Reserved            = (1<<4),
-	TokenFlag_Comment             = (1<<5),
-	TokenFlag_Whitespace          = (1<<6),
-	TokenFlag_Newline             = (1<<7),
+	TokenFlag_Identifier          = (1 << 0),
+	TokenFlag_Numeric             = (1 << 1),
+	TokenFlag_StringLiteral       = (1 << 2),
+	TokenFlag_Symbol              = (1 << 3),
+	TokenFlag_Reserved            = (1 << 4),
+	TokenFlag_Comment             = (1 << 5),
+	TokenFlag_Whitespace          = (1 << 6),
+	TokenFlag_Newline             = (1 << 7),
 
 	// rjf: decoration info
-	TokenFlag_StringSingleQuote   = (1<<8),
-	TokenFlag_StringDoubleQuote   = (1<<9),
-	TokenFlag_StringTick          = (1<<10),
-	TokenFlag_StringTriplet       = (1<<11),
+	TokenFlag_StringSingleQuote   = (1 << 8),
+	TokenFlag_StringDoubleQuote   = (1 << 9),
+	TokenFlag_StringTick          = (1 << 10),
+	TokenFlag_StringTriplet       = (1 << 11),
 	
 	// rjf: error info
-	TokenFlag_BrokenComment       = (1<<12),
-	TokenFlag_BrokenStringLiteral = (1<<13),
-	TokenFlag_BadCharacter        = (1<<14),
+	TokenFlag_BrokenComment       = (1 << 12),
+	TokenFlag_BrokenStringLiteral = (1 << 13),
+	TokenFlag_BadCharacter        = (1 << 14),
 };
 
 typedef U32 TokenGroups;
@@ -289,14 +292,14 @@ inline NodeFlags
 node_flags_from_token_flags(TokenFlags flags)
 {
 	NodeFlags result = 0;
-	result |= NodeFlag_Identifier        *!!(flags & TokenFlag_Identifier       );
-	result |= NodeFlag_Numeric           *!!(flags & TokenFlag_Numeric          );
-	result |= NodeFlag_StringLiteral     *!!(flags & TokenFlag_StringLiteral    );
-	result |= NodeFlag_Symbol            *!!(flags & TokenFlag_Symbol           );
-	result |= NodeFlag_StringSingleQuote *!!(flags & TokenFlag_StringSingleQuote);
-	result |= NodeFlag_StringDoubleQuote *!!(flags & TokenFlag_StringDoubleQuote);
-	result |= NodeFlag_StringTick        *!!(flags & TokenFlag_StringTick       );
-	result |= NodeFlag_StringTriplet     *!!(flags & TokenFlag_StringTriplet    );
+	result |= NodeFlag_Identifier        *!! (flags & TokenFlag_Identifier       );
+	result |= NodeFlag_Numeric           *!! (flags & TokenFlag_Numeric          );
+	result |= NodeFlag_StringLiteral     *!! (flags & TokenFlag_StringLiteral    );
+	result |= NodeFlag_Symbol            *!! (flags & TokenFlag_Symbol           );
+	result |= NodeFlag_StringSingleQuote *!! (flags & TokenFlag_StringSingleQuote);
+	result |= NodeFlag_StringDoubleQuote *!! (flags & TokenFlag_StringDoubleQuote);
+	result |= NodeFlag_StringTick        *!! (flags & TokenFlag_StringTick       );
+	result |= NodeFlag_StringTriplet     *!! (flags & TokenFlag_StringTriplet    );
 	return result;
 }
 

@@ -121,13 +121,13 @@ node_rec_depth_first(Node* node, Node* subtree_root, U64 child_off, U64 sib_off)
 	NodeRec 
 	rec      = {0};
 	rec.next = nil_node();
-	if (!node_is_nil(*member_from_offset(Node**, node, child_off))) {
+	if ( ! node_is_nil(*member_from_offset(Node**, node, child_off))) {
 		rec.next       = *member_from_offset(Node**, node, child_off);
 		rec.push_count = 1;
 	}
 	else for (Node* p = node; !node_is_nil(p) && p != subtree_root; p = p->parent, rec.pop_count += 1)
 	{
-		if (!node_is_nil(*member_from_offset(Node**, p, sib_off))) {
+		if ( ! node_is_nil(*member_from_offset(Node**, p, sib_off))) {
 			rec.next = *member_from_offset(Node**, p, sib_off);
 			break;
 		}
@@ -138,19 +138,12 @@ node_rec_depth_first(Node* node, Node* subtree_root, U64 child_off, U64 sib_off)
 //- rjf: tree building
 
 void
-unhook(Node* node)
-{
+unhook(Node* node) {
 	Node* parent = node->parent;
-	if (!node_is_nil(parent))
+	if ( ! node_is_nil(parent))
 	{
-		if(node->kind == NodeKind_Tag)
-		{
-			dll_remove_npz(nil_node(), parent->first_tag, parent->last_tag, node, next, prev);
-		}
-		else
-		{
-			dll_remove_npz(nil_node(), parent->first, parent->last, node, next, prev);
-		}
+		if (node->kind == NodeKind_Tag) dll_remove_npz(nil_node(), parent->first_tag, parent->last_tag, node, next, prev);
+		else                            dll_remove_npz(nil_node(), parent->first,     parent->last,     node, next, prev);
 		node->parent = nil_node();
 	}
 }
@@ -224,8 +217,7 @@ tree_match(Node *a, Node *b, StringMatchFlags flags)
 	{
 		for(Node *a_child = a->first, *b_child = b->first; !node_is_nil(a_child) || !node_is_nil(b_child); a_child = a_child->next, b_child = b_child->next)
 		{
-			if (!tree_match(a_child, b_child, flags))
-			{
+			if ( ! tree_match(a_child, b_child, flags)) {
 				result = 0;
 				goto end;
 			}
@@ -690,6 +682,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 		if (token->flags & TokenFlag_Whitespace) {
 			token += 1;
 			goto end_consume;
+			// <whitespace>
 		}
 		
 		// TODO(Ed): Add opt-in support for comment awareness
@@ -697,6 +690,9 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 		if (token->flags & TokenGroup_Comment) {
 			token += 1;
 			goto end_consume;
+			// < // > <content> <unescaped newline>
+			// or 
+			// /* <content> */
 		}
 		
 		//- rjf: [node follow up] : following label -> work top parent has children. 
@@ -707,7 +703,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 			parse_work_push(ParseWorkKind_NodeChildrenStyleScan, parent);
 			token += 1;
 			goto end_consume;
-			// Transition to a state where we scan for // explicit delimiters (e.g., '{', '[', '(').
+			// .. <label> :
 		}
 		
 		//- rjf: [node follow up] anything but : following label -> node has no children.
@@ -715,38 +711,45 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 		if (work_top->kind == ParseWorkKind_NodeOptionalFollowUp) {
 			parse_work_pop();
 			goto end_consume;
+			// .. <label> 
 		}
 
-		B32 reserved_token = token->flags & TokenFlag_Reserved;
-		B32 found_seprator = reserved_token && (str8_match(token_string, str8_lit(","), 0) || str8_match(token_string, str8_lit(";"), 0));
+		B32 reserved_token  = token->flags & TokenFlag_Reserved;
+
+		NodeFlags separator = (
+			NodeFlag_IsBeforeComma     *!! str8_match(token_string, str8_lit(","), 0) |
+			NodeFlag_IsBeforeSemicolon *!! str8_match(token_string, str8_lit(";"), 0)
+		);
+		B32 found_separator = reserved_token && separator;
 		
 		//- rjf: [main] separators -> mark & inc
-		if (work_top->kind == ParseWorkKind_Main && found_seprator)
+		if (work_top->kind == ParseWorkKind_Main && found_separator)
 		{
 			Node* parent = work_top->parent;
 			if (!node_is_nil(parent->last))
 			{
-				parent->last->flags           |= NodeFlag_IsBeforeComma     *!! str8_match(token_string, str8_lit(","), 0);
-				parent->last->flags           |= NodeFlag_IsBeforeSemicolon *!! str8_match(token_string, str8_lit(";"), 0);
-				work_top->gathered_node_flags |= NodeFlag_IsAfterComma      *!! str8_match(token_string, str8_lit(","), 0);
-				work_top->gathered_node_flags |= NodeFlag_IsAfterSemicolon  *!! str8_match(token_string, str8_lit(";"), 0);
+				// mark last & working noe with separator flag
+				parent->last->flags           |= separator;
+				work_top->gathered_node_flags |= separator;
 			}
 			token += 1;
 			goto end_consume;
-			// 
+			// <parent->last> , <work_top>
+			// or
+			// <parent->last> ; <work_top>
 		}
 		
 		//- rjf: [main_implicit] separators -> pop
-		if(work_top->kind == ParseWorkKind_MainImplicit && token->flags & found_seprator) {
+		if(work_top->kind == ParseWorkKind_MainImplicit && token->flags & found_separator) {
 			parse_work_pop();
 			goto end_consume;
 		}
 
-		B32 mode_main_and_implict = (work_top->kind == ParseWorkKind_Main || work_top->kind == ParseWorkKind_MainImplicit);
-		B32 found_unexpected      = reserved_token && (str8_match(token_string, str8_lit("#"), 0) || str8_match(token_string, str8_lit("\\"), 0) || str8_match(token_string, str8_lit(":"), 0));
+		B32 mode_main_or_main_implict = (work_top->kind == ParseWorkKind_Main || work_top->kind == ParseWorkKind_MainImplicit);
+		B32 found_unexpected          = reserved_token && (str8_match(token_string, str8_lit("#"), 0) || str8_match(token_string, str8_lit("\\"), 0) || str8_match(token_string, str8_lit(":"), 0));
 		
 		//- rjf: [main, main_implicit] unexpected reserved tokens
-		if (mode_main_and_implict && found_unexpected) {
+		if (mode_main_or_main_implict && found_unexpected) {
 			Node*   error        = push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
 			String8 error_string = push_str8f(arena, "Unexpected reserved symbol \"%S\".", token_string);
 			msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
@@ -754,12 +757,12 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 			goto end_consume;
 		}
 
-
 		B32 found_tag = reserved_token && str8_match(token_string, str8_lit("@"), 0);
-		
+
 		//- rjf: [main, main_implicit] tag signifier -> create new tag
-		if (mode_main_and_implict && found_tag)
+		if (mode_main_or_main_implict && found_tag)
 		{
+			// Token after should be label.
 			if (token + 1 >= tokens_opl || !(token[1].flags & TokenGroup_Label))
 			{
 				Node*   error        = push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
@@ -768,6 +771,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 
 				token += 1;
 				goto end_consume;
+				 // <Tag> : @ <???> (was not label)
 			}
 			else
 			{
@@ -777,19 +781,23 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 				Node* node = push_node(arena, NodeKind_Tag, node_flags_from_token_flags(token[1].flags), tag_name, tag_name_raw, token[0].range.min);
 				dll_push_back_npz(nil_node(), work_top->first_gathered_tag, work_top->last_gathered_tag, node, next, prev);
 
-				if (token + 2 < tokens_opl && token[2].flags & TokenFlag_Reserved && str8_match(str8_substr(text, token[2].range), str8_lit("("), 0)) {
+				B32 found_argument_paren = token[2].flags & TokenFlag_Reserved && str8_match(str8_substr(text, token[2].range), str8_lit("("), 0);
+
+				if (token + 2 < tokens_opl && found_argument_paren) {
 					token += 3;
 					parse_work_push(ParseWorkKind_Main, node);
+					// <Tag> : @ <TagName> ( 
 				}
 				else {
 					token += 2;
+					// <Tag> : @ <TagName>
 				}
 				goto end_consume;
 			}
 		}
 		
 		//- rjf: [main, main_implicit] label -> create new main
-		if (mode_main_and_implict && token->flags & TokenGroup_Label)
+		if (mode_main_or_main_implict && token->flags & TokenGroup_Label)
 		{
 			String8   node_string_raw = token_string;
 			String8   node_string     = content_string_from_token_flags_str8(token->flags, node_string_raw);
@@ -810,29 +818,28 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 			token += 1;
 			goto end_consume;
 		}
+
+		NodeFlags opening_delimiter = (
+			NodeFlag_HasBraceLeft   *!! str8_match(token_string, str8_lit("{"), 0) |
+			NodeFlag_HasBracketLeft *!! str8_match(token_string, str8_lit("["), 0) |
+			NodeFlag_HasParenLeft   *!! str8_match(token_string, str8_lit("("), 0)
+		);
+		B32 found_opening_delimiter = reserved_token && opening_delimiter & (NodeFlag_HasBraceLeft | NodeFlag_HasBracketLeft | NodeFlag_HasParenLeft);
 		
 		//- rjf: [main] {s, [s, and (s -> create new main
-		if (work_top->kind == ParseWorkKind_Main && reserved_token &&
-			(
-				str8_match(token_string, str8_lit("{"), 0) ||
-				str8_match(token_string, str8_lit("["), 0) ||
-				str8_match(token_string, str8_lit("("), 0)
-			)
-		)
+		if (work_top->kind == ParseWorkKind_Main && found_opening_delimiter)
 		{
 			NodeFlags 
 			flags  = node_flags_from_token_flags(token->flags) | work_top->gathered_node_flags;
-			flags |= NodeFlag_HasBraceLeft   *!! str8_match(token_string, str8_lit("{"), 0);
-			flags |= NodeFlag_HasBracketLeft *!! str8_match(token_string, str8_lit("["), 0);
-			flags |= NodeFlag_HasParenLeft   *!! str8_match(token_string, str8_lit("("), 0);
+			flags |= opening_delimiter;
 
 			work_top->gathered_node_flags = 0;
 
-			Node*
+			Node* 
 			node = push_node(arena, NodeKind_Main, flags, str8_lit(""), str8_lit(""), token[0].range.min);
 			node->first_tag = work_top->first_gathered_tag;
 			node->last_tag  = work_top->last_gathered_tag;
-			for (Node *tag = work_top->first_gathered_tag; !node_is_nil(tag); tag = tag->next) {
+			for (Node* tag = work_top->first_gathered_tag; !node_is_nil(tag); tag = tag->next) {
 				tag->parent = node;
 			}
 			work_top->first_gathered_tag = work_top->last_gathered_tag = nil_node();
@@ -841,21 +848,14 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 			parse_work_push(ParseWorkKind_Main, node);
 			token += 1;
 			goto end_consume;
+			// <main label> : 
 		}
 		
 		//- rjf: [node children style scan] {s, [s, and (s -> explicitly delimited children
-		if (work_top->kind == ParseWorkKind_NodeChildrenStyleScan && reserved_token &&
-			(
-				str8_match(token_string, str8_lit("{"), 0) ||
-				str8_match(token_string, str8_lit("["), 0) ||
-				str8_match(token_string, str8_lit("("), 0)
-			)
-		)
+		if (work_top->kind == ParseWorkKind_NodeChildrenStyleScan && found_opening_delimiter)
 		{
 			Node *parent = work_top->parent;
-			parent->flags |=   NodeFlag_HasBraceLeft*!!str8_match(token_string, str8_lit("{"), 0);
-			parent->flags |= NodeFlag_HasBracketLeft*!!str8_match(token_string, str8_lit("["), 0);
-			parent->flags |=   NodeFlag_HasParenLeft*!!str8_match(token_string, str8_lit("("), 0);
+			parent->flags |= opening_delimiter;
 			parse_work_pop();
 			parse_work_push(ParseWorkKind_Main, parent);
 			token += 1;
@@ -873,7 +873,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 		
 		//- rjf: [main_implicit] newline -> pop
 		if (work_top->kind == ParseWorkKind_MainImplicit && newline_token) {
-			parss_work_pop();
+			parse_work_pop();
 			token += 1;
 			goto end_consume;
 		}
@@ -883,7 +883,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 			token += 1;
 			goto end_consume;
 		}
-		
+
 		//- rjf: [node children style scan] anything causing implicit set -> <2 newlines, all good,
 		// >=2 newlines, houston we have a problem
 		if (work_top->kind == ParseWorkKind_NodeChildrenStyleScan)
@@ -899,41 +899,43 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 			else
 			{
 				Node *parent = work_top->parent;
-				MD_ParseWorkPop();
-				MD_ParseWorkPush(ParseWorkKind_MainImplicit, parent);
+				parse_work_pop();
+				parse_work_push(ParseWorkKind_MainImplicit, parent);
 			}
 			goto end_consume;
 		}
+
+		NodeFlags closing_delimiter = (
+			NodeFlag_HasBraceRight   *!! str8_match(token_string, str8_lit("}"), 0) | 
+			NodeFlag_HasBracketRight *!! str8_match(token_string, str8_lit("]"), 0) |
+			NodeFlag_HasParenRight   *!! str8_match(token_string, str8_lit(")"), 0)
+		);
+		B32 found_closing_delimiter = reserved_token && closing_delimiter & (NodeFlag_HasBraceRight | NodeFlag_HasBracketRight | NodeFlag_HasParenRight);
 		
 		//- rjf: [main] }s, ]s, and )s -> pop
-		if (work_top->kind == ParseWorkKind_Main && reserved_token && 
-			(
-				str8_match(token_string, str8_lit("}"), 0) || 
-				str8_match(token_string, str8_lit("]"), 0) || 
-				str8_match(token_string, str8_lit(")"), 0)
-			)
-		) 
-		{
+		if (work_top->kind == ParseWorkKind_Main && found_closing_delimiter) {
 			Node* parent = work_top->parent;
-			parent->flags |= NodeFlag_HasBraceRight   *!! str8_match(token_string, str8_lit("}"), 0);
-			parent->flags |= NodeFlag_HasBracketRight *!! str8_match(token_string, str8_lit("]"), 0);
-			parent->flags |= NodeFlag_HasParenRight   *!! str8_match(token_string, str8_lit(")"), 0);
+			parent->flags |= closing_delimiter;
 			parse_work_pop();
 			token += 1;
 			goto end_consume;
+			// <label> }
+			// or
+			// <label> ]
+			// or
+			// <label> )
 		}
 		
 		//- rjf: [main implicit] }s, ]s, and )s -> pop without advancing
-		if (work_top->kind == ParseWorkKind_MainImplicit && reserved_token && 
-			(
-				str8_match(token_string, str8_lit("}"), 0) ||
-				str8_match(token_string, str8_lit("]"), 0) ||
-				str8_match(token_string, str8_lit(")"), 0)
-			)
-		)
-		{
+		if (work_top->kind == ParseWorkKind_MainImplicit && reserved_token && found_closing_delimiter) {
 			parse_work_pop();
 			goto end_consume;
+			// <label> }
+			// or
+			// <label> ]
+			// or
+			// <label> )
+			// (deferred)
 		}
 		
 		//- rjf: no consumption -> unexpected token! we don't know what to do with this.
@@ -942,6 +944,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 			String8 error_string = push_str8f(arena, "Unexpected \"%S\" token.", token_string);
 			msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
 			token += 1;
+			// ???
 		}
 		
 		end_consume:;
@@ -954,6 +957,9 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 	scratch_end(scratch);
 	return result;
 }
+
+#undef parse_work_push
+#undef parse_work_pop
 
 ////////////////////////////////
 //~ rjf: Bundled Text -> Tree Functions

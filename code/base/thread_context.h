@@ -42,7 +42,7 @@ void    tctx_read_srcloc (char** file_name, U64* line_number);
 inline TempArena
 scratch__begin_alloc(AllocatorInfo ainfo) {
 	Arena*    arena   = extract_arena(ainfo);
-	TempArena scratch =  temp_begin(tctx_get_scratch(arena, arena != nullptr));
+	TempArena scratch =  temp_begin(tctx_get_scratch(&arena, arena != nullptr));
 	return scratch;
 }
 

@@ -18,5 +18,5 @@ int main()
 
 	printf("metadesk: got past init!");
 
-	deinit(& ctx);
+	// deinit(& ctx);
 }

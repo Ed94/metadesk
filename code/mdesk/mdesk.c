@@ -99,23 +99,7 @@ content_string_from_token_flags_str8(TokenFlags flags, String8 string)
 String8List
 string_list_from_token_flags(Arena* arena, TokenFlags flags)
 {
-#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
-	String8List strs = {0};
-	if (flags & TokenFlag_Identifier          ){ str8_list_push(arena, &strs, str8_lit("Identifier"         )); }
-	if (flags & TokenFlag_Numeric             ){ str8_list_push(arena, &strs, str8_lit("Numeric"            )); }
-	if (flags & TokenFlag_StringLiteral       ){ str8_list_push(arena, &strs, str8_lit("StringLiteral"      )); }
-	if (flags & TokenFlag_Symbol              ){ str8_list_push(arena, &strs, str8_lit("Symbol"             )); }
-	if (flags & TokenFlag_Reserved            ){ str8_list_push(arena, &strs, str8_lit("Reserved"           )); }
-	if (flags & TokenFlag_Comment             ){ str8_list_push(arena, &strs, str8_lit("Comment"            )); }
-	if (flags & TokenFlag_Whitespace          ){ str8_list_push(arena, &strs, str8_lit("Whitespace"         )); }
-	if (flags & TokenFlag_Newline             ){ str8_list_push(arena, &strs, str8_lit("Newline"            )); }
-	if (flags & TokenFlag_BrokenComment       ){ str8_list_push(arena, &strs, str8_lit("BrokenComment"      )); }
-	if (flags & TokenFlag_BrokenStringLiteral ){ str8_list_push(arena, &strs, str8_lit("BrokenStringLiteral")); }
-	if (flags & TokenFlag_BadCharacter        ){ str8_list_push(arena, &strs, str8_lit("BadCharacter"       )); }
-	return strs;
-#else
 	return string_list_from_token_flags_alloc(arena_allocator(arena), flags);
-#endif
 }
 
 String8List
@@ -139,21 +123,7 @@ string_list_from_token_flags_alloc(AllocatorInfo ainfo, TokenFlags flags)
 void
 token_chunk_list_push(Arena* arena, TokenChunkList* list, U64 cap, Token token)
 {
-#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
-	TokenChunkNode* node = list->last;
-	if (node == 0 || node->count >= node->cap) {
-		node      = push_array(arena, TokenChunkNode, 1);
-		node->cap = cap;
-		node->v   = push_array_no_zero(arena, Token, cap);
-		sll_queue_push(list->first, list->last, node);
-		list->chunk_count += 1;
-	}
-	memory_copy_struct(&node->v[node->count], &token);
-	node->count             += 1;
-	list->total_token_count += 1;
-#else
 	token_chunk_list_alloc(arena_allocator(arena), list, cap, token);
-#endif
 }
 
 void
@@ -173,22 +143,9 @@ token_chunk_list_alloc(AllocatorInfo ainfo, TokenChunkList* list, U64 cap, Token
 }
 
 TokenArray
-token_array_from_chunk_list(Arena* arena, TokenChunkList* chunks)
+token_array_from_chunk_list_push(Arena* arena, TokenChunkList* chunks)
 {
-#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
-	TokenArray result = {0};
-	result.count = chunks->total_token_count;
-	result.v     = push_array_no_zero(arena, Token, result.count);
-	U64 write_idx = 0;
-	for(TokenChunkNode *n = chunks->first; n != 0; n = n->next)
-	{
-		memory_copy(result.v + write_idx, n->v, size_of(Token) * n->count);
-		write_idx += n->count;
-	}
-	return result;
-#else
 	return token_array_from_chunk_list_alloc(arena_allocator(arena), chunks);
-#endif
 }
 
 TokenArray
@@ -328,42 +285,7 @@ tree_match(Node* a, Node* b, StringMatchFlags flags)
 Node*
 tree_copy(Arena* arena, Node* src_root)
 {
-#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
-	Node* dst_root   = nil_node();
-	Node* dst_parent = dst_root;
-	{
-		NodeRec rec = {0};
-		for(Node* src = src_root; !node_is_nil(src); src = rec.next)
-		{
-			Node* dst = push_array(arena, Node, 1);
-			dst->first      = dst->last = dst->parent = dst->next = dst->prev = nil_node();
-			dst->first_tag  = dst->last_tag = nil_node();
-			dst->kind       = src->kind;
-			dst->flags      = src->flags;
-			dst->string     = push_str8_copy(arena, src->string);
-			dst->raw_string = push_str8_copy(arena, src->raw_string);
-			dst->src_offset = src->src_offset;
-			dst->parent     = dst_parent;
-			if (dst_parent != nil_node()) {
-				dll_push_back_npz(nil_node(), dst_parent->first, dst_parent->last, dst, next, prev);
-			}
-			else {
-				dst_root = dst_parent = dst;
-			}
-
-			rec = node_rec_depth_first_pre(src, src_root);
-			if (rec.push_count != 0) {
-				dst_parent = dst;
-			}
-			else for (U64 idx = 0; idx < rec.pop_count; idx += 1) {
-				dst_parent = dst_parent->parent;
-			}
-		}
-	}
-	return dst_root;
-#else
-	tree_copy_alloc(arena_allocator(arena), src_root);
-#endif
+	return tree_copy_alloc(arena_allocator(arena), src_root);
 }
 
 Node*
@@ -408,7 +330,7 @@ tree_copy_alloc(AllocatorInfo ainfo, Node* src_root)
 
 TokenizeResult
 tokenize_from_text(Arena* arena, String8 text) { 
-	tokenize_from_text_alloc(arena_allocator(arena), text);
+	return tokenize_from_text_alloc(arena_allocator(arena), text);
 }
 
 TokenizeResult
@@ -791,12 +713,12 @@ void parse__work_pop(ParseWorkNode* work_top, ParseWorkNode* broken_work) {
 }
 
 ParseResult
-parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray tokens) {
+parse_from_text_tokens_push(Arena* arena, String8 filename, String8 text, TokenArray tokens) {
 	return parse_from_text_tokens_alloc(arena_allocator(arena), filename, text, tokens);
 }
 
 ParseResult
-parse_from_text_tokens(AllocatorInfo ainfo, String8 filename, String8 text, TokenArray tokens)
+parse_from_text_tokens_alloc(AllocatorInfo ainfo, String8 filename, String8 text, TokenArray tokens)
 {
 	TempArena scratch = scratch_begin_alloc(ainfo);
 	
@@ -952,7 +874,7 @@ parse_from_text_tokens(AllocatorInfo ainfo, String8 filename, String8 text, Toke
 
 			work_top->gathered_node_flags = 0;
 
-			Node* node = ainfo_node(ainfo, NodeKind_Main, flags, node_string, node_string_raw, token[0].range.min);
+			Node* node = alloc_node(ainfo, NodeKind_Main, flags, node_string, node_string_raw, token[0].range.min);
 			node->first_tag = work_top->first_gathered_tag;
 			node->last_tag  = work_top->last_gathered_tag;
 			for (Node* tag = work_top->first_gathered_tag; !node_is_nil(tag); tag = tag->next) {
@@ -1115,13 +1037,13 @@ ParseResult
 parse_from_text(Arena* arena, String8 filename, String8 text) {
 	TempArena      scratch  = scratch_begin(&arena, 1);
 	TokenizeResult tokenize = tokenize_from_text(scratch.arena, text);
-	ParseResult    parse    = parse_from_text_tokens(arena, filename, text, tokenize.tokens); 
+	ParseResult    parse    = parse_from_text_tokens_push(arena, filename, text, tokenize.tokens); 
 	scratch_end(scratch);
 	return parse;
 }
 
 ParseResult
-parse_from_text(AllocatorInfo ainfo, String8 filename, String8 text) {
+parse_from_text_alloc(AllocatorInfo ainfo, String8 filename, String8 text) {
 	TempArena      scratch  = scratch_begin_alloc(ainfo);
 	TokenizeResult tokenize = tokenize_from_text(scratch.arena, text);
 	ParseResult    parse    = parse_from_text_tokens_alloc(ainfo, filename, text, tokenize.tokens); 

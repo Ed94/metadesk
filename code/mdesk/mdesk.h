@@ -309,9 +309,12 @@ B32   token_match(Token      a,     Token      b);
 
 MD_API String8 content_string_from_token_flags_str8(TokenFlags flags, String8 string);
 
-MD_API String8List string_list_from_token_flags(Arena* arena, TokenFlags flags);
+MD_API String8List string_list_from_token_flags(Arena*        arena, TokenFlags flags);
+MD_API String8List string_list_from_token_flags_alloc(AllocatorInfo ainfo, TokenFlags flags);
 MD_API void        token_chunk_list_push       (Arena* arena, TokenChunkList* list, U64 cap, Token token);
-MD_API TokenArray  token_array_from_chunk_list (Arena* arena, TokenChunkList* chunks);
+MD_API void        token_chunk_list_alloc      (AllocatorInfo ainfo, TokenChunkList* list, U64 cap, Token token);
+MD_API TokenArray  token_array_from_chunk_list_push(Arena* arena, TokenChunkList* chunks);
+MD_API TokenArray  token_array_from_chunk_list_alloc(AllocatorInfo aino, TokenChunkList* chunks);
 
 inline Token
 token_make(Rng1U64 range, TokenFlags flags) {

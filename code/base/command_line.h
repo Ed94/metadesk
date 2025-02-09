@@ -52,10 +52,24 @@ String8      cmd_line_string          (CmdLine* cmd_line, String8 name);
 B32          cmd_line_has_flag        (CmdLine* cmd_line, String8 name);
 B32          cmd_line_has_argument    (CmdLine* cmd_line, String8 name);
 
-MD_API CmdLineOpt*  cmd_line_insert_opt            (Arena*        arena, CmdLine* cmd_line, String8 string, String8List values);
+inline CmdLineOpt*  cmd_line_insert_opt_push       (Arena*        arena, CmdLine* cmd_line, String8 string, String8List values);
 MD_API CmdLineOpt*  cmd_line_insert_opt_alloc      (AllocatorInfo ainfo, CmdLine* cmd_line, String8 string, String8List values);
-MD_API CmdLine      cmd_line_from_string_list      (Arena*        arena, String8List arguments);
+inline CmdLine      cmd_line_from_string_list_push (Arena*        arena, String8List arguments);
 MD_API CmdLine      cmd_line_from_string_list_alloc(AllocatorInfo ainfo, String8List arguments);
+
+#define cmd_line_insert_opt(allocator, cmd_line, string, values) \
+_Generic(allocator,                                              \
+	Arena*:        cmd_line_insert_opt_push,                     \
+	AllocatorInfo: cmd_line_insert_opt_alloc,                    \
+	default:       METADESK_NO_RESOLVED_GENERIC_SELECTION        \
+) MD_RESOLVED_FUNCTION_CALL(allocator, cmd_line, string, values)
+
+#define cmd_line_from_string_list(allocator, arguments)   \
+_Generic(allocator,                                       \
+	Arena*:        cmd_line_from_string_list_push,        \
+	AllocatorInfo: cmd_line_from_string_list_alloc,       \
+	default:       METADESK_NO_RESOLVED_GENERIC_SELECTION \
+) MD_RESOLVED_FUNCTION_CALL(allocator, arguments)
 
 inline U64
 cmd_line_hash_from_string(String8 string) { 
@@ -65,6 +79,9 @@ cmd_line_hash_from_string(String8 string) {
 	}
 	return result;
 }
+
+force_inline CmdLineOpt* cmd_line_insert_opt_push      (Arena* arena, CmdLine* cmd_line, String8 string, String8List values) { return cmd_line_insert_opt_alloc      (arena_allocator(arena), cmd_line, string, values); }
+force_inline CmdLine     cmd_line_from_string_list_push(Arena* arena, String8List command_line)                              { return cmd_line_from_string_list_alloc(arena_allocator(arena), command_line); }
 
 inline CmdLineOpt* cmd_line_opt_from_string(CmdLine *cmd_line, String8 name) { return cmd_line_opt_from_slot(cmd_line_slot_from_string(cmd_line, name), name); }
 inline B32         cmd_line_has_flag       (CmdLine *cmd_line, String8 name) { CmdLineOpt *var = cmd_line_opt_from_string(cmd_line, name); return(var != 0); }

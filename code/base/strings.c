@@ -242,16 +242,16 @@ String8
 str8_from_memory_size__ainfo(AllocatorInfo ainfo, U64 z) {
 	String8 result = {0};
 	if (z < KB(1)) {
-		result = alloc_str8f(ainfo, "%llu  b", z);
+		result = str8f(ainfo, "%llu  b", z);
 	}
 	else if (z < MB(1)) {
-		result = alloc_str8f(ainfo, "%llu.%02llu Kb", z/KB(1), ((100*z)/KB(1))%100);
+		result = str8f(ainfo, "%llu.%02llu Kb", z/KB(1), ((100*z)/KB(1))%100);
 	}
 	else if (z < GB(1)) {
-		result = alloc_str8f(ainfo, "%llu.%02llu Mb", z/MB(1), ((100*z)/MB(1))%100);
+		result = str8f(ainfo, "%llu.%02llu Mb", z/MB(1), ((100*z)/MB(1))%100);
 	}
 	else{
-		result = alloc_str8f(ainfo, "%llu.%02llu Gb", z/GB(1), ((100*z)/GB(1))%100);
+		result = str8f(ainfo, "%llu.%02llu Gb", z/GB(1), ((100*z)/GB(1))%100);
 	}
 	return(result);
 }
@@ -350,13 +350,13 @@ str8_from_s64__ainfo(AllocatorInfo ainfo, S64 s64, U32 radix, U8 min_digits, U8 
 {
 	String8 result = {0};
 	if(s64 < 0) {
-		U8      bytes[KB(8)];
+		U8      bytes[KB(1)];
 		FArena  scratch      = farena_from_memory(bytes, size_of(bytes));
-		String8 numeric_part = str8_from_allocator_u64(farena_allocator(scratch), (U64)(-s64), radix, min_digits, digit_group_separator);
-		result = alloc_str8f(ainfo, "-%S", numeric_part);
+		String8 numeric_part = str8_from_u64(farena_allocator(scratch), (U64)(-s64), radix, min_digits, digit_group_separator);
+		result = str8f(ainfo, "-%S", numeric_part);
 	}
 	else {
-		result = str8_from_allocator_u64(ainfo, (U64)s64, radix, min_digits, digit_group_separator);
+		result = str8_from_u64(ainfo, (U64)s64, radix, min_digits, digit_group_separator);
 	}
 	return result;
 }
@@ -427,7 +427,7 @@ str8_list_concat_in_place(String8List* list, String8List* to_push) {
 }
 
 String8Node*
-str8_list_alloc_aligner(AllocatorInfo ainfo, String8List* list, U64 min, U64 align) {
+str8_list_aligner__ainfo(AllocatorInfo ainfo, String8List* list, U64 min, U64 align) {
 	String8Node* node = alloc_array_no_zero(ainfo, String8Node, 1);
 	U64 new_size = list->total_size + min;
 	U64 increase_size = 0;
@@ -453,11 +453,11 @@ str8_list_alloc_aligner(AllocatorInfo ainfo, String8List* list, U64 min, U64 ali
 }
 
 String8List
-str8_list_alloc_copy(AllocatorInfo ainfo, String8List* list) {
+str8_list_alloc_copy__ainfo(AllocatorInfo ainfo, String8List* list) {
 	String8List result = {0};
-	for (String8Node* node = list->first; node != 0; node = node->next) {
-		String8Node* new_node   = alloc_array_no_zero(ainfo, String8Node, 1);
-		String8      new_string = alloc_str8_copy(ainfo, node->string);
+	for (String8Node* node       = list->first; node != 0; node = node->next) {
+		String8Node*  new_node   = alloc_array_no_zero(ainfo, String8Node, 1);
+		String8       new_string = str8_copy(ainfo, node->string);
 		str8_list_push_node_set_string(&result, new_node, new_string);
 	}
 	return(result);
@@ -466,11 +466,9 @@ str8_list_alloc_copy(AllocatorInfo ainfo, String8List* list) {
 ////////////////////////////////
 //~ rjf: String Splitting & Joining
 
-force_inline String8List str8_split_push    (Arena* arena, String8 string, U8* split_chars, U64 split_char_count, StringSplitFlags flags) { return str8_split_alloc    (arena_allocator(arena), string, split_chars, split_char_count, flags); }
-force_inline String8     str8_list_join_push(Arena* arena, String8List* list, StringJoin* optional_params)                                { return str8_list_join_alloc(arena_allocator(arena), list, optional_params); }
-
 String8List
-str8_split_alloc(AllocatorInfo ainfo, String8 string, U8* split_chars, U64 split_char_count, StringSplitFlags flags) {
+str8_split__ainfo(AllocatorInfo ainfo, String8 string, U8* split_chars, U64 split_char_count, StringSplitFlags flags)
+{
 	String8List list = {0};
   
 	B32 keep_empties = (flags & StringSplitFlag_KeepEmpties);
@@ -505,36 +503,34 @@ str8_split_alloc(AllocatorInfo ainfo, String8 string, U8* split_chars, U64 split
 }
 
 String8
-str8_list_join_alloc(AllocatorInfo ainfo, String8List* list, StringJoin* optional_params) 
+str8_list_join__ainfo(AllocatorInfo ainfo, String8List* list, StringJoin optional_params) 
 {
-	StringJoin join = {0};
-	if (optional_params != 0){
-		memory_copy_struct(&join, optional_params);
-	}
-	
-	U64 sep_count = 0;
+	StringJoin join      = optional_params;
+	U64        sep_count = 0;
 	if (list->node_count > 0){
 		sep_count = list->node_count - 1;
 	}
 	
 	String8 result;
-	result.size = join.pre.size + join.post.size + sep_count*join.sep.size + list->total_size;
+	result.size = join.pre.size + join.post.size + sep_count * join.sep.size + list->total_size;
+
 	U8* ptr = result.str = alloc_array_no_zero(ainfo, U8, result.size + 1);
-	
 	memory_copy(ptr, join.pre.str, join.pre.size);
 	ptr += join.pre.size;
-	for (String8Node *node = list->first; node != 0; node = node->next)
-	{
+
+	for (String8Node *node = list->first; node != 0; node = node->next) {
 		memory_copy(ptr, node->string.str, node->string.size);
 		ptr += node->string.size;
+
 		if (node->next != 0) {
 			memory_copy(ptr, join.sep.str, join.sep.size);
 			ptr += join.sep.size;
 		}
 	}
+
 	memory_copy(ptr, join.post.str, join.post.size);
-	ptr += join.post.size;
-	*ptr = 0;
+	ptr  += join.post.size;
+	*ptr  = 0;
 	return(result);
 }
 

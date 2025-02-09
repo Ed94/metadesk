@@ -864,7 +864,7 @@ inline B32     contains_2s64 (Rng2S64 r, Vec2S64 x)     { B32     c = (r.min.x <
 inline Vec2S64 dim_2s64      (Rng2S64 r)                { Vec2S64 dim = {r.max.x - r.min.x, r.max.y - r.min.y};                             return dim; }
 inline Rng2S64 union_2s64    (Rng2S64 a, Rng2S64 b)     { Rng2S64 c; c.p0.x = md_min(a.min.x, b.min.x); c.p0.y = md_min(a.min.y, b.min.y); c.p1.x = md_max(a.max.x, b.max.x); c.p1.y = md_max(a.max.y, b.max.y); return c; }
 inline Rng2S64 intersect_2s64(Rng2S64 a, Rng2S64 b)     { Rng2S64 c; c.p0.x = md_max(a.min.x, b.min.x); c.p0.y = md_max(a.min.y, b.min.y); c.p1.x = md_min(a.max.x, b.max.x); c.p1.y = md_min(a.max.y, b.max.y); return c; }
-inline Vec2S64 clamp_2s32    (Rng2S64 r, Vec2S64 v)     {         v.x = clamp(r.min.x, v.x, r.max.x); v.y = clamp(r.min.y, v.y, r.max.y); return v; }
+inline Vec2S64 clamp_2s64    (Rng2S64 r, Vec2S64 v)     {         v.x = clamp(r.min.x, v.x, r.max.x); v.y = clamp(r.min.y, v.y, r.max.y); return v; }
 
 ////////////////////////////////
 //~ rjf: Miscellaneous Ops
@@ -966,6 +966,11 @@ u32_from_rgba(Vec4F32 rgba)
 
 ////////////////////////////////
 //~ rjf: List Type Functions
+
+void         rng1s64_list_push            (Arena*        arena, Rng1S64List* list, Rng1S64 rng);
+void         rng1s64_list_alloc           (AllocatorInfo ainfo, Rng1S64List* list, Rng1S64 rng);
+Rng1S64Array rng1s64_array_from_list      (Arena*        arena, Rng1S64List* list);
+Rng1S64Array rng1s64_array_from_list_alloc(AllocatorInfo ainfo, Rng1S64List* list);
 
 inline void
 rng1s64_list_push(Arena* arena, Rng1S64List* list, Rng1S64 rng)

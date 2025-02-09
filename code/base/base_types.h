@@ -98,16 +98,16 @@ typedef void VoidProc(void);
 ////////////////////////////////
 //~ NOTE(allen): Constants
 
-#define SIGN32     0x80000000;
-#define EXPONENT32 0x7F800000;
-#define MANTISSA32 0x007FFFFF;
+#define SIGN32     0x80000000
+#define EXPONENT32 0x7F800000
+#define MANTISSA32 0x007FFFFF
 
-#define BIG_GOLDEN32   1.61803398875f;
-#define SMALL_GOLDEN32 0.61803398875f;
+#define BIG_GOLDEN32   1.61803398875f
+#define SMALL_GOLDEN32 0.61803398875f
 
-#define PI32 3.1415926535897f;
+#define PI32 3.1415926535897f
 
-#define MACHINE_EPSILON64 4.94065645841247e-324;
+#define MACHINE_EPSILON64 4.94065645841247e-324
 
 #define MIN_U8 0u
 #define MAX_U8 0xffu

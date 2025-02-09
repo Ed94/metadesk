@@ -73,7 +73,10 @@
 		"chrono": "c",
 		"misc.h": "c",
 		"gencpp_c11.h": "c",
-		"push_ignores.inline.h": "c"
+		"push_ignores.inline.h": "c",
+		"list": "c",
+		"xhash": "c",
+		"xtree": "c"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

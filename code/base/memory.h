@@ -81,7 +81,7 @@
 //~ rjf: Memory Operation Macros
 
 
-// TODO(Ed): Review usage of memmove here...
+// TODO(Ed): Review usage of memmove here...(I guess wanting to avoid overlap faults..)
 #ifndef memory_copy
 #	if USE_VENDOR_MEMORY_OPS
 #		define memory_copy(dst, src, size)    memmove((dst), (src), (size))
@@ -198,7 +198,7 @@ void* mem_move( void* destination, void const* source, SSIZE byte_count )
 		return dest_ptr;
 
 	if ( src_ptr + byte_count <= dest_ptr || dest_ptr + byte_count <= src_ptr )    // NOTE: Non-overlapping
-		return mem_copy( dest_ptr, src_ptr, byte_count );
+		return memory_copy( dest_ptr, src_ptr, byte_count );
 
 	if ( dest_ptr < src_ptr )
 	{
@@ -604,8 +604,8 @@ inline void
 sll__queue_pop_nz(void* nil, void** f, void* f_next, void** l)
 {
 	if (*f == *l) {
-		*f == nil;
-		*l == nil;
+		*f = nil;
+		*l = nil;
 	}
 	else {
 		*f = f_next;

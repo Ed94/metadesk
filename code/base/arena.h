@@ -66,8 +66,8 @@ struct TempArena
 
 MD_API void* arena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags);
 
-force_inline
-AllocatorInfo arena_allocator(Arena* arena) {
+force_inline AllocatorInfo 
+arena_allocator(Arena* arena) {
 	AllocatorInfo info = { arena_allocator_proc, arena};
 	return info;
 }
@@ -81,7 +81,7 @@ void arena_release(Arena *arena);
 
 //- rjf: arena push/pop/pos core functions
 
-MD_API void *arena_push  (Arena* arena, SSIZE size, SSIZE align);
+MD_API void* arena_push  (Arena* arena, SSIZE size, SSIZE align);
        U64   arena_pos   (Arena* arena);
 MD_API void  arena_pop_to(Arena* arena, SSIZE pos);
 
@@ -126,9 +126,9 @@ arena_pos(Arena *arena) {
 force_inline void arena_clear(Arena* arena) { arena_pop_to(arena, 0); }
 
 inline void
-arena_pop(Arena* arena, U64 amt) {
-	U64 pos_old = arena_pos(arena);
-	U64 pos_new = pos_old;
+arena_pop(Arena* arena, SSIZE amt) {
+	SSIZE pos_old = arena_pos(arena);
+	SSIZE pos_new = pos_old;
 	if (amt < pos_old)
 	{
 		pos_new = pos_old - amt;

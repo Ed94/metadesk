@@ -5,6 +5,8 @@
 #undef  MARKUP_LAYER_COLOR
 #define MARKUP_LAYER_COLOR 0.20f, 0.60f, 0.80f
 
+#include "base.h"
+
 #include "platform.c"
 
 MD_NS_BEGIN

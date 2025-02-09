@@ -101,7 +101,7 @@ arena_push(Arena *arena, U64 size, U64 align)
 }
 
 void
-arena_pop_to(Arena *arena, U64 pos)
+arena_pop_to(Arena *arena, SSIZE pos)
 {
 	SPTR const header_size = align_pow2(size_of(Arena), MD_DEFAULT_MEMORY_ALIGNMENT);
 

@@ -561,705 +561,807 @@ STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(vsprintfcb)(STBSP_SPRINTFCB *callback,
 			case 'h':
 				fl |= STBSP__HALFWIDTH;
 				++ f;
-			if (f[0] == 'h')
-				++f;  // QUARTERWIDTH
-			break;
+				if (f[0] == 'h')
+					++ f;  // QUARTERWIDTH
+				break;
+
 			// are we 64-bit (unix style)
 			case 'l':
-			fl |= ((sizeof(long) == 8) ? STBSP__INTMAX : 0);
-			++f;
-			if (f[0] == 'l') {
-				fl |= STBSP__INTMAX;
-				++f;
-			}
-			break;
+				fl |= ((sizeof(long) == 8) ? STBSP__INTMAX : 0);
+				++ f;
+				if (f[0] == 'l') {
+					fl |= STBSP__INTMAX;
+					++f;
+				}
+				break;
+
 			// are we 64-bit on intmax? (c99)
 			case 'j':
-			fl |= (sizeof(size_t) == 8) ? STBSP__INTMAX : 0;
-			++f;
-			break;
+				fl |= (sizeof(size_t) == 8) ? STBSP__INTMAX : 0;
+				++ f;
+				break;
+
 			// are we 64-bit on size_t or ptrdiff_t? (c99)
 			case 'z':
-			fl |= (sizeof(ptrdiff_t) == 8) ? STBSP__INTMAX : 0;
-			++f;
-			break;
+				fl |= (sizeof(ptrdiff_t) == 8) ? STBSP__INTMAX : 0;
+				++ f;
+				break;
+
 			case 't':
-			fl |= (sizeof(ptrdiff_t) == 8) ? STBSP__INTMAX : 0;
-			++f;
-			break;
+				fl |= (sizeof(ptrdiff_t) == 8) ? STBSP__INTMAX : 0;
+				++ f;
+				break;
+
 			// are we 64-bit (msft style)
 			case 'I':
-			if ((f[1] == '6') && (f[2] == '4')) {
-				fl |= STBSP__INTMAX;
-				f += 3;
-			} else if ((f[1] == '3') && (f[2] == '2')) {
-				f += 3;
-			} else {
-				fl |= ((sizeof(void *) == 8) ? STBSP__INTMAX : 0);
-				++f;
-			}
-			break;
+				if ((f[1] == '6') && (f[2] == '4')) {
+					fl |= STBSP__INTMAX;
+					f  += 3;
+				} 
+				else if ((f[1] == '3') && (f[2] == '2')) {
+					f += 3;
+				} 
+				else {
+					fl |= ((sizeof(void *) == 8) ? STBSP__INTMAX : 0);
+					++ f;
+				}
+				break;
+
 			default: break;
 		}
 		
 		// handle each replacement
-		switch (f[0]) {
-	#define STBSP__NUMSZ 512 // big enough for e308 (with commas) or e-307
-		char num[STBSP__NUMSZ];
-		char lead[8];
-		char tail[8];
-		char *s;
-		char const *h;
-		stbsp__uint32 l, n, cs;
-		stbsp__uint64 n64;
-	#ifndef STB_SPRINTF_NOFLOAT
-		double fv;
-	#endif
-		stbsp__int32 dp;
-		char const *sn;
+		switch (f[0]) 
+		{
+		#define STBSP__NUMSZ 512 // big enough for e308 (with commas) or e-307
+			char          num[STBSP__NUMSZ];
+			char          lead[8];
+			char          tail[8];
+			char*         s;
+			char const*   h;
+			stbsp__uint32 l, n, cs;
+			stbsp__uint64 n64;
+		#ifndef STB_SPRINTF_NOFLOAT
+			double fv;
+		#endif
+			stbsp__int32 dp;
+			char const*  sn;
 		
 		case 's':
-		// get the string
-		s = va_arg(va, char *);
-		if (s == 0)
-			s = (char *)"null";
-		// get the length, limited to desired precision
-		// always limit to ~0u chars since our counts are 32b
-		l = stbsp__strlen_limited(s, (pr >= 0) ? pr : ~0u);
-		lead[0] = 0;
-		tail[0] = 0;
-		pr = 0;
-		dp = 0;
-		cs = 0;
-		// copy the string in
-		goto scopy;
-		
-		//-
-		//-
-		//-
-		// NOTE(rjf): DEBUGGER PROJECT ADDITION vvv
-		//
-		// The following additions are for using the debugger project's base layer
-		// types in format strings.
-		//
-		case 'S':
-		{
-			String8 string = va_arg(va, String8);
-			s = (char *)string.str;
-			l = (U32)string.size;
+			// get the string
+			s = va_arg(va, char *);
+			if (s == 0)
+				s = (char *)"null";
+			// get the length, limited to desired precision
+			// always limit to ~0u chars since our counts are 32b
+			l       = stbsp__strlen_limited(s, (pr >= 0) ? pr : ~0u);
 			lead[0] = 0;
 			tail[0] = 0;
-			pr = 0;
-			dp = 0;
-			cs = 0;
-		}goto scopy;
-
-		case 'm':
-		case 'M':
-		{
-			static const U64 one_kib = 1ull * 1024;
-			static const U64 one_mib = 1ull * 1024 * 1024;
-			static const U64 one_gib = 1ull * 1024 * 1024 * 1024;
-			static const U64 one_tib = 1ull * 1024 * 1024 * 1024 * 1024;
-
-			U64 size;
-			if(f[0] == 'M')
-			{
-			size = va_arg(va, U64);
-			}
-			else
-			{
-			size = va_arg(va, U32);
-			}
-
-			U64 lo = 0;
-			U64 hi = 0;
-			char *units = "";
-
-			if(size < one_kib)
-			{
-			hi = size;
-			units = "Bytes";
-			}
-			else if(size < one_mib)
-			{
-			hi = size / one_kib;
-			lo = ((size * 100) / one_kib) % 100;
-			units = "KiB";
-			}
-			else if(size < one_gib)
-			{
-			hi = size / one_mib;
-			lo = ((size * 100) / one_mib) % 100;
-			units = "MiB";
-			}
-			else if(size < one_tib)
-			{
-			hi = size / one_gib;
-			lo = ((size * 100) / one_gib) % 100;
-			units = "GiB";
-			}
-			else 
-			{
-			assert(size <= MAX_U64 / 100ull);
-			hi = size / one_tib;
-			lo = ((size * 100) / one_tib) % 100;
-			units = "TiB";
-			}
-
-			// format high part
-			if(hi > 0)
-			{
-			s = num;
-			for(U64 n = hi; n > 0; n /= 10ull)
-			{
-				*s = (char)(n % 10ull) + '0';
-				++s;
-			}
-			for(S64 i = (S64)(s-num)-1; i >= 0; --i)
-			{
-				*bf = num[i];
-				++bf;
-			}
-			}
-			else
-			{
-			*bf = '0';
-			++bf;
-			}
-
-			// format low part
-			if(lo > 0)
-			{
-			*bf = '.';
-			++bf;
-
-			s = num;
-			for(U64 n = lo; n > 0; n /= 10ull)
-			{
-				*s = (char)(n % 10ull) + '0';
-				++s;
-			}
-
-			U64 lead_zero_count = 3 - (U64)(s-num);
-			for(U64 i = 1; i < lead_zero_count; ++i)
-			{
-				*bf = '0';
-				++bf;
-			}
-
-			for(S64 i = (S64)(s-num)-1; i >= 0; --i)
-			{
-				*bf = num[i];
-				++bf;
-			}
-			}
-
-			*bf = ' ';
-			++bf;
-
-			// copy units
-			for(U64 i = 0; units[i] != 0; ++i)
-			{
-			*bf = units[i];
-			++bf;
-			}
-		}break;
-		//
-		// NOTE(rjf): DEBUGGER PROJECT ADDITION ^^^
-		//-
-		//-
-		//-
-		
-		case 'c': // char
-		// get the character
-		s = num + STBSP__NUMSZ - 1;
-		*s = (char)va_arg(va, int);
-		l = 1;
-		lead[0] = 0;
-		tail[0] = 0;
-		pr = 0;
-		dp = 0;
-		cs = 0;
-		goto scopy;
-		
-		case 'n': // weird write-bytes specifier
-		{
-			int *d = va_arg(va, int *);
-			*d = tlen + (int)(bf - buf);
-		} break;
-		
-	#ifdef STB_SPRINTF_NOFLOAT
-		case 'A':              // float
-		case 'a':              // hex float
-		case 'G':              // float
-		case 'g':              // float
-		case 'E':              // float
-		case 'e':              // float
-		case 'f':              // float
-		va_arg(va, double); // eat it
-		s = (char *)"No float";
-		l = 8;
-		lead[0] = 0;
-		tail[0] = 0;
-		pr = 0;
-		cs = 0;
-		STBSP__NOTUSED(dp);
-		goto scopy;
-	#else
-		case 'A': // hex float
-		case 'a': // hex float
-		h = (f[0] == 'A') ? hexu : hex;
-		fv = va_arg(va, double);
-		if (pr == -1)
-			pr = 6; // default is 6
-		// read the double into a string
-		if (stbsp__real_to_parts((stbsp__int64 *)&n64, &dp, fv))
-			fl |= STBSP__NEGATIVE;
-		
-		s = num + 64;
-		
-		stbsp__lead_sign(fl, lead);
-		
-		if (dp == -1023)
-			dp = (n64) ? -1022 : 0;
-		else
-			n64 |= (((stbsp__uint64)1) << 52);
-		n64 <<= (64 - 56);
-		if (pr < 15)
-			n64 += ((((stbsp__uint64)8) << 56) >> (pr * 4));
-		// add leading chars
-		
-	#ifdef STB_SPRINTF_MSVC_MODE
-		*s++ = '0';
-		*s++ = 'x';
-	#else
-		lead[1 + lead[0]] = '0';
-		lead[2 + lead[0]] = 'x';
-		lead[0] += 2;
-	#endif
-		*s++ = h[(n64 >> 60) & 15];
-		n64 <<= 4;
-		if (pr)
-			*s++ = stbsp__period;
-		sn = s;
-		
-		// print the bits
-		n = pr;
-		if (n > 13)
-			n = 13;
-		if (pr > (stbsp__int32)n)
-			tz = pr - n;
-		pr = 0;
-		while (n--) {
-			*s++ = h[(n64 >> 60) & 15];
-			n64 <<= 4;
-		}
-		
-		// print the expo
-		tail[1] = h[17];
-		if (dp < 0) {
-			tail[2] = '-';
-			dp = -dp;
-		} else
-			tail[2] = '+';
-		n = (dp >= 1000) ? 6 : ((dp >= 100) ? 5 : ((dp >= 10) ? 4 : 3));
-		tail[0] = (char)n;
-		for (;;) {
-			tail[n] = '0' + dp % 10;
-			if (n <= 3)
-			break;
-			--n;
-			dp /= 10;
-		}
-		
-		dp = (int)(s - sn);
-		l = (int)(s - (num + 64));
-		s = num + 64;
-		cs = 1 + (3 << 24);
-		goto scopy;
-		
-		case 'G': // float
-		case 'g': // float
-		h = (f[0] == 'G') ? hexu : hex;
-		fv = va_arg(va, double);
-		if (pr == -1)
-			pr = 6;
-		else if (pr == 0)
-			pr = 1; // default is 6
-		// read the double into a string
-		if (stbsp__real_to_str(&sn, &l, num, &dp, fv, (pr - 1) | 0x80000000))
-			fl |= STBSP__NEGATIVE;
-		
-		// clamp the precision and delete extra zeros after clamp
-		n = pr;
-		if (l > (stbsp__uint32)pr)
-			l = pr;
-		while ((l > 1) && (pr) && (sn[l - 1] == '0')) {
-			--pr;
-			--l;
-		}
-		
-		// should we use %e
-		if ((dp <= -4) || (dp > (stbsp__int32)n)) {
-			if (pr > (stbsp__int32)l)
-			pr = l - 1;
-			else if (pr)
-			--pr; // when using %e, there is one digit before the decimal
-			goto doexpfromg;
-		}
-		// this is the insane action to get the pr to match %g semantics for %f
-		if (dp > 0) {
-			pr = (dp < (stbsp__int32)l) ? l - dp : 0;
-		} else {
-			pr = -dp + ((pr > (stbsp__int32)l) ? (stbsp__int32) l : pr);
-		}
-		goto dofloatfromg;
-		
-		case 'E': // float
-		case 'e': // float
-		h = (f[0] == 'E') ? hexu : hex;
-		fv = va_arg(va, double);
-		if (pr == -1)
-			pr = 6; // default is 6
-		// read the double into a string
-		if (stbsp__real_to_str(&sn, &l, num, &dp, fv, pr | 0x80000000))
-			fl |= STBSP__NEGATIVE;
-		doexpfromg:
-		tail[0] = 0;
-		stbsp__lead_sign(fl, lead);
-		if (dp == STBSP__SPECIAL) {
-			s = (char *)sn;
-			cs = 0;
-			pr = 0;
+			pr      = 0;
+			dp      = 0;
+			cs      = 0;
+			// copy the string in
 			goto scopy;
-		}
-		s = num + 64;
-		// handle leading chars
-		*s++ = sn[0];
 		
-		if (pr)
-			*s++ = stbsp__period;
-		
-		// handle after decimal
-		if ((l - 1) > (stbsp__uint32)pr)
-			l = pr + 1;
-		for (n = 1; n < l; n++)
-			*s++ = sn[n];
-		// trailing zeros
-		tz = pr - (l - 1);
-		pr = 0;
-		// dump expo
-		tail[1] = h[0xe];
-		dp -= 1;
-		if (dp < 0) {
-			tail[2] = '-';
-			dp = -dp;
-		} else
-			tail[2] = '+';
-	#ifdef STB_SPRINTF_MSVC_MODE
-		n = 5;
-	#else
-		n = (dp >= 100) ? 5 : 4;
-	#endif
-		tail[0] = (char)n;
-		for (;;) {
-			tail[n] = '0' + dp % 10;
-			if (n <= 3)
-			break;
-			--n;
-			dp /= 10;
-		}
-		cs = 1 + (3 << 24); // how many tens
-		goto flt_lead;
-		
-		case 'f': // float
-		fv = va_arg(va, double);
-		doafloat:
-		// do kilos
-		if (fl & STBSP__METRIC_SUFFIX) {
-			double divisor;
-			divisor = 1000.0f;
-			if (fl & STBSP__METRIC_1024)
-			divisor = 1024.0;
-			while (fl < 0x4000000) {
-			if ((fv < divisor) && (fv > -divisor))
-				break;
-			fv /= divisor;
-			fl += 0x1000000;
-			}
-		}
-		if (pr == -1)
-			pr = 6; // default is 6
-		// read the double into a string
-		if (stbsp__real_to_str(&sn, &l, num, &dp, fv, pr))
-			fl |= STBSP__NEGATIVE;
-		dofloatfromg:
-		tail[0] = 0;
-		stbsp__lead_sign(fl, lead);
-		if (dp == STBSP__SPECIAL) {
-			s = (char *)sn;
-			cs = 0;
-			pr = 0;
-			goto scopy;
-		}
-		s = num + 64;
-		
-		// handle the three decimal varieties
-		if (dp <= 0) {
-			stbsp__int32 i;
-			// handle 0.000*000xxxx
-			*s++ = '0';
-			if (pr)
-			*s++ = stbsp__period;
-			n = -dp;
-			if ((stbsp__int32)n > pr)
-			n = pr;
-			i = n;
-			while (i) {
-			if ((((stbsp__uintptr)s) & 3) == 0)
-				break;
-			*s++ = '0';
-			--i;
-			}
-			while (i >= 4) {
-			*(stbsp__uint32 *)s = 0x30303030;
-			s += 4;
-			i -= 4;
-			}
-			while (i) {
-			*s++ = '0';
-			--i;
-			}
-			if ((stbsp__int32)(l + n) > pr)
-			l = pr - n;
-			i = l;
-			while (i) {
-			*s++ = *sn++;
-			--i;
-			}
-			tz = pr - (n + l);
-			cs = 1 + (3 << 24); // how many tens did we write (for commas below)
-		} else {
-			cs = (fl & STBSP__TRIPLET_COMMA) ? ((600 - (stbsp__uint32)dp) % 3) : 0;
-			if ((stbsp__uint32)dp >= l) {
-			// handle xxxx000*000.0
-			n = 0;
-			for (;;) {
-				if ((fl & STBSP__TRIPLET_COMMA) && (++cs == 4)) {
-				cs = 0;
-				*s++ = stbsp__comma;
-				} else {
-				*s++ = sn[n];
-				++n;
-				if (n >= l)
-					break;
-				}
-			}
-			if (n < (stbsp__uint32)dp) {
-				n = dp - n;
-				if ((fl & STBSP__TRIPLET_COMMA) == 0) {
-				while (n) {
-					if ((((stbsp__uintptr)s) & 3) == 0)
-					break;
-					*s++ = '0';
-					--n;
-				}
-				while (n >= 4) {
-					*(stbsp__uint32 *)s = 0x30303030;
-					s += 4;
-					n -= 4;
-				}
-				}
-				while (n) {
-				if ((fl & STBSP__TRIPLET_COMMA) && (++cs == 4)) {
-					cs = 0;
-					*s++ = stbsp__comma;
-				} else {
-					*s++ = '0';
-					--n;
-				}
-				}
-			}
-			cs = (int)(s - (num + 64)) + (3 << 24); // cs is how many tens
-			if (pr) {
-				*s++ = stbsp__period;
-				tz = pr;
-			}
-			} else {
-			// handle xxxxx.xxxx000*000
-			n = 0;
-			for (;;) {
-				if ((fl & STBSP__TRIPLET_COMMA) && (++cs == 4)) {
-				cs = 0;
-				*s++ = stbsp__comma;
-				} else {
-				*s++ = sn[n];
-				++n;
-				if (n >= (stbsp__uint32)dp)
-					break;
-				}
-			}
-			cs = (int)(s - (num + 64)) + (3 << 24); // cs is how many tens
-			if (pr)
-				*s++ = stbsp__period;
-			if ((l - dp) > (stbsp__uint32)pr)
-				l = pr + dp;
-			while (n < l) {
-				*s++ = sn[n];
-				++n;
-			}
-			tz = pr - (l - dp);
-			}
-		}
-		pr = 0;
-		
-		// handle k,m,g,t
-		if (fl & STBSP__METRIC_SUFFIX) {
-			char idx;
-			idx = 1;
-			if (fl & STBSP__METRIC_NOSPACE)
-			idx = 0;
-			tail[0] = idx;
-			tail[1] = ' ';
+			//-
+			//-
+			//-
+			// NOTE(rjf): DEBUGGER PROJECT ADDITION vvv
+			//
+			// The following additions are for using the debugger project's base layer
+			// types in format strings.
+			//
+			case 'S':
 			{
-			if (fl >> 24) { // SI kilo is 'k', JEDEC and SI kibits are 'K'.
-				if (fl & STBSP__METRIC_1024)
-				tail[idx + 1] = "_KMGT"[fl >> 24];
+				String8 string = va_arg(va, String8);
+				s       = (char *)string.str;
+				l       = (U32)string.size;
+				lead[0] = 0;
+				tail[0] = 0;
+				pr      = 0;
+				dp      = 0;
+				cs      = 0;
+			}
+			goto scopy;
+
+			case 'm':
+			case 'M':
+			{
+				static const U64 one_kib = 1ull * 1024;
+				static const U64 one_mib = 1ull * 1024 * 1024;
+				static const U64 one_gib = 1ull * 1024 * 1024 * 1024;
+				static const U64 one_tib = 1ull * 1024 * 1024 * 1024 * 1024;
+
+				U64 size;
+				if (f[0] == 'M') {
+					size = va_arg(va, U64);
+				}
+				else {
+					size = va_arg(va, U32);
+				}
+
+				U64 lo = 0;
+				U64 hi = 0;
+				char* units = "";
+
+				if (size < one_kib) {
+					hi    = size;
+					units = "Bytes";
+				}
+				else if (size < one_mib)
+				{
+					hi    = size / one_kib;
+					lo    = ((size * 100) / one_kib) % 100;
+					units = "KiB";
+				}
+				else if (size < one_gib) {
+					hi    = size / one_mib;
+					lo    = ((size * 100) / one_mib) % 100;
+					units = "MiB";
+				}
+				else if(size < one_tib) {
+					hi    = size / one_gib;
+					lo    = ((size * 100) / one_gib) % 100;
+					units = "GiB";
+				}
+				else {
+					assert(size <= MAX_U64 / 100ull);
+					hi    = size / one_tib;
+					lo    = ((size * 100) / one_tib) % 100;
+					units = "TiB";
+				}
+
+				// format high part
+				if (hi > 0)
+				{
+					s = num;
+					for (U64 n = hi; n > 0; n /= 10ull)
+					{
+						*s = (char)(n % 10ull) + '0';
+						++s;
+					}
+					for (S64 i = (S64)(s-num)-1; i >= 0; --i)
+					{
+						*bf = num[i];
+						++ bf;
+					}
+				}
 				else
-				tail[idx + 1] = "_kMGT"[fl >> 24];
-				idx++;
-				// If printing kibits and not in jedec, add the 'i'.
-				if (fl & STBSP__METRIC_1024 && !(fl & STBSP__METRIC_JEDEC)) {
-				tail[idx + 1] = 'i';
-				idx++;
+				{
+					*bf = '0';
+					++ bf;
 				}
-				tail[0] = idx;
+
+				// format low part
+				if (lo > 0)
+				{
+					*bf = '.';
+					++ bf;
+
+					s = num;
+					for (U64 n = lo; n > 0; n /= 10ull) {
+						*s = (char)(n % 10ull) + '0';
+						++ s;
+					}
+
+					U64 lead_zero_count = 3 - (U64)(s-num);
+					for (U64 i = 1; i < lead_zero_count; ++i) {
+						*bf = '0';
+						++ bf;
+					}
+
+					for (S64 i = (S64)(s-num)-1; i >= 0; --i) {
+						*bf = num[i];
+						++ bf;
+					}
+				}
+
+				*bf = ' ';
+				++ bf;
+
+				// copy units
+				for(U64 i = 0; units[i] != 0; ++i) {
+					*bf = units[i];
+					++ bf;
+				}
 			}
+			break;
+			//
+			// NOTE(rjf): DEBUGGER PROJECT ADDITION ^^^
+			//-
+			//-
+			//-
+
+			case 'c': // char
+				// get the character
+				 s       = num + STBSP__NUMSZ - 1;
+				*s       = (char)va_arg(va, int);
+				 l       = 1;
+				 lead[0] = 0;
+				 tail[0] = 0;
+				 pr      = 0;
+				 dp      = 0;
+				 cs      = 0;
+				goto scopy;
+		
+			case 'n': // weird write-bytes specifier
+			{
+				int*
+				 d = va_arg(va, int *);
+				*d = tlen + (int)(bf - buf);
+			} 
+			break;
+		
+		#ifdef STB_SPRINTF_NOFLOAT
+			case 'A':              // float
+			case 'a':              // hex float
+			case 'G':              // float
+			case 'g':              // float
+			case 'E':              // float
+			case 'e':              // float
+			case 'f':              // float
+				va_arg(va, double); // eat it
+				s       = (char *)"No float";
+				l       = 8;
+				lead[0] = 0;
+				tail[0] = 0;
+				pr      = 0;
+				cs      = 0;
+				STBSP__NOTUSED(dp);
+				goto scopy;
+		#else
+			case 'A': // hex float
+			case 'a': // hex float
+			{
+				h  = (f[0] == 'A') ? hexu : hex;
+				fv = va_arg(va, double);
+
+				if (pr == -1)
+					pr = 6; // default is 6
+
+				// read the double into a string
+				if (stbsp__real_to_parts((stbsp__int64 *)&n64, &dp, fv))
+					fl |= STBSP__NEGATIVE;
+				
+				s = num + 64;
+				
+				stbsp__lead_sign(fl, lead);
+				
+				if (dp == -1023)
+					dp = (n64) ? -1022 : 0;
+				else
+					n64 |= (((stbsp__uint64)1) << 52);
+
+				n64 <<= (64 - 56);
+
+				if (pr < 15)
+					n64 += ((((stbsp__uint64)8) << 56) >> (pr * 4));
+				// add leading chars
+			
+			#ifdef STB_SPRINTF_MSVC_MODE
+				*s ++ = '0';
+				*s ++ = 'x';
+			#else
+				lead[1 + lead[0]] = '0';
+				lead[2 + lead[0]] = 'x';
+				lead[0          ] += 2;
+			#endif
+
+				*s ++ = h[(n64 >> 60) & 15];
+				n64 <<= 4;
+				
+				if (pr)
+					*s++ = stbsp__period;
+
+				sn = s;
+		
+				// print the bits
+				n = pr;
+				if (n > 13)
+					n = 13;
+
+				if (pr > (stbsp__int32)n)
+					tz = pr - n;
+
+				pr = 0;
+
+				while (n--) {
+					*s ++ = h[(n64 >> 60) & 15];
+					n64 <<= 4;
+				}
+		
+				// print the expo
+				tail[1] = h[17];
+				if (dp < 0) {
+					tail[2] = '-';
+					dp = -dp;
+				}
+				else
+					tail[2] = '+';
+
+				n       = (dp >= 1000) ? 6 : ((dp >= 100) ? 5 : ((dp >= 10) ? 4 : 3));
+				tail[0] = (char)n;
+
+				for (;;) 
+				{
+					tail[n] = '0' + dp % 10;
+
+					if (n <= 3) break;
+					-- n;
+
+					dp /= 10;
+				}
+		
+				dp = (int)(s - sn);
+				l  = (int)(s - (num + 64));
+				s  = num + 64;
+				cs = 1 + (3 << 24);
+				goto scopy;
 			}
-		};
 		
-		flt_lead:
-		// get the length that we copied
-		l = (stbsp__uint32)(s - (num + 64));
-		s = num + 64;
-		goto scopy;
-	#endif
+			case 'G': // float
+			case 'g': // float
+			{
+				h = (f[0] == 'G') ? hexu : hex;
+				fv = va_arg(va, double);
+
+				if (pr == -1)
+					pr = 6;
+				else if (pr == 0)
+					pr = 1; // default is 6
+
+				// read the double into a string
+				if (stbsp__real_to_str(&sn, &l, num, &dp, fv, (pr - 1) | 0x80000000))
+					fl |= STBSP__NEGATIVE;
+				
+				// clamp the precision and delete extra zeros after clamp
+				n = pr;
+				if (l > (stbsp__uint32)pr)
+					l = pr;
+				while ((l > 1) && (pr) && (sn[l - 1] == '0')) {
+					--pr;
+					--l;
+				}
 		
+				// should we use %e
+				if ((dp <= -4) || (dp > (stbsp__int32)n)) {
+					if (pr > (stbsp__int32)l) 
+						pr = l - 1;
+					else if (pr)
+						--pr; // when using %e, there is one digit before the decimal
+					goto doexpfromg;
+				}
+				// this is the insane action to get the pr to match %g semantics for %f
+				if (dp > 0) {
+					pr = (dp < (stbsp__int32)l) ? l - dp : 0;
+				} else {
+					pr = -dp + ((pr > (stbsp__int32)l) ? (stbsp__int32) l : pr);
+				}
+				goto dofloatfromg;
+			}
+		
+			case 'E': // float
+			case 'e': // float
+			{
+				h  = (f[0] == 'E') ? hexu : hex;
+				fv = va_arg(va, double);
+
+				if (pr == -1)
+					pr = 6; // default is 6
+
+				// read the double into a string
+				if (stbsp__real_to_str(&sn, &l, num, &dp, fv, pr | 0x80000000))
+					fl |= STBSP__NEGATIVE;
+
+			doexpfromg:
+				tail[0] = 0;
+				stbsp__lead_sign(fl, lead);
+				if (dp == STBSP__SPECIAL) {
+					s  = (char *)sn;
+					cs = 0;
+					pr = 0;
+					goto scopy;
+				}
+				s = num + 64;
+				// handle leading chars
+				*s ++ = sn[0];
+				
+				if (pr)
+					*s ++ = stbsp__period;
+		
+				// handle after decimal
+				if ((l - 1) > (stbsp__uint32)pr)
+					l = pr + 1;
+
+				for (n = 1; n < l; n++)
+					*s++ = sn[n];
+
+				// trailing zeros
+				tz = pr - (l - 1);
+				pr = 0;
+
+				// dump expo
+				tail[1] = h[0xe];
+				dp -= 1;
+				if (dp < 0) {
+					tail[2] = '-';
+					dp = -dp;
+				}
+				else
+					tail[2] = '+';
+				#ifdef STB_SPRINTF_MSVC_MODE
+					n = 5;
+				#else
+					n = (dp >= 100) ? 5 : 4;
+				#endif
+
+					tail[0] = (char)n;
+					for (;;) {
+						tail[n] = '0' + dp % 10;
+						if (n <= 3)
+							break;
+						-- n;
+						dp /= 10;
+					}
+					cs = 1 + (3 << 24); // how many tens
+					goto flt_lead;
+			}
+		
+			case 'f': // float
+			{
+				fv = va_arg(va, double);
+
+			doafloat:
+				// do kilos
+				if (fl & STBSP__METRIC_SUFFIX) {
+					double divisor;
+					divisor = 1000.0f;
+
+					if (fl & STBSP__METRIC_1024)
+						divisor = 1024.0;
+
+					while (fl < 0x4000000) {
+						if ((fv < divisor) && (fv > -divisor))
+							break;
+						fv /= divisor;
+						fl += 0x1000000;
+					}
+				}
+
+				if (pr == -1)
+					pr = 6; // default is 6
+
+				// read the double into a string
+				if (stbsp__real_to_str(&sn, &l, num, &dp, fv, pr))
+					fl |= STBSP__NEGATIVE;
+
+			dofloatfromg:
+				tail[0] = 0;
+				stbsp__lead_sign(fl, lead);
+				if (dp == STBSP__SPECIAL) {
+					s = (char *)sn;
+					cs = 0;
+					pr = 0;
+					goto scopy;
+				}
+				s = num + 64;
+		
+				// handle the three decimal varieties
+				if (dp <= 0)
+				{
+					stbsp__int32 i;
+					// handle 0.000*000xxxx
+					*s ++ = '0';
+					if (pr)
+						*s ++ = stbsp__period;
+
+					n = -dp;
+					
+					if ((stbsp__int32)n > pr)
+						n = pr;
+
+					i = n;
+
+					while (i) 
+					{
+						if ((((stbsp__uintptr)s) & 3) == 0)
+							break;
+						*s ++ = '0';
+						-- i;
+					}
+
+					while (i >= 4) 
+					{
+						*(stbsp__uint32 *)s = 0x30303030;
+						s += 4;
+						i -= 4;
+					}
+
+					while (i) 
+					{
+						*s ++ = '0';
+						--i;
+					}
+					if ((stbsp__int32)(l + n) > pr)
+						l = pr - n;
+
+					i = l;
+
+					while (i)
+					{
+						*s ++ = *sn++;
+						-- i;
+					}
+					tz = pr - (n + l);
+					cs = 1 + (3 << 24); // how many tens did we write (for commas below)
+				}
+				else
+				{
+					cs = (fl & STBSP__TRIPLET_COMMA) ? ((600 - (stbsp__uint32)dp) % 3) : 0;
+
+					if ((stbsp__uint32)dp >= l)
+					{
+						// handle xxxx000*000.0
+						n = 0;
+
+						for (;;)
+						{
+							if ((fl & STBSP__TRIPLET_COMMA) && (++cs == 4)) {
+								cs = 0;
+								*s ++ = stbsp__comma;
+							}
+							else {
+								*s ++ = sn[n];
+								++ n;
+								if (n >= l)
+									break;
+							}
+						}
+						if (n < (stbsp__uint32)dp)
+						{
+							n = dp - n;
+							if ((fl & STBSP__TRIPLET_COMMA) == 0)
+							{
+								while (n) {
+									if ((((stbsp__uintptr)s) & 3) == 0)
+									break;
+									*s ++ = '0';
+									-- n;
+								}
+								while (n >= 4) {
+									*(stbsp__uint32 *)s = 0x30303030;
+									s += 4;
+									n -= 4;
+								}
+							}
+							while (n) 
+							{
+								if ((fl & STBSP__TRIPLET_COMMA) && (++cs == 4)) {
+									cs    = 0;
+									*s ++ = stbsp__comma;
+								}
+								else {
+									*s ++ = '0';
+									--n;
+								}
+							}
+						}
+
+						cs = (int)(s - (num + 64)) + (3 << 24); // cs is how many tens
+
+						if (pr) {
+							*s ++ = stbsp__period;
+							tz    = pr;
+						}
+					} 
+					else 
+					{
+						// handle xxxxx.xxxx000*000
+						n = 0;
+						for (;;) 
+						{
+							if ((fl & STBSP__TRIPLET_COMMA) && (++cs == 4)) {
+								cs = 0;
+								*s++ = stbsp__comma;
+							}
+							else {
+								*s ++ = sn[n];
+								++ n;
+								if (n >= (stbsp__uint32)dp)
+									break;
+							}
+						}
+
+						cs = (int)(s - (num + 64)) + (3 << 24); // cs is how many tens
+
+						if (pr)
+							*s ++ = stbsp__period;
+
+						if ((l - dp) > (stbsp__uint32)pr)
+							l = pr + dp;
+
+						while (n < l) {
+							*s ++ = sn[n];
+							++ n;
+						}
+
+						tz = pr - (l - dp);
+					}
+				}
+				pr = 0;
+		
+				// handle k,m,g,t
+				if (fl & STBSP__METRIC_SUFFIX)
+				{
+					char idx;
+					idx = 1;
+					if (fl & STBSP__METRIC_NOSPACE)
+						idx = 0;
+
+					tail[0] = idx;
+					tail[1] = ' ';
+					{
+						if (fl >> 24) 
+						{ 
+							// SI kilo is 'k', JEDEC and SI kibits are 'K'.
+							if (fl & STBSP__METRIC_1024)
+								tail[idx + 1] = "_KMGT"[fl >> 24];
+							else
+								tail[idx + 1] = "_kMGT"[fl >> 24];
+
+							idx++;
+
+							// If printing kibits and not in jedec, add the 'i'.
+							if (fl & STBSP__METRIC_1024 && !(fl & STBSP__METRIC_JEDEC)) {
+								tail[idx + 1] = 'i';
+								idx ++;
+							}
+
+							tail[0] = idx;
+						}
+					}
+				};
+		
+				flt_lead:
+				// get the length that we copied
+				l = (stbsp__uint32)(s - (num + 64));
+				s = num + 64;
+				goto scopy;
+			}
+		// ifdef STB_SPRINTF_NOFLOAT
+		#endif
+
 		case 'B': // upper binary
 		case 'b': // lower binary
-		h = (f[0] == 'B') ? hexu : hex;
-		lead[0] = 0;
-		if (fl & STBSP__LEADING_0X) {
-			lead[0] = 2;
-			lead[1] = '0';
-			lead[2] = h[0xb];
-		}
-		l = (8 << 4) | (1 << 8);
-		goto radixnum;
+			h = (f[0] == 'B') ? hexu : hex;
+
+			lead[0] = 0;
+			if (fl & STBSP__LEADING_0X) {
+				lead[0] = 2;
+				lead[1] = '0';
+				lead[2] = h[0xb];
+			}
+
+			l = (8 << 4) | (1 << 8);
+			goto radixnum;
 		
 		case 'o': // octal
-		h = hexu;
-		lead[0] = 0;
-		if (fl & STBSP__LEADING_0X) {
-			lead[0] = 1;
-			lead[1] = '0';
-		}
-		l = (3 << 4) | (3 << 8);
-		goto radixnum;
+			h = hexu;
+
+			lead[0] = 0;
+			if (fl & STBSP__LEADING_0X) {
+				lead[0] = 1;
+				lead[1] = '0';
+			}
+
+			l = (3 << 4) | (3 << 8);
+			goto radixnum;
 		
 		case 'p': // pointer
-		fl |= (sizeof(void *) == 8) ? STBSP__INTMAX : 0;
-		pr = sizeof(void *) * 2;
-		fl &= ~STBSP__LEADINGZERO; // 'p' only prints the pointer with zeros
-		// fall through - to X
+			fl |= (sizeof(void *) == 8) ? STBSP__INTMAX : 0;
+			pr  = sizeof(void *) * 2;
+			fl &= ~STBSP__LEADINGZERO; // 'p' only prints the pointer with zeros
+			// fall through - to X
 		
 		case 'X': // upper hex
 		case 'x': // lower hex
-		h = (f[0] == 'X') ? hexu : hex;
-		l = (4 << 4) | (4 << 8);
-		lead[0] = 0;
-		if (fl & STBSP__LEADING_0X) {
-			lead[0] = 2;
-			lead[1] = '0';
-			lead[2] = h[16];
-		}
-		radixnum:
-		// get the number
-		if (fl & STBSP__INTMAX)
-			n64 = va_arg(va, stbsp__uint64);
-		else
-			n64 = va_arg(va, stbsp__uint32);
-		
-		s = num + STBSP__NUMSZ;
-		dp = 0;
-		// clear tail, and clear leading if value is zero
-		tail[0] = 0;
-		if (n64 == 0) {
+		{
+			h = (f[0] == 'X') ? hexu : hex;
+			l = (4 << 4) | (4 << 8);
 			lead[0] = 0;
-			if (pr == 0) {
-			l = 0;
-			cs = 0;
+			if (fl & STBSP__LEADING_0X) {
+				lead[0] = 2;
+				lead[1] = '0';
+				lead[2] = h[16];
+			}
+			radixnum:
+			// get the number
+			if (fl & STBSP__INTMAX)
+				n64 = va_arg(va, stbsp__uint64);
+			else
+				n64 = va_arg(va, stbsp__uint32);
+			
+			s = num + STBSP__NUMSZ;
+			dp = 0;
+			// clear tail, and clear leading if value is zero
+			tail[0] = 0;
+			if (n64 == 0) {
+				lead[0] = 0;
+				if (pr == 0) {
+				l = 0;
+				cs = 0;
+				goto scopy;
+				}
+			}
+			// convert to string
+			for (;;) {
+				*--s = h[n64 & ((1 << (l >> 8)) - 1)];
+				n64 >>= (l >> 8);
+				if (!((n64) || ((stbsp__int32)((num + STBSP__NUMSZ) - s) < pr)))
+				break;
+				if (fl & STBSP__TRIPLET_COMMA) {
+				++l;
+				if ((l & 15) == ((l >> 4) & 15)) {
+					l &= ~15;
+					*--s = stbsp__comma;
+				}
+				}
+			};
+			// get the tens and the comma pos
+			cs = (stbsp__uint32)((num + STBSP__NUMSZ) - s) + ((((l >> 4) & 15)) << 24);
+			// get the length that we copied
+			l = (stbsp__uint32)((num + STBSP__NUMSZ) - s);
+			// copy it
 			goto scopy;
-			}
 		}
-		// convert to string
-		for (;;) {
-			*--s = h[n64 & ((1 << (l >> 8)) - 1)];
-			n64 >>= (l >> 8);
-			if (!((n64) || ((stbsp__int32)((num + STBSP__NUMSZ) - s) < pr)))
-			break;
-			if (fl & STBSP__TRIPLET_COMMA) {
-			++l;
-			if ((l & 15) == ((l >> 4) & 15)) {
-				l &= ~15;
-				*--s = stbsp__comma;
-			}
-			}
-		};
-		// get the tens and the comma pos
-		cs = (stbsp__uint32)((num + STBSP__NUMSZ) - s) + ((((l >> 4) & 15)) << 24);
-		// get the length that we copied
-		l = (stbsp__uint32)((num + STBSP__NUMSZ) - s);
-		// copy it
-		goto scopy;
 		
 		case 'u': // unsigned
 		case 'i':
 		case 'd': // integer
-		// get the integer and abs it
-		if (fl & STBSP__INTMAX) {
-			stbsp__int64 i64 = va_arg(va, stbsp__int64);
-			n64 = (stbsp__uint64)i64;
-			if ((f[0] != 'u') && (i64 < 0)) {
-			n64 = (stbsp__uint64)-i64;
-			fl |= STBSP__NEGATIVE;
+			// get the integer and abs it
+			if (fl & STBSP__INTMAX) 
+			{
+				stbsp__int64 
+				i64 = va_arg(va, stbsp__int64);
+				n64 = (stbsp__uint64)i64;
+
+				if ((f[0] != 'u') && (i64 < 0)) 
+				{
+					n64 = (stbsp__uint64) - i64;
+					fl |= STBSP__NEGATIVE;
+				}
+			} 
+			else 
+			{
+				stbsp__int32 
+				i   = va_arg(va, stbsp__int32);
+				n64 = (stbsp__uint32)i;
+				
+				if ((f[0] != 'u') && (i < 0)) {
+					n64 = (stbsp__uint32)-i;
+					fl |= STBSP__NEGATIVE;
+				}
 			}
-		} else {
-			stbsp__int32 i = va_arg(va, stbsp__int32);
-			n64 = (stbsp__uint32)i;
-			if ((f[0] != 'u') && (i < 0)) {
-			n64 = (stbsp__uint32)-i;
-			fl |= STBSP__NEGATIVE;
+			
+		#ifndef STB_SPRINTF_NOFLOAT
+			if (fl & STBSP__METRIC_SUFFIX) 
+			{
+				if (n64 < 1024)
+					pr = 0;
+				else if (pr == -1)
+					pr = 1;
+
+				fv = (double)(stbsp__int64)n64;
+				goto doafloat;
 			}
-		}
+		#endif
 		
-	#ifndef STB_SPRINTF_NOFLOAT
-		if (fl & STBSP__METRIC_SUFFIX) {
-			if (n64 < 1024)
-			pr = 0;
-			else if (pr == -1)
-			pr = 1;
-			fv = (double)(stbsp__int64)n64;
-			goto doafloat;
-		}
-	#endif
+			// convert to string
+			s = num + STBSP__NUMSZ;
+			l = 0;
 		
-		// convert to string
-		s = num + STBSP__NUMSZ;
-		l = 0;
-		
-		for (;;) {
+		for (;;)
+		{
 			// do in 32-bit chunks (avoid lots of 64-bit divides even with constant denominators)
 			char *o = s - 8;
 			if (n64 >= 100000000) {
@@ -1336,7 +1438,8 @@ STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(vsprintfcb)(STBSP_SPRINTFCB *callback,
 		}
 		
 		// copy the spaces and/or zeros
-		if (fw + pr) {
+		if (fw + pr) 
+		{
 			stbsp__int32 i;
 			stbsp__uint32 c;
 			
@@ -1422,42 +1525,48 @@ STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(vsprintfcb)(STBSP_SPRINTFCB *callback,
 		
 		// copy the string
 		n = l;
-		while (n) {
+		while (n) 
+		{
 			stbsp__int32 i;
 			stbsp__cb_buf_clamp(i, n);
+
 			n -= i;
+
 			STBSP__UNALIGNED(while (i >= 4) {
-							*(stbsp__uint32 volatile *)bf = *(stbsp__uint32 volatile *)s;
-							bf += 4;
-							s += 4;
-							i -= 4;
-							})
+				*(stbsp__uint32 volatile *)bf = *(stbsp__uint32 volatile *)s;
+				bf += 4;
+				s  += 4;
+				i  -= 4;
+			})
 			while (i) {
-			*bf++ = *s++;
-			--i;
+				*bf ++ = *s++;
+				-- i;
 			}
 			stbsp__chk_cb_buf(1);
 		}
 		
 		// copy trailing zeros
-		while (tz) {
+		while (tz)
+		{
 			stbsp__int32 i;
 			stbsp__cb_buf_clamp(i, tz);
+
 			tz -= i;
 			while (i) {
-			if ((((stbsp__uintptr)bf) & 3) == 0)
-				break;
-			*bf++ = '0';
-			--i;
+				if ((((stbsp__uintptr)bf) & 3) == 0)
+					break;
+				*bf ++ = '0';
+				-- i;
 			}
-			while (i >= 4) {
-			*(stbsp__uint32 *)bf = 0x30303030;
-			bf += 4;
-			i -= 4;
+
+			while (i >= 4)  {
+				*(stbsp__uint32 *)bf = 0x30303030;
+				bf += 4;
+				i  -= 4;
 			}
 			while (i) {
-			*bf++ = '0';
-			--i;
+				*bf ++ = '0';
+				-- i;
 			}
 			stbsp__chk_cb_buf(1);
 		}
@@ -1476,45 +1585,51 @@ STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(vsprintfcb)(STBSP_SPRINTFCB *callback,
 		}
 		
 		// handle the left justify
-		if (fl & STBSP__LEFTJUST)
-			if (fw > 0) {
-			while (fw) {
-			stbsp__int32 i;
-			stbsp__cb_buf_clamp(i, fw);
-			fw -= i;
-			while (i) {
-				if ((((stbsp__uintptr)bf) & 3) == 0)
-				break;
-				*bf++ = ' ';
-				--i;
-			}
-			while (i >= 4) {
-				*(stbsp__uint32 *)bf = 0x20202020;
-				bf += 4;
-				i -= 4;
-			}
-			while (i--)
-				*bf++ = ' ';
-			stbsp__chk_cb_buf(1);
+		if (fl & STBSP__LEFTJUST) if (fw > 0) 
+		{
+			while (fw) 
+			{
+				stbsp__int32 i;
+				stbsp__cb_buf_clamp(i, fw);
+
+				fw -= i;
+
+				while (i) {
+					if ((((stbsp__uintptr)bf) & 3) == 0)
+					break;
+					*bf ++ = ' ';
+					-- i;
+				}
+				while (i >= 4) {
+					*(stbsp__uint32 *)bf = 0x20202020;
+					bf += 4;
+					i  -= 4;
+				}
+				while (i--)
+					*bf ++ = ' ';
+
+				stbsp__chk_cb_buf(1);
 			}
 		}
 		break;
 		
 		default: // unknown, just copy code
-		s = num + STBSP__NUMSZ - 1;
-		*s = f[0];
-		l = 1;
-		fw = fl = 0;
-		lead[0] = 0;
-		tail[0] = 0;
-		pr = 0;
-		dp = 0;
-		cs = 0;
-		goto scopy;
+			 s       = num + STBSP__NUMSZ - 1;
+			*s       = f[0];
+			 l       = 1;
+			 fw      = 0;
+			 fl      = 0;
+			 lead[0] = 0;
+			 tail[0] = 0;
+			 pr      = 0;
+			 dp      = 0;
+			 cs      = 0;
+			goto scopy;
 		}
 		++f;
 	}
-	endfmt:
+
+endfmt:
 	
 	if (!callback)
 		*bf = 0;
@@ -1600,50 +1715,44 @@ static char * stbsp__count_clamp_callback( const char * buf, void * user, int le
 
 STBSP__PUBLICDEF int STB_SPRINTF_DECORATE( vsnprintf )( char * buf, int count, char const * fmt, va_list va )
 {
-  stbsp__context c;
-  
-  if ( (count == 0) && !buf )
-  {
-    c.length = 0;
-    
-    STB_SPRINTF_DECORATE( vsprintfcb )( stbsp__count_clamp_callback, &c, c.tmp, fmt, va );
-  }
-  else
-  {
-    int l;
-    
-    c.buf = buf;
-    c.count = count;
-    c.length = 0;
-    
-    STB_SPRINTF_DECORATE( vsprintfcb )( stbsp__clamp_callback, &c, stbsp__clamp_callback(0,&c,0), fmt, va );
-    
-    // zero-terminate
-    l = (int)( c.buf - buf );
-    if ( l >= count ) // should never be greater, only equal (or less) than count
-      l = count - 1;
-    buf[l] = 0;
-  }
-  
-  return c.length;
+	stbsp__context c;
+	
+	if ( (count == 0) && !buf )
+	{
+		c.length = 0;
+		
+		STB_SPRINTF_DECORATE( vsprintfcb )( stbsp__count_clamp_callback, &c, c.tmp, fmt, va );
+	}
+	else
+	{
+		int l;
+		
+		c.buf = buf;
+		c.count = count;
+		c.length = 0;
+		
+		STB_SPRINTF_DECORATE( vsprintfcb )( stbsp__clamp_callback, &c, stbsp__clamp_callback(0,&c,0), fmt, va );
+		
+		// zero-terminate
+		l = (int)( c.buf - buf );
+		if ( l >= count ) // should never be greater, only equal (or less) than count
+		l = count - 1;
+		buf[l] = 0;
+	}
+	
+	return c.length;
 }
 
-STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(snprintf)(char *buf, int count, char const *fmt, ...)
-{
-  int result;
-  va_list va;
-  va_start(va, fmt);
-  
-  result = STB_SPRINTF_DECORATE(vsnprintf)(buf, count, fmt, va);
-  va_end(va);
-  
-  return result;
+STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(snprintf)(char *buf, int count, char const *fmt, ...) {
+	int result;
+	va_list va;
+	va_start(va, fmt);
+	result = STB_SPRINTF_DECORATE(vsnprintf)(buf, count, fmt, va);
+	va_end(va);
+	return result;
 }
 
-STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(vsprintf)(char *buf, char const *fmt, va_list va)
-{
-  return STB_SPRINTF_DECORATE(vsprintfcb)(0, 0, buf, fmt, va);
-}
+STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(vsprintf)(char *buf, char const *fmt, va_list va) { return STB_SPRINTF_DECORATE(vsprintfcb)(0, 0, buf, fmt, va); }
 
 // =======================================================================
 //   low level float utility functions
@@ -1651,28 +1760,27 @@ STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(vsprintf)(char *buf, char const *fmt, 
 #ifndef STB_SPRINTF_NOFLOAT
 
 // copies d to bits w/ strict aliasing (this compiles to nothing on /Ox)
-#define STBSP__COPYFP(dest, src)                   \
-{                                               \
-int cn;                                      \
-for (cn = 0; cn < 8; cn++)                   \
-((char *)&dest)[cn] = ((char *)&src)[cn]; \
+#define STBSP__COPYFP(dest, src)                  \
+{                                                 \
+	int cn;                                       \
+	for (cn = 0; cn < 8; cn++)                    \
+		((char *)&dest)[cn] = ((char *)&src)[cn]; \
 }
 
 // get float info
 static stbsp__int32 stbsp__real_to_parts(stbsp__int64 *bits, stbsp__int32 *expo, double value)
 {
-  double d;
-  stbsp__int64 b = 0;
-  
-  // load value and round at the frac_digits
-  d = value;
-  
-  STBSP__COPYFP(b, d);
-  
-  *bits = b & ((((stbsp__uint64)1) << 52) - 1);
-  *expo = (stbsp__int32)(((b >> 52) & 2047) - 1023);
-  
-  return (stbsp__int32)((stbsp__uint64) b >> 63);
+	double       d;
+	stbsp__int64 b = 0;
+	
+	// load value and round at the frac_digits
+	d = value;
+	STBSP__COPYFP(b, d);
+	
+	*bits = b & ((((stbsp__uint64)1) << 52) - 1);
+	*expo = (stbsp__int32)(((b >> 52) & 2047) - 1023);
+	
+	return (stbsp__int32)((stbsp__uint64) b >> 63);
 }
 
 static double const stbsp__bot[23] = {
@@ -1684,10 +1792,10 @@ static double const stbsp__negbot[22] = {
   1e-012, 1e-013, 1e-014, 1e-015, 1e-016, 1e-017, 1e-018, 1e-019, 1e-020, 1e-021, 1e-022
 };
 static double const stbsp__negboterr[22] = {
-  -5.551115123125783e-018,  -2.0816681711721684e-019, -2.0816681711721686e-020, -4.7921736023859299e-021, -8.1803053914031305e-022, 4.5251888174113741e-023,
-  4.5251888174113739e-024,  -2.0922560830128471e-025, -6.2281591457779853e-026, -3.6432197315497743e-027, 6.0503030718060191e-028,  2.0113352370744385e-029,
-  -3.0373745563400371e-030, 1.1806906454401013e-032,  -7.7705399876661076e-032, 2.0902213275965398e-033,  -7.1542424054621921e-034, -7.1542424054621926e-035,
-  2.4754073164739869e-036,  5.4846728545790429e-037,  9.2462547772103625e-038,  -4.8596774326570872e-039
+  -5.551115123125783e-018,  -2.0816681711721684e-019, -2.0816681711721686e-020, -4.7921736023859299e-021, -8.1803053914031305e-022,  4.5251888174113741e-023,
+   4.5251888174113739e-024, -2.0922560830128471e-025, -6.2281591457779853e-026, -3.6432197315497743e-027,  6.0503030718060191e-028,  2.0113352370744385e-029,
+  -3.0373745563400371e-030,  1.1806906454401013e-032, -7.7705399876661076e-032,  2.0902213275965398e-033, -7.1542424054621921e-034, -7.1542424054621926e-035,
+   2.4754073164739869e-036,  5.4846728545790429e-037,  9.2462547772103625e-038, -4.8596774326570872e-039
 };
 static double const stbsp__top[13] = {
   1e+023, 1e+046, 1e+069, 1e+092, 1e+115, 1e+138, 1e+161, 1e+184, 1e+207, 1e+230, 1e+253, 1e+276, 1e+299
@@ -1696,8 +1804,8 @@ static double const stbsp__negtop[13] = {
   1e-023, 1e-046, 1e-069, 1e-092, 1e-115, 1e-138, 1e-161, 1e-184, 1e-207, 1e-230, 1e-253, 1e-276, 1e-299
 };
 static double const stbsp__toperr[13] = {
-  8388608,
-  6.8601809640529717e+028,
+   8388608,
+   6.8601809640529717e+028,
   -7.253143638152921e+052,
   -4.3377296974619174e+075,
   -1.5559416129466825e+098,
@@ -1706,15 +1814,15 @@ static double const stbsp__toperr[13] = {
   -1.7356668416969134e+167,
   -3.8893577551088374e+190,
   -9.9566444326005119e+213,
-  6.3641293062232429e+236,
+   6.3641293062232429e+236,
   -5.2069140800249813e+259,
   -5.2504760255204387e+282
 };
 static double const stbsp__negtoperr[13] = {
-  3.9565301985100693e-040,  -2.299904345391321e-063,  3.6506201437945798e-086,  1.1875228833981544e-109,
-  -5.0644902316928607e-132, -6.7156837247865426e-155, -2.812077463003139e-178,  -5.7778912386589953e-201,
-  7.4997100559334532e-224,  -4.6439668915134491e-247, -6.3691100762962136e-270, -9.436808465446358e-293,
-  8.0970921678014997e-317
+   3.9565301985100693e-040,  -2.299904345391321e-063,   3.6506201437945798e-086,  1.1875228833981544e-109,
+  -5.0644902316928607e-132,  -6.7156837247865426e-155, -2.812077463003139e-178,  -5.7778912386589953e-201,
+   7.4997100559334532e-224,  -4.6439668915134491e-247, -6.3691100762962136e-270, -9.436808465446358e-293,
+   8.0970921678014997e-317
 };
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1200)
@@ -1767,44 +1875,40 @@ static stbsp__uint64 const stbsp__powten[20] = {
 #define stbsp__tento19th (1000000000000000000ULL)
 #endif
 
-#define stbsp__ddmulthi(oh, ol, xh, yh)                            \
-{                                                               \
-double ahi = 0, alo, bhi = 0, blo;                           \
-stbsp__int64 bt;                                             \
-oh = xh * yh;                                                \
-STBSP__COPYFP(bt, xh);                                       \
-bt &= ((~(stbsp__uint64)0) << 27);                           \
-STBSP__COPYFP(ahi, bt);                                      \
-alo = xh - ahi;                                              \
-STBSP__COPYFP(bt, yh);                                       \
-bt &= ((~(stbsp__uint64)0) << 27);                           \
-STBSP__COPYFP(bhi, bt);                                      \
-blo = yh - bhi;                                              \
-ol = ((ahi * bhi - oh) + ahi * blo + alo * bhi) + alo * blo; \
+#define stbsp__ddmulthi(oh, ol, xh, yh)                                                                \
+{                                                                                                      \
+	double ahi = 0;                                                                                    \
+    double alo;                                                                                        \
+    double bhi = 0;                                                                                    \
+    double blo;                                                                                        \
+	stbsp__int64 bt;                                                                                   \
+	oh  = xh * yh;   STBSP__COPYFP(bt, xh); bt &= ((~(stbsp__uint64)0) << 27); STBSP__COPYFP(ahi, bt); \
+	alo = xh - ahi;  STBSP__COPYFP(bt, yh); bt &= ((~(stbsp__uint64)0) << 27); STBSP__COPYFP(bhi, bt); \
+	blo = yh - bhi;                                                                                    \
+	ol  = ((ahi * bhi - oh) + ahi * blo + alo * bhi) + alo * blo;                                      \
 }
 
-#define stbsp__ddtoS64(ob, xh, xl)          \
-{                                        \
-double ahi = 0, alo, vh, t;           \
-ob = (stbsp__int64)xh;                \
-vh = (double)ob;                      \
-ahi = (xh - vh);                      \
-t = (ahi - xh);                       \
-alo = (xh - (ahi - t)) - (vh + t);    \
-ob += (stbsp__int64)(ahi + alo + xl); \
+#define stbsp__ddtoS64(ob, xh, xl)        \
+{                                         \
+	double ahi = 0, alo, vh, t;           \
+	ob  = (stbsp__int64)xh;               \
+	vh  = (double)ob;                     \
+	ahi = (xh  - vh);                     \
+	t   = (ahi - xh);                     \
+	alo = (xh  - (ahi - t)) - (vh + t);   \
+	ob += (stbsp__int64)(ahi + alo + xl); \
 }
 
 #define stbsp__ddrenorm(oh, ol) \
-{                            \
-double s;                 \
-s = oh + ol;              \
-ol = ol - (s - oh);       \
-oh = s;                   \
+{                               \
+	double s;                   \
+	s  = oh + ol;               \
+	ol = ol - (s - oh);         \
+	oh = s;                     \
 }
 
-#define stbsp__ddmultlo(oh, ol, xh, xl, yh, yl) ol = ol + (xh * yl + xl * yh);
-
-#define stbsp__ddmultlos(oh, ol, xh, yl) ol = ol + (xh * yl);
+#define stbsp__ddmultlo (oh, ol, xh, xl, yh, yl) ol = ol + (xh * yl + xl * yh);
+#define stbsp__ddmultlos(oh, ol, xh, yl)         ol = ol + (xh * yl);
 
 static void stbsp__raise_to_power10(double *ohi, double *olo, double d, stbsp__int32 power) // power can be -323 to +350
 {

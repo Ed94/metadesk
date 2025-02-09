@@ -967,28 +967,16 @@ u32_from_rgba(Vec4F32 rgba)
 ////////////////////////////////
 //~ rjf: List Type Functions
 
-void         rng1s64_list_push            (Arena*        arena, Rng1S64List* list, Rng1S64 rng);
-void         rng1s64_list_alloc           (AllocatorInfo ainfo, Rng1S64List* list, Rng1S64 rng);
-Rng1S64Array rng1s64_array_from_list_push (Arena*        arena, Rng1S64List* list);
-Rng1S64Array rng1s64_array_from_list_alloc(AllocatorInfo ainfo, Rng1S64List* list);
+void         rng1s64_list_push__arena           (Arena*        arena, Rng1S64List* list, Rng1S64 rng);
+void         rng1s64_list_push__ainfo           (AllocatorInfo ainfo, Rng1S64List* list, Rng1S64 rng);
+Rng1S64Array rng1s64_array_from_list_push__arena(Arena*        arena, Rng1S64List* list);
+Rng1S64Array rng1s64_array_from_list_push__ainfo(AllocatorInfo ainfo, Rng1S64List* list);
 
-#define rng1s64_array_from_list(allocator, list, rng)     \
-_Generic(allocator,                                       \
-	Arena*:        rng1s64_list_push,                     \
-	AllocatorInfo: rng1s64_list_alloc,                    \
-	default:       METADESK_NO_RESOLVED_GENERIC_SELECTION \
-) MD_RESOLVED_FUNCTION_CALL(allocator, list, rng)
+#define rng1s64_list_push(allocator, list, rng)       _Generic(allocator, Arena*: rng1s64_list_push__arena,            AllocatorInfo: rng1s64_list_push__ainfo,            default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, list, rng)
+#define rng1s64_array_from_list_push(allocator, list) _Generic(allocator, Arena*: rng1s64_array_from_list_push__arena, AllocatorInfo: rng1s64_array_from_list_push__ainfo, default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, list)
 
-#define rng1s64_array_from_list(allocator, list)          \
-_Generic(allocator,                                       \
-	Arena*:        rng1s64_array_from_list_push,          \
-	AllocatorInfo: rng1s64_array_from_list_alloc,         \
-	default:       METADESK_NO_RESOLVED_GENERIC_SELECTION \
-) MD_RESOLVED_FUNCTION_CALL(allocator, list)
-
-
-force_inline void         rng1s64_list_push           (Arena* arena, Rng1S64List* list, Rng1S64 rng) {        rng1s64_list_alloc           (arena_allocator(arena), list, rng); }
-force_inline Rng1S64Array rng1s64_array_from_list_push(Arena* arena, Rng1S64List* list)              { return rng1s64_array_from_list_alloc(arena_allocator(arena), list); }
+force_inline void         rng1s64_list_push__arena           (Arena* arena, Rng1S64List* list, Rng1S64 rng) {        rng1s64_list_push__ainfo           (arena_allocator(arena), list, rng); }
+force_inline Rng1S64Array rng1s64_array_from_list_push__arena(Arena* arena, Rng1S64List* list)              { return rng1s64_array_from_list_push__ainfo(arena_allocator(arena), list); }
 
 inline void
 rng1s64_list_alloc(AllocatorInfo ainfo, Rng1S64List* list, Rng1S64 rng) {
@@ -1005,7 +993,7 @@ rng1s64_array_from_list_alloc(AllocatorInfo ainfo, Rng1S64List* list) {
 	arr.count = list->count;
 	arr.v     = alloc_array_no_zero(ainfo, Rng1S64, arr.count);
 	U64 idx   = 0;
-	for (Rng1S64Node *n = list->first; n != 0; n = n->next) {
+	for (Rng1S64Node* n = list->first; n != 0; n = n->next) {
 		arr.v[idx] = n->v;
 		idx       += 1;
 	}

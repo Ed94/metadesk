@@ -236,7 +236,7 @@ char_is_digit(U8 c, U32 base) {
 
 inline U64 cstring8_length (U8*  c) { U8*  p = c; for (; *p != 0; p += 1); return(p - c); }
 inline U64 cstring16_length(U16* c) { U16* p = c; for (; *p != 0; p += 1); return(p - c); }
-inline U64 cstring32_length(U32 *c) { U32* p = c; for (; *p != 0; p += 1); return(p - c); }
+inline U64 cstring32_length(U32* c) { U32* p = c; for (; *p != 0; p += 1); return(p - c); }
 
 #define cstring_length(c) _Generic(c, U8: cstring8_length, U16: cstring16_length, U32: cstring32_length)(c)
 
@@ -312,30 +312,39 @@ str8_cstring_capped_reverse(void* raw_start, void* raw_cap)
 ////////////////////////////////
 //~ rjf: String Formatting & Copying
 
-MD_API String8 push_str8_cat (Arena* arena, String8 s1, String8 s2);
-MD_API String8 push_str8_copy(Arena* arena, String8 s);
-MD_API String8 push_str8fv   (Arena* arena, char* fmt, va_list args);
-       String8 push_str8f    (Arena* arena, char* fmt, ...);
+String8 str8_cat__arena (Arena* arena, String8 s1, String8 s2);
+String8 str8_copy__arena(Arena* arena, String8 s);
+String8 str8fv__arena   (Arena* arena, char* fmt, va_list args);
+String8 str8f__arena    (Arena* arena, char* fmt, ...);
 
-MD_API String8 alloc_str8_cat (AllocatorInfo ainfo, String8 s1, String8 s2);
-MD_API String8 alloc_str8_copy(AllocatorInfo ainfo, String8 s);
-MD_API String8 alloc_str8fv   (AllocatorInfo ainfo, char* fmt, va_list args);
-       String8 alloc_str8f    (AllocatorInfo ainfo, char* fmt, ...);
+MD_API String8 str8_cat__ainfo (AllocatorInfo ainfo, String8 s1, String8 s2);
+MD_API String8 str8_copy__ainfo(AllocatorInfo ainfo, String8 s);
+MD_API String8 str8fv__ainfo   (AllocatorInfo ainfo, char* fmt, va_list args);
+       String8 str8f__ainfo    (AllocatorInfo ainfo, char* fmt, ...);
+
+#define str8_cat(allocator, s1, s2)  _Generic(allocator, Arena*: str8_cat__arena,  AllocatorInfo: str8_cat__ainfo,  default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, s1, s2)
+#define str8_copy(allocator, s)      _Generic(allocator, Arena*: str8_copy__arena, AllocatorInfo: str8_copy__ainfo, default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, s)
+#define str8fv(allocator, fmt, args) _Generic(allocator, Arena*: str8fv__arena,    AllocatorInfo: str8fv__ainfo ,   default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, fmt, args)
+#define str8f(allocator, fmt, ...)   _Generic(allocator, Arena*: str8f__arena,     AllocatorInfo: str8f__ainfo ,    default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, fmt, __VA_ARGS__)
+
+force_inline String8 str8_cat__arena (Arena* arena, String8 s1, String8 s2) { return str8_cat__ainfo (arena_allocator(arena), s1, s2); }
+force_inline String8 str8_copy__arena(Arena* arena, String8 s)              { return str8_copy__ainfo(arena_allocator(arena), s); }
+force_inline String8 str8fv__arena   (Arena* arena, char* fmt, va_list args){ return str8fv__ainfo   (arena_allocator(arena), fmt, args); }
 
 inline String8
-push_str8f(Arena *arena, char *fmt, ...){
+str8f__arena(Arena *arena, char *fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
-	String8 result = push_str8fv(arena, fmt, args);
+	String8 result = str8fv(arena, fmt, args);
 	va_end(args);
 	return(result);
 }
 
 inline String8
-alloc_str8f(AllocatorInfo ainfo, char *fmt, ...){
+str8f__ainfo(AllocatorInfo ainfo, char *fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
-	String8 result = alloc_str8fv(ainfo, fmt, args);
+	String8 result = str8fv(ainfo, fmt, args);
 	va_end(args);
 	return(result);
 }
@@ -392,19 +401,23 @@ str8_chop(String8 str, U64 amt){
 ////////////////////////////////
 //~ rjf: String Stylization
 
-inline String8 upper_from_str8      (Arena* arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
-inline String8 lower_from_str8      (Arena* arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
-inline String8 backslashed_from_str8(Arena *arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
+inline String8 upper_from_str8__arena      (Arena* arena, String8 string) { string = str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
+inline String8 lower_from_str8__arena      (Arena* arena, String8 string) { string = str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
+inline String8 backslashed_from_str8__arena(Arena* arena, String8 string) { string = str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
 
-inline String8 upper_from_str8_alloc      (AllocatorInfo ainfo, String8 string) { string = alloc_str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
-inline String8 lower_from_str8_alloc      (AllocatorInfo ainfo, String8 string) { string = alloc_str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
-inline String8 backslashed_from_str8_alloc(AllocatorInfo ainfo, String8 string) { string = alloc_str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
+inline String8 upper_from_str8__ainfo      (AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
+inline String8 lower_from_str8__ainfo      (AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
+inline String8 backslashed_from_str8__ainfo(AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
+
+#define upper_from_str8(allocator, string)       _Generic(allocator, Arena*: upper_from_str8__arena,       AllocatorInfo: upper_from_str8__ainfo,        default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, string)
+#define lower_from_str8(allocator, string)       _Generic(allocator, Arena*: lower_from_str8__arena,       AllocatorInfo: lower_from_str8__ainfo,        default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, string)
+#define backslashed_from_str8(allocator, string) _Generic(allocator, Arena*: backslashed_from_str8__arena, AllocatorInfo: backslashed_from_str8__ainfo , default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, string)
 
 ////////////////////////////////
 //~ rjf: String Matching
 
-#define str8_match_lit(a_lit, b, flags)   str8_match(str8_lit(a_lit), (b), (flags))
-#define str8_match_cstr(a_cstr, b, flags) str8_match(str8_cstring(a_cstr), (b), (flags))
+#define str8_match_lit(a_lit, b, flags)            str8_match(str8_lit(a_lit), (b), (flags))
+#define str8_match_cstr(a_cstr, b, flags)          str8_match(str8_cstring(a_cstr), (b), (flags))
 #define str8_ends_with_lit(string, end_lit, flags) str8_ends_with((string), str8_lit(end_lit), (flags))
 
 MD_API B32 str8_match              (String8 a, String8 b,                          StringMatchFlags flags);
@@ -434,16 +447,27 @@ MD_API B32 try_u64_from_str8_c_rules(String8 string, U64* x);
        B32 try_s64_from_str8_c_rules(String8 string, S64* x);
 
 //- rjf: integer -> string
-MD_API String8 str8_from_memory_size(Arena* arena, U64 z);
-MD_API String8 str8_from_u64        (Arena* arena, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
-MD_API String8 str8_from_s64        (Arena* arena, S64 s64, U32 radix, U8 min_digits, U8 digit_group_separator);
+String8 str8_from_memory_size__arena(Arena* arena, U64 z);
+String8 str8_from_u64__arena        (Arena* arena, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
+String8 str8_from_s64__arena        (Arena* arena, S64 s64, U32 radix, U8 min_digits, U8 digit_group_separator);
 
-String8 str8_from_bits_u32(Arena* arena, U32 x);
-String8 str8_from_bits_u64(Arena* arena, U64 x);
+String8 str8_from_bits_u32__arena(Arena* arena, U32 x);
+String8 str8_from_bits_u64__arena(Arena* arena, U64 x);
 
-MD_API String8 str8_from_allocator_size(AllocatorInfo ainfo, U64 z);
-MD_API String8 str8_from_allocator_u64 (AllocatorInfo ainfo, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
-MD_API String8 str8_from_alloctor_s64  (AllocatorInfo ainfo, S64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
+MD_API String8 str8_from_memory_size__ainfo(AllocatorInfo ainfo, U64 z);
+MD_API String8 str8_from_u64__ainfo        (AllocatorInfo ainfo, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
+MD_API String8 str8_from_s64__ainfo        (AllocatorInfo ainfo, S64 u64, U32 radix, U8 min_digits, U8 digit_group_separator);
+
+String8 str8_from_bits_u32__ainfo(AllocatorInfo ainfo, U32 x);
+String8 str8_from_bits_u64__ainfo(AllocatorInfo ainfo, U64 x);
+
+#define str8_from_memory_size(allocator, z)                                _Generic(allocator, Arena*: str8_from_memory_size__arena, AllocatorInfo: str8_from_memory_size__ainfo,  default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, z)
+#define str8_from_u64(allocator, radix, min_digits, digit_group_separator) _Generic(allocator, Arena*: str8_from_u64__arena,         AllocatorInfo: str8_from_u64__ainfo,          default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, radix, min_digits, digit_group_separator)
+#define str8_from_s64(allocator, radix, min_digits, digit_group_separator) _Generic(allocator, Arena*: str8_from_s64__arena,         AllocatorInfo: str8_from_s64__ainfo ,         default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, radix, min_digits, digit_group_separator)
+
+force_inline String8 str8_from_memory_size__arena(Arena* arena, U64 z)                                                       { return str8_from_memory_size__ainfo(arena_allocator(arena), z); }
+force_inline String8 str8_from_u64__arena        (Arena* arena, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator) { return str8_from_u64__ainfo        (arena_allocator(arena), u64, radix, min_digits, digit_group_separator); }
+force_inline String8 str8_from_s64__arena        (Arena* arena, S64 s64, U32 radix, U8 min_digits, U8 digit_group_separator) { return str8_from_s64__ainfo        (arena_allocator(arena), s64, radix, min_digits, digit_group_separator); }
 
 inline S64
 s64_from_str8(String8 string, U32 radix) {
@@ -489,7 +513,7 @@ try_s64_from_str8_c_rules(String8 string, S64* x) {
 }
 
 inline String8
-str8_from_bits_u32(Arena* arena, U32 x)
+str8_from_bits_u32__arena(Arena* arena, U32 x)
 {
 	U8 c0 = 'a' + ((x >> 28) & 0xf);
 	U8 c1 = 'a' + ((x >> 24) & 0xf);
@@ -499,12 +523,12 @@ str8_from_bits_u32(Arena* arena, U32 x)
 	U8 c5 = 'a' + ((x >>  8) & 0xf);
 	U8 c6 = 'a' + ((x >>  4) & 0xf);
 	U8 c7 = 'a' + ((x >>  0) & 0xf);
-	String8 result = push_str8f(arena, "%c%c%c%c%c%c%c%c", c0, c1, c2, c3, c4, c5, c6, c7);
+	String8 result = str8f(arena, "%c%c%c%c%c%c%c%c", c0, c1, c2, c3, c4, c5, c6, c7);
 	return result;
 }
 
 inline String8
-str8_from_bits_u64(Arena* arena, U64 x)
+str8_from_bits_u64__arena(Arena* arena, U64 x)
 {
 	U8 c0 = 'a' + ((x >> 60) & 0xf);
 	U8 c1 = 'a' + ((x >> 56) & 0xf);
@@ -522,7 +546,48 @@ str8_from_bits_u64(Arena* arena, U64 x)
 	U8 cd = 'a' + ((x >>  8) & 0xf);
 	U8 ce = 'a' + ((x >>  4) & 0xf);
 	U8 cf = 'a' + ((x >>  0) & 0xf);
-	String8 result = push_str8f(arena,
+	String8 result = str8f(arena,
+		"%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
+		c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, ca, cb, cc, cd, ce, cf
+	);
+	return result;
+}
+
+inline String8
+str8_from_bits_u32__ainfo(AllocatorInfo ainfo, U32 x)
+{
+	U8 c0 = 'a' + ((x >> 28) & 0xf);
+	U8 c1 = 'a' + ((x >> 24) & 0xf);
+	U8 c2 = 'a' + ((x >> 20) & 0xf);
+	U8 c3 = 'a' + ((x >> 16) & 0xf);
+	U8 c4 = 'a' + ((x >> 12) & 0xf);
+	U8 c5 = 'a' + ((x >>  8) & 0xf);
+	U8 c6 = 'a' + ((x >>  4) & 0xf);
+	U8 c7 = 'a' + ((x >>  0) & 0xf);
+	String8 result = str8f(ainfo, "%c%c%c%c%c%c%c%c", c0, c1, c2, c3, c4, c5, c6, c7);
+	return result;
+}
+
+inline String8
+str8_from_bits_u64__ainfo(AllocatorInfo ainfo, U64 x)
+{
+	U8 c0 = 'a' + ((x >> 60) & 0xf);
+	U8 c1 = 'a' + ((x >> 56) & 0xf);
+	U8 c2 = 'a' + ((x >> 52) & 0xf);
+	U8 c3 = 'a' + ((x >> 48) & 0xf);
+	U8 c4 = 'a' + ((x >> 44) & 0xf);
+	U8 c5 = 'a' + ((x >> 40) & 0xf);
+	U8 c6 = 'a' + ((x >> 36) & 0xf);
+	U8 c7 = 'a' + ((x >> 32) & 0xf);
+	U8 c8 = 'a' + ((x >> 28) & 0xf);
+	U8 c9 = 'a' + ((x >> 24) & 0xf);
+	U8 ca = 'a' + ((x >> 20) & 0xf);
+	U8 cb = 'a' + ((x >> 16) & 0xf);
+	U8 cc = 'a' + ((x >> 12) & 0xf);
+	U8 cd = 'a' + ((x >>  8) & 0xf);
+	U8 ce = 'a' + ((x >>  4) & 0xf);
+	U8 cf = 'a' + ((x >>  0) & 0xf);
+	String8 result = str8f(ainfo,
 		"%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
 		c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, ca, cb, cc, cd, ce, cf
 	);
@@ -546,7 +611,7 @@ String8Node* str8_list_push_node_front_set_string(String8List* list, String8Node
 void         str8_list_concat_in_place           (String8List* list, String8List* to_push);
 
 inline String8Node*
-str8_list_push_node(String8List* list, String8Node* node){
+str8_list_push_node(String8List* list, String8Node* node) {
 	sll_queue_push(list->first, list->last, node);
 	list->node_count += 1;
 	list->total_size += node->string.size;
@@ -580,7 +645,7 @@ str8_list_push_node_front_set_string(String8List* list, String8Node* node, Strin
 }
 
 MD_API String8Node* str8_list_push_aligner(Arena* arena, String8List* list, U64 min, U64 align);
-MD_API String8List  str8_list_copy        (Arena* arena, String8List* list);
+MD_API String8List  str8_list_push_copy   (Arena* arena, String8List* list);
 
 String8Node* str8_list_push        (Arena* arena, String8List* list, String8 string);
 String8Node* str8_list_push_front  (Arena* arena, String8List* list, String8 string);
@@ -595,27 +660,17 @@ String8Node* str8_list_alloc_front (AllocatorInfo ainfo, String8List* list, Stri
 String8Node* str8_list_allocf      (AllocatorInfo ainfo, String8List* list, char* fmt, ...);
 String8Node* str8_list_alloc_frontf(AllocatorInfo ainfo, String8List* list, char* fmt, ...);
 
-inline String8Node*
-str8_list_push(Arena* arena, String8List* list, String8 string) {
-#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
-	String8Node* node = push_array_no_zero(arena, String8Node, 1);
-	str8_list_push_node_set_string(list, node, string);
-	return(node);
-#else
-	return str8_list_alloc(arena_allocator(arena), list, string);
-#endif
-}
+#define str8_list_aligner(allocator, list, min, align) _Generic(allocator, Arena*: str8_list_push_aligner, AllocatorInfo: str8_list_alloc_aligner, default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, list, min, align)
+#define str8_list_copy(allocator, list)                _Generic(allocator, Arena*: str8_list_push_copy,    AllocatorInfo: str8_list_alloc_copy,    default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, list)
+#define str8_list(allocator, list, string)             _Generic(allocator, Arena*: str8_list_push,         AllocatorInfo: str8_list_alloc,         default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, list, string)
+#define str8_list_front(allocator, list, string)       _Generic(allocator, Arena*: str8_list_push_front,   AllocatorInfo: str8_list_alloc_front,   default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, list, string)
+#define str8_listf(allocaotr, list, fmt, ...)          _Generic(allocator, Arena*: str8_list_pushf,        AllocatorInfo: str8_list_allocf,        default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, list, fmt, __VA_ARGS__)
+#define str8_list_frontf(allocaotr, list, fmt, ...)    _Generic(allocator, Arena*: str8_list_push_frontf,  AllocatorInfo: str8_list_alloc_frontf,  default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, list, fmt, __VA_ARGS__)
 
-inline String8Node*
-str8_list_push_front(Arena* arena, String8List* list, String8 string) {
-#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
-	String8Node *node = push_array_no_zero(arena, String8Node, 1);
-	str8_list_push_node_front_set_string(list, node, string);
-	return(node);
-#else
-	return str8_list_alloc_front(arena_allocator(arena), list, string);
-#endif
-}
+force_inline String8Node* str8_list_push_aligner(Arena* arena, String8List* list, U64 min, U64 align) { return str8_list_alloc_aligner(arena_allocator(arena), list, min, align); }
+force_inline String8List  str8_list_push_copy   (Arena *arena, String8List* list)                     { return str8_list_alloc_copy   (arena_allocator(arena), list); }
+force_inline String8Node* str8_list_push        (Arena* arena, String8List* list, String8 string)     { return str8_list_alloc        (arena_allocator(arena), list, string); }
+force_inline String8Node* str8_list_push_front  (Arena* arena, String8List* list, String8 string)     { return str8_list_alloc_front  (arena_allocator(arena), list, string); }
 
 inline String8Node*
 str8_list_pushf(Arena *arena, String8List *list, char *fmt, ...) {
@@ -631,15 +686,15 @@ inline String8Node*
 str8_list_push_frontf(Arena *arena, String8List *list, char *fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
-	String8      string = push_str8fv(arena, fmt, args);
-	String8Node* result = str8_list_push_front(arena, list, string);
+	String8      string = str8fv(arena, fmt, args);
+	String8Node* result = str8_list_front(arena, list, string);
 	va_end(args);
 	return(result);
 }
 
 inline String8Node*
 str8_list_alloc(AllocatorInfo ainfo, String8List* list, String8 string) {
-  String8Node *node = alloc_array_no_zero(ainfo, String8Node, 1);
+  String8Node* node = alloc_array_no_zero(ainfo, String8Node, 1);
   str8_list_push_node_front_set_string(list, node, string);
   return(node);
 }
@@ -655,8 +710,8 @@ inline String8Node*
 str8_list_allocf(AllocatorInfo ainfo, String8List* list, char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
-	String8      string = alloc_str8fv(ainfo, fmt, args);
-	String8Node* result = str8_list_alloc(ainfo, list, string);
+	String8      string = str8fv(ainfo, fmt, args);
+	String8Node* result = str8_list(ainfo, list, string);
 	va_end(args);
 	return(result);
 }
@@ -687,15 +742,7 @@ MD_API String8 str8_list_join_alloc      (AllocatorInfo ainfo, String8List* list
        void    str8_list_from_flags      (Arena*        arena, String8List* list, U32 flags, String8* flag_string_table, U32 flag_string_count);
        void    str8_list_from_flags_alloc(AllocatorInfo ainfo, String8List* list, U32 flags, String8* flag_string_table, U32 flag_string_count);
 
-inline String8List
-str8_split_by_string_chars(Arena *arena, String8 string, String8 split_chars, StringSplitFlags flags) {
-#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
-	String8List list = str8_split(arena, string, split_chars.str, split_chars.size, flags);
-	return list;
-#else
-	return str8_split_by_string_chars_alloc(arena_allocator(arena), string, split_chars, flags);
-#endif
-}
+inline String8List str8_split_by_string_chars(Arena *arena, String8 string, String8 split_chars, StringSplitFlags flags) { return str8_split_by_string_chars_alloc(arena_allocator(arena), string, split_chars, flags); }
 
 inline String8List
 str8_split_by_string_chars_alloc(AllocatorInfo ainfo, String8 string, String8 split_chars, StringSplitFlags flags) {
@@ -703,19 +750,7 @@ str8_split_by_string_chars_alloc(AllocatorInfo ainfo, String8 string, String8 sp
 	return list;
 }
 
-inline String8List
-str8_list_split_by_string_chars(Arena* arena, String8List list, String8 split_chars, StringSplitFlags flags) {
-#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
-	String8List result = {0};
-	for (String8Node *node = list.first; node != 0; node = node->next){
-		String8List split = str8_split_by_string_chars(arena, node->string, split_chars, flags);
-		str8_list_concat_in_place(&result, &split);
-	}
-	return result;
-#else
-	return str8_list_split_by_string_chars_alloc(arena_allocator(arena), list, split_chars, flags);
-#endif
-}
+inline String8List str8_list_split_by_string_chars(Arena* arena, String8List list, String8 split_chars, StringSplitFlags flags) { return str8_list_split_by_string_chars_alloc(arena_allocator(arena), list, split_chars, flags); }
 
 inline String8List
 str8_list_split_by_string_chars_alloc(AllocatorInfo ainfo, String8List list, String8 split_chars, StringSplitFlags flags) {
@@ -727,19 +762,7 @@ str8_list_split_by_string_chars_alloc(AllocatorInfo ainfo, String8List list, Str
 	return result;
 }
 
-void
-str8_list_from_flags(Arena* arena, String8List* list, U32 flags, String8* flag_string_table, U32 flag_string_count) {
-#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
-	for (U32 i = 0; i < flag_string_count; i += 1) {
-		U32 flag = (1 << i);
-		if (flags & flag) {
-			str8_list_push(arena, list, flag_string_table[i]);
-		}
-	}
-#else
-	str8_list_from_flags_alloc(arena_allocator(arena), list, flags, flag_string_table, flag_string_count);
-#endif
-}
+void str8_list_from_flags(Arena* arena, String8List* list, U32 flags, String8* flag_string_table, U32 flag_string_count) { str8_list_from_flags_alloc(arena_allocator(arena), list, flags, flag_string_table, flag_string_count); }
 
 void
 str8_list_from_flags_alloc(AllocatorInfo ainfo, String8List* list, U32 flags, String8* flag_string_table, U32 flag_string_count) {
@@ -774,33 +797,8 @@ str8_array_reserve_alloc(AllocatorInfo ainfo, U64 count) {
 	return arr;
 }
 
-inline String8Array
-str8_array_from_list(Arena* arena, String8List* list) {
-#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
-	String8Array array;
-	array.count = list->node_count;
-	array.v     = push_array_no_zero(arena, String8, array.count);
-	U64 idx = 0;
-	for(String8Node *n = list->first; n != 0; n = n->next, idx += 1) {
-		array.v[idx] = n->string;
-	}
-	return array;
-#else
-	return str8_array_from_list_alloc(arena_allocator(arena), list);
-#endif
-}
-
-inline String8Array
-str8_array_reserve(Arena *arena, U64 count) {
-#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
-	String8Array arr;
-	arr.count = 0;
-	arr.v     = push_array(arena, String8, count);
-	return arr;
-#else
-	return str8_array_reserve_alloc(arena_allocator(arena), count);
-#endif
-}
+inline String8Array str8_array_from_list(Arena* arena, String8List* list) { return str8_array_from_list_alloc(arena_allocator(arena), list); }
+inline String8Array str8_array_reserve(Arena *arena, U64 count) { return str8_array_reserve_alloc(arena_allocator(arena), count); }
 
 ////////////////////////////////
 //~ rjf: String Path Helpers
@@ -1134,15 +1132,7 @@ MD_API void    str8_serial_push_u32      (Arena* arena, String8List* srl, U32 x)
 
 inline void 
 str8_serial_begin(Arena* arena, String8List* srl) {
-#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
-	String8Node* node = push_array(arena, String8Node, 1);
-	node->string.str = push_array_no_zero(arena, U8, 0);
-	srl->first       = srl->last = node;
-	srl->node_count  = 1;
-	srl->total_size  = 0;
-#else
 	str8_serial_begin_alloc(arena_allocator(arena), srl);
-#endif
 }
 
 inline String8

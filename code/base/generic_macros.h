@@ -9,6 +9,9 @@
 // This implemnents macros for utilizing "The Naive Extendible _Generic Macro" explained in:                                            __| |
 // https://github.com/JacksonAllan/CC/blob/main/articles/Better_C_Generics_Part_1_The_Extendible_Generic.md                            {___/
 // It was choosen over the more novel implementations to keep the macros as easy to understand and unobfuscated as possible.
+// --------------------------------------------------------------------------------------------------------------------------------------------
+// NOTE: For explanation of intended usage with staged metaprogramming see: https://github.com/Ed94/gencpp/tree/main/gen_c_library#macro-usage
+// --------------------------------------------------------------------------------------------------------------------------------------------
 
 #define MD_COMMA_OPERATOR , // The comma operator is used by preprocessor macros to delimit arguments, so we have to represent it via a macro to prevent parsing incorrectly.
 
@@ -33,11 +36,11 @@
 // The slot won't exist if that comma is not found.
 
 // For the occastion where an expression didn't resolve to a selection option the "default: <value>" will be set to:
-typedef struct METADESK_NO_RESOLVED_GENERIC_SELECTION METADESK_NO_RESOLVED_GENERIC_SELECTION;
-struct METADESK_NO_RESOLVED_GENERIC_SELECTION {
+typedef struct METADESK_UNRESOLVED_GENERIC_SELECTION METADESK_UNRESOLVED_GENERIC_SELECTION;
+struct METADESK_UNRESOLVED_GENERIC_SELECTION {
 	void* _THE_VOID_SLOT_;
 };
-METADESK_NO_RESOLVED_GENERIC_SELECTION const MD_generic_selection_fail = {0};
+METADESK_UNRESOLVED_GENERIC_SELECTION const MD_generic_selection_fail = {0};
 // Which will provide the message:  error: called object type 'struct NO_RESOLVED_GENERIC_SELECTION' is not a function or function pointer
 // ----------------------------------------------------------------------------------------------------------------------------------
 

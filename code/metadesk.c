@@ -5,6 +5,12 @@
 
 #include "base/platform.c"
 
+#define STB_SPRINTF_IMPLEMENTATION
+#if BUILD_STATIC
+#	#define STB_SPRINTF_STATIC
+#endif
+#include "third_party/stb/stb_sprintf.h"
+
 MD_NS_BEGIN
 
 #include "base/debug.c"

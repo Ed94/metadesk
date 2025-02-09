@@ -134,11 +134,9 @@ if ($code_sanity)
 	$linker_args = @()
 	$linker_args += $flag_link_win_subsystem_console
 
-	$path_base = join-path $path_code base
-
-	$includes   = @( $path_base )
-	$unit       = join-path $path_code  'metadesk.c'
-	$executable = join-path $path_build 'metadesk.lib'
+	$includes   = @( $path_code, $path_root )
+	$unit       = join-path $path_tests 'code_sanity.c'
+	$executable = join-path $path_build 'code_sanity.exe'
 
 	$result = build-simple $path_build $includes $compiler_args $linker_args $unit $executable
 }

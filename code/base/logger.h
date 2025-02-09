@@ -48,8 +48,6 @@ struct Log
 ////////////////////////////////
 //~ rjf: Log Creation/Selection
 
-		
-
        Log* log_alloc(AllocatorInfo ainfo, U64 arena_block_size);
        void log_release(Log* log);
 MD_API void log_select (Log* log);

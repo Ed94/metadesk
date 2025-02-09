@@ -6,13 +6,11 @@
 #	include "thread_context.h"
 ////////////////////////////////
 //~ rjf: Third Party Includes
-#if !BUILD_SUPPLEMENTARY_UNIT
 #	define STB_SPRINTF_IMPLEMENTATION
-#	define STB_SPRINTF_STATIC
+#	if BUILD_STATIC
+#		#define STB_SPRINTF_STATIC
+#	endif
 #	include "third_party/stb/stb_sprintf.h"
-// Note(Ed): We should inject when generating the library segmented or singleheader
-#endif
-
 #endif
 
 // Copyright (c) 2024 Epic Games Tools

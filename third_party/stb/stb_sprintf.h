@@ -151,25 +151,25 @@ PERFORMANCE vs MSVC 2008 32-/64-bit (GCC is even slower than MSVC):
 */
 
 #if defined(__clang__)
-#  if defined(__has_feature) && defined(__has_attribute)
-#    if __has_feature(address_sanitizer)
-#      if __has_attribute(__no_sanitize__)
-#        define STBSP__ASAN __attribute__((__no_sanitize__("address")))
-#      elif __has_attribute(__no_sanitize_address__)
-#        define STBSP__ASAN __attribute__((__no_sanitize_address__))
-#      elif __has_attribute(__no_address_safety_analysis__)
-#        define STBSP__ASAN __attribute__((__no_address_safety_analysis__))
-#      endif
-#    endif
-#  endif
+#	if defined(__has_feature) && defined(__has_attribute)
+#		if __has_feature(address_sanitizer)
+#			if __has_attribute(__no_sanitize__)
+#				define STBSP__ASAN __attribute__((__no_sanitize__("address")))
+#			elif __has_attribute(__no_sanitize_address__)
+#				define STBSP__ASAN __attribute__((__no_sanitize_address__))
+#			elif __has_attribute(__no_address_safety_analysis__)
+#				define STBSP__ASAN __attribute__((__no_address_safety_analysis__))
+#			endif
+#		endif
+#	endif
 #elif defined(__GNUC__) && (__GNUC__ >= 5 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
-#  if defined(__SANITIZE_ADDRESS__) && __SANITIZE_ADDRESS__
-#    define STBSP__ASAN __attribute__((__no_sanitize_address__))
-#  endif
+#	if defined(__SANITIZE_ADDRESS__) && __SANITIZE_ADDRESS__
+#		define STBSP__ASAN __attribute__((__no_sanitize_address__))
+#	endif
 #elif defined(_MSC_VER)
-# if defined(__SANITIZE_ADDRESS__)
-#   define STBSP__ASAN __declspec(no_sanitize_address)
-# endif
+#	if defined(__SANITIZE_ADDRESS__)
+#		define STBSP__ASAN __declspec(no_sanitize_address)
+#	endif
 #endif
 
 #ifndef STBSP__ASAN
@@ -177,16 +177,16 @@ PERFORMANCE vs MSVC 2008 32-/64-bit (GCC is even slower than MSVC):
 #endif
 
 #ifdef STB_SPRINTF_STATIC
-#define STBSP__PUBLICDEC static STBSP__ASAN
-#define STBSP__PUBLICDEF static STBSP__ASAN
+#	define STBSP__PUBLICDEC static STBSP__ASAN
+#	define STBSP__PUBLICDEF static STBSP__ASAN
 #else
-#ifdef __cplusplus
-#define STBSP__PUBLICDEC extern "C" STBSP__ASAN
-#define STBSP__PUBLICDEF extern "C" STBSP__ASAN
-#else
-#define STBSP__PUBLICDEC extern STBSP__ASAN
-#define STBSP__PUBLICDEF STBSP__ASAN
-#endif
+#	ifdef __cplusplus
+#		define STBSP__PUBLICDEC extern "C" STBSP__ASAN
+#		define STBSP__PUBLICDEF extern "C" STBSP__ASAN
+#	else
+#		define STBSP__PUBLICDEC extern STBSP__ASAN
+#		define STBSP__PUBLICDEF STBSP__ASAN
+#	endif
 #endif
 
 #if defined(__has_attribute)

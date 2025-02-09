@@ -5,8 +5,8 @@
 
 #ifndef MD_API
 #if COMPILER_MSVC
-#	ifdef MD_DYN_LINK
-#		ifdef MD_DYN_EXPORT
+#	if BUILD_DYANMIC
+#		if BUILD_API_EXPORT
 #			define MD_API __declspec(dllexport)
 #		else
 #			define MD_API __declspec(dllimport)
@@ -15,7 +15,7 @@
 #		define MD_API  // Empty for static builds
 #	endif
 #else
-#	ifdef MD_DYN_LINK
+#	ifdef BUILD_DYANMIC
 #		define MD_API __attribute__((visibility("default")))
 #	else
 #		define MD_API  // Empty for static builds
@@ -36,7 +36,7 @@
 #endif
 
 #ifndef global // Global variables
-#	if defined(MD_DYN_EXPORT) || defined(MD_STATIC_LINK)
+#	if BUILD_API_EXPORT || BUILD_STATIC
 #		define global         
 #	else
 #		define global static

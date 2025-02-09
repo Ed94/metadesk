@@ -10,6 +10,9 @@
 #include "base/profiling.h"
 #include "base/namespace.h"
 
+#define STB_SPRINTF_DECORATE(name) md_##name
+#include "third_party/stb/stb_sprintf.h"
+
 MD_NS_BEGIN
 
 #include "base/base_types.h"

@@ -227,6 +227,9 @@ struct ParseResult
 typedef struct Context Context;
 struct Context
 {
+	// Currently, this is only relevant if the user is utilizing this library via bindings
+	// or they are not utilizing metadesk's hosted `entry_point` runtime
+
 	// Note: Only used so far as the first fallback if the user did not preset the thread_context's arenas
 	// Otherwise it will just reserve its own Arena backed by chained virutal address space
 	AllocatorInfo backing[2];

@@ -15,7 +15,6 @@
 //~ rjf: Third Party Includes
 #	define STB_SPRINTF_DECORATE(name) md_##name
 #	include "third_party/stb/stb_sprintf.h"
-// Note(Ed): We should inject when generating the library segmented or singleheader
 #endif
 
 // Copyright (c) 2024 Epic Games Tools

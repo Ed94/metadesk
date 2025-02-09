@@ -1267,19 +1267,19 @@ win32_exception_filter(EXCEPTION_POINTERS* exception_ptrs)
 						const U32 max_frames = 32;
 						if(idx == max_frames)
 						{
-						buflen += wnsprintfW(buffer + buflen, ArrayCount(buffer) - buflen, L"...");
-						break;
+							buflen += wnsprintfW(buffer + buflen, ArrayCount(buffer) - buflen, L"...");
+							break;
 						}
 					
 						if(!dbg_StackWalk64(image_type, process, thread, &frame, context, 0, dbg_SymFunctionTableAccess64, dbg_SymGetModuleBase64, 0))
 						{
-						break;
+							break;
 						}
 					
 						U64 address = frame.AddrPC.Offset;
 						if(address == 0)
 						{
-						break;
+							break;
 						}
 					
 						if(idx==0)

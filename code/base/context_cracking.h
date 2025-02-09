@@ -9,8 +9,16 @@
 #	  define  BUILD_DEBUG 1
 #endif
 
-#if ! defined(BUILD_SUPPLEMENTARY_UNIT)
-#	  define  BUILD_SUPPLEMENTARY_UNIT 0
+#if ! defined(BUILD_STATIC)
+#	define BUILD_STATIC 0
+#endif
+
+#if ! defined(BUILD_DYANMIC)
+#	define BUILD_DYANMIC 0
+#endif
+
+#if ! defined(BUILD_API_EXPORT)
+#	define BUILD_API_EXPORT 0
 #endif
 
 #if !defined(BUILD_ENTRY_DEFINING_UNIT)

@@ -4,5 +4,10 @@
 
 int main()
 {
+	Context ctx;
+	init(& ctx);
+
 	
+
+	deinit(& ctx);
 }

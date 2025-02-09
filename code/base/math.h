@@ -969,40 +969,26 @@ u32_from_rgba(Vec4F32 rgba)
 
 void         rng1s64_list_push            (Arena*        arena, Rng1S64List* list, Rng1S64 rng);
 void         rng1s64_list_alloc           (AllocatorInfo ainfo, Rng1S64List* list, Rng1S64 rng);
-Rng1S64Array rng1s64_array_from_list      (Arena*        arena, Rng1S64List* list);
+Rng1S64Array rng1s64_array_from_list_push (Arena*        arena, Rng1S64List* list);
 Rng1S64Array rng1s64_array_from_list_alloc(AllocatorInfo ainfo, Rng1S64List* list);
 
-inline void
-rng1s64_list_push(Arena* arena, Rng1S64List* list, Rng1S64 rng)
-{
-#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
-	Rng1S64Node* n = push_array(arena, Rng1S64Node, 1);
-	memory_copy_struct(&n->v, &rng);
-	sll_queue_push(list->first, list->last, n);
-	list->count += 1;
-#else
-	rng1s64_list_alloc(arena_allocator(arena), list, rng);
-#endif
-}
+#define rng1s64_array_from_list(allocator, list, rng)     \
+_Generic(allocator,                                       \
+	Arena*:        rng1s64_list_push,                     \
+	AllocatorInfo: rng1s64_list_alloc,                    \
+	default:       METADESK_NO_RESOLVED_GENERIC_SELECTION \
+) MD_RESOLVED_FUNCTION_CALL(allocator, list, rng)
 
-inline Rng1S64Array
-rng1s64_array_from_list(Arena* arena, Rng1S64List* list)
-{
-#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
-	Rng1S64Array 
-	arr       = {0};
-	arr.count = list->count;
-	arr.v     = push_array_no_zero(arena, Rng1S64, arr.count);
-	U64 idx   = 0;
-	for (Rng1S64Node *n = list->first; n != 0; n = n->next) {
-		arr.v[idx] = n->v;
-		idx       += 1;
-	}
-	return arr;
-#else
-	return rng1s64_array_from_list_alloc(arena_allocator(arena), list);
-#endif
-}
+#define rng1s64_array_from_list(allocator, list)          \
+_Generic(allocator,                                       \
+	Arena*:        rng1s64_array_from_list_push,          \
+	AllocatorInfo: rng1s64_array_from_list_alloc,         \
+	default:       METADESK_NO_RESOLVED_GENERIC_SELECTION \
+) MD_RESOLVED_FUNCTION_CALL(allocator, list)
+
+
+force_inline void         rng1s64_list_push           (Arena* arena, Rng1S64List* list, Rng1S64 rng) {        rng1s64_list_alloc           (arena_allocator(arena), list, rng); }
+force_inline Rng1S64Array rng1s64_array_from_list_push(Arena* arena, Rng1S64List* list)              { return rng1s64_array_from_list_alloc(arena_allocator(arena), list); }
 
 inline void
 rng1s64_list_alloc(AllocatorInfo ainfo, Rng1S64List* list, Rng1S64 rng) {

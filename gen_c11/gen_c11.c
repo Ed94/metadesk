@@ -2,6 +2,7 @@
 
 #include "third_party/gencpp_c11/push_ignores.inline.h"
 
+#define GEN_DONT_ENFORCE_GEN_TIME
 #define GEN_DEFINE_LIBRARY_CODE_CONSTANTS
 #define GEN_ENFORCE_STRONG_CODE_TYPES
 #define GEN_IMPLEMENTATION

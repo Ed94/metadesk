@@ -503,6 +503,8 @@ word TempArena,   MD_TempArena
 namespace arena_,     md_arena_
 namespace push_array, md_push_array_
 
+word extract_arena, md_extract_arena
+
 word temp_begin, md_temp_begin
 word temp_end,   md_temp_end
 
@@ -933,7 +935,8 @@ word TCTX, MD_TCTX
 
 namespace tctx, md_tctx
 
-word scratch_begin, md_scratch_begin
+word scratch_begin,       md_scratch_begin
+word scratch_begin_alloc, md_scratch_begin_alloc
 
 // base/command_line.h
 

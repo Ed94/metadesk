@@ -1444,22 +1444,20 @@ alloc_file_name_date_time_string(AllocatorInfo ainfo, DateTime* date_time) {
 
 String8
 string_from_elapsed_time_alloc(AllocatorInfo ainfo, DateTime dt) {
-	U8            bytes[KB(8)];
-	FArena        arena   = farena_from_memory(bytes, size_of(bytes));
-	AllocatorInfo scratch = farena_allocator(arena);
+	TempArena scratch = scratch_begin_alloc(ainfo);
 
 	String8List list = {0};
 	if (dt.year) {
-		str8_list_allocf(scratch, &list, "%dy", dt.year);
-		str8_list_allocf(scratch, &list, "%um", dt.mon);
-		str8_list_allocf(scratch, &list, "%ud", dt.day);
+		str8_list_pushf(scratch.arena, &list, "%dy", dt.year);
+		str8_list_pushf(scratch.arena, &list, "%um", dt.mon);
+		str8_list_pushf(scratch.arena, &list, "%ud", dt.day);
 	} else if (dt.mon) {
-		str8_list_allocf(scratch, &list, "%um", dt.mon);
-		str8_list_allocf(scratch, &list, "%ud", dt.day);
+		str8_list_pushf(scratch.arena, &list, "%um", dt.mon);
+		str8_list_pushf(scratch.arena, &list, "%ud", dt.day);
 	} else if (dt.day) {
-		str8_list_allocf(scratch, &list, "%ud", dt.day);
+		str8_list_pushf(scratch.arena, &list, "%ud", dt.day);
 	}
-	str8_list_allocf(scratch, &list, "%u:%u:%u:%u ms", dt.hour, dt.min, dt.sec, dt.msec);
+	str8_list_pushf(scratch.arena, &list, "%u:%u:%u:%u ms", dt.hour, dt.min, dt.sec, dt.msec);
 
 	StringJoin join   = { str8_lit_comp(""), str8_lit_comp(" "), str8_lit_comp("") };
 	String8    result = str8_list_join_alloc(ainfo, &list, &join);
@@ -1520,7 +1518,7 @@ try_guid_from_string(String8 string, Guid *guid_out)
 String8
 indented_from_string(Arena* arena, String8 string)
 {
-#if 1 // Better than enforcing abstract allocator for this case.
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
   TempArena scratch = scratch_begin(&arena, 1);
 
   read_only local_persist U8 indentation_bytes[] = "                                                                                                                                ";
@@ -1560,7 +1558,7 @@ indented_from_string(Arena* arena, String8 string)
 String8
 indented_from_string_alloc(AllocatorInfo ainfo, String8 string)
 {
-	TempArena scratch = scratch_begin(0, 0);
+	TempArena scratch = scratch_begin_alloc(ainfo);
 
 	read_only local_persist U8 indentation_bytes[] = "                                                                                                                                ";
 	String8List indented_strings = {0};
@@ -1600,7 +1598,7 @@ indented_from_string_alloc(AllocatorInfo ainfo, String8 string)
 String8
 escaped_from_raw_str8(Arena* arena, String8 string)
 {
-#if 1 // Better than enforcing abstract allocator for this case.
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
 	TempArena scratch = scratch_begin(&arena, 1);
 
 	String8List parts   = {0};
@@ -1650,7 +1648,7 @@ escaped_from_raw_str8(Arena* arena, String8 string)
 String8
 escaped_from_raw_str8_alloc(AllocatorInfo ainfo, String8 string)
 {
-	TempArena scratch = scratch_begin(0, 0);
+	TempArena scratch = scratch_begin_alloc(ainfo);
 
 	String8List parts   = {0};
 	U64 start_split_idx = 0;
@@ -1747,7 +1745,7 @@ raw_from_escaped_str8(Arena* arena, String8 string)
 String8
 raw_from_escaped_str8_alloc(AllocatorInfo ainfo, String8 string)
 {
-	TempArena scratch = scratch_begin(0, 0);
+	TempArena scratch = scratch_begin_alloc(ainfo);
 
 	String8List strs  = {0};
 	U64         start = 0;
@@ -2003,7 +2001,7 @@ fuzzy_match_find(Arena *arena, String8 needle, String8 haystack)
 FuzzyMatchRangeList
 fuzzy_match_find_alloc(AllocatorInfo ainfo, String8 needle, String8 haystack)
 {
-	TempArena   scratch = scratch_begin(0, 0);
+	TempArena   scratch = scratch_begin_alloc(ainfo);
 	String8List needles = str8_split(scratch.arena, needle, (U8*)" ", 1, 0);
 	FuzzyMatchRangeList 
 	result = {0};

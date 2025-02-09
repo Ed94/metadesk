@@ -49,7 +49,6 @@ log_msgf(LogMsgKind kind, char *fmt, ...) {
 	}
 }
 
-
 ////////////////////////////////
 //~ rjf: Log Scopes
 

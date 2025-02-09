@@ -19,7 +19,6 @@ void main_thread_base_entry_point(MainThread_EntryPointProc* entry_point, char**
 #endif
 	thread_namef("[main thread]");
 
-	// TODO(Ed): Review?
 	TempArena   scratch = scratch_begin(0, 0);
 
 	String8List command_line_argument_strings = os_string_list_from_argcv(scratch.arena, (int)arguments_count, arguments);
@@ -41,7 +40,6 @@ void main_thread_base_entry_point(MainThread_EntryPointProc* entry_point, char**
 void 
 supplement_thread_base_entry_point(SupplementThread_EntryPointProc* entry_point, void*  params)
 {
-	// TODO(Ed): Review?
 	TCTX tctx;
 	tctx_init_and_equip(&tctx);
 	entry_point(params);

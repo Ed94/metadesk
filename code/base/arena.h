@@ -68,10 +68,15 @@ struct TempArena
 
 MD_API void* arena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags);
 
-force_inline AllocatorInfo 
-arena_allocator(Arena* arena) {
-	AllocatorInfo info = { arena_allocator_proc, arena};
-	return info;
+force_inline AllocatorInfo arena_allocator(Arena* arena) { AllocatorInfo info = { arena_allocator_proc, arena}; return info; }
+
+// Useful for providing an arena to scratch_begin_alloc
+force_inline Arena*
+extract_arena(AllocatorInfo ainfo) {
+	if (allocator_type(ainfo) == AllocatorType_Arena) {
+		return (Arena*) ainfo.data;
+	}
+	return nullptr;
 }
 
 //- rjf: arena creation/destruction

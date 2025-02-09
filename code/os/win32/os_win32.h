@@ -166,7 +166,7 @@ MD_API DWORD os_w32_thread_entry_point(void* ptr);
 inline String8
 os_get_current_path_alloc(AllocatorInfo ainfo) {
 	String8 name;
-	TempArena scratch = scratch_begin(0, 0);
+	TempArena scratch = scratch_begin_alloc(ainfo);
 	{
 		DWORD   length  = GetCurrentDirectoryW(0, 0);
 		U16*    memory  = push_array_no_zero(scratch.arena, U16, length + 1);

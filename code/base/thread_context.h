@@ -39,6 +39,14 @@ void    tctx_write_srcloc(char*  file_name, U64  line_number);
 void    tctx_read_srcloc (char** file_name, U64* line_number);
 #define tctx_write_this_srcloc() tctx_write_srcloc(__FILE__, __LINE__)
 
+inline TempArena
+scratch__begin_alloc(AllocatorInfo ainfo) {
+	Arena*    arena   = extract_arena(ainfo);
+	TempArena scratch =  temp_begin(tctx_get_scratch(arena, arena != nullptr));
+	return scratch;
+}
+
+#define scratch_begin_alloc(ainfo)      scratch__begin_alloc(ainfo)
 #define scratch_begin(conflicts, count) temp_begin(tctx_get_scratch((conflicts), (count)))
 #define scratch_end(scratch)            temp_end(scratch)
 

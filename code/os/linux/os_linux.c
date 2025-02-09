@@ -290,7 +290,7 @@ String8
 os_full_path_from_path_alloc(AllocatorInfo ainfo, String8 path)
 {
 	char buffer[PATH_MAX] = {0};
-	TempArena scratch = scratch_begin(0, 0); {
+	TempArena scratch = scratch_begin_alloc(ainfo); {
 		String8 path_copy = push_str8_copy(scratch.arena, path);
 		realpath((char *)path_copy.str, buffer);
 	}

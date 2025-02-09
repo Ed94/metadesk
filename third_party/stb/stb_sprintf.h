@@ -2175,7 +2175,7 @@ static stbsp__int32 stbsp__real_to_str(char const **start, stbsp__uint32 *len, c
 	*decimal_pos = tens;
 	*start       = out;
 	*len         = e;
-  return ng;
+	return ng;
 }
 
 #undef stbsp__ddmulthi

@@ -139,6 +139,18 @@ if ($code_sanity)
 	$executable = join-path $path_build 'code_sanity.exe'
 
 	$result = build-simple $path_build $includes $compiler_args $linker_args $unit $executable
+
+	Push-Location $path_build
+		if ( Test-Path( $executable ) ) {
+			write-host "`nRunning test/code_sanity"
+			$time_taken = Measure-Command { & $executable
+					| ForEach-Object {
+						write-host `t $_ -ForegroundColor Green
+					}
+				}
+			write-host "`ntest/code_sanity completed in $($time_taken.TotalMilliseconds) ms"
+		}
+	Pop-Location
 }
 
 Pop-Location # $path_root

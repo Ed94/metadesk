@@ -17,9 +17,9 @@ void init(Context* ctx)
 	
 }
 
-void deinit(Context* ctx)
-{
-}
+// void deinit(Context* ctx)
+// {
+// }
 
 ////////////////////////////////
 //~ rjf: Message Type Functions
@@ -27,8 +27,27 @@ void deinit(Context* ctx)
 void
 msg_list_push(Arena* arena, MsgList* msgs, Node* node, MsgKind kind, String8 string)
 {
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
 	Msg*
 	msg = push_array(arena, Msg, 1);
+	msg->node   = node;
+	msg->kind   = kind;
+	msg->string = string;
+
+	sll_queue_push(msgs->first, msgs->last, msg);
+
+	msgs->count             += 1;
+	msgs->worst_message_kind = md_max(kind, msgs->worst_message_kind);
+#else
+	msg_list_alloc(arena_allocator(arena), msgs, node, kind, string);
+#endif
+}
+
+void
+msg_list_alloc(AllocatorInfo ainfo, MsgList* msgs, Node* node, MsgKind kind, String8 string)
+{
+	Msg*
+	msg = alloc_array(ainfo, Msg, 1);
 	msg->node   = node;
 	msg->kind   = kind;
 	msg->string = string;
@@ -80,6 +99,7 @@ content_string_from_token_flags_str8(TokenFlags flags, String8 string)
 String8List
 string_list_from_token_flags(Arena* arena, TokenFlags flags)
 {
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
 	String8List strs = {0};
 	if (flags & TokenFlag_Identifier          ){ str8_list_push(arena, &strs, str8_lit("Identifier"         )); }
 	if (flags & TokenFlag_Numeric             ){ str8_list_push(arena, &strs, str8_lit("Numeric"            )); }
@@ -93,11 +113,33 @@ string_list_from_token_flags(Arena* arena, TokenFlags flags)
 	if (flags & TokenFlag_BrokenStringLiteral ){ str8_list_push(arena, &strs, str8_lit("BrokenStringLiteral")); }
 	if (flags & TokenFlag_BadCharacter        ){ str8_list_push(arena, &strs, str8_lit("BadCharacter"       )); }
 	return strs;
+#else
+	return string_list_from_token_flags_alloc(arena_allocator(arena), flags);
+#endif
+}
+
+String8List
+string_list_from_token_flags_alloc(AllocatorInfo ainfo, TokenFlags flags)
+{
+	String8List strs = {0};
+	if (flags & TokenFlag_Identifier          ){ str8_list_alloc(ainfo, &strs, str8_lit("Identifier"         )); }
+	if (flags & TokenFlag_Numeric             ){ str8_list_alloc(ainfo, &strs, str8_lit("Numeric"            )); }
+	if (flags & TokenFlag_StringLiteral       ){ str8_list_alloc(ainfo, &strs, str8_lit("StringLiteral"      )); }
+	if (flags & TokenFlag_Symbol              ){ str8_list_alloc(ainfo, &strs, str8_lit("Symbol"             )); }
+	if (flags & TokenFlag_Reserved            ){ str8_list_alloc(ainfo, &strs, str8_lit("Reserved"           )); }
+	if (flags & TokenFlag_Comment             ){ str8_list_alloc(ainfo, &strs, str8_lit("Comment"            )); }
+	if (flags & TokenFlag_Whitespace          ){ str8_list_alloc(ainfo, &strs, str8_lit("Whitespace"         )); }
+	if (flags & TokenFlag_Newline             ){ str8_list_alloc(ainfo, &strs, str8_lit("Newline"            )); }
+	if (flags & TokenFlag_BrokenComment       ){ str8_list_alloc(ainfo, &strs, str8_lit("BrokenComment"      )); }
+	if (flags & TokenFlag_BrokenStringLiteral ){ str8_list_alloc(ainfo, &strs, str8_lit("BrokenStringLiteral")); }
+	if (flags & TokenFlag_BadCharacter        ){ str8_list_alloc(ainfo, &strs, str8_lit("BadCharacter"       )); }
+	return strs;
 }
 
 void
 token_chunk_list_push(Arena* arena, TokenChunkList* list, U64 cap, Token token)
 {
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
 	TokenChunkNode* node = list->last;
 	if (node == 0 || node->count >= node->cap) {
 		node      = push_array(arena, TokenChunkNode, 1);
@@ -109,14 +151,52 @@ token_chunk_list_push(Arena* arena, TokenChunkList* list, U64 cap, Token token)
 	memory_copy_struct(&node->v[node->count], &token);
 	node->count             += 1;
 	list->total_token_count += 1;
+#else
+	token_chunk_list_alloc(arena_allocator(arena), list, cap, token);
+#endif
+}
+
+void
+token_chunk_list_alloc(AllocatorInfo ainfo, TokenChunkList* list, U64 cap, Token token)
+{
+	TokenChunkNode* node = list->last;
+	if (node == 0 || node->count >= node->cap) {
+		node      = alloc_array(ainfo, TokenChunkNode, 1);
+		node->cap = cap;
+		node->v   = alloc_array_no_zero(ainfo, Token, cap);
+		sll_queue_push(list->first, list->last, node);
+		list->chunk_count += 1;
+	}
+	memory_copy_struct(&node->v[node->count], &token);
+	node->count             += 1;
+	list->total_token_count += 1;
 }
 
 TokenArray
 token_array_from_chunk_list(Arena* arena, TokenChunkList* chunks)
 {
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
 	TokenArray result = {0};
 	result.count = chunks->total_token_count;
 	result.v     = push_array_no_zero(arena, Token, result.count);
+	U64 write_idx = 0;
+	for(TokenChunkNode *n = chunks->first; n != 0; n = n->next)
+	{
+		memory_copy(result.v + write_idx, n->v, size_of(Token) * n->count);
+		write_idx += n->count;
+	}
+	return result;
+#else
+	return token_array_from_chunk_list_alloc(arena_allocator(arena), chunks);
+#endif
+}
+
+TokenArray
+token_array_from_chunk_list_alloc(AllocatorInfo ainfo, TokenChunkList* chunks)
+{
+	TokenArray result = {0};
+	result.count = chunks->total_token_count;
+	result.v     = alloc_array_no_zero(ainfo, Token, result.count);
 	U64 write_idx = 0;
 	for(TokenChunkNode *n = chunks->first; n != 0; n = n->next)
 	{
@@ -226,7 +306,7 @@ node_match(Node* a, Node* b, StringMatchFlags flags)
 }
 
 B32
-tree_match(Node *a, Node *b, StringMatchFlags flags)
+tree_match(Node* a, Node* b, StringMatchFlags flags)
 {
 	B32 result = node_match(a, b, flags);
 	if (result)
@@ -248,6 +328,7 @@ tree_match(Node *a, Node *b, StringMatchFlags flags)
 Node*
 tree_copy(Arena* arena, Node* src_root)
 {
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
 	Node* dst_root   = nil_node();
 	Node* dst_parent = dst_root;
 	{
@@ -280,15 +361,60 @@ tree_copy(Arena* arena, Node* src_root)
 		}
 	}
 	return dst_root;
+#else
+	tree_copy_alloc(arena_allocator(arena), src_root);
+#endif
+}
+
+Node*
+tree_copy_alloc(AllocatorInfo ainfo, Node* src_root)
+{
+	Node* dst_root   = nil_node();
+	Node* dst_parent = dst_root;
+	{
+		NodeRec rec = {0};
+		for(Node* src = src_root; !node_is_nil(src); src = rec.next)
+		{
+			Node* dst = alloc_array(ainfo, Node, 1);
+			dst->first      = dst->last = dst->parent = dst->next = dst->prev = nil_node();
+			dst->first_tag  = dst->last_tag = nil_node();
+			dst->kind       = src->kind;
+			dst->flags      = src->flags;
+			dst->string     = alloc_str8_copy(ainfo, src->string);
+			dst->raw_string = alloc_str8_copy(ainfo, src->raw_string);
+			dst->src_offset = src->src_offset;
+			dst->parent     = dst_parent;
+			if (dst_parent != nil_node()) {
+				dll_push_back_npz(nil_node(), dst_parent->first, dst_parent->last, dst, next, prev);
+			}
+			else {
+				dst_root = dst_parent = dst;
+			}
+
+			rec = node_rec_depth_first_pre(src, src_root);
+			if (rec.push_count != 0) {
+				dst_parent = dst;
+			}
+			else for (U64 idx = 0; idx < rec.pop_count; idx += 1) {
+				dst_parent = dst_parent->parent;
+			}
+		}
+	}
+	return dst_root;
 }
 
 ////////////////////////////////
 //~ rjf: Text -> Tokens Functions
 
 TokenizeResult
-tokenize_from_text(Arena* arena, String8 text)
+tokenize_from_text(Arena* arena, String8 text) { 
+	tokenize_from_text_alloc(arena_allocator(arena), text);
+}
+
+TokenizeResult
+tokenize_from_text_alloc(AllocatorInfo ainfo, String8 text)
 {
-	TempArena scratch = scratch_begin(&arena, 1);
+	TempArena scratch = scratch_begin_alloc(ainfo);
 
 	TokenChunkList tokens = {0};
 	MsgList        msgs = {0};
@@ -593,22 +719,22 @@ tokenize_from_text(Arena* arena, String8 text)
 		//- rjf: push errors on unterminated comments
 		if (token_flags & TokenFlag_BrokenComment)
 		{
-			Node*   error        = push_node(arena, NodeKind_ErrorMarker, 0, str8_lit(""), str8_lit(""), token_start - byte_first);
+			Node*   error        = alloc_node(ainfo, NodeKind_ErrorMarker, 0, str8_lit(""), str8_lit(""), token_start - byte_first);
 			String8 error_string = str8_lit("Unterminated comment.");
-			msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
+			msg_list_alloc(ainfo, &msgs, error, MsgKind_Error, error_string);
 		}
 		
 		//- rjf: push errors on unterminated strings
 		if (token_flags & TokenFlag_BrokenStringLiteral) {
-			Node*   error        = push_node(arena, NodeKind_ErrorMarker, 0, str8_lit(""), str8_lit(""), token_start - byte_first);
+			Node*   error        = alloc_node(ainfo, NodeKind_ErrorMarker, 0, str8_lit(""), str8_lit(""), token_start - byte_first);
 			String8 error_string = str8_lit("Unterminated string literal.");
-			msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
+			msg_list_alloc(ainfo, &msgs, error, MsgKind_Error, error_string);
 		}
 	}
 	
 	//- rjf: bake, fill & return
 	TokenizeResult result = {0}; {
-		result.tokens = token_array_from_chunk_list(arena, &tokens);
+		result.tokens = token_array_from_chunk_list_alloc(ainfo, &tokens);
 		result.msgs   = msgs;
 	}
 	scratch_end(scratch);
@@ -665,13 +791,18 @@ void parse__work_pop(ParseWorkNode* work_top, ParseWorkNode* broken_work) {
 }
 
 ParseResult
-parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray tokens)
+parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray tokens) {
+	return parse_from_text_tokens_alloc(arena_allocator(arena), filename, text, tokens);
+}
+
+ParseResult
+parse_from_text_tokens(AllocatorInfo ainfo, String8 filename, String8 text, TokenArray tokens)
 {
-	TempArena scratch = scratch_begin(&arena, 1);
+	TempArena scratch = scratch_begin_alloc(ainfo);
 	
 	//- rjf: set up outputs
 	MsgList msgs = {0};
-	Node*   root = push_node(arena, NodeKind_File, 0, filename, text, 0);
+	Node*   root = alloc_node(ainfo, NodeKind_File, 0, filename, text, 0);
 	
 	//- rjf: set up parse rule stack
 	ParseWorkNode  first_work  = { 0, ParseWorkKind_Main, root };
@@ -766,9 +897,9 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 		
 		//- rjf: [main, main_implicit] unexpected reserved tokens
 		if (mode_main_or_main_implict && found_unexpected) {
-			Node*   error        = push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
-			String8 error_string = push_str8f(arena, "Unexpected reserved symbol \"%S\".", token_string);
-			msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
+			Node*   error        = alloc_node(ainfo, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
+			String8 error_string = alloc_str8f(ainfo, "Unexpected reserved symbol \"%S\".", token_string);
+			msg_list_alloc(ainfo, &msgs, error, MsgKind_Error, error_string);
 			token += 1;
 			goto end_consume;
 		}
@@ -781,9 +912,9 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 			// Token after should be label.
 			if (token + 1 >= tokens_opl || !(token[1].flags & TokenFlagGroup_Label))
 			{
-				Node*   error        = push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
+				Node*   error        = alloc_node(ainfo, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
 				String8 error_string = str8_lit("Tag label expected after @ symbol.");
-				msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
+				msg_list_alloc(ainfo, &msgs, error, MsgKind_Error, error_string);
 
 				token += 1;
 				goto end_consume;
@@ -794,7 +925,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 				String8 tag_name_raw = str8_substr(text, token[1].range);
 				String8 tag_name     = content_string_from_token_flags_str8(token[1].flags, tag_name_raw);
 
-				Node* node = push_node(arena, NodeKind_Tag, node_flags_from_token_flags(token[1].flags), tag_name, tag_name_raw, token[0].range.min);
+				Node* node = alloc_node(ainfo, NodeKind_Tag, node_flags_from_token_flags(token[1].flags), tag_name, tag_name_raw, token[0].range.min);
 				dll_push_back_npz(nil_node(), work_top->first_gathered_tag, work_top->last_gathered_tag, node, next, prev);
 
 				B32 found_argument_paren = token[2].flags & TokenFlag_Reserved && str8_match(str8_substr(text, token[2].range), str8_lit("("), 0);
@@ -821,7 +952,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 
 			work_top->gathered_node_flags = 0;
 
-			Node* node = push_node(arena, NodeKind_Main, flags, node_string, node_string_raw, token[0].range.min);
+			Node* node = ainfo_node(ainfo, NodeKind_Main, flags, node_string, node_string_raw, token[0].range.min);
 			node->first_tag = work_top->first_gathered_tag;
 			node->last_tag  = work_top->last_gathered_tag;
 			for (Node* tag = work_top->first_gathered_tag; !node_is_nil(tag); tag = tag->next) {
@@ -852,7 +983,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 			work_top->gathered_node_flags = 0;
 
 			Node* 
-			node = push_node(arena, NodeKind_Main, flags, str8_lit(""), str8_lit(""), token[0].range.min);
+			node = alloc_node(ainfo, NodeKind_Main, flags, str8_lit(""), str8_lit(""), token[0].range.min);
 			node->first_tag = work_top->first_gathered_tag;
 			node->last_tag  = work_top->last_gathered_tag;
 			for (Node* tag = work_top->first_gathered_tag; !node_is_nil(tag); tag = tag->next) {
@@ -907,9 +1038,9 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 			if (work_top->counted_newlines >= 2)
 			{
 				Node*   node         = work_top->parent;
-				Node*   error        = push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
-				String8 error_string = push_str8f(arena, "More than two newlines following \"%S\", which has implicitly-delimited children, resulting in an empty list of children.", node->string);
-				msg_list_push(arena, &msgs, error, MsgKind_Warning, error_string);
+				Node*   error        = alloc_node(ainfo, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
+				String8 error_string = alloc_str8f(ainfo, "More than two newlines following \"%S\", which has implicitly-delimited children, resulting in an empty list of children.", node->string);
+				msg_list_alloc(ainfo, &msgs, error, MsgKind_Warning, error_string);
 				parse_work_pop();
 			}
 			else
@@ -956,9 +1087,9 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 		
 		//- rjf: no consumption -> unexpected token! we don't know what to do with this.
 		{
-			Node*   error        = push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
-			String8 error_string = push_str8f(arena, "Unexpected \"%S\" token.", token_string);
-			msg_list_push(arena, &msgs, error, MsgKind_Error, error_string);
+			Node*   error        = alloc_node(ainfo, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
+			String8 error_string = alloc_str8f(ainfo, "Unexpected \"%S\" token.", token_string);
+			msg_list_alloc(ainfo, &msgs, error, MsgKind_Error, error_string);
 			token += 1;
 			// ???
 		}
@@ -985,6 +1116,15 @@ parse_from_text(Arena* arena, String8 filename, String8 text) {
 	TempArena      scratch  = scratch_begin(&arena, 1);
 	TokenizeResult tokenize = tokenize_from_text(scratch.arena, text);
 	ParseResult    parse    = parse_from_text_tokens(arena, filename, text, tokenize.tokens); 
+	scratch_end(scratch);
+	return parse;
+}
+
+ParseResult
+parse_from_text(AllocatorInfo ainfo, String8 filename, String8 text) {
+	TempArena      scratch  = scratch_begin_alloc(ainfo);
+	TokenizeResult tokenize = tokenize_from_text(scratch.arena, text);
+	ParseResult    parse    = parse_from_text_tokens_alloc(ainfo, filename, text, tokenize.tokens); 
 	scratch_end(scratch);
 	return parse;
 }

@@ -276,8 +276,10 @@ MD_API void init  (Context* ctx);
 ////////////////////////////////
 //~ rjf: Message Type Functions
 
-MD_API void msg_list_push (Arena* arena, MsgList* msgs, Node* node, MsgKind kind, String8 string);
-       void msg_list_pushf(Arena* arena, MsgList* msgs, Node* node, MsgKind kind, char *fmt, ...);
+MD_API void msg_list_push  (Arena*        arena, MsgList* msgs, Node* node, MsgKind kind, String8 string);
+MD_API void msg_list_alloc (AllocatorInfo ainfo, MsgList* msgs, Node* node, MsgKind kind, String8 string);
+       void msg_list_pushf (Arena*        arena, MsgList* msgs, Node* node, MsgKind kind, char *fmt, ...);
+       void msg_list_allocf(AllocatorInfo ainfo, MsgList* msgs, Node* node, MsgKind kind, char *fmt, ...);
 
 MD_API void msg_list_concat_in_place(MsgList* dst, MsgList* to_push);
 
@@ -287,6 +289,15 @@ msg_list_pushf(Arena* arena, MsgList* msgs, Node* node, MsgKind kind, char* fmt,
 	va_start(args, fmt);
 	String8 string = push_str8fv(arena, fmt, args);
 	msg_list_push(arena, msgs, node, kind, string);
+	va_end(args);
+}
+
+inline void
+msg_list_allocf(AllocatorInfo ainfo, MsgList* msgs, Node* node, MsgKind kind, char* fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	String8 string = alloc_str8fv(ainfo, fmt, args);
+	msg_list_alloc(ainfo, msgs, node, kind, string);
 	va_end(args);
 }
 
@@ -361,7 +372,23 @@ void  unhook           (Node* node);
 
 inline Node*
 push_node(Arena* arena, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset) {
+#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
 	Node* node = push_array(arena, Node, 1);
+	node->first      = node->last = node->parent = node->next = node->prev = node->first_tag = node->last_tag = nil_node();
+	node->kind       = kind;
+	node->flags      = flags;
+	node->string     = string;
+	node->raw_string = raw_string;
+	node->src_offset = src_offset;
+	return node;
+#else
+	alloc_node(arena_allocator(arena), kind, flags, string, raw_string, src_offset);
+#endif
+}
+
+inline Node*
+alloc_node(AllocatorInfo ainfo, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset) {
+	Node* node = alloc_array(ainfo, Node, 1);
 	node->first      = node->last = node->parent = node->next = node->prev = node->first_tag = node->last_tag = nil_node();
 	node->kind       = kind;
 	node->flags      = flags;
@@ -522,25 +549,32 @@ MD_API B32 node_match(Node* a, Node* b, StringMatchFlags flags);
 
 //- rjf: tree duplication
 
-MD_API Node* tree_copy(Arena* arena, Node* src_root);
+MD_API Node* tree_copy      (Arena*        arena, Node* src_root);
+MD_API Node* tree_copy_alloc(AllocatorInfo ainfo, Node* src_root);
 
 ////////////////////////////////
 //~ rjf: Text -> Tokens Functions
 
-MD_API TokenizeResult tokenize_from_text(Arena* arena, String8 text);
+MD_API TokenizeResult tokenize_from_text      (Arena*        arena, String8 text);
+MD_API TokenizeResult tokenize_from_text_alloc(AllocatorInfo ainfo, String8 text);
 
 ////////////////////////////////
 //~ rjf: Tokens -> Tree Functions
 
-MD_API ParseResult parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray tokens);
+MD_API ParseResult parse_from_text_tokens      (Arena*        arena, String8 filename, String8 text, TokenArray tokens);
+MD_API ParseResult parse_from_text_tokens_alloc(AllocatorInfo ainfo, String8 filename, String8 text, TokenArray tokens);
 
 ////////////////////////////////
 //~ rjf: Bundled Text -> Tree Functions
 
-MD_API ParseResult parse_from_text(Arena* arena, String8 filename, String8 text);
-#define tree_from_string(arena, string) (parse_from_text((arena), str8_zero(), (string)).root)
+MD_API ParseResult parse_from_text      (Arena*        arena, String8 filename, String8 text);
+MD_API ParseResult parse_from_text_alloc(AllocatorInfo ainfo, String8 filename, String8 text);
+
+#define tree_from_string(arena, string)       (parse_from_text      ((arena), str8_zero(), (string)).root)
+#define tree_from_string_alloc(ainfo, string) (parse_from_text_alloc((ainfo), str8_zero(), (string)).root)
 
 ////////////////////////////////
 //~ rjf: Tree -> Text Functions
 
-MD_API String8List debug_string_list_from_tree(Arena* arena, Node* root);
+MD_API String8List debug_string_list_from_tree      (Arena*        arena, Node* root);
+MD_API String8List debug_string_list_from_tree_alloc(AllocatorInfo ainfo, Node* root);

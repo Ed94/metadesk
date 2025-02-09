@@ -144,3 +144,38 @@
 #ifndef each_non_zero_enum_val
 #define each_non_zero_enum_val(type, it) type it = (type) 1; it < type ## _COUNT; it = (type)( it + 1 )
 #endif
+
+#ifndef stringify
+#define stringify_(S) #S
+#define stringify(S)  stringify_(S)
+#endif
+
+#ifndef glue
+#define glue_(A,B) A ## B
+#define glue(A,B)  glue_(A,B)
+#endif
+
+#define src_line_str stringify(__LINE__)
+
+#ifndef do_once
+#define do_once()                                                                            \
+	local_persist int __do_once_counter_##src_line_str  = 0;                                 \
+    for(;      __do_once_counter_##src_line_str != 1; __do_once_counter_##src_line_str = 1 ) \
+
+#define do_once_defer( expression )                                                                 \
+    local_persist int __do_once_counter_##src_line_str  = 0;                                        \
+    for(;__do_once_counter_##src_line_str != 1; __do_once_counter_##src_line_str = 1, (expression)) \
+
+#define do_once_start      \
+	do                     \
+	{                      \
+		local_persist      \
+		bool done = false; \
+		if ( done )        \
+			break;         \
+		done = true;
+
+#define do_once_end        \
+	}                      \
+	while(0);
+#endif

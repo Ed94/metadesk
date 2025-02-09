@@ -613,6 +613,32 @@ str8_list_concat_in_place(String8List* list, String8List* to_push) {
 }
 
 String8Node*
+str8_list_alloc_aligner(AllocatorInfo ainfo, String8List* list, U64 min, U64 align) {
+	String8Node* node = alloc_array_no_zero(ainfo, String8Node, 1);
+	U64 new_size = list->total_size + min;
+	U64 increase_size = 0;
+
+	if (align > 1) {
+		// NOTE(allen): assert is power of 2
+		assert(((align - 1) & align) == 0);
+		U64 mask = align - 1;
+		new_size += mask;
+		new_size &= (~mask);
+		increase_size = new_size - list->total_size;
+	}
+
+	local_persist const U8 zeroes_buffer[64] = {0};
+	assert(increase_size <= array_count(zeroes_buffer));
+
+	sll_queue_push(list->first, list->last, node);
+	list->node_count += 1;
+	list->total_size  = new_size;
+	node->string.str  = (U8*)zeroes_buffer;
+	node->string.size = increase_size;
+	return(node);
+}
+
+String8Node*
 str8_list_push_aligner(Arena* arena, String8List* list, U64 min, U64 align)
 {
 #if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
@@ -639,34 +665,8 @@ str8_list_push_aligner(Arena* arena, String8List* list, U64 min, U64 align)
 	node->string.size = increase_size;
 	return(node);
 #else
-	return str8_list_aligner(arena_allocator(arena), list, min, align);
+	return str8_list_alloc_aligner(arena_allocator(arena), list, min, align);
 #endif
-}
-
-String8Node*
-str8_list_aligner(AllocatorInfo ainfo, String8List* list, U64 min, U64 align) {
-	String8Node* node = alloc_array_no_zero(ainfo, String8Node, 1);
-	U64 new_size = list->total_size + min;
-	U64 increase_size = 0;
-
-	if (align > 1) {
-		// NOTE(allen): assert is power of 2
-		assert(((align - 1) & align) == 0);
-		U64 mask = align - 1;
-		new_size += mask;
-		new_size &= (~mask);
-		increase_size = new_size - list->total_size;
-	}
-
-	local_persist const U8 zeroes_buffer[64] = {0};
-	assert(increase_size <= array_count(zeroes_buffer));
-
-	sll_queue_push(list->first, list->last, node);
-	list->node_count += 1;
-	list->total_size  = new_size;
-	node->string.str  = (U8*)zeroes_buffer;
-	node->string.size = increase_size;
-	return(node);
 }
 
 String8List
@@ -1246,7 +1246,7 @@ str32_from_8(Arena *arena, String8 in){
 }
 
 String8
-str8_from_16(AllocatorInfo ainfo, String16 in) {
+str8_from_16_alloc(AllocatorInfo ainfo, String16 in) {
 	U64  cap  = in.size * 3;
 	U8*  str  = alloc_array_no_zero(ainfo, U8, cap + 1);
 	U16* ptr  = in.str;
@@ -1263,7 +1263,7 @@ str8_from_16(AllocatorInfo ainfo, String16 in) {
 }
 
 String16
-str16_from_8(AllocatorInfo ainfo, String8 in) {
+str16_from_8_alloc(AllocatorInfo ainfo, String8 in) {
 	U64  cap  = in.size * 2;
 	U16* str  = alloc_array_no_zero(ainfo, U16, cap + 1);
 	U8*  ptr  = in.str;
@@ -1280,7 +1280,7 @@ str16_from_8(AllocatorInfo ainfo, String8 in) {
 }
 
 String8
-str8_from_32(AllocatorInfo ainfo, String32 in){
+str8_from_32_alloc(AllocatorInfo ainfo, String32 in){
 	U64  cap  = in.size * 4;
 	U8*  str  = alloc_array_no_zero(ainfo, U8, cap + 1);
 	U32* ptr  = in.str;
@@ -1295,7 +1295,7 @@ str8_from_32(AllocatorInfo ainfo, String32 in){
 }
 
 String32
-str32_from_8(AllocatorInfo ainfo, String8 in){
+str32_from_8_alloc(AllocatorInfo ainfo, String8 in){
 	U64  cap  = in.size;
 	U32* str  = alloc_array_no_zero(ainfo, U32, cap + 1);
 	U8*  ptr  = in.str;

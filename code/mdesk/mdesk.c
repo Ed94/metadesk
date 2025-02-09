@@ -687,7 +687,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 		
 		// TODO(Ed): Add opt-in support for comment awareness
 		//- rjf: comments -> always no-op & inc
-		if (token->flags & TokenGroup_Comment) {
+		if (token->flags & TokenFlagGroup_Comment) {
 			token += 1;
 			goto end_consume;
 			// < // > <content> <unescaped newline>
@@ -763,7 +763,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 		if (mode_main_or_main_implict && found_tag)
 		{
 			// Token after should be label.
-			if (token + 1 >= tokens_opl || !(token[1].flags & TokenGroup_Label))
+			if (token + 1 >= tokens_opl || !(token[1].flags & TokenFlagGroup_Label))
 			{
 				Node*   error        = push_node(arena, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
 				String8 error_string = str8_lit("Tag label expected after @ symbol.");
@@ -797,7 +797,7 @@ parse_from_text_tokens(Arena* arena, String8 filename, String8 text, TokenArray 
 		}
 		
 		//- rjf: [main, main_implicit] label -> create new main
-		if (mode_main_or_main_implict && token->flags & TokenGroup_Label)
+		if (mode_main_or_main_implict && token->flags & TokenFlagGroup_Label)
 		{
 			String8   node_string_raw = token_string;
 			String8   node_string     = content_string_from_token_flags_str8(token->flags, node_string_raw);

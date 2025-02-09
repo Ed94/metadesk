@@ -48,7 +48,7 @@ struct Log
 ////////////////////////////////
 //~ rjf: Log Creation/Selection
 
-       Log* log_alloc(AllocatorInfo ainfo);
+       Log* log_alloc(AllocatorInfo ainfo, U64 arena_block_size);
        void log_release(Log* log);
 MD_API void log_select (Log* log);
 
@@ -82,15 +82,5 @@ MD_API void log_msgf(LogMsgKind kind, char* fmt, ...);
 ////////////////////////////////
 //~ rjf: Log Scopes
 
-       void           log_scope_begin(void);
+MD_API void           log_scope_begin(void);
 MD_API LogScopeResult log_scope_end(Arena* arena);
-
-inline void
-log_scope_begin(void) {
-	if (log_active != 0) {
-		U64       pos   = arena_pos(log_active->arena);
-		LogScope* scope = push_array(log_active->arena, LogScope, 1);
-		scope->pos = pos;
-		sll_stack_push(log_active->top_scope, scope);
-	}
-}

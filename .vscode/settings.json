@@ -76,7 +76,14 @@
 		"push_ignores.inline.h": "c",
 		"list": "c",
 		"xhash": "c",
-		"xtree": "c"
+		"xtree": "c",
+		"os_resolve.h": "c",
+		"os_win32_includes.h": "c",
+		"os_linux_includes.h": "c",
+		"metadesk.h": "c",
+		"mdesk.h": "c",
+		"text.h": "c",
+		"forward_list": "c"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

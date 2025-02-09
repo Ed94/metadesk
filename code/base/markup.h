@@ -7,11 +7,7 @@
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
 
-inline void
-set_thread_name(String8 string) {
-	prof_thread_name("%.*s", str8_varg(string));
-	os_set_thread_name(string);
-}
+MD_API void set_thread_name(String8 string);
 
 inline void
 set_thread_namef(char *fmt, ...)

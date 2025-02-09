@@ -189,7 +189,7 @@ heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE
 	return ptr;
 }
 
-VArena
+VArena*
 varena__alloc(VArenaParams params)
 {
 	if (params.reserve_size == 0) {
@@ -294,7 +294,7 @@ varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_
 			}
 
 			allocated_mem = rcast(void*, current_offset + size_to_allocate);
-			vm->commit_used += size_to_allocate
+			vm->commit_used += size_to_allocate;
 		}
 		break;
 
@@ -354,7 +354,7 @@ varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_
 			}
 
 			allocated_mem    = old_memory;
-			vm->commit_used += size_to_allocate
+			vm->commit_used += size_to_allocate;
 		}
 		break;
 
@@ -390,7 +390,7 @@ farena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZ
 	{
 		case AllocatorMode_Alloc:
 		{
-			UPTR  end        = arena->slice.data + arena->used;
+			SPTR  end        = scast(SPTR, arena->slice.data) + arena->used;
 			SSIZE total_size = align_pow2(size, alignment);
 
 			if (arena->used + total_size > arena->slice.len ) {
@@ -398,7 +398,7 @@ farena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZ
 				return allocated_mem;
 			}
 
-			allocated_mem = end;
+			allocated_mem = scast(void*, end);
 			arena->used  += total_size;
 		}
 		break;

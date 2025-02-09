@@ -1,6 +1,5 @@
 #if INTELLISENSE_DIRECTIVES
 #	pragma once
-#	include "base/base.h"
 #	include "os/os.h"
 #endif
 
@@ -70,15 +69,15 @@ enum
 	TokenFlag_BadCharacter        = (1 << 14),
 };
 
-typedef U32 TokenGroups;
+typedef U32 TokenFlagGroups;
 enum
 {
-	TokenGroup_Comment    = TokenFlag_Comment,
-	TokenGroup_Whitespace = (TokenFlag_Whitespace| TokenFlag_Newline),
-	TokenGroup_Irregular  = (TokenGroup_Comment  | TokenGroup_Whitespace),
-	TokenGroup_Regular    = ~TokenGroup_Irregular,
-	TokenGroup_Label      = (TokenFlag_Identifier | TokenFlag_Numeric | TokenFlag_StringLiteral | TokenFlag_Symbol),
-	TokenGroup_Error      = (TokenFlag_BrokenComment | TokenFlag_BrokenStringLiteral | TokenFlag_BadCharacter),
+	TokenFlagGroup_Comment    = TokenFlag_Comment,
+	TokenFlagGroup_Whitespace = (TokenFlag_Whitespace| TokenFlag_Newline),
+	TokenFlagGroup_Irregular  = (TokenFlagGroup_Comment  | TokenFlagGroup_Whitespace),
+	TokenFlagGroup_Regular    = ~TokenFlagGroup_Irregular,
+	TokenFlagGroup_Label      = (TokenFlag_Identifier | TokenFlag_Numeric | TokenFlag_StringLiteral | TokenFlag_Symbol),
+	TokenFlagGroup_Error      = (TokenFlag_BrokenComment | TokenFlag_BrokenStringLiteral | TokenFlag_BadCharacter),
 };
 
 typedef struct Token Token;
@@ -228,8 +227,9 @@ struct ParseResult
 inline Node*
 nil_node()
 {
-	read_only thread_local local_persist
-	nil = {
+	read_only local_persist 
+	Node nil =
+	{
 		&nil,
 		&nil,
 		&nil,

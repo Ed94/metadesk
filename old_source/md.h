@@ -707,20 +707,20 @@ enum
     MD_TokenKind_BadCharacter        = (1<<10),
 };
 
-typedef MD_u32 MD_TokenGroups;
+typedef MD_u32 MD_TokenFlagGroups;
 enum
 {
-    TokenGroup_Comment = MD_TokenKind_Comment,
-    TokenGroup_Whitespace = (MD_TokenKind_Whitespace|
+    TokenFlagGroup_Comment = MD_TokenKind_Comment,
+    TokenFlagGroup_Whitespace = (MD_TokenKind_Whitespace|
                                 MD_TokenKind_Newline),
-    TokenGroup_Irregular = (TokenGroup_Comment|
-                               TokenGroup_Whitespace),
-    TokenGroup_Regular = ~TokenGroup_Irregular,
-    TokenGroup_Label   = (MD_TokenKind_Identifier|
+    TokenFlagGroup_Irregular = (TokenFlagGroup_Comment|
+                               TokenFlagGroup_Whitespace),
+    TokenFlagGroup_Regular = ~TokenFlagGroup_Irregular,
+    TokenFlagGroup_Label   = (MD_TokenKind_Identifier|
                              MD_TokenKind_Numeric|
                              MD_TokenKind_StringLiteral|
                              MD_TokenKind_Symbol),
-    TokenGroup_Error   = (MD_TokenKind_BrokenComment|
+    TokenFlagGroup_Error   = (MD_TokenKind_BrokenComment|
                              MD_TokenKind_BrokenStringLiteral|
                              MD_TokenKind_BadCharacter),
 };

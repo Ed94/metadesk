@@ -189,8 +189,8 @@ struct VArena
 MD_API VArena* varena__alloc(VArenaParams params PARAM_DEFAULT);
 #define varena_alloc(...) varena__alloc( (VArenaParams){__VA_ARGS__} )
 
-MD_API void         varena_commit   (VArena vm, SSIZE commit_size);
-MD_API VArenaParams varena_release  (VArena vm);
+MD_API void varena_commit (VArena* vm, SSIZE commit_size);
+MD_API void varena_release(VArena* vm);
 
 MD_API void* varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags);
 

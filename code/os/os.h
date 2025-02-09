@@ -1,22 +1,8 @@
 #ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
-#	include "base/base.h"
-#endif
-
-#if !defined(OS_FEATURE_GRAPHICAL)
-#	define OS_FEATURE_GRAPHICAL 0
-#endif
-
-#if !defined(OS_GFX_STUB)
-#	define OS_GFX_STUB 0
-#endif
-
-#if OS_WINDOWS
-#	include "os/win32/os_win32.h"
-#elif OS_LINUX
-#	include "os/linux/os_linux.h"
-#else
-#	error OS core layer not implemented for this operating system.
+#	include "base/file.h"
+#	include "base/debug.h"
+#	include "os_resolve.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools
@@ -177,7 +163,7 @@ os_handle_list_push(Arena* arena, OS_HandleList* handles, OS_Handle handle) {
 	sll_queue_push(handles->first, handles->last, n);
 	handles->count += 1;
 #else
-	return os_handle_list_alloc(arena_allocator(arena), handles, handle);
+	os_handle_list_alloc(arena_allocator(arena), handles, handle);
 #endif
 }
 
@@ -221,6 +207,17 @@ os_handle_array_from_list_alloc(AllocatorInfo ainfo, OS_HandleList* list) {
 //~ rjf: Command Line Argc/Argv Helper (Helper, Implemented Once)
 
 inline String8List
+os_string_list_from_argcv_alloc(AllocatorInfo ainfo, int argc, char** argv) {
+	String8List result = {0};
+	for(int i = 0; i < argc; i += 1)
+	{
+		String8 str = str8_cstring(argv[i]);
+		str8_list_alloc(ainfo, &result, str);
+	}
+	return result;
+}
+
+inline String8List
 os_string_list_from_argcv(Arena* arena, int argc, char** argv) {
 	String8List result = {0};
 	for(int i = 0; i < argc; i += 1)
@@ -231,16 +228,36 @@ os_string_list_from_argcv(Arena* arena, int argc, char** argv) {
 	return result;
 }
 
-inline String8List
-os_string_list_from_argcv(AllocatorInfo ainfo, int argc, char** argv) {
-	String8List result = {0};
-	for(int i = 0; i < argc; i += 1)
-	{
-		String8 str = str8_cstring(argv[i]);
-		str8_list_alloc(ainfo, &result, str);
-	}
-	return result;
-}
+////////////////////////////////
+//~ rjf: @os_hooks File System (Implemented Per-OS)
+
+//- rjf: files
+MD_API OS_Handle      os_file_open                (OS_AccessFlags flags, String8 path);
+MD_API void           os_file_close               (OS_Handle file);
+MD_API U64            os_file_read                (OS_Handle file, Rng1U64 rng, void *out_data);
+MD_API U64            os_file_write               (OS_Handle file, Rng1U64 rng, void *data);
+MD_API B32            os_file_set_times           (OS_Handle file, DateTime time);
+MD_API FileProperties os_properties_from_file     (OS_Handle file);
+MD_API OS_FileID      os_id_from_file             (OS_Handle file);
+MD_API B32            os_delete_file_at_path      (String8   path);
+MD_API B32            os_copy_file_path           (String8   dst,   String8 src);
+MD_API String8        os_full_path_from_path      (Arena*    arena, String8 path);
+MD_API B32            os_file_path_exists         (String8   path);
+MD_API FileProperties os_properties_from_file_path(String8   path);
+
+//- rjf: file maps
+MD_API OS_Handle os_file_map_open      (OS_AccessFlags flags, OS_Handle file);
+MD_API void      os_file_map_close     (OS_Handle map);
+MD_API void*     os_file_map_view_open (OS_Handle map, OS_AccessFlags flags, Rng1U64 range);
+MD_API void      os_file_map_view_close(OS_Handle map, void* ptr, Rng1U64 range);
+
+//- rjf: directory iteration
+MD_API OS_FileIter* os_file_iter_begin(Arena* arena, String8      path, OS_FileIterFlags flags);
+MD_API B32          os_file_iter_next (Arena* arena, OS_FileIter* iter, OS_FileInfo*     info_out);
+MD_API void         os_file_iter_end  (              OS_FileIter* iter);
+
+//- rjf: directory creation
+MD_API B32 os_make_directory(String8 path);
 
 ////////////////////////////////
 //~ rjf: Filesystem Helpers (Helpers, Implemented Once)
@@ -295,8 +312,8 @@ inline S64 os_file_id_compare(OS_FileID a, OS_FileID b) { S64 cmp = memory_compa
 //~ rjf: GUID Helpers (Helpers, Implemented Once)
 
 inline String8
-os_string_from_guid(Arena* arena, OS_Guid guid) {
-	String8 result = push_str8f(arena, 
+os_string_from_guid_alloc(AllocatorInfo ainfo, OS_Guid guid) {
+	String8 result = alloc_str8f(ainfo, 
 		"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
 		guid.data1,
 		guid.data2,
@@ -314,8 +331,8 @@ os_string_from_guid(Arena* arena, OS_Guid guid) {
 }
 
 inline String8
-os_string_from_guid(AllocatorInfo ainfo, OS_Guid guid) {
-	String8 result = alloc_str8f(ainfo, 
+os_string_from_guid(Arena* arena, OS_Guid guid) {
+	String8 result = push_str8f(arena, 
 		"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
 		guid.data1,
 		guid.data2,
@@ -363,37 +380,6 @@ MD_API void os_set_thread_name(String8 string);
 //~ rjf: @os_hooks Aborting (Implemented Per-OS)
 
 MD_API void os_abort(S32 exit_code);
-
-////////////////////////////////
-//~ rjf: @os_hooks File System (Implemented Per-OS)
-
-//- rjf: files
-MD_API OS_Handle      os_file_open                (OS_AccessFlags flags, String8 path);
-MD_API void           os_file_close               (OS_Handle file);
-MD_API U64            os_file_read                (OS_Handle file, Rng1U64 rng, void *out_data);
-MD_API U64            os_file_write               (OS_Handle file, Rng1U64 rng, void *data);
-MD_API B32            os_file_set_times           (OS_Handle file, DateTime time);
-MD_API FileProperties os_properties_from_file     (OS_Handle file);
-MD_API OS_FileID      os_id_from_file             (OS_Handle file);
-MD_API B32            os_delete_file_at_path      (String8   path);
-MD_API B32            os_copy_file_path           (String8   dst,   String8 src);
-MD_API String8        os_full_path_from_path      (Arena*    arena, String8 path);
-MD_API B32            os_file_path_exists         (String8   path);
-MD_API FileProperties os_properties_from_file_path(String8   path);
-
-//- rjf: file maps
-MD_API OS_Handle os_file_map_open      (OS_AccessFlags flags, OS_Handle file);
-MD_API void      os_file_map_close     (OS_Handle map);
-MD_API void*     os_file_map_view_open (OS_Handle map, OS_AccessFlags flags, Rng1U64 range);
-MD_API void      os_file_map_view_close(OS_Handle map, void* ptr, Rng1U64 range);
-
-//- rjf: directory iteration
-MD_API OS_FileIter* os_file_iter_begin(Arena* arena, String8      path, OS_FileIterFlags flags);
-MD_API B32          os_file_iter_next (Arena* arena, OS_FileIter* iter, OS_FileInfo*     info_out);
-MD_API void         os_file_iter_end  (              OS_FileIter* iter);
-
-//- rjf: directory creation
-MD_API B32 os_make_directory(String8 path);
 
 ////////////////////////////////
 //~ rjf: @os_hooks Shared Memory (Implemented Per-OS)

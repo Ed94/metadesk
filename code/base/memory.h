@@ -737,16 +737,6 @@ sll__queue_pop_nz(void* nil, void** f, void* f_next, void** l)
 ////////////////////////////////
 //~ rjf: Misc. Helper Macros
 
-#ifndef stringify
-#define stringify_(S) #S
-#define stringify(S)  stringify_(S)
-#endif
-
-#ifndef glue
-#define glue_(A,B) A ## B
-#define glue(A,B)  glue_(A,B)
-#endif
-
 #ifndef array_count
 #define array_count(a) (sizeof(a) / sizeof((a)[0]))
 #endif

@@ -1,5 +1,6 @@
 # TODO(Ed): Need to eventually utilize the original build scripts
 # For now just using something I'm used to for getting the library working..
+clear-host
 
 $misc = join-path $PSScriptRoot 'helpers/misc.ps1'
 . $misc
@@ -102,7 +103,9 @@ if ($code_sanity)
 	write-host "Building code/metadesk.c (sanity compile) with $vendor"
 
 	$compiler_args = @()
-	# $compiler_args += 
+	$compiler_args += $flag_all_c
+	$compiler_args += $flag_updated_cpp_macro
+	$compiler_args += $flag_c11
 
 	$linker_args = @()
 	$linker_args += $flag_link_win_subsystem_console
@@ -110,8 +113,8 @@ if ($code_sanity)
 	$path_base = join-path $path_code base
 
 	$includes   = @( $path_base )
-	$unit       = join-path $path_base  'base.c'
-	$executable = join-path $path_build 'base.lib'
+	$unit       = join-path $path_code  'metadesk.c'
+	$executable = join-path $path_build 'metadesk.lib'
 
 	$result = build-simple $path_build $includes $compiler_args $linker_args $unit $executable
 }

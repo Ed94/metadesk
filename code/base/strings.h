@@ -154,7 +154,7 @@ struct FuzzyMatchRangeList
 
 inline U8
 integer_symbols(U8 value) {
-	read_only local_persist thread_local
+	read_only local_persist
 	U8 lookup_table[16] = {
 		'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F',
 	};
@@ -163,7 +163,7 @@ integer_symbols(U8 value) {
 
 inline U8
 base64(U8 value) {
-	read_only local_persist thread_local
+	read_only local_persist
 	U8 lookup_table[64] = {
 		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
@@ -177,7 +177,7 @@ base64(U8 value) {
 
 inline U8
 base64_reverse(U8 value) {
-	read_only local_persist thread_local
+	read_only local_persist
 	U8 lookup_table[128] = {
 		0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 		0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
@@ -194,7 +194,7 @@ base64_reverse(U8 value) {
 // NOTE(allen): Includes reverses for uppercase and lowercase hex.
 inline U8
 integer_symbol_reverse(U8 value) {
-	read_only local_persist thread_local
+	read_only local_persist
 	lookup_table[128] = {
 		0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 		0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
@@ -311,33 +311,34 @@ str8_cstring_capped_reverse(void* raw_start, void* raw_cap)
 }
 
 ////////////////////////////////
-//~ rjf: String Stylization
+//~ rjf: String Formatting & Copying
 
-inline String8 upper_from_str8      (Arena* arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
-inline String8 lower_from_str8      (Arena* arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
-inline String8 backslashed_from_str8(Arena *arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
+MD_API String8 push_str8_cat (Arena* arena, String8 s1, String8 s2);
+MD_API String8 push_str8_copy(Arena* arena, String8 s);
+MD_API String8 push_str8fv   (Arena* arena, char* fmt, va_list args);
+       String8 push_str8f    (Arena* arena, char* fmt, ...);
 
-inline String8 upper_from_str8_alloc      (AllocatorInfo ainfo, String8 string) { string = alloc_str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
-inline String8 lower_from_str8_alloc      (AllocatorInfo ainfo, String8 string) { string = alloc_str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
-inline String8 backslashed_from_str8_alloc(AllocatorInfo ainfo, String8 string) { string = alloc_str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
+MD_API String8 alloc_str8_cat (AllocatorInfo ainfo, String8 s1, String8 s2);
+MD_API String8 alloc_str8_copy(AllocatorInfo ainfo, String8 s);
+MD_API String8 alloc_str8fv   (AllocatorInfo ainfo, char* fmt, va_list args);
+       String8 alloc_str8f    (AllocatorInfo ainfo, char* fmt, ...);
 
-////////////////////////////////
-//~ rjf: String Matching
+inline String8
+push_str8f(Arena *arena, char *fmt, ...){
+	va_list args;
+	va_start(args, fmt);
+	String8 result = push_str8fv(arena, fmt, args);
+	va_end(args);
+	return(result);
+}
 
-#define str8_match_lit(a_lit, b, flags)   str8_match(str8_lit(a_lit), (b), (flags))
-#define str8_match_cstr(a_cstr, b, flags) str8_match(str8_cstring(a_cstr), (b), (flags))
-#define str8_ends_with_lit(string, end_lit, flags) str8_ends_with((string), str8_lit(end_lit), (flags))
-
-MD_API B32 str8_match              (String8 a, String8 b,                          StringMatchFlags flags);
-MD_API U64 str8_find_needle        (String8 string, U64 start_pos, String8 needle, StringMatchFlags flags);
-MD_API U64 str8_find_needle_reverse(String8 string, U64 start_pos, String8 needle, StringMatchFlags flags);
-       B32 str8_ends_with          (String8 string, String8 end,                   StringMatchFlags flags);
-
-inline B32
-str8_ends_with(String8 string, String8 end, StringMatchFlags flags) {
-	String8 postfix  = str8_postfix(string, end.size);
-	B32     is_match = str8_match(end, postfix, flags);
-	return  is_match;
+inline String8
+alloc_str8f(AllocatorInfo ainfo, char *fmt, ...){
+	va_list args;
+	va_start(args, fmt);
+	String8 result = alloc_str8fv(ainfo, fmt, args);
+	va_end(args);
+	return(result);
 }
 
 ////////////////////////////////
@@ -390,34 +391,33 @@ str8_chop(String8 str, U64 amt){
 }
 
 ////////////////////////////////
-//~ rjf: String Formatting & Copying
+//~ rjf: String Stylization
 
-MD_API String8 push_str8_cat (Arena* arena, String8 s1, String8 s2);
-MD_API String8 push_str8_copy(Arena* arena, String8 s);
-MD_API String8 push_str8fv   (Arena* arena, char* fmt, va_list args);
-       String8 push_str8f    (Arena* arena, char* fmt, ...);
+inline String8 upper_from_str8      (Arena* arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
+inline String8 lower_from_str8      (Arena* arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
+inline String8 backslashed_from_str8(Arena *arena, String8 string) { string = push_str8_copy(arena, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
 
-MD_API String8 alloc_str8_cat (AllocatorInfo ainfo, String8 s1, String8 s2);
-MD_API String8 alloc_str8_copy(AllocatorInfo ainfo, String8 s);
-MD_API String8 alloc_str8fv   (AllocatorInfo ainfo, char* fmt, va_list args);
-       String8 alloc_str8f    (AllocatorInfo ainfo, char* fmt, ...);
+inline String8 upper_from_str8_alloc      (AllocatorInfo ainfo, String8 string) { string = alloc_str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_upper(string.str[idx]);                          } return string; }
+inline String8 lower_from_str8_alloc      (AllocatorInfo ainfo, String8 string) { string = alloc_str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
+inline String8 backslashed_from_str8_alloc(AllocatorInfo ainfo, String8 string) { string = alloc_str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
 
-inline String8
-push_str8f(Arena *arena, char *fmt, ...){
-	va_list args;
-	va_start(args, fmt);
-	String8 result = push_str8fv(arena, fmt, args);
-	va_end(args);
-	return(result);
-}
+////////////////////////////////
+//~ rjf: String Matching
 
-inline String8
-alloc_str8f(AllocatorInfo ainfo, char *fmt, ...){
-	va_list args;
-	va_start(args, fmt);
-	String8 result = alloc_str8fv(ainfo, fmt, args);
-	va_end(args);
-	return(result);
+#define str8_match_lit(a_lit, b, flags)   str8_match(str8_lit(a_lit), (b), (flags))
+#define str8_match_cstr(a_cstr, b, flags) str8_match(str8_cstring(a_cstr), (b), (flags))
+#define str8_ends_with_lit(string, end_lit, flags) str8_ends_with((string), str8_lit(end_lit), (flags))
+
+MD_API B32 str8_match              (String8 a, String8 b,                          StringMatchFlags flags);
+MD_API U64 str8_find_needle        (String8 string, U64 start_pos, String8 needle, StringMatchFlags flags);
+MD_API U64 str8_find_needle_reverse(String8 string, U64 start_pos, String8 needle, StringMatchFlags flags);
+       B32 str8_ends_with          (String8 string, String8 end,                   StringMatchFlags flags);
+
+inline B32
+str8_ends_with(String8 string, String8 end, StringMatchFlags flags) {
+	String8 postfix  = str8_postfix(string, end.size);
+	B32     is_match = str8_match(end, postfix, flags);
+	return  is_match;
 }
 
 ////////////////////////////////
@@ -699,7 +699,7 @@ str8_split_by_string_chars(Arena *arena, String8 string, String8 split_chars, St
 }
 
 inline String8List
-str8_split_by_string_chars(AllocatorInfo ainfo, String8 string, String8 split_chars, StringSplitFlags flags) {
+str8_split_by_string_chars_alloc(AllocatorInfo ainfo, String8 string, String8 split_chars, StringSplitFlags flags) {
 	String8List list = str8_split_alloc(ainfo, string, split_chars.str, split_chars.size, flags);
 	return list;
 }
@@ -738,7 +738,7 @@ str8_list_from_flags(Arena* arena, String8List* list, U32 flags, String8* flag_s
 		}
 	}
 #else
-  return str8_list_from_flags_alloc(arena_allocator(arena), list, flags, flag_string_table, flag_string_count);
+	str8_list_from_flags_alloc(arena_allocator(arena), list, flags, flag_string_table, flag_string_count);
 #endif
 }
 
@@ -755,6 +755,25 @@ str8_list_from_flags_alloc(AllocatorInfo ainfo, String8List* list, U32 flags, St
 ////////////////////////////////
 //~ rjf; String Arrays
 
+inline String8Array
+str8_array_from_list_alloc(AllocatorInfo ainfo, String8List* list) {
+	String8Array array;
+	array.count = list->node_count;
+	array.v     = alloc_array_no_zero(ainfo, String8, array.count);
+	U64 idx = 0;
+	for(String8Node *n = list->first; n != 0; n = n->next, idx += 1) {
+		array.v[idx] = n->string;
+	}
+	return array;
+}
+
+inline String8Array
+str8_array_reserve_alloc(AllocatorInfo ainfo, U64 count) {
+	String8Array arr;
+	arr.count = 0;
+	arr.v     = alloc_array(ainfo, String8, count);
+	return arr;
+}
 
 inline String8Array
 str8_array_from_list(Arena* arena, String8List* list) {
@@ -784,26 +803,6 @@ str8_array_reserve(Arena *arena, U64 count) {
 #endif
 }
 
-inline String8Array
-str8_array_from_list_alloc(AllocatorInfo ainfo, String8List* list) {
-	String8Array array;
-	array.count = list->node_count;
-	array.v     = alloc_array_no_zero(ainfo, String8, array.count);
-	U64 idx = 0;
-	for(String8Node *n = list->first; n != 0; n = n->next, idx += 1) {
-		array.v[idx] = n->string;
-	}
-	return array;
-}
-
-inline String8Array
-str8_array_reserve_alloc(AllocatorInfo ainfo, U64 count) {
-	String8Array arr;
-	arr.count = 0;
-	arr.v     = alloc_array(ainfo, String8, count);
-	return arr;
-}
-
 ////////////////////////////////
 //~ rjf: String Path Helpers
 
@@ -825,7 +824,7 @@ MD_API String8     str8_path_list_join_by_style_alloc  (AllocatorInfo ainfo, Str
 inline U8
 utf8_class(U8 value)
 {
-	read_only local_persist thread_local 
+	read_only local_persist
 	U8 lookup_table[32] = {
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,2,2,2,2,3,3,4,5,
 	};
@@ -937,7 +936,8 @@ string_from_architecture(Arch arch) {
 //~ rjf: Time Types -> String
 
 inline String8
-string_from_week_day(WeekDay week_day) {
+string_from_week_day(WeekDay week_day)
+{
 	local_persist String8 strings[] = {
 		str8_lit_comp("Sun"),
 		str8_lit_comp("Mon"),
@@ -955,7 +955,8 @@ string_from_week_day(WeekDay week_day) {
 }
 
 inline String8
-string_from_month(Month month) {
+string_from_month(Month month) 
+{
 	local_persist String8 strings[] = {
 		str8_lit_comp("Jan"),
 		str8_lit_comp("Feb"),
@@ -1064,6 +1065,61 @@ str8_serial_write_to_dst(String8List* srl, void* out) {
 	}
 }
 
+
+       void    str8_serial_begin_alloc    (AllocatorInfo ainfo, String8List* srl);
+       String8 str8_serial_end_alloc      (AllocatorInfo ainfo, String8List* srl);
+MD_API U64     str8_serial_alloc_align    (AllocatorInfo ainfo, String8List* srl, U64 align);
+MD_API void*   str8_serial_alloc_size     (AllocatorInfo ainfo, String8List* srl, U64 size);
+       void*   str8_serial_alloc_data     (AllocatorInfo ainfo, String8List* srl, void* data, U64 size);
+       void    str8_serial_alloc_data_list(AllocatorInfo ainfo, String8List* srl, String8Node* first);
+MD_API void    str8_serial_alloc_u64      (AllocatorInfo ainfo, String8List* srl, U64 x);
+MD_API void    str8_serial_alloc_u32      (AllocatorInfo ainfo, String8List* srl, U32 x);
+       void    str8_serial_alloc_u16      (AllocatorInfo ainfo, String8List* srl, U16 x);
+       void    str8_serial_alloc_u8       (AllocatorInfo ainfo, String8List* srl, U8 x);
+       void    str8_serial_alloc_cstr     (AllocatorInfo ainfo, String8List* srl, String8 str);
+       void    str8_serial_alloc_string   (AllocatorInfo ainfo, String8List* srl, String8 str);
+
+inline void 
+str8_serial_begin_alloc(AllocatorInfo ainfo, String8List* srl) {
+	String8Node* node = alloc_array(ainfo, String8Node, 1);
+	node->string.str = alloc_array_no_zero(ainfo, U8, 0);
+	srl->first       = srl->last = node;
+	srl->node_count  = 1;
+	srl->total_size  = 0;
+}
+
+inline String8
+str8_serial_end_alloc(AllocatorInfo ainfo, String8List* srl) {
+	U64 size = srl->total_size;
+	U8* out  = alloc_array_no_zero(ainfo, U8, size);
+	str8_serial_write_to_dst(srl, out);
+	String8 result = str8(out, size);
+	return  result;
+}
+
+inline void*
+str8_serial_alloc_data(AllocatorInfo ainfo, String8List* srl, void* data, U64 size){
+	void* result = str8_serial_alloc_size(ainfo, srl, size);
+	if(result != 0) {
+		memory_copy(result, data, size);
+	}
+	return result;
+}
+
+inline void
+str8_serial_alloc_data_list(AllocatorInfo ainfo, String8List* srl, String8Node* first){
+	for (String8Node* node = first; node != 0; node = node->next) {
+		str8_serial_alloc_data(ainfo, srl, node->string.str, node->string.size);
+	}
+}
+
+inline void str8_serial_alloc_u16(AllocatorInfo ainfo, String8List* srl, U16 x) { str8_serial_alloc_data(ainfo, srl, &x, sizeof(x)); }
+inline void str8_serial_alloc_u8 (AllocatorInfo ainfo, String8List* srl, U8  x) { str8_serial_alloc_data(ainfo, srl, &x, sizeof(x)); }
+
+inline void str8_serial_alloc_cstr  (AllocatorInfo ainfo, String8List* srl, String8 str) { str8_serial_alloc_data(ainfo, srl, str.str, str.size);  str8_serial_alloc_u8(ainfo, srl, 0); } 
+inline void str8_serial_alloc_string(AllocatorInfo ainfo, String8List* srl, String8 str) { str8_serial_alloc_data(ainfo, srl, str.str, str.size); }
+
+
        void    str8_serial_begin         (Arena* arena, String8List* srl);
        String8 str8_serial_end           (Arena* arena, String8List* srl);
 MD_API U64     str8_serial_push_align    (Arena* arena, String8List* srl, U64 align);
@@ -1078,12 +1134,16 @@ MD_API void    str8_serial_push_u32      (Arena* arena, String8List* srl, U32 x)
        void    str8_serial_push_string   (Arena* arena, String8List* srl, String8 str);
 
 inline void 
-str8_serial_begin(Arena* arena, String8List* srl){
+str8_serial_begin(Arena* arena, String8List* srl) {
+#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
 	String8Node* node = push_array(arena, String8Node, 1);
 	node->string.str = push_array_no_zero(arena, U8, 0);
 	srl->first       = srl->last = node;
 	srl->node_count  = 1;
 	srl->total_size  = 0;
+#else
+	str8_serial_begin_alloc(arena_allocator(arena), srl);
+#endif
 }
 
 inline String8
@@ -1116,59 +1176,6 @@ inline void str8_serial_push_u8 (Arena* arena, String8List* srl, U8  x) { str8_s
 
 inline void str8_serial_push_cstr  (Arena* arena, String8List* srl, String8 str) { str8_serial_push_data(arena, srl, str.str, str.size);  str8_serial_push_u8(arena, srl, 0); } 
 inline void str8_serial_push_string(Arena* arena, String8List* srl, String8 str) { str8_serial_push_data(arena, srl, str.str, str.size); }
-
-       void    str8_serial_begin_alloc    (AllocatorInfo ainfo, String8List* srl);
-       String8 str8_serial_end_alloc      (AllocatorInfo ainfo, String8List* srl);
-MD_API U64     str8_serial_alloc_align    (AllocatorInfo ainfo, String8List* srl, U64 align);
-MD_API void*   str8_serial_alloc_size     (AllocatorInfo ainfo, String8List* srl, U64 size);
-       void*   str8_serial_alloc_data     (AllocatorInfo ainfo, String8List* srl, void* data, U64 size);
-       void    str8_serial_alloc_data_list(AllocatorInfo ainfo, String8List* srl, String8Node* first);
-MD_API void    str8_serial_alloc_u64      (AllocatorInfo ainfo, String8List* srl, U64 x);
-MD_API void    str8_serial_alloc_u32      (AllocatorInfo ainfo, String8List* srl, U32 x);
-       void    str8_serial_alloc_u16      (AllocatorInfo ainfo, String8List* srl, U16 x);
-       void    str8_serial_alloc_u8       (AllocatorInfo ainfo, String8List* srl, U8 x);
-       void    str8_serial_alloc_cstr     (AllocatorInfo ainfo, String8List* srl, String8 str);
-       void    str8_serial_alloc_string   (AllocatorInfo ainfo, String8List* srl, String8 str);
-
-inline void 
-str8_serial_begin(AllocatorInfo ainfo, String8List* srl) {
-	String8Node* node = alloc_array(ainfo, String8Node, 1);
-	node->string.str = alloc_array_no_zero(ainfo, U8, 0);
-	srl->first       = srl->last = node;
-	srl->node_count  = 1;
-	srl->total_size  = 0;
-}
-
-inline String8
-str8_serial_end(AllocatorInfo ainfo, String8List* srl) {
-	U64 size = srl->total_size;
-	U8* out  = alloc_array_no_zero(ainfo, U8, size);
-	str8_serial_write_to_dst(srl, out);
-	String8 result = str8(out, size);
-	return  result;
-}
-
-inline void*
-str8_serial_push_data(AllocatorInfo ainfo, String8List* srl, void* data, U64 size){
-	void* result = str8_serial_alloc_size(ainfo, srl, size);
-	if(result != 0) {
-		memory_copy(result, data, size);
-	}
-	return result;
-}
-
-inline void
-str8_serial_push_data_list(AllocatorInfo ainfo, String8List* srl, String8Node* first){
-	for (String8Node* node = first; node != 0; node = node->next) {
-		str8_serial_alloc_data(ainfo, srl, node->string.str, node->string.size);
-	}
-}
-
-inline void str8_serial_alloc_u16(AllocatorInfo ainfo, String8List* srl, U16 x) { str8_serial_alloc_data(ainfo, srl, &x, sizeof(x)); }
-inline void str8_serial_alloc_u8 (AllocatorInfo ainfo, String8List* srl, U8  x) { str8_serial_alloc_data(ainfo, srl, &x, sizeof(x)); }
-
-inline void str8_serial_push_cstr  (AllocatorInfo ainfo, String8List* srl, String8 str) { str8_serial_alloc_data(ainfo, srl, str.str, str.size);  str8_serial_alloc_u8(ainfo, srl, 0); } 
-inline void str8_serial_push_string(AllocatorInfo ainfo, String8List* srl, String8 str) { str8_serial_alloc_data(ainfo, srl, str.str, str.size); }
 
 ////////////////////////////////
 //~ rjf: Deserialization Helpers

@@ -1,38 +1,13 @@
 #ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
-#	include "base/base.h"
+#	include "base/strings.h"
+#	include "base/thread_context.h"
+#	include "os.h"
+#	include "os_win32_includes.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
-
-////////////////////////////////
-//~ rjf: Includes / Libraries
-
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#define WIN32_LEAN_AND_MEAN
-#define WIN32_MEAN_AND_LEAN
-#define VC_EXTRALEAN
-#include <windows.h>
-#include <windowsx.h>
-#include <timeapi.h>
-#include <tlhelp32.h>
-#include <Shlobj.h>
-#include <processthreadsapi.h>
-#pragma comment(lib, "user32")
-#pragma comment(lib, "winmm")
-#pragma comment(lib, "shell32")
-#pragma comment(lib, "advapi32")
-#pragma comment(lib, "rpcrt4")
-#pragma comment(lib, "shlwapi")
-#pragma comment(lib, "comctl32")
-#pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"") // this is required for loading correct comctl32 dll file
-#undef NOMINMAX
-#undef WIN32_LEAN_AND_MEAN
-#undef WIN32_MEAN_AND_LEAN
-#undef VC_EXTRALEAN
 
 ////////////////////////////////
 //~ rjf: File Iterator Types
@@ -108,26 +83,6 @@ struct OS_W32_State
 
 MD_API extern OS_W32_State os_w32_state = {0};
 
-////////////////////////////////
-//~ rjf: File Info Conversion Helpers
-
-inline FilePropertyFlags
-os_w32_file_property_flags_from_dwFileAttributes(DWORD dwFileAttributes)
-{
-	FilePropertyFlags flags = 0;
-	if (dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) { 
-		flags |= FilePropertyFlag_IsFolder;
-	}
-	return flags;
-}
-
-inline void
-os_w32_file_properties_from_attribute_data(FileProperties* properties, WIN32_FILE_ATTRIBUTE_DATA* attributes) {
-	properties->size = compose_64bit(attributes->nFileSizeHigh, attributes->nFileSizeLow);
-	os_w32_dense_time_from_file_time(&properties->created, &attributes->ftCreationTime);
-	os_w32_dense_time_from_file_time(&properties->modified, &attributes->ftLastWriteTime);
-	properties->flags = os_w32_file_property_flags_from_dwFileAttributes(attributes->dwFileAttributes);
-}
 
 ////////////////////////////////
 //~ rjf: Time Conversion Helpers
@@ -174,6 +129,27 @@ os_w32_dense_time_from_file_time(DenseTime* out, FILETIME* in) {
 }
 
 ////////////////////////////////
+//~ rjf: File Info Conversion Helpers
+
+inline FilePropertyFlags
+os_w32_file_property_flags_from_dwFileAttributes(DWORD dwFileAttributes)
+{
+	FilePropertyFlags flags = 0;
+	if (dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) { 
+		flags |= FilePropertyFlag_IsFolder;
+	}
+	return flags;
+}
+
+inline void
+os_w32_file_properties_from_attribute_data(FileProperties* properties, WIN32_FILE_ATTRIBUTE_DATA* attributes) {
+	properties->size = compose_64bit(attributes->nFileSizeHigh, attributes->nFileSizeLow);
+	os_w32_dense_time_from_file_time(&properties->created, &attributes->ftCreationTime);
+	os_w32_dense_time_from_file_time(&properties->modified, &attributes->ftLastWriteTime);
+	properties->flags = os_w32_file_property_flags_from_dwFileAttributes(attributes->dwFileAttributes);
+}
+
+////////////////////////////////
 //~ rjf: Entity Functions
 
 MD_API OS_W32_Entity* os_w32_entity_alloc  (OS_W32_EntityKind kind);
@@ -188,21 +164,7 @@ MD_API DWORD os_w32_thread_entry_point(void* ptr);
 //~ rjf: @os_hooks System/Process Info (Implemented Per-OS)
 
 inline String8
-os_get_current_path(Arena* arena) {
-	String8 name;
-	TempArena scratch = scratch_begin(&arena, 1);
-	{
-		DWORD   length  = GetCurrentDirectoryW(0, 0);
-		U16*    memory  = push_array_no_zero(scratch.arena, U16, length + 1);
-				length  = GetCurrentDirectoryW(length + 1, (WCHAR*)memory);
-		        name    = str8_from_16(arena, str16(memory, length));
-	}
-	scratch_end(scratch);
-	return name;
-}
-
-inline String8
-os_get_current_path(AllocatorInfo ainfo) {
+os_get_current_path_alloc(AllocatorInfo ainfo) {
 	String8 name;
 	// TODO(Ed): Review
 	TempArena scratch = scratch_begin(0, 0);
@@ -211,6 +173,20 @@ os_get_current_path(AllocatorInfo ainfo) {
 		U16*    memory  = push_array_no_zero(scratch.arena, U16, length + 1);
 				length  = GetCurrentDirectoryW(length + 1, (WCHAR*)memory);
 		        name    = str8_from_16_alloc(ainfo, str16(memory, length));
+	}
+	scratch_end(scratch);
+	return name;
+}
+
+inline String8
+os_get_current_path(Arena* arena) {
+	String8 name;
+	TempArena scratch = scratch_begin(&arena, 1);
+	{
+		DWORD   length  = GetCurrentDirectoryW(0, 0);
+		U16*    memory  = push_array_no_zero(scratch.arena, U16, length + 1);
+				length  = GetCurrentDirectoryW(length + 1, (WCHAR*)memory);
+		        name    = str8_from_16(arena, str16(memory, length));
 	}
 	scratch_end(scratch);
 	return name;
@@ -240,7 +216,7 @@ os_reserve_large(U64 size) {
 	return result;
 }
 
-inline B32 os_commit_large(void *ptr, U64 size) { return 1; } 
+inline B32 os_commit_large(void* ptr, U64 size) { return 1; } 
 
 ////////////////////////////////
 //~ rjf: @os_hooks Thread Info (Implemented Per-OS)

@@ -2387,7 +2387,7 @@ MD_ParseNodeSet(MD_Arena *arena, MD_String8 string, MD_u64 offset, Node *parent,
         case MD_ParseSetRule_EndOnDelimiter:
         {
             MD_u64 opener_check_off = off;
-            opener_check_off += MD_LexAdvanceFromSkips(MD_S8Skip(string, opener_check_off), TokenGroup_Irregular);
+            opener_check_off += MD_LexAdvanceFromSkips(MD_S8Skip(string, opener_check_off), TokenFlagGroup_Irregular);
             initial_token = MD_TokenFromString(MD_S8Skip(string, opener_check_off));
             if(initial_token.kind == MD_TokenKind_Reserved)
             {
@@ -2486,7 +2486,7 @@ MD_ParseNodeSet(MD_Arena *arena, MD_String8 string, MD_u64 offset, Node *parent,
                 
                 //- rjf: check separators and possible braces from higher parents
                 {
-                    closer_check_off += MD_LexAdvanceFromSkips(MD_S8Skip(string, off), TokenGroup_Irregular);
+                    closer_check_off += MD_LexAdvanceFromSkips(MD_S8Skip(string, off), TokenFlagGroup_Irregular);
                     Token potential_closer = MD_TokenFromString(MD_S8Skip(string, closer_check_off));
                     if(potential_closer.kind == MD_TokenKind_Reserved)
                     {
@@ -2510,7 +2510,7 @@ MD_ParseNodeSet(MD_Arena *arena, MD_String8 string, MD_u64 offset, Node *parent,
             if(!close_with_separator && !parse_all)
             {
                 MD_u64 closer_check_off = off;
-                closer_check_off += MD_LexAdvanceFromSkips(MD_S8Skip(string, off), TokenGroup_Irregular);
+                closer_check_off += MD_LexAdvanceFromSkips(MD_S8Skip(string, off), TokenFlagGroup_Irregular);
                 Token potential_closer = MD_TokenFromString(MD_S8Skip(string, closer_check_off));
                 if(potential_closer.kind == MD_TokenKind_Reserved)
                 {
@@ -2574,7 +2574,7 @@ MD_ParseNodeSet(MD_Arena *arena, MD_String8 string, MD_u64 offset, Node *parent,
             NodeFlags trailing_separator_flags = 0;
             if(!close_with_separator)
             {
-                off += MD_LexAdvanceFromSkips(MD_S8Skip(string, off), TokenGroup_Irregular);
+                off += MD_LexAdvanceFromSkips(MD_S8Skip(string, off), TokenFlagGroup_Irregular);
                 Token trailing_separator = MD_TokenFromString(MD_S8Skip(string, off));
                 if (trailing_separator.kind == MD_TokenKind_Reserved)
                 {
@@ -2659,7 +2659,7 @@ MD_ParseOneNode(MD_Arena *arena, MD_String8 string, MD_u64 offset)
                     MD_MemoryZeroStruct(&comment_token);
                 }
             }
-            else if((token.kind & TokenGroup_Whitespace) != 0)
+            else if((token.kind & TokenFlagGroup_Whitespace) != 0)
             {
                 off += token.raw_string.size;
             }
@@ -2678,7 +2678,7 @@ MD_ParseOneNode(MD_Arena *arena, MD_String8 string, MD_u64 offset)
         for(;off < string.size;)
         {
             //- rjf: parse @ symbol, signifying start of tag
-            off += MD_LexAdvanceFromSkips(MD_S8Skip(string, off), TokenGroup_Irregular);
+            off += MD_LexAdvanceFromSkips(MD_S8Skip(string, off), TokenFlagGroup_Irregular);
             Token next_token = MD_TokenFromString(MD_S8Skip(string, off));
             if(next_token.kind != MD_TokenKind_Reserved ||
                next_token.string.str[0] != '@')
@@ -2690,7 +2690,7 @@ MD_ParseOneNode(MD_Arena *arena, MD_String8 string, MD_u64 offset)
             //- rjf: parse string of tag node
             Token name = MD_TokenFromString(MD_S8Skip(string, off));
             MD_u64 name_off = off;
-            if((name.kind & TokenGroup_Label) == 0)
+            if((name.kind & TokenFlagGroup_Label) == 0)
             {
                 // NOTE(rjf): @error Improper token for tag string
                 MD_String8 error_str = MD_S8Fmt(arena, "\"%.*s\" is not a proper tag label",
@@ -2726,7 +2726,7 @@ MD_ParseOneNode(MD_Arena *arena, MD_String8 string, MD_u64 offset)
     retry:;
     {
         //- rjf: try to parse an unnamed set
-        off += MD_LexAdvanceFromSkips(MD_S8Skip(string, off), TokenGroup_Irregular);
+        off += MD_LexAdvanceFromSkips(MD_S8Skip(string, off), TokenFlagGroup_Irregular);
         Token unnamed_set_opener = MD_TokenFromString(MD_S8Skip(string, off));
         if(unnamed_set_opener.kind == MD_TokenKind_Reserved)
         {
@@ -2763,9 +2763,9 @@ MD_ParseOneNode(MD_Arena *arena, MD_String8 string, MD_u64 offset)
         }
         
         //- rjf: try to parse regular node, with/without children
-        off += MD_LexAdvanceFromSkips(MD_S8Skip(string, off), TokenGroup_Irregular);
+        off += MD_LexAdvanceFromSkips(MD_S8Skip(string, off), TokenFlagGroup_Irregular);
         Token label_name = MD_TokenFromString(MD_S8Skip(string, off));
-        if((label_name.kind & TokenGroup_Label) != 0)
+        if((label_name.kind & TokenFlagGroup_Label) != 0)
         {
             off += label_name.raw_string.size;
             parsed_node = MD_MakeNode(arena, NodeKind_Main, label_name.string, label_name.raw_string,
@@ -2774,7 +2774,7 @@ MD_ParseOneNode(MD_Arena *arena, MD_String8 string, MD_u64 offset)
             
             //- rjf: try to parse children for this node
             MD_u64 colon_check_off = off;
-            colon_check_off += MD_LexAdvanceFromSkips(MD_S8Skip(string, colon_check_off), TokenGroup_Irregular);
+            colon_check_off += MD_LexAdvanceFromSkips(MD_S8Skip(string, colon_check_off), TokenFlagGroup_Irregular);
             Token colon = MD_TokenFromString(MD_S8Skip(string, colon_check_off));
             if(colon.kind == MD_TokenKind_Reserved &&
                colon.string.str[0] == ':')
@@ -2792,7 +2792,7 @@ MD_ParseOneNode(MD_Arena *arena, MD_String8 string, MD_u64 offset)
         
         //- rjf: collect bad token
         Token bad_token = MD_TokenFromString(MD_S8Skip(string, off));
-        if(bad_token.kind & TokenGroup_Error)
+        if(bad_token.kind & TokenFlagGroup_Error)
         {
             off += bad_token.raw_string.size;
             
@@ -2859,7 +2859,7 @@ MD_ParseOneNode(MD_Arena *arena, MD_String8 string, MD_u64 offset)
             {
                 break;
             }
-            else if((token.kind & TokenGroup_Whitespace) != 0)
+            else if((token.kind & TokenFlagGroup_Whitespace) != 0)
             {
                 off += token.raw_string.size;
             }

@@ -6,7 +6,8 @@
 ////////////////////////////////
 //~ allen: Time
 
-typedef enum WeekDay
+typedef enum WeekDay WeekDay;
+enum Weekday
 {
 	WeekDay_Sun,
 	WeekDay_Mon,
@@ -16,10 +17,10 @@ typedef enum WeekDay
 	WeekDay_Fri,
 	WeekDay_Sat,
 	WeekDay_COUNT,
-}
-WeekDay;
+};
 
-typedef enum Month
+typedef enum Month Month;
+enum Month
 {
 	Month_Jan,
 	Month_Feb,
@@ -34,8 +35,7 @@ typedef enum Month
 	Month_Nov,
 	Month_Dec,
 	Month_COUNT,
-}
-Month;
+};
 
 typedef struct DateTime DateTime;
 struct DateTime

@@ -737,12 +737,12 @@ The @code node_count and @code total_size are automatically maintained by the he
 @see(MD_Token)
 @see(MD_TokenFromString)
 @prefix(MD_TokenGroup)
-@flags MD_TokenGroups:
+@flags MD_TokenFlagGroups:
 {
     Comment: `MD_TokenKind_Comment`,
     Whitespace: `(MD_TokenKind_Whitespace|MD_TokenKind_Newline)`,
-    Irregular: `(MD_TokenGroup_Comment|MD_TokenGroup_Whitespace)`,
-    Regular: `~MD_TokenGroup_Irregular`,
+    Irregular: `(MD_TokenFlagGroup_Comment|MD_TokenFlagGroup_Whitespace)`,
+    Regular: `~MD_TokenFlagGroup_Irregular`,
     Label: `(MD_TokenKind_Identifier|MD_TokenKind_Numeric|MD_TokenKind_StringLiteral|MD_TokenKind_Symbol)`,
     Error: `(MD_TokenKind_BrokenComment|MD_TokenKind_BrokenStringLiteral|MD_TokenKind_BadCharacter)`,
 }

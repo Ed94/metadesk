@@ -9,9 +9,9 @@
 ////////////////////////////////
 //~ rjf: Globals/Thread-Locals
 
-MD_API_C thread_static Log *log_active;
+MD_API_C thread_static Log* log_active;
 #if !BUILD_SUPPLEMENTARY_UNIT
-MD_API_C thread_static Log *log_active = 0;
+MD_API_C thread_static Log* log_active = 0;
 #endif
 
 ////////////////////////////////
@@ -53,6 +53,16 @@ log_msgf(LogMsgKind kind, char *fmt, ...) {
 
 ////////////////////////////////
 //~ rjf: Log Scopes
+
+void
+log_scope_begin(void) {
+	if (log_active != 0) {
+		U64       pos   = arena_pos(log_active->arena);
+		LogScope* scope = push_array(log_active->arena, LogScope, 1);
+		scope->pos = pos;
+		sll_stack_push(log_active->top_scope, scope);
+	}
+}
 
 LogScopeResult
 log_scope_end(Arena *arena)

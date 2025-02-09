@@ -35,7 +35,7 @@ arena_alloc_(ArenaParams* params)
 //- rjf: arena push/pop core functions
 
 void*
-arena_push(Arena *arena, U64 size, U64 align)
+arena_push(Arena *arena, SSIZE size, SSIZE align)
 {
 	SPTR const header_size = align_pow2(size_of(Arena), MD_DEFAULT_MEMORY_ALIGNMENT);
 

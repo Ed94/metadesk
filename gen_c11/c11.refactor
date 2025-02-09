@@ -1018,8 +1018,8 @@ word MsgList, MD_MsgList
 
 word      TokenFlags,     MD_MsgFlags
 namespace TokenFlag_,     MD_TokenFlag_
-word      TokenGroups,    MD_TokenGroups
-namespace TokenGroup_,    MD_TokenGroup_
+word      TokenFlagGroups,    MD_TokenFlagGroups
+namespace TokenFlagGroup_,    MD_TokenFlagGroup_
 word      Token,          MD_Token
 word      TokenChunkNode, MD_TokenChunkNode
 word      TokenChunkList, MD_TokenChunkList

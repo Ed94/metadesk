@@ -240,7 +240,7 @@ struct Context
 	OS_Context os_ctx;
 
 	// This skips the os_init process but that means the user is expected to setup
-	// the thread context for the process
+	// the thread context's arenas for the process
 	B32 dont_init_os;
 };
 

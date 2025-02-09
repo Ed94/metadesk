@@ -37,7 +37,6 @@ void
 log_msgf(LogMsgKind kind, char *fmt, ...) {
 	if(log_active != 0) 
 	{
-		// TODO(Ed): Review
 		TempArena scratch = scratch_begin(0, 0);
 
 		va_list args;
@@ -77,7 +76,6 @@ log_scope_end(Arena *arena)
 			if(arena != 0)
 			{
 				for (each_enum_val(LogMsgKind, kind)) {
-					// TODO(Ed): Review
 					TempArena scratch = scratch_begin(&arena, 1);
 					String8   
 					result_unindented    = str8_list_join(scratch.arena, &scope->strings[kind], 0);

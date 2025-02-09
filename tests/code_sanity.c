@@ -5,9 +5,10 @@
 int main()
 {
 	Context ctx = {0};
+	ctx.os_ctx.enable_large_pages = true;
 	init(& ctx);
 
-	
+	printf("metadesk: got past init!");
 
 	deinit(& ctx);
 }

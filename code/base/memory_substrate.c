@@ -302,6 +302,7 @@ varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_
 			UPTR current_offset   = vm->reserve_start + vm->commit_used;
 			UPTR size_to_allocate = requested_size;
 			UPTR to_be_used       = vm->commit_used + size_to_allocate;
+			assert(to_be_used < vm->reserve);
 
 			UPTR header_offset = vm->reserve_start - scast(UPTR, vm);
 
@@ -312,11 +313,11 @@ varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_
 				SPTR reserve_left     = vm->reserve - vm->committed;
 				UPTR next_commit_size;
 				if (vm->flags & VArenaFlag_LargePages) {
-					next_commit_size = reserve_left > 0 ? vm->commit_size : scast(UPTR, align_pow2( -reserve_left, os_get_system_info()->large_page_size));
+					next_commit_size = reserve_left > 0 ? md_max(vm->commit_size, size_to_allocate) : scast(UPTR, align_pow2( -reserve_left, os_get_system_info()->large_page_size));
 				}
 				else {
-					next_commit_size = reserve_left > 0 ? vm->commit_size : scast(UPTR, align_pow2(abs(reserve_left), os_get_system_info()->page_size));
-				}
+					next_commit_size = reserve_left > 0 ? md_max(vm->commit_size, size_to_allocate) : scast(UPTR, align_pow2(abs(reserve_left), os_get_system_info()->page_size));
+				} 	 
 				if (next_commit_size) {
 					B32 commit_result = os_commit(vm, next_commit_size);
 					if (commit_result == false) {
@@ -325,7 +326,7 @@ varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_
 				}
 			}
 
-			allocated_mem = rcast(void*, current_offset + size_to_allocate);
+			allocated_mem    = rcast(void*, current_offset);
 			vm->commit_used += size_to_allocate;
 		}
 		break;

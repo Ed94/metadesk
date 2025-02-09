@@ -29,7 +29,9 @@ struct ArenaParams
 	U64           block_size; // If chaining VArenas set this to the reserve size
 };
 
-/* NOTE(Ed): The original metadesk arena is a combination of several concepts into a single interface:
+#define ARENA_DEFAULT_BLOCK_SIZE VARENA_DEFAULT_RESERVE - align_pow2(size_of(VArena), MD_DEFAULT_MEMORY_ALIGNMENT)
+
+/* NOTE(Ed): The original metadesk arena is a combination of several concepts into a single interface
 	* An OS virtual memory allocation scheme
 	* A arena 'block' of memory with segmented chaining of the blocks
 	* A push/pop stack allocation interface for the arena
@@ -151,6 +153,7 @@ force_inline void temp_end(TempArena temp) { arena_pop_to(temp.arena, temp.pos);
 
 #ifndef MD_OVERRIDE_DEFAULT_ALLOCATOR
 // The default allocator for this base module is the Arena allocator with a VArena backing
+// NOTE(Ed): In order for this to work, either the os entry_point must have been utilized or os_init needs to be called.
 inline AllocatorInfo
 default_allocator()
 {

@@ -14,7 +14,13 @@
 Arena*
 arena__alloc(ArenaParams params)
 {
-	SPTR const header_size = align_pow2(size_of(Arena), MD_DEFAULT_MEMORY_ALIGNMENT);
+	SPTR const varena_header_size = align_pow2(size_of(VArena), MD_DEFAULT_MEMORY_ALIGNMENT);
+	SPTR const header_size        = align_pow2(size_of(Arena),  MD_DEFAULT_MEMORY_ALIGNMENT);
+
+	U64 const varena_reserve_size = VARENA_DEFAULT_RESERVE;
+
+	if (params.backing.proc == nullptr) params.backing    = default_allocator();
+	if (params.block_size   == 0      ) params.block_size = ARENA_DEFAULT_BLOCK_SIZE;
 
 	// TODO(Ed): Do we need to be slapping the arena onto the memory now?
 	// (its technically not needed a its no longer always backed by vmem)

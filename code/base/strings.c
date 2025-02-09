@@ -533,7 +533,6 @@ str8_from_alloctor_s64(AllocatorInfo ainfo, S64 s64, U32 radix, U8 min_digits, U
 {
 	String8 result = {0};
 	if(s64 < 0) {
-		// TODO(Ed): Review, we should just keep using thread scratch arenas (and provide them to teh context)
 		U8      bytes[KB(8)];
 		FArena  scratch      = farena_from_memory(bytes, size_of(bytes));
 		String8 numeric_part = str8_from_allocator_u64(farena_allocator(scratch), (U64)(-s64), radix, min_digits, digit_group_separator);
@@ -929,7 +928,6 @@ path_style_from_str8(String8 string) {
 void
 str8_path_list_resolve_dots_in_place(String8List* path, PathStyle style)
 {
-	// TODO(Ed): Review
 	TempArena scratch = scratch_begin(0, 0);
 	String8MetaNode* stack          = 0;
 	String8MetaNode* free_meta_node = 0;
@@ -1562,9 +1560,7 @@ indented_from_string(Arena* arena, String8 string)
 String8
 indented_from_string_alloc(AllocatorInfo ainfo, String8 string)
 {
-	// TODO(Ed): Review, we should just keep using thread scratch arenas (and provide them to teh context)
-	Arena*    arena   = arena_alloc(.backing = ainfo, .block_size = MB(1));
-	TempArena scratch = scratch_begin(&arena, 1);
+	TempArena scratch = scratch_begin(0, 0);
 
 	read_only local_persist U8 indentation_bytes[] = "                                                                                                                                ";
 	String8List indented_strings = {0};
@@ -1595,7 +1591,6 @@ indented_from_string_alloc(AllocatorInfo ainfo, String8 string)
 
 	String8 result = str8_list_join_alloc(ainfo, &indented_strings, 0);
 	scratch_end(scratch);
-	arena_release(arena);
 	return result;
 }
 
@@ -1655,9 +1650,7 @@ escaped_from_raw_str8(Arena* arena, String8 string)
 String8
 escaped_from_raw_str8_alloc(AllocatorInfo ainfo, String8 string)
 {
-	// TODO(Ed): Review, we should just keep using thread scratch arenas (and provide them to teh context)
-	Arena*    arena   = arena_alloc(.backing = ainfo, .block_size = MB(1));
-	TempArena scratch = scratch_begin(&arena, 1);
+	TempArena scratch = scratch_begin(0, 0);
 
 	String8List parts   = {0};
 	U64 start_split_idx = 0;
@@ -1697,7 +1690,6 @@ escaped_from_raw_str8_alloc(AllocatorInfo ainfo, String8 string)
 	String8    result = str8_list_join_alloc(ainfo, &parts, &join);
 
 	scratch_end(scratch);
-	arena_release(arena);
 	return result;
 }
 
@@ -1755,9 +1747,7 @@ raw_from_escaped_str8(Arena* arena, String8 string)
 String8
 raw_from_escaped_str8_alloc(AllocatorInfo ainfo, String8 string)
 {
-	// TODO(Ed): Review, we should just keep using thread scratch arenas (and provide them to teh context)
-	Arena*    arena   = arena_alloc(.backing = ainfo, .block_size = MB(1));
-	TempArena scratch = scratch_begin(&arena, 1);
+	TempArena scratch = scratch_begin(0, 0);
 
 	String8List strs  = {0};
 	U64         start = 0;
@@ -1799,7 +1789,6 @@ raw_from_escaped_str8_alloc(AllocatorInfo ainfo, String8 string)
 
 	String8 result = str8_list_join_alloc(ainfo, &strs, 0);
 	scratch_end(scratch);
-	arena_release(arena);
 	return result;
 }
 

@@ -100,7 +100,7 @@ void os_abort(S32 exit_code) { exit(exit_code); }
 OS_Handle
 os_file_open(OS_AccessFlags flags, String8 path)
 {
-	TempArena scratch   = scratch_begin(0, 0);
+	TempArena scratch = scratch_begin(0, 0);
 	{
 		String8   path_copy = push_str8_copy(scratch.arena, path);
 		int       lnx_flags = 0;

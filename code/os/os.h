@@ -482,3 +482,17 @@ MD_API OS_Guid os_make_guid(void);
 #if BUILD_ENTRY_DEFINING_UNIT
 void entry_point(CmdLine* cmdline);
 #endif
+
+////////////////////////////////
+//~ Ed: Manual OS Bootstrap (Implemented Per-OS)
+
+typedef struct OS_Context OS_Context;
+struct OS_Context
+{
+	Arena* state_arena;
+	Arena* entity_arena;
+	B32    enable_large_pages;
+};
+
+// OS layer initialization
+MD_API void os_init(OS_Context* ctx, TCTX* thread_ctx);

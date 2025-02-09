@@ -18,7 +18,7 @@ MD_API_C thread_static TCTX* tctx_thread_local = 0;
 void
 tctx_init_and_equip(TCTX* tctx)
 {
-	memory_zero_struct(tctx);
+	// memory_zero_struct(tctx);
 
 	Arena** arena_ptr = tctx->arenas;
 	for (U64 i = 0; i < array_count(tctx->arenas); i += 1, arena_ptr += 1)

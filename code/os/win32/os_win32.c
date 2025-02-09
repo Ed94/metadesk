@@ -1,6 +1,5 @@
 #ifdef INTELLISENSE_DIRECTIVES
 #	include "os_win32.h"
-#	include "os/os.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools
@@ -1522,3 +1521,137 @@ int wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int
 
 // BUILD_ENTRY_POINT
 #endif
+
+////////////////////////////////
+//~ Ed: Manual OS Bootstrap
+
+void os_init(OS_Context* ctx, TCTX* thread_ctx)
+{
+	// rjf: dynamically load windows functions which are not guaranteed
+	// in all SDKs
+	{
+		HMODULE module = LoadLibraryA("kernel32.dll");
+		w32_SetThreadDescription_func = (W32_SetThreadDescription_Type *)GetProcAddress(module, "SetThreadDescription");
+		FreeLibrary(module);
+	}
+
+	// rjf: try to enable large pages if we can
+	if (ctx->enable_large_pages)
+	{
+		HANDLE token;
+		if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &token))
+		{
+			LUID luid;
+			if (LookupPrivilegeValue(0, SE_LOCK_MEMORY_NAME, &luid))
+			{
+				TOKEN_PRIVILEGES priv;
+				priv.PrivilegeCount           = 1;
+				priv.Privileges[0].Luid       = luid;
+				priv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+				AdjustTokenPrivileges(token, 0, &priv, sizeof(priv), 0, 0);
+			}
+			CloseHandle(token);
+		}
+	}
+
+	SYSTEM_INFO sysinfo = {0};
+	GetSystemInfo(&sysinfo);
+
+	// rjf: set up non-dynamically-alloc'd state
+	//
+	// (we need to set up some basics before this layer can supply
+	// memory allocation primitives)
+	{
+		os_w32_state.microsecond_resolution  = 1;
+		LARGE_INTEGER large_int_resolution;
+		if (QueryPerformanceFrequency(&large_int_resolution))
+		{
+			os_w32_state.microsecond_resolution = large_int_resolution.QuadPart;
+		}
+	}
+	{
+		OS_SystemInfo* info = &os_w32_state.system_info;
+		info->logical_processor_count = (U64)sysinfo.dwNumberOfProcessors;
+		info->page_size               = sysinfo.dwPageSize;
+		info->large_page_size         = GetLargePageMinimum();
+		info->allocation_granularity  = sysinfo.dwAllocationGranularity;
+	}
+	{
+		OS_ProcessInfo* info = &os_w32_state.process_info;
+		info->pid = GetCurrentProcessId();
+	}
+
+	// rjf: set up thread context
+	tctx_init_and_equip(thread_ctx);
+
+	// rjf: set up dynamically-alloc'd state
+	Arena* state_arena = ctx->entity_arena;
+	if (state_arena == nullptr) {
+		state_arena      = arena_alloc(.backing = varena_allocator(varena_alloc(0)));
+		ctx->state_arena = state_arena;
+	}
+	{
+		os_w32_state.arena = state_arena;
+		{
+			OS_SystemInfo* info = &os_w32_state.system_info;
+			U8    buffer[MAX_COMPUTERNAME_LENGTH + 1] = {0};
+			DWORD size = MAX_COMPUTERNAME_LENGTH + 1;
+			if(GetComputerNameA((char*)buffer, &size))
+			{
+				info->machine_name = push_str8_copy(state_arena, str8(buffer, size));
+			}
+		}
+	}
+	{
+		OS_ProcessInfo* info = &os_w32_state.process_info;
+		{
+			TempArena scratch = scratch_begin(0, 0);
+			DWORD   size         = KB(32);
+			U16*    buffer       = push_array_no_zero(scratch.arena, U16, size);
+			DWORD   length       = GetModuleFileNameW(0, (WCHAR*)buffer, size);
+			String8 name8        = str8_from_16(scratch.arena, str16(buffer, length));
+			String8 name_chopped = str8_chop_last_slash(name8);
+			info->binary_path    = push_str8_copy(state_arena, name_chopped);
+			scratch_end(scratch);
+		}
+
+		info->initial_path = os_get_current_path(state_arena);
+		{
+			TempArena scratch = scratch_begin(0, 0);
+			U64  size   = KB(32);
+			U16* buffer = push_array_no_zero(scratch.arena, U16, size);
+			if (SUCCEEDED(SHGetFolderPathW(0, CSIDL_APPDATA, 0, 0, (WCHAR*)buffer))) {
+				info->user_program_data_path = str8_from_16(state_arena, str16_cstring(buffer));
+			}
+			scratch_end(scratch);
+		}
+		{
+			WCHAR* this_proc_env = GetEnvironmentStringsW();
+			U64    start_idx     = 0;
+			for (U64 idx = 0;; idx += 1)
+			{
+				if (this_proc_env[idx] == 0)
+				{
+					if (start_idx == idx)
+					{
+						break;
+					}
+					else
+					{
+						String16 string16 = str16((U16 *)this_proc_env + start_idx, idx - start_idx);
+						String8  string   = str8_from_16(state_arena, string16);
+						str8_list_push(state_arena, &info->environment, string);
+						start_idx = idx+1;
+					}
+				}
+			}
+		}
+	}
+
+	// rjf: set up entity storage
+	InitializeCriticalSection(&os_w32_state.entity_mutex);
+	if (ctx->entity_arena == nullptr) {
+		ctx->entity_arena         =  arena_alloc(.backing = varena_allocator(varena_alloc(0)));
+		os_w32_state.entity_arena = ctx->entity_arena;
+	}
+}

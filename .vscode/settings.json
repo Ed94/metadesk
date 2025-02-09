@@ -83,7 +83,8 @@
 		"metadesk.h": "c",
 		"mdesk.h": "c",
 		"text.h": "c",
-		"forward_list": "c"
+		"forward_list": "c",
+		"iomanip": "cpp"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

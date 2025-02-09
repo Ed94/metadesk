@@ -10,17 +10,15 @@
 
 void init(Context* ctx)
 {
-	if (ctx->backing[0].proc != nullptr) {
-		tctx_init_and_equip_alloc(& ctx->thread_ctx, ctx->backing[0]);
+	if ( ! ctx->dont_init_os) {
+		os_init(& ctx->os_ctx, & ctx->thread_ctx);
 	}
-	else {
-		tctx_init_and_equip(& ctx->thread_ctx);
-	}
+
+	
 }
 
 void deinit(Context* ctx)
 {
-	tctx_release();
 }
 
 ////////////////////////////////

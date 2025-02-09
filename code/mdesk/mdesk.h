@@ -230,14 +230,18 @@ struct Context
 	// Currently, this is only relevant if the user is utilizing this library via bindings
 	// or they are not utilizing metadesk's hosted `entry_point` runtime
 
-	// Note: Only used so far as the first fallback if the user did not preset the thread_context's arenas
-	// Otherwise it will just reserve its own Arena backed by chained virutal address space
-	AllocatorInfo backing[2];
-
 	// Its recommended that the user hooks up 
 	// their own arena allocators to the thread context
-	//  which will be utilized for thread local scratch arena
+	// which will be utilized for thread local scratch arena
 	TCTX thread_ctx;
+
+	// Just as with TCTX its recommended the user setup the arena allocators
+	// for te os context
+	OS_Context os_ctx;
+
+	// This skips the os_init process but that means the user is expected to setup
+	// the thread context for the process
+	B32 dont_init_os;
 };
 
 ////////////////////////////////
@@ -263,8 +267,11 @@ nil_node()
 ////////////////////////////////
 // Context lifetime Functios
 
+// NOTE(Ed): The are see comments in Context struct, this is only necessary when not utilizing 
+// the metadesk os runtime provided entry_point interface
+
 MD_API void init  (Context* ctx);
-MD_API void deinit(Context* ctx);
+// MD_API void deinit(Context* ctx);
 
 ////////////////////////////////
 //~ rjf: Message Type Functions

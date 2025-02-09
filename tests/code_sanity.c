@@ -4,7 +4,7 @@
 
 int main()
 {
-	Context ctx;
+	Context ctx = {0};
 	init(& ctx);
 
 	

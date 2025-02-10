@@ -64,7 +64,7 @@
 ////////////////////////////////
 //~ rjf: Member Offsets
 
-#ifndef membeMD_DYN_LINKr
+#ifndef member
 #define member(T, m)                    ( ((T*) 0)->m )
 #endif
 #ifndef offset_of

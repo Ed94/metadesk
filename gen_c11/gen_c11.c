@@ -1,21 +1,25 @@
 #pragma once
 
-#include "third_party/gencpp_c11/push_ignores.inline.h"
+#include "gen_common.h"
 
-#define GEN_DONT_ENFORCE_GEN_TIME
-#define GEN_DEFINE_LIBRARY_CODE_CONSTANTS
-#define GEN_ENFORCE_STRONG_CODE_TYPES
-#define GEN_IMPLEMENTATION
-#include "third_party/gencpp_c11/gencpp_c11.h"
+#define path_refactor_script "./c11.refactor"
 
-#include "third_party/gencpp_c11/misc.h"
+gen_Code refactor( gen_Code code ) {
+	return code_refactor_and_format(code, scratch_file, path_refactor_script, nullptr );
+}
+gen_Code refactor_and_format( gen_Code code ) {
+	return code_refactor_and_format(code, scratch_file, path_refactor_script, path_format_style );
+}
 
 int main()
 {
 	gen_Context ctx = {0};
 	gen_init(& ctx);
 
+	register_library_macros();
+
 	
 
+	// gen_deinit(& ctx);
 	return 0;
 }

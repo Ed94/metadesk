@@ -994,19 +994,27 @@ string_from_month(Month month)
 	return(result);
 }
 
-MD_API String8 push_date_time_string          (Arena* arena, DateTime* date_time);
-MD_API String8 push_file_name_date_time_string(Arena* arena, DateTime* date_time);
-MD_API String8 string_from_elapsed_time       (Arena* arena, DateTime  date_time);
+String8 date_time_string__arena          (Arena* arena, DateTime* date_time);
+String8 file_name_date_time_string__arena(Arena* arena, DateTime* date_time);
+String8 string_from_elapsed_time__arena  (Arena* arena, DateTime  date_time);
 
-MD_API String8 alloc_date_time_string          (AllocatorInfo ainfo, DateTime* date_time);
-MD_API String8 alloc_file_name_date_time_string(AllocatorInfo ainfo, DateTime* date_time);
-MD_API String8 string_from_elapsed_time_alloc  (AllocatorInfo ainfo, DateTime  date_time);
+MD_API String8 date_time_string__ainfo          (AllocatorInfo ainfo, DateTime* date_time);
+MD_API String8 file_name_date_time_string__ainfo(AllocatorInfo ainfo, DateTime* date_time);
+MD_API String8 string_from_elapsed_time__ainfo  (AllocatorInfo ainfo, DateTime  date_time);
+
+#define date_time_string(allocator, date_time)           _Generic(allocator, Arena*: date_time_string__arena,           AllocatorInfo: date_time_string__ainfo,           default: assert_generic_selection_fail) resolved_function_call(allocator, date_time)
+#define file_name_date_time_string(allocator, date_time) _Generic(allocator, Arena*: file_name_date_time_string__arena, AllocatorInfo: file_name_date_time_string__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, date_time)
+#define string_from_elapsed_time(allocator, date_time)   _Generic(allocator, Arena*: string_from_elapsed_time__arena,   AllocatorInfo: string_from_elapsed_time__ainfo,   default: assert_generic_selection_fail) resolved_function_call(allocator, date_time)
+
+force_inline String8 push_date_time_string__arena          (Arena* arena, DateTime* date_time) { return date_time_string__ainfo          (arena_allocator(arena), date_time); }
+force_inline String8 push_file_name_date_time_string__arena(Arena* arena, DateTime* date_time) { return file_name_date_time_string__ainfo(arena_allocator(arena), date_time); }
+force_inline String8 string_from_elapsed_time__arena       (Arena* arena, DateTime  dt)        { return string_from_elapsed_time__ainfo  (arena_allocator(arena), dt); }
 
 ////////////////////////////////
 //~ Globally Unique Ids
 
 inline String8
-string_from_guid(Arena* arena, Guid guid) {
+string_from_guid__arena(Arena* arena, Guid guid) {
 	String8 result = str8f(arena, 
 		"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
 		guid.data1,
@@ -1024,6 +1032,27 @@ string_from_guid(Arena* arena, Guid guid) {
 	return result;
 }
 
+inline String8
+string_from_guid__ainfo(AllocatorInfo ainfo, Guid guid) {
+	String8 result = str8f(ainfo, 
+		"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+		guid.data1,
+		guid.data2,
+		guid.data3,
+		guid.data4[0],
+		guid.data4[1],
+		guid.data4[2],
+		guid.data4[3],
+		guid.data4[4],
+		guid.data4[5],
+		guid.data4[6],
+		guid.data4[7]
+	);
+	return result;
+}
+
+#define string_from_guid(allocator, guid) _Generic(allocator, Arena*: string_from_guid__arena, AllocatorInfo: string_from_guid__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, guid)
+
 inline Guid guid_from_string(String8 string) { Guid guid = {0}; try_guid_from_string(string, &guid); return guid; }
 
 MD_API B32 try_guid_from_string(String8 string, Guid* guid_out);
@@ -1031,44 +1060,67 @@ MD_API B32 try_guid_from_string(String8 string, Guid* guid_out);
 ////////////////////////////////
 //~ rjf: Basic Text Indentation
 
-MD_API String8 indented_from_string      (Arena*        arena, String8 string);
-MD_API String8 indented_from_string_alloc(AllocatorInfo arena, String8 string);
+       String8 indented_from_string__arena(Arena*        arena, String8 string);
+MD_API String8 indented_from_string__ainfo(AllocatorInfo arena, String8 string);
+
+#define indented_from_string(allocator, string) _Generic(allocator, Arena*: indented_from_string__arena, AllocatorInfo: indented_from_string__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, string)
+
+force_inline String8 indented_from_string__arena(Arena* arena, String8 string) { return indented_from_string__ainfo(arena_allocator(arena), string); }
 
 ////////////////////////////////
 //~ rjf: Text Escaping
 
-MD_API String8 escaped_from_raw_str8      (Arena*        arena, String8 string);
-MD_API String8 escaped_from_raw_str8_alloc(AllocatorInfo ainfo, String8 string);
-MD_API String8 raw_from_escaped_str8      (Arena*        arena, String8 string);
-MD_API String8 raw_from_escaped_str8_alloc(AllocatorInfo ainfo, String8 string);
+       String8 escaped_from_raw_str8__arena(Arena*        arena, String8 string);
+MD_API String8 escaped_from_raw_str8__ainfo(AllocatorInfo ainfo, String8 string);
+       String8 raw_from_escaped_str8__arena(Arena*        arena, String8 string);
+MD_API String8 raw_from_escaped_str8__ainfo(AllocatorInfo ainfo, String8 string);
+
+#define escaped_from_raw_str8(allocator, string) _Generic(allocator, Arena*: escaped_from_raw_str8__arena, AllocatorInfo: escaped_from_raw_str8__ainfo(, default): assert_generic_selection_fail) resolved_function_call(allocator, string)
+#define raw_from_escaped_str8(allocator, string) _Generic(allocator, Arena*: raw_from_escaped_str8__arena, AllocatorInfo: raw_from_escaped_str8__ainfo(, default): assert_generic_selection_fail) resolved_function_call(allocator, string)
+
+force_inline String8 escaped_from_raw_str8__arena(Arena* arena, String8 string) { return escaped_from_raw_str8__ainfo(arena_allocator(arena), string); }
+force_inline String8 raw_from_escaped_str8__arena(Arena* arena, String8 string) { return raw_from_escaped_str8__ainfo(arena_allocator(arena), string); }
 
 ////////////////////////////////
 //~ rjf: Text Wrapping
 
-MD_API String8List wrapped_lines_from_string      (Arena*        arena, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent);
-MD_API String8List wrapped_lines_from_string_alloc(AllocatorInfo ainfo, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent);
+       String8List wrapped_lines_from_string__arena(Arena*        arena, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent);
+MD_API String8List wrapped_lines_from_string__ainfo(AllocatorInfo ainfo, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent);
+
+#define wrapped_lines_from_string(allocator, string, first_line_max_width, max_width, wrap_indent) \
+_Generic(allocator, Arena*: wrapped_lines_from_string__arena, AllocatorInfo: wrapped_lines_from_string__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, string, first_line_max_width, max_width, wrap_indent)
+
+force_inline String8List wrapped_lines_from_string__arena(Arena* arena, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent) { return wrapped_lines_from_string__ainfo(arena_allocator(arena), string, first_line_max_width, max_width, wrap_indent); }
 
 ////////////////////////////////
 //~ rjf: String <-> Color
 
-inline String8 hex_string_from_rgba_4f32      (Arena*        arena, Vec4F32 rgba) { String8 hex_string = str8f (arena, "%02x%02x%02x%02x", (U8)(rgba.x * 255.f), (U8)(rgba.y * 255.f), (U8)(rgba.z * 255.f), (U8)(rgba.w * 255.f));  return hex_string; }
-inline String8 hex_string_from_rgba_4f32_alloc(AllocatorInfo ainfo, Vec4F32 rgba) { String8 hex_string = str8f(ainfo, "%02x%02x%02x%02x", (U8)(rgba.x * 255.f), (U8)(rgba.y * 255.f), (U8)(rgba.z * 255.f), (U8)(rgba.w * 255.f));  return hex_string; }
+inline String8 hex_string_from_rgba_4f32__arena(Arena*        arena, Vec4F32 rgba) { String8 hex_string = str8f(arena, "%02x%02x%02x%02x", (U8)(rgba.x * 255.f), (U8)(rgba.y * 255.f), (U8)(rgba.z * 255.f), (U8)(rgba.w * 255.f));  return hex_string; }
+inline String8 hex_string_from_rgba_4f32__ainfo(AllocatorInfo ainfo, Vec4F32 rgba) { String8 hex_string = str8f(ainfo, "%02x%02x%02x%02x", (U8)(rgba.x * 255.f), (U8)(rgba.y * 255.f), (U8)(rgba.z * 255.f), (U8)(rgba.w * 255.f));  return hex_string; }
+
+#define hex_string_from_rgba_4f32(allocator, rgba) _Generic(allocator, Arena*: hex_string_from_rgba_4f32__arena, AllocatorInfo: hex_string_from_rgba_4f32__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, rgba)
 
 MD_API Vec4F32 rgba_from_hex_string_4f32(String8 hex_string);
 
 ////////////////////////////////
 //~ rjf: String Fuzzy Matching
 
-MD_API FuzzyMatchRangeList fuzzy_match_find                 (Arena*        arena, String8 needle, String8 haystack);
-MD_API FuzzyMatchRangeList fuzzy_match_find_alloc           (AllocatorInfo ainfo, String8 needle, String8 haystack);
-MD_API FuzzyMatchRangeList fuzzy_match_range_list_copy      (Arena*        arena, FuzzyMatchRangeList* src);
-MD_API FuzzyMatchRangeList fuzzy_match_range_list_copy_alloc(AllocatorInfo ainfo, FuzzyMatchRangeList* src);
+       FuzzyMatchRangeList fuzzy_match_find__arena           (Arena*        arena, String8 needle, String8 haystack);
+MD_API FuzzyMatchRangeList fuzzy_match_find__ainfo           (AllocatorInfo ainfo, String8 needle, String8 haystack);
+       FuzzyMatchRangeList fuzzy_match_range_list_copy__arena(Arena*        arena, FuzzyMatchRangeList* src);
+MD_API FuzzyMatchRangeList fuzzy_match_range_list_copy__ainfo(AllocatorInfo ainfo, FuzzyMatchRangeList* src);
+
+#define fuzzy_match_find(allocator, needle, haystack) _Generic(allocator, Arena*: fuzzy_match_find__arena,            AllocatorInfo: fuzzy_match_find__ainfo)            resolved_function_call(allocator, needle, haystack)
+#define fuzzy_match_range_list_copy(allocator, src)   _Generic(allocator, Arena*: fuzzy_match_range_list_copy__arena, AllocatorInfo: fuzzy_match_range_list_copy__ainfo) resolved_function_call(allocator, src)
+
+force_inline FuzzyMatchRangeList fuzzy_match_find__arena           (Arena *arena, String8 needle, String8 haystack) { return fuzzy_match_find__ainfo           (arena_allocator(arena), needle, haystack); }
+force_inline FuzzyMatchRangeList fuzzy_match_range_list_copy__arena(Arena* arena, FuzzyMatchRangeList* src)         { return fuzzy_match_range_list_copy__ainfo(arena_allocator(arena), src); }
 
 ////////////////////////////////
 //~ NOTE(allen): Serialization Helpers
 
-#define str8_serial_push_array(arena, srl, ptr, count) str8_serial_push_data (arena, srl, ptr, sizeof(*(ptr)) * (count))
-#define str8_serial_push_struct(arena, srl, ptr)       str8_serial_push_array(arena, srl, ptr, 1)
+#define str8_serial_push_array(allocator, srl, ptr, count) str8_serial_push_data (allocator, srl, ptr, sizeof(*(ptr)) * (count))
+#define str8_serial_push_struct(allocator, srl, ptr)       str8_serial_push_array(allocator, srl, ptr, 1)
 
 inline void
 str8_serial_write_to_dst(String8List* srl, void* out) {
@@ -1081,21 +1133,82 @@ str8_serial_write_to_dst(String8List* srl, void* out) {
 	}
 }
 
-       void    str8_serial_begin_alloc    (AllocatorInfo ainfo, String8List* srl);
-       String8 str8_serial_end_alloc      (AllocatorInfo ainfo, String8List* srl);
-MD_API U64     str8_serial_alloc_align    (AllocatorInfo ainfo, String8List* srl, U64 align);
-MD_API void*   str8_serial_alloc_size     (AllocatorInfo ainfo, String8List* srl, U64 size);
-       void*   str8_serial_alloc_data     (AllocatorInfo ainfo, String8List* srl, void* data, U64 size);
-       void    str8_serial_alloc_data_list(AllocatorInfo ainfo, String8List* srl, String8Node* first);
-MD_API void    str8_serial_alloc_u64      (AllocatorInfo ainfo, String8List* srl, U64 x);
-MD_API void    str8_serial_alloc_u32      (AllocatorInfo ainfo, String8List* srl, U32 x);
-       void    str8_serial_alloc_u16      (AllocatorInfo ainfo, String8List* srl, U16 x);
-       void    str8_serial_alloc_u8       (AllocatorInfo ainfo, String8List* srl, U8 x);
-       void    str8_serial_alloc_cstr     (AllocatorInfo ainfo, String8List* srl, String8 str);
-       void    str8_serial_alloc_string   (AllocatorInfo ainfo, String8List* srl, String8 str);
+void    str8_serial_begin__arena         (Arena* arena, String8List* srl);
+String8 str8_serial_end__arena           (Arena* arena, String8List* srl);
+U64     str8_serial_push_align__arena    (Arena* arena, String8List* srl, U64 align);
+void*   str8_serial_push_size__arena     (Arena* arena, String8List* srl, U64 size);
+void*   str8_serial_push_data__arena     (Arena* arena, String8List* srl, void* data, U64 size);
+void    str8_serial_push_data_list__arena(Arena* arena, String8List* srl, String8Node* first);
+void    str8_serial_push_u64__arena      (Arena* arena, String8List* srl, U64 x);
+void    str8_serial_push_u32__arena      (Arena* arena, String8List* srl, U32 x);
+void    str8_serial_push_u16__arena      (Arena* arena, String8List* srl, U16 x);
+void    str8_serial_push_u8__arena       (Arena* arena, String8List* srl, U8 x);
+void    str8_serial_push_cstr__arena     (Arena* arena, String8List* srl, String8 str);
+void    str8_serial_push_string__arena   (Arena* arena, String8List* srl, String8 str);
+
+       void    str8_serial_begin__ainfo         (AllocatorInfo ainfo, String8List* srl);
+       String8 str8_serial_end__ainfo           (AllocatorInfo ainfo, String8List* srl);
+MD_API U64     str8_serial_push_align__ainfo    (AllocatorInfo ainfo, String8List* srl, U64 align);
+MD_API void*   str8_serial_push_size__ainfo     (AllocatorInfo ainfo, String8List* srl, U64 size);
+       void*   str8_serial_push_data__ainfo     (AllocatorInfo ainfo, String8List* srl, void* data, U64 size);
+       void    str8_serial_push_data_list__ainfo(AllocatorInfo ainfo, String8List* srl, String8Node* first);
+MD_API void    str8_serial_push_u64__ainfo      (AllocatorInfo ainfo, String8List* srl, U64 x);
+MD_API void    str8_serial_push_u32__ainfo      (AllocatorInfo ainfo, String8List* srl, U32 x);
+       void    str8_serial_push_u16__ainfo      (AllocatorInfo ainfo, String8List* srl, U16 x);
+       void    str8_serial_push_u8__ainfo       (AllocatorInfo ainfo, String8List* srl, U8 x);
+       void    str8_serial_push_cstr__ainfo     (AllocatorInfo ainfo, String8List* srl, String8 str);
+       void    str8_serial_push_string__ainfo   (AllocatorInfo ainfo, String8List* srl, String8 str);
+
+#define str8_serial_begin(allocator, srl)                  _Generic(allocator, Arena*: str8_serial_begin__arena,          AllocatorInfo: str8_serial_begin__ainfo,          default: assert_generic_selection_fail) resolved_function_call(allocator, srl)
+#define str8_serial_end(allocator, srl)                    _Generic(allocator, Arena*: str8_serial_end__arena,            AllocatorInfo: str8_serial_end__ainfo,            default: assert_generic_selection_fail) resolved_function_call(allocator, srl)
+#define str8_serial_push_align(allocator, srl, align)      _Generic(allocator, Arena*: str8_serial_push_align__arena,     AllocatorInfo: str8_serial_push_align__ainfo,     default: assert_generic_selection_fail) resolved_function_call(allocator, srl, align)
+#define str8_serial_push_size(allocator, srl, size)        _Generic(allocator, Arena*: str8_serial_push_size__arena,      AllocatorInfo: str8_serial_push_size__ainfo,      default: assert_generic_selection_fail) resolved_function_call(allocator, srl, size)
+#define str8_serial_push_data(allocator, srl, data, usize) _Generic(allocator, Arena*: str8_serial_push_data__arena,      AllocatorInfo: str8_serial_push_data__ainfo,      default: assert_generic_selection_fail) resolved_function_call(allocator, srl, data, usize)
+#define str8_serial_push_data_list(allocator, srl, first)  _Generic(allocator, Arena*: str8_serial_push_data_list__arena, AllocatorInfo: str8_serial_push_data_list__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, srl, first)
+#define str8_serial_push_u64(allocator, srl, x)            _Generic(allocator, Arena*: str8_serial_push_u64__arena,       AllocatorInfo: str8_serial_push_u64__ainfo,       default: assert_generic_selection_fail) resolved_function_call(allocator, srl, x)
+#define str8_serial_push_u32(allocator, srl, x)            _Generic(allocator, Arena*: str8_serial_push_u32__arena,       AllocatorInfo: str8_serial_push_u32__ainfo,       default: assert_generic_selection_fail) resolved_function_call(allocator, srl, x)
+#define str8_serial_push_u16(allocator, srl, x)            _Generic(allocator, Arena*: str8_serial_push_u16__arena,       AllocatorInfo: str8_serial_push_u16__ainfo,       default: assert_generic_selection_fail) resolved_function_call(allocator, srl, x)
+#define str8_serial_push_u8(allocator, srl, x)             _Generic(allocator, Arena*: str8_serial_push_u8__arena,        AllocatorInfo: str8_serial_push_u8__ainfo,        default: assert_generic_selection_fail) resolved_function_call(allocator, srl, x)
+#define str8_serial_push_cstr(allocator, srl, str)         _Generic(allocator, Arena*: str8_serial_push_cstr__arena,      AllocatorInfo: str8_serial_push_cstr__ainfo,      default: assert_generic_selection_fail) resolved_function_call(allocator, srl, str)
+#define str8_serial_push_string(allocator, slr, str)       _Generic(allocator, Arena*: str8_serial_push_string__arena,    AllocatorInfo: str8_serial_push_string__ainfo,    default: assert_generic_selection_fail) resolved_function_call(allocator, srl, str)
+
+
+force_inline U64   str8_serial_push_align__arena(Arena* arena, String8List* srl, U64 align) { return str8_serial_push_align__ainfo(arena_allocator(arena), srl, align); }
+force_inline void* str8_serial_push_size__arena (Arena* arena, String8List* srl, U64 size)  { return str8_serial_push_size__ainfo (arena_allocator(arena), srl, size); }
+force_inline void  str8_serial_push_u64__arena  (Arena* arena, String8List* srl, U64 x)     {        str8_serial_push_u64__ainfo  (arena_allocator(arena), srl, x); }
+force_inline void  str8_serial_push_u32__arena  (Arena* arena, String8List* srl, U32 x)     {        str8_serial_push_u32__ainfo  (arena_allocator(arena), srl, x); }
+
+force_inline void    str8_serial_begin__arena(Arena* arena, String8List* srl) {        str8_serial_begin__ainfo(arena_allocator(arena), srl); }
+force_inline String8 str8_serial_end__arena  (Arena* arena, String8List* srl) { return str8_serial_end__ainfo  (arena_allocator(arena), srl); }
+
+force_inline void str8_serial_push_u16__arena   (Arena* arena, String8List* srl, U16     x)   { str8_serial_push_data__arena(arena, srl, &x, sizeof(x)); }
+force_inline void str8_serial_push_u8__arena    (Arena* arena, String8List* srl, U8      x)   { str8_serial_push_data__arena(arena, srl, &x, sizeof(x)); }
+force_inline void str8_serial_push_cstr__arena  (Arena* arena, String8List* srl, String8 str) { str8_serial_push_data__arena(arena, srl, str.str, str.size);  str8_serial_push_u8__arena(arena, srl, 0); } 
+force_inline void str8_serial_push_string__arena(Arena* arena, String8List* srl, String8 str) { str8_serial_push_data__arena(arena, srl, str.str, str.size); }
+
+force_inline void str8_serial_push_u16__ainfo   (AllocatorInfo ainfo, String8List* srl, U16     x)   { str8_serial_push_data__ainfo(ainfo, srl, &x, sizeof(x)); }
+force_inline void str8_serial_push_u8__ainfo    (AllocatorInfo ainfo, String8List* srl, U8      x)   { str8_serial_push_data__ainfo(ainfo, srl, &x, sizeof(x)); }
+force_inline void str8_serial_push_cstr__ainfo  (AllocatorInfo ainfo, String8List* srl, String8 str) { str8_serial_push_data__ainfo(ainfo, srl, str.str, str.size);  str8_serial_push_u8__ainfo(ainfo, srl, 0); } 
+force_inline void str8_serial_push_string__ainfo(AllocatorInfo ainfo, String8List* srl, String8 str) { str8_serial_push_data__ainfo(ainfo, srl, str.str, str.size); }
+	
+inline void*
+str8_serial_push_data__arena(Arena* arena, String8List* srl, void* data, U64 size) {
+	void* result = str8_serial_push_size__arena(arena, srl, size);
+	if(result != 0) {
+		memory_copy(result, data, size);
+	}
+	return result;
+}
+
+inline void
+str8_serial_push_data_list__arena(Arena* arena, String8List* srl, String8Node* first) {
+	for (String8Node* node = first; node != 0; node = node->next) {
+		str8_serial_push_data__arena(arena, srl, node->string.str, node->string.size);
+	}
+}
 
 inline void 
-str8_serial_begin_alloc(AllocatorInfo ainfo, String8List* srl) {
+str8_serial_begin__ainfo(AllocatorInfo ainfo, String8List* srl) { 
 	String8Node* node = alloc_array(ainfo, String8Node, 1);
 	node->string.str = alloc_array_no_zero(ainfo, U8, 0);
 	srl->first       = srl->last = node;
@@ -1113,8 +1226,8 @@ str8_serial_end_alloc(AllocatorInfo ainfo, String8List* srl) {
 }
 
 inline void*
-str8_serial_alloc_data(AllocatorInfo ainfo, String8List* srl, void* data, U64 size){
-	void* result = str8_serial_alloc_size(ainfo, srl, size);
+str8_serial_push_data__ainfo(AllocatorInfo ainfo, String8List* srl, void* data, U64 size) {
+	void* result = str8_serial_push_size(ainfo, srl, size);
 	if(result != 0) {
 		memory_copy(result, data, size);
 	}
@@ -1122,67 +1235,11 @@ str8_serial_alloc_data(AllocatorInfo ainfo, String8List* srl, void* data, U64 si
 }
 
 inline void
-str8_serial_alloc_data_list(AllocatorInfo ainfo, String8List* srl, String8Node* first){
+str8_serial_push_data_list__ainfo(AllocatorInfo ainfo, String8List* srl, String8Node* first) {
 	for (String8Node* node = first; node != 0; node = node->next) {
-		str8_serial_alloc_data(ainfo, srl, node->string.str, node->string.size);
+		str8_serial_push_data__ainfo(ainfo, srl, node->string.str, node->string.size);
 	}
 }
-
-inline void str8_serial_alloc_u16(AllocatorInfo ainfo, String8List* srl, U16 x) { str8_serial_alloc_data(ainfo, srl, &x, sizeof(x)); }
-inline void str8_serial_alloc_u8 (AllocatorInfo ainfo, String8List* srl, U8  x) { str8_serial_alloc_data(ainfo, srl, &x, sizeof(x)); }
-
-inline void str8_serial_alloc_cstr  (AllocatorInfo ainfo, String8List* srl, String8 str) { str8_serial_alloc_data(ainfo, srl, str.str, str.size);  str8_serial_alloc_u8(ainfo, srl, 0); } 
-inline void str8_serial_alloc_string(AllocatorInfo ainfo, String8List* srl, String8 str) { str8_serial_alloc_data(ainfo, srl, str.str, str.size); }
-
-
-       void    str8_serial_begin         (Arena* arena, String8List* srl);
-       String8 str8_serial_end           (Arena* arena, String8List* srl);
-MD_API U64     str8_serial_push_align    (Arena* arena, String8List* srl, U64 align);
-MD_API void*   str8_serial_push_size     (Arena* arena, String8List* srl, U64 size);
-       void*   str8_serial_push_data     (Arena* arena, String8List* srl, void* data, U64 size);
-       void    str8_serial_push_data_list(Arena* arena, String8List* srl, String8Node* first);
-MD_API void    str8_serial_push_u64      (Arena* arena, String8List* srl, U64 x);
-MD_API void    str8_serial_push_u32      (Arena* arena, String8List* srl, U32 x);
-       void    str8_serial_push_u16      (Arena* arena, String8List* srl, U16 x);
-       void    str8_serial_push_u8       (Arena* arena, String8List* srl, U8 x);
-       void    str8_serial_push_cstr     (Arena* arena, String8List* srl, String8 str);
-       void    str8_serial_push_string   (Arena* arena, String8List* srl, String8 str);
-
-inline void 
-str8_serial_begin(Arena* arena, String8List* srl) {
-	str8_serial_begin_alloc(arena_allocator(arena), srl);
-}
-
-inline String8
-str8_serial_end(Arena* arena, String8List* srl) {
-	U64 size = srl->total_size;
-	U8* out  = push_array_no_zero(arena, U8, size);
-	str8_serial_write_to_dst(srl, out);
-	String8 result = str8(out, size);
-	return  result;
-}
-
-inline void*
-str8_serial_push_data(Arena* arena, String8List* srl, void* data, U64 size){
-	void* result = str8_serial_push_size(arena, srl, size);
-	if(result != 0) {
-		memory_copy(result, data, size);
-	}
-	return result;
-}
-
-inline void
-str8_serial_push_data_list(Arena* arena, String8List* srl, String8Node* first){
-	for (String8Node* node = first; node != 0; node = node->next) {
-		str8_serial_push_data(arena, srl, node->string.str, node->string.size);
-	}
-}
-
-inline void str8_serial_push_u16(Arena* arena, String8List* srl, U16 x) { str8_serial_push_data(arena, srl, &x, sizeof(x)); }
-inline void str8_serial_push_u8 (Arena* arena, String8List* srl, U8  x) { str8_serial_push_data(arena, srl, &x, sizeof(x)); }
-
-inline void str8_serial_push_cstr  (Arena* arena, String8List* srl, String8 str) { str8_serial_push_data(arena, srl, str.str, str.size);  str8_serial_push_u8(arena, srl, 0); } 
-inline void str8_serial_push_string(Arena* arena, String8List* srl, String8 str) { str8_serial_push_data(arena, srl, str.str, str.size); }
 
 ////////////////////////////////
 //~ rjf: Deserialization Helpers
@@ -1212,11 +1269,11 @@ _Generic(in,                                                                    
 	distinct_lookup(U64)  : _Generic(allocator, Arena*: str8_from_u64__arena,         AllocatorInfo: str8_from_s64__ainfo,         default: assert_generic_selection_fail), \
 	distinct_lookup(S64)  : _Generic(allocator, Arena*: str8_from_s64__arena,         AllocatorInfo: str8_from_s64__ainfo,         default: assert_generic_selection_fail), \
 	distinct_lookup(SSIZE): _Generic(allocator, Arena*: str8_from_memory_size__arena, AllocatorInfo: str8_from_memory_size__ainfo, default: assert_generic_selection_fail), \
-	default :  assert_generic_selection_fail                                                                                                                                \
+	default               :  assert_generic_selection_fail                                                                                                                  \
 ) resolved_function_call(allocator, in)
 
-#define str16_from(allocator, in)                                                                                                                                \
-_Generic(in,                                                                                                                                                     \
-	String8               : _Generic(allocator, Arena*: str16_from_str8__arena, AllocatorInfo: str16_from_str8__ainfo,  default: assert_generic_selection_fail), \
-	default :  assert_generic_selection_fail                                                                                                                     \
+#define str16_from(allocator, in)                                                                                                                 \
+_Generic(in,                                                                                                                                      \
+	String8: _Generic(allocator, Arena*: str16_from_str8__arena, AllocatorInfo: str16_from_str8__ainfo,  default: assert_generic_selection_fail), \
+	default:  assert_generic_selection_fail                                                                                                       \
 ) resolved_function_call(allocator, in)

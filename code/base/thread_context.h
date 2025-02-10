@@ -44,15 +44,11 @@ typedef struct { U64 count; } Opt_ScratchBegin;
 inline TempArena
 scratch_begin__ainfo(AllocatorInfo ainfo, Opt_ScratchBegin opt) {
 	Arena*    arena   = extract_arena(ainfo);
-	TempArena scratch =  temp_begin(tctx_get_scratch(&arena, arena != nullptr));
+	TempArena scratch = temp_begin(tctx_get_scratch(&arena, arena != nullptr));
 	return scratch;
 }
 
-inline TempArena
-scratch_begin__arena(Arena** arena, Opt_ScratchBegin opt) {
-	TempArena scratch = temp_begin(tctx_get_scratch(arena, opt.count));
-	return scratch;
-}
+force_inline TempArena scratch_begin__arena(Arena** arena, Opt_ScratchBegin opt) { TempArena scratch = temp_begin(tctx_get_scratch(arena, opt.count)); return scratch; }
 
 #define scratch_begin(conflicts, ...)        \
 _Generic(conflicts,                          \

@@ -212,7 +212,7 @@ os_string_list_from_argcv_alloc(AllocatorInfo ainfo, int argc, char** argv) {
 	for(int i = 0; i < argc; i += 1)
 	{
 		String8 str = str8_cstring(argv[i]);
-		str8_list_alloc(ainfo, &result, str);
+		str8_list(ainfo, &result, str);
 	}
 	return result;
 }

@@ -8,7 +8,6 @@
 ////////////////////////////////
 //~ NOTE(rjf): Command Line Option Parsing
 
-
 CmdLineOpt**
 cmd_line_slot_from_string(CmdLine* cmd_line, String8 string) {
 	CmdLineOpt** slot = 0;
@@ -35,7 +34,7 @@ cmd_line_opt_from_slot(CmdLineOpt** slot, String8 string) {
 }
 
 CmdLineOpt*
-cmd_line_insert_opt_alloc(AllocatorInfo ainfo, CmdLine* cmd_line, String8 string, String8List values)
+cmd_line_insert_opt__ainfo(AllocatorInfo ainfo, CmdLine* cmd_line, String8 string, String8List values)
 {
 	CmdLineOpt *var = 0;
 	CmdLineOpt **slot = cmd_line_slot_from_string(cmd_line, string);
@@ -67,7 +66,7 @@ cmd_line_insert_opt_alloc(AllocatorInfo ainfo, CmdLine* cmd_line, String8 string
 
 
 CmdLine
-cmd_line_from_string_list_alloc(AllocatorInfo ainfo, String8List command_line)
+cmd_line_from_string_list__ainfo(AllocatorInfo ainfo, String8List command_line)
 {
 	CmdLine parsed = {0};
 	parsed.exe_name = command_line.first->string;
@@ -141,7 +140,7 @@ cmd_line_from_string_list_alloc(AllocatorInfo ainfo, String8List command_line)
 					U8          splits[] = { ',' };
 					String8List args_in_this_string = str8_split(ainfo, string, splits, array_count(splits), 0);
 					for (String8Node* sub_arg = args_in_this_string.first; sub_arg; sub_arg = sub_arg->next) {
-						str8_list(ainfo, &arguments, sub_arg->string);
+						str8_list_push(ainfo, &arguments, sub_arg->string);
 					}
 					if ( !str8_match(str8_postfix(n->string, 1), str8_lit(","), 0) && (n != node || arg_portion_this_string.size != 0)) {
 						break;
@@ -150,13 +149,13 @@ cmd_line_from_string_list_alloc(AllocatorInfo ainfo, String8List command_line)
 			}
 			
 			// NOTE(rjf): Register config variable.
-			cmd_line_insert_opt_alloc(ainfo, &parsed, option_name, arguments);
+			cmd_line_insert_opt(ainfo, &parsed, option_name, arguments);
 		}
 		
 		// NOTE(rjf): Default path, treat as a passthrough config option to be
 		// handled by tool-specific code.
 		else if ( !str8_match(node->string, str8_lit("--"), 0) || !first_passthrough) {
-			str8_list_alloc(ainfo, &parsed.inputs, node->string);
+			str8_list_push(ainfo, &parsed.inputs, node->string);
 			after_passthrough_option = 1;
 			first_passthrough        = 0;
 		}

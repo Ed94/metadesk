@@ -138,13 +138,13 @@ size_t example_hash__P_long_long( long long val ) { return val * 2654435761ull; 
 #ifndef distinct_register_selector
 // Will define the metadata struct for generic selection usage with the distinct_lookup function macro
 // Generally does not need to be used unless getting an error similar to: "_Generic association compatible with previous association type"
-#define distinct_register_selector(type) typedef struct { type* UNUSED__; } Generic_Enforce__ ## type
+#define distinct_register_selector(type) typedef struct { type* UNUSED__; } Distinct_Typedef_ ## type
 #endif
 
 #ifndef distinct_lookup
 // This is used by a generic selector to lookup a unique struct typeid of a typedef if distinct_register_selector function macro was utilized
 // Only necessary to use with _Generic if getting an error similar to: "_Generic association compatible with previous association type"
-#define distinct_lookup(type) Generic_Enforce__ ## type
+#define distinct_lookup(type) Distinct_Typedef_ ## type
 #endif
 
 // Example: -------------------------------------------------------------------------------------------------------------------------

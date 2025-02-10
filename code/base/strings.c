@@ -453,7 +453,7 @@ str8_list_aligner__ainfo(AllocatorInfo ainfo, String8List* list, U64 min, U64 al
 }
 
 String8List
-str8_list_alloc_copy__ainfo(AllocatorInfo ainfo, String8List* list) {
+str8_list_copy__ainfo(AllocatorInfo ainfo, String8List* list) {
 	String8List result = {0};
 	for (String8Node* node       = list->first; node != 0; node = node->next) {
 		String8Node*  new_node   = alloc_array_no_zero(ainfo, String8Node, 1);
@@ -495,7 +495,7 @@ str8_split__ainfo(AllocatorInfo ainfo, String8 string, U8* split_chars, U64 spli
     
 		String8 string = str8_range(first, ptr);
 		if (keep_empties || string.size > 0){
-			str8_list_alloc(ainfo, &list, string);
+			str8_list_push(ainfo, &list, string);
 		}
 		ptr += 1;
 	}
@@ -1017,10 +1017,6 @@ operating_system_from_string(String8 string)
 ////////////////////////////////
 //~ rjf: Time Types -> String
 
-force_inline String8 push_date_time_string          (Arena* arena, DateTime* date_time) { return alloc_date_time_string          (arena_allocator(arena), date_time); }
-force_inline String8 push_file_name_date_time_string(Arena* arena, DateTime* date_time) { return alloc_file_name_date_time_string(arena_allocator(arena), date_time); }
-force_inline String8 string_from_elapsed_time       (Arena* arena, DateTime dt)         { return string_from_elapsed_time_alloc  (arena_allocator(arena), dt); }
-
 String8
 date_time_string__ainfo(AllocatorInfo ainfo, DateTime* date_time) {
 	char* mon_str = (char*)string_from_month(date_time->month).str;
@@ -1128,8 +1124,6 @@ try_guid_from_string(String8 string, Guid* guid_out)
 ////////////////////////////////
 //~ rjf: Basic Text Indentation
 
-force_inline String8 indented_from_string__arena(Arena* arena, String8 string) { return indented_from_string_alloc(arena_allocator(arena), string); }
-
 String8
 indented_from_string__ainfo(AllocatorInfo ainfo, String8 string)
 {
@@ -1169,9 +1163,6 @@ indented_from_string__ainfo(AllocatorInfo ainfo, String8 string)
 
 ////////////////////////////////
 //~ rjf: Text Escaping
-
-force_inline String8 escaped_from_raw_str8__arena(Arena* arena, String8 string) { return escaped_from_raw_str8_alloc(arena_allocator(arena), string); }
-force_inline String8 raw_from_escaped_str8__arena(Arena* arena, String8 string) { return raw_from_escaped_str8_alloc(arena_allocator(arena), string); }
 
 String8
 escaped_from_raw_str8__ainfo(AllocatorInfo ainfo, String8 string)
@@ -1270,8 +1261,6 @@ raw_from_escaped_str8__ainfo(AllocatorInfo ainfo, String8 string)
 ////////////////////////////////
 //~ rjf: Text Wrapping
 
-force_inline String8List wrapped_lines_from_string__arena(Arena* arena, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent) { return wrapped_lines_from_string_alloc(arena_allocator(arena), string, first_line_max_width, max_width, wrap_indent); }
-
 String8List
 wrapped_lines_from_string__ainfo(AllocatorInfo ainfo, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent)
 {
@@ -1296,7 +1285,7 @@ wrapped_lines_from_string__ainfo(AllocatorInfo ainfo, String8 string, U64 first_
 				candidate_line_range.max += 1;
 			}
 			String8 substr = str8_substr(string, candidate_line_range);
-			str8_list_alloc(ainfo, &list, substr);
+			str8_list_push(ainfo, &list, substr);
 			line_range = r1u64(idx + 1,idx + 1);
 		}
 		else
@@ -1318,7 +1307,7 @@ wrapped_lines_from_string__ainfo(AllocatorInfo ainfo, String8 string, U64 first_
 				if (wrapped_indent_level > 0){
 					line = str8f(ainfo, "%.*s%S", wrapped_indent_level, spaces, line);
 				}
-				str8_list_alloc(ainfo, &list, line);
+				str8_list_push(ainfo, &list, line);
 				line_range           = r1u64(line_range.max + 1, candidate_line_range.max);
 				wrapped_indent_level = clamp_top(64, wrap_indent);
 			}
@@ -1332,7 +1321,7 @@ wrapped_lines_from_string__ainfo(AllocatorInfo ainfo, String8 string, U64 first_
 		if (wrapped_indent_level > 0) {
 			line = str8f(ainfo, "%.*s%S", wrapped_indent_level, spaces, line);
 		}
-		str8_list_alloc(ainfo, &list, line);
+		str8_list_push(ainfo, &list, line);
 	}
 	return list;
 }
@@ -1362,9 +1351,6 @@ rgba_from_hex_string_4f32(String8 hex_string)
 
 ////////////////////////////////
 //~ rjf: String Fuzzy Matching
-
-force_inline FuzzyMatchRangeList fuzzy_match_find__arena           (Arena *arena, String8 needle, String8 haystack) { return fuzzy_match_find_alloc           (arena_allocator(arena), needle, haystack); }
-force_inline FuzzyMatchRangeList fuzzy_match_range_list_copy__arena(Arena* arena, FuzzyMatchRangeList* src)         { return fuzzy_match_range_list_copy_alloc(arena_allocator(arena), src); }
 
 FuzzyMatchRangeList
 fuzzy_match_find__ainfo(AllocatorInfo ainfo, String8 needle, String8 haystack)
@@ -1425,11 +1411,6 @@ fuzzy_match_range_list_copy__ainfo(AllocatorInfo ainfo, FuzzyMatchRangeList* src
 ////////////////////////////////
 //~ NOTE(allen): Serialization Helpers
 
-force_inline U64   str8_serial_push_align__arena(Arena* arena, String8List* srl, U64 align) { return str8_serial_alloc_align(arena_allocator(arena), srl, align); }
-force_inline void* str8_serial_push_size__arena (Arena* arena, String8List* srl, U64 size)  { return str8_serial_alloc_size (arena_allocator(arena), srl, size); }
-force_inline void  str8_serial_push_u64__arena  (Arena* arena, String8List* srl, U64 x)     {        str8_serial_alloc_u64  (arena_allocator(arena), srl, x); }
-force_inline void  str8_serial_push_u32__arena  (Arena* arena, String8List* srl, U32 x)     {        str8_serial_alloc_u32  (arena_allocator(arena), srl, x); }
-
 U64
 str8_serial_push_align__ainfo(AllocatorInfo ainfo, String8List* srl, U64 align) {
 	assert(is_pow2(align));
@@ -1447,7 +1428,7 @@ str8_serial_push_align__ainfo(AllocatorInfo ainfo, String8List* srl, U64 align) 
 			srl->total_size        += size;
 		}
 		else {
-			str8_list_alloc(ainfo, srl, str8(buf, size));
+			str8_list_push(ainfo, srl, str8(buf, size));
 		}
 	}
 	return size;
@@ -1465,7 +1446,7 @@ str8_serial_push_size__ainfo(AllocatorInfo ainfo, String8List* srl, U64 size) {
 			srl->total_size += size;
 		}
 		else {
-			str8_list_alloc(ainfo, srl, str8(buf, size));
+			str8_list_push(ainfo, srl, str8(buf, size));
 		}
 		result = buf;
 	}
@@ -1482,7 +1463,7 @@ str8_serial_alloc_u64__ainfo(AllocatorInfo ainfo, String8List* srl, U64 x) {
 		srl->total_size        += 8;
 	}
 	else {
-		str8_list_alloc(ainfo, srl, str8(buf, 8));
+		str8_list_push(ainfo, srl, str8(buf, 8));
 	}
 }
 
@@ -1496,7 +1477,7 @@ str8_serial_alloc_u32__ainfo(AllocatorInfo ainfo, String8List* srl, U32 x) {
 		srl->total_size += 4;
 	}
 	else {
-		str8_list_alloc(ainfo, srl, str8(buf, 4));
+		str8_list_push(ainfo, srl, str8(buf, 4));
 	}
 }
 

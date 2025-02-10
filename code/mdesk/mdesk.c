@@ -106,17 +106,17 @@ String8List
 string_list_from_token_flags_alloc(AllocatorInfo ainfo, TokenFlags flags)
 {
 	String8List strs = {0};
-	if (flags & TokenFlag_Identifier          ){ str8_list_alloc(ainfo, &strs, str8_lit("Identifier"         )); }
-	if (flags & TokenFlag_Numeric             ){ str8_list_alloc(ainfo, &strs, str8_lit("Numeric"            )); }
-	if (flags & TokenFlag_StringLiteral       ){ str8_list_alloc(ainfo, &strs, str8_lit("StringLiteral"      )); }
-	if (flags & TokenFlag_Symbol              ){ str8_list_alloc(ainfo, &strs, str8_lit("Symbol"             )); }
-	if (flags & TokenFlag_Reserved            ){ str8_list_alloc(ainfo, &strs, str8_lit("Reserved"           )); }
-	if (flags & TokenFlag_Comment             ){ str8_list_alloc(ainfo, &strs, str8_lit("Comment"            )); }
-	if (flags & TokenFlag_Whitespace          ){ str8_list_alloc(ainfo, &strs, str8_lit("Whitespace"         )); }
-	if (flags & TokenFlag_Newline             ){ str8_list_alloc(ainfo, &strs, str8_lit("Newline"            )); }
-	if (flags & TokenFlag_BrokenComment       ){ str8_list_alloc(ainfo, &strs, str8_lit("BrokenComment"      )); }
-	if (flags & TokenFlag_BrokenStringLiteral ){ str8_list_alloc(ainfo, &strs, str8_lit("BrokenStringLiteral")); }
-	if (flags & TokenFlag_BadCharacter        ){ str8_list_alloc(ainfo, &strs, str8_lit("BadCharacter"       )); }
+	if (flags & TokenFlag_Identifier          ){ str8_list_push(ainfo, &strs, str8_lit("Identifier"         )); }
+	if (flags & TokenFlag_Numeric             ){ str8_list_push(ainfo, &strs, str8_lit("Numeric"            )); }
+	if (flags & TokenFlag_StringLiteral       ){ str8_list_push(ainfo, &strs, str8_lit("StringLiteral"      )); }
+	if (flags & TokenFlag_Symbol              ){ str8_list_push(ainfo, &strs, str8_lit("Symbol"             )); }
+	if (flags & TokenFlag_Reserved            ){ str8_list_push(ainfo, &strs, str8_lit("Reserved"           )); }
+	if (flags & TokenFlag_Comment             ){ str8_list_push(ainfo, &strs, str8_lit("Comment"            )); }
+	if (flags & TokenFlag_Whitespace          ){ str8_list_push(ainfo, &strs, str8_lit("Whitespace"         )); }
+	if (flags & TokenFlag_Newline             ){ str8_list_push(ainfo, &strs, str8_lit("Newline"            )); }
+	if (flags & TokenFlag_BrokenComment       ){ str8_list_push(ainfo, &strs, str8_lit("BrokenComment"      )); }
+	if (flags & TokenFlag_BrokenStringLiteral ){ str8_list_push(ainfo, &strs, str8_lit("BrokenStringLiteral")); }
+	if (flags & TokenFlag_BadCharacter        ){ str8_list_push(ainfo, &strs, str8_lit("BadCharacter"       )); }
 	return strs;
 }
 

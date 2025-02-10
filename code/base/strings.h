@@ -695,7 +695,7 @@ str8_list_push_frontf__arena(Arena *arena, String8List *list, char *fmt, ...) {
 inline String8Node*
 str8_list_push__ainfo(AllocatorInfo ainfo, String8List* list, String8 string) {
   String8Node* node = alloc_array_no_zero(ainfo, String8Node, 1);
-  str8_list_push_node_front_set_string(list, node, string);
+  str8_list_push_node_set_string(list, node, string);
   return(node);
 }
 

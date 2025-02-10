@@ -583,8 +583,9 @@ sll__queue_push_nz(
 inline void
 sll__queue_push_front_nz(void* nil, void** f, void** l, void* n, void** n_next) {
 	if (check_nil(nil, *f)) {
-		*f = n;
-		*l = n;
+		*f      = n;
+		*l      = n;
+		*n_next = nil;
 	}
 	else {
 		*n_next = f;

@@ -25,5 +25,16 @@ int main()
 	TokenizeResult lexed  = tokenize_from_text    (arena, hello_world_mdesk);
 	ParseResult    parsed = parse_from_text_tokens(arena, text(path_hello_world_mdesk), hello_world_mdesk, lexed.tokens);
 
+	#define str8_list_iter(list, elem) list.first; elem; elem = elem->next
+	String8List debug_list = debug_string_list_from_tree(arena, parsed.root);
+
+	printf("Parsed listing:\n");
+	// for (String8Node* elem = str8_list_iter(debug_list, elem))
+	for (String8Node* elem = debug_list.first; elem; elem = elem->next)
+	{
+		String8 entry = elem->string;
+		printf("\tentry: %*s\n", (int)entry.size, entry.str);
+	}
+
 	deinit(& ctx);
 }

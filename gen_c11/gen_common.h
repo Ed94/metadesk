@@ -2,7 +2,7 @@
 #	pragma once
 #endif
 
-#define GEN_DONT_ENFORCE_GEN_TIME
+#define GEN_DONT_ENFORCE_GEN_TIME_GUARD
 #define GEN_DEFINE_LIBRARY_CODE_CONSTANTS
 #define GEN_ENFORCE_STRONG_CODE_TYPES
 #define GEN_IMPLEMENTATION
@@ -11,16 +11,24 @@
 
 #include "third_party/gencpp_c11/push_ignores.inline.h"
 
-#define path_format_style    "../bin/.clang-format "
-#define scratch_file         "scratch.h"
-#define path_code            "../code/"
-#define path_base            path_code "base/"
-#define path_mdesk           path_code "mdesk/"
-#define path_os              path_code "os/"
+#define path_root            "./"
+#define path_bin             path_root    "bin/"
+#define path_build           path_root    "build/"
+#define path_code            path_root    "code/"
+#define path_gen_c11         path_root    "gen_c11/"
+#define path_gen             path_gen_c11 "gen/"
+#define path_base            path_code    "base/"
+#define path_mdesk           path_code    "mdesk/"
+#define path_os              path_code    "os/"
+#define path_os_win32        path_os      "win32/"
+#define path_os_linux        path_os      "linux/"
+#define path_third_party     path_root    "third_party/"
+#define path_scratch_file    path_gen     "scratch.h"
+#define path_format_style    path_bin     ".clang-format "
 
 #define lit     gen_txt
 #define nullptr gen_nullptr
-#define args gen_args
+// #define args    
 
 void register_library_macros() 
 {
@@ -28,47 +36,47 @@ void register_library_macros()
 
 	// base/context_cracking.h
 	gen_register_macros( args(
-		((gen_Macro) { lit("BUILD_DEBUG"),                              MT_Expression,  }),
-		((gen_Macro) { lit("BUILD_STATIC"),                             MT_Expression,  }),
-		((gen_Macro) { lit("BUILD_DYNAMIC"),                            MT_Expression,  }),
-		((gen_Macro) { lit("BUILD_API_EXPORT"),                         MT_Expression,  }),
-		((gen_Macro) { lit("BUILD_ENTRY_DEFINING_UNIT"),                MT_Expression,  }),
-		((gen_Macro) { lit("BUILD_CONSOLE_INTERFACE"),                  MT_Expression,  }),
-		((gen_Macro) { lit("BUILD_VERSION_MAJOR"),                      MT_Expression,  }),
-		((gen_Macro) { lit("BUILD_VERSION_MINOR"),                      MT_Expression,  }),
-		((gen_Macro) { lit("BUILD_VERSION_PATCH"),                      MT_Expression,  }),
-		((gen_Macro) { lit("BUILD_VERSION_STRING_LITERAL"),             MT_Expression,  }),
-		((gen_Macro) { lit("BUILD_MODE_STRING_LITERAL_APPEND"),         MT_Expression,  }),
-		((gen_Macro) { lit("BUILD_GIT_HASH_STRING_LITERAL_APPEND"),     MT_Expression,  }),
-		((gen_Macro) { lit("BUILD_TITLE"),                              MT_Expression,  }),
-		((gen_Macro) { lit("BUILD_RELEASE_PHASE_STRING_LITERAL"),       MT_Expression,  }),
-		((gen_Macro) { lit("BUILD_ISSUES_LINK_STRING_LITERAL"),         MT_Expression,  }),
-		((gen_Macro) { lit("BUILD_TITLE_STRING_LITERAL"),               MT_Expression,  }),
-		((gen_Macro) { lit("COMPILER_MSVC"),                            MT_Expression,  }),
-		((gen_Macro) { lit("COMPILER_CLANG"),                           MT_Expression,  }),
-		((gen_Macro) { lit("COMPILER_GCC"),                             MT_Expression,  }),
-		((gen_Macro) { lit("LANG_C"),                                   MT_Expression,  }),
-		((gen_Macro) { lit("LANG_CPP"),                                 MT_Expression,  }),
-		((gen_Macro) { lit("ARCH_X64"),                                 MT_Expression,  }),
-		((gen_Macro) { lit("ARCH_X86"),                                 MT_Expression,  }),
-		((gen_Macro) { lit("ARCH_ARM64"),                               MT_Expression,  }),
-		((gen_Macro) { lit("ARCH_ARM32"),                               MT_Expression,  }),
-		((gen_Macro) { lit("ARCH_LITTLE_ENDIAN"),                       MT_Expression,  }),
-		((gen_Macro) { lit("OS_WINDOWS"),                               MT_Expression,  }),
-		((gen_Macro) { lit("OS_OSX"),                                   MT_Expression,  }),
-		((gen_Macro) { lit("OS_ANDROID"),                               MT_Expression,  }),
-		((gen_Macro) { lit("OS_LINUX"),                                 MT_Expression,  }),
-		((gen_Macro) { lit("OS_FREEBSD"),                               MT_Expression,  }),
-		((gen_Macro) { lit("OS_OPENBSD"),                               MT_Expression,  }),
-		((gen_Macro) { lit("OS_EMSCRIPTEN"),                            MT_Expression,  }),
-		((gen_Macro) { lit("OS_CYGWIN"),                                MT_Expression,  }),
-		((gen_Macro) { lit("MD_API"),                                   MT_Expression,  MF_Allow_As_Attribute }),
-		((gen_Macro) { lit("MD_API_C"),                                 MT_Expression,  MF_Allow_As_Attribute }),
-		((gen_Macro) { lit("MD_API_C_BEGIN"),                           MT_Statement,                         }),
-		((gen_Macro) { lit("MD_API_C_END"),                             MT_Statement,                         })
+		((gen_Macro) { lit("BUILD_DEBUG"),                          MT_Expression,  }),
+		((gen_Macro) { lit("BUILD_STATIC"),                         MT_Expression,  }),
+		((gen_Macro) { lit("BUILD_DYNAMIC"),                        MT_Expression,  }),
+		((gen_Macro) { lit("BUILD_API_EXPORT"),                     MT_Expression,  }),
+		((gen_Macro) { lit("BUILD_ENTRY_DEFINING_UNIT"),            MT_Expression,  }),
+		((gen_Macro) { lit("BUILD_CONSOLE_INTERFACE"),              MT_Expression,  }),
+		((gen_Macro) { lit("BUILD_VERSION_MAJOR"),                  MT_Expression,  }),
+		((gen_Macro) { lit("BUILD_VERSION_MINOR"),                  MT_Expression,  }),
+		((gen_Macro) { lit("BUILD_VERSION_PATCH"),                  MT_Expression,  }),
+		((gen_Macro) { lit("BUILD_VERSION_STRING_LITERAL"),         MT_Expression,  }),
+		((gen_Macro) { lit("BUILD_MODE_STRING_LITERAL_APPEND"),     MT_Expression,  }),
+		((gen_Macro) { lit("BUILD_GIT_HASH_STRING_LITERAL_APPEND"), MT_Expression,  }),
+		((gen_Macro) { lit("BUILD_TITLE"),                          MT_Expression,  }),
+		((gen_Macro) { lit("BUILD_RELEASE_PHASE_STRING_LITERAL"),   MT_Expression,  }),
+		((gen_Macro) { lit("BUILD_ISSUES_LINK_STRING_LITERAL"),     MT_Expression,  }),
+		((gen_Macro) { lit("BUILD_TITLE_STRING_LITERAL"),           MT_Expression,  }),
+		((gen_Macro) { lit("COMPILER_MSVC"),                        MT_Expression,  }),
+		((gen_Macro) { lit("COMPILER_CLANG"),                       MT_Expression,  }),
+		((gen_Macro) { lit("COMPILER_GCC"),                         MT_Expression,  }),
+		((gen_Macro) { lit("LANG_C"),                               MT_Expression,  }),
+		((gen_Macro) { lit("LANG_CPP"),                             MT_Expression,  }),
+		((gen_Macro) { lit("ARCH_X64"),                             MT_Expression,  }),
+		((gen_Macro) { lit("ARCH_X86"),                             MT_Expression,  }),
+		((gen_Macro) { lit("ARCH_ARM64"),                           MT_Expression,  }),
+		((gen_Macro) { lit("ARCH_ARM32"),                           MT_Expression,  }),
+		((gen_Macro) { lit("ARCH_LITTLE_ENDIAN"),                   MT_Expression,  }),
+		((gen_Macro) { lit("OS_WINDOWS"),                           MT_Expression,  }),
+		((gen_Macro) { lit("OS_OSX"),                               MT_Expression,  }),
+		((gen_Macro) { lit("OS_ANDROID"),                           MT_Expression,  }),
+		((gen_Macro) { lit("OS_LINUX"),                             MT_Expression,  }),
+		((gen_Macro) { lit("OS_FREEBSD"),                           MT_Expression,  }),
+		((gen_Macro) { lit("OS_OPENBSD"),                           MT_Expression,  }),
+		((gen_Macro) { lit("OS_EMSCRIPTEN"),                        MT_Expression,  }),
+		((gen_Macro) { lit("OS_CYGWIN"),                            MT_Expression,  }),
+		((gen_Macro) { lit("MD_API"),                               MT_Expression,  MF_Allow_As_Attribute }),
+		((gen_Macro) { lit("MD_API_C"),                             MT_Expression,  MF_Allow_As_Attribute }),
+		((gen_Macro) { lit("MD_API_C_BEGIN"),                       MT_Statement,                         }),
+		((gen_Macro) { lit("MD_API_C_END"),                         MT_Statement,                         })
 	));
 	// base/macros.h
-	register_library_macros(args(
+	gen_register_macros(args(
 		((gen_Macro) { lit("expect"),                                   MT_Expression, MF_Functional | MF_Allow_As_Attribute }),
 		((gen_Macro) { lit("likely"),                                   MT_Expression, MF_Functional | MF_Allow_As_Attribute }),
 		((gen_Macro) { lit("unlikely"),                                 MT_Expression, MF_Functional | MF_Allow_As_Attribute }),
@@ -91,7 +99,7 @@ void register_library_macros()
 		((gen_Macro) { lit("do_once_end"),                              MT_Statement,  })
 	));
 	// base/generic_macros.h
-	register_library_macros(args(
+	gen_register_macros(args(
 		((gen_Macro) { lit("COMMA_OPERATOR"),                           MT_Expression, }),
 		((gen_Macro) { lit("select_arg_1"),                             MT_Expression, MF_Functional  }),
 		((gen_Macro) { lit("select_arg_2"),                             MT_Expression, MF_Functional  }),
@@ -114,7 +122,7 @@ void register_library_macros()
 		((gen_Macro) { lit("distinct"),                                 MT_Typename,   MF_Functional  })
 	));
 	// base/profiling.h
-	register_library_macros(args(
+	gen_register_macros(args(
 		((gen_Macro) { lit("PROFILE_TELEMETRY"),    MT_Expression,               }),
 		((gen_Macro) { lit("MARKUP_LAYER_COLOR"),   MT_Expression,               }),
 		((gen_Macro) { lit("prof_begin"),           MT_Expression, MF_Functional }),
@@ -301,12 +309,12 @@ void register_library_macros()
 		((gen_Macro) { lit("BIT64"), MT_Expression,  })
 	));
 	// base/ring.h
-	register_library_macros(args(
+	gen_register_macros(args(
 		((gen_Macro) { lit("ring_write_struct"), MT_Expression, MF_Functional }),
 		((gen_Macro) { lit("ring_read_struct"),  MT_Expression, MF_Functional })
 	));
 	// base/debug.h
-	register_library_macros(args(
+	gen_register_macros(args(
 		((gen_Macro) { lit("trap"),              MT_Expression, MF_Functional }),
 		((gen_Macro) { lit("assert_msg"),        MT_Expression, MF_Functional }),
 		((gen_Macro) { lit("assert_always"),     MT_Expression, MF_Functional }),
@@ -317,121 +325,382 @@ void register_library_macros()
 		((gen_Macro) { lit("md_static_assert"),  MT_Expression, MF_Functional })
 	));
 	// base/memory.h
-	register_library_macros(args(
-		((gen_Macro) { lit("KILOBYTES"),                        MT_Expression,  }),
-		((gen_Macro) { lit("MEGABYTES"),                        MT_Expression,  }),
-		((gen_Macro) { lit("GIGABYTES"),                        MT_Expression,  }),
-		((gen_Macro) { lit("TERABYTES"),                        MT_Expression,  }),
-		((gen_Macro) { lit("KB"),                               MT_Expression,  }),
-		((gen_Macro) { lit("MB"),                               MT_Expression,  }),
-		((gen_Macro) { lit("GB"),                               MT_Expression,  }),
-		((gen_Macro) { lit("TB"),                               MT_Expression,  }),
-		((gen_Macro) { lit("thousand"),                         MT_Expression,  }),
-		((gen_Macro) { lit("million"),                          MT_Expression,  }),
-		((gen_Macro) { lit("billion"),                          MT_Expression,  }),
-		((gen_Macro) { lit("align_of"),                         MT_Expression,  }),
-		((gen_Macro) { lit("member"),                           MT_Expression,  }),
-		((gen_Macro) { lit("offset_of"),                        MT_Expression,  }),
-		((gen_Macro) { lit("member_from_offset"),               MT_Expression,  }),
-		((gen_Macro) { lit("cast_from_member"),                 MT_Expression,  }),
-		((gen_Macro) { lit("cast_from_member"),                 MT_Expression,  }),
-		((gen_Macro) { lit("memory_copy"),                      MT_Expression,  }),
-		((gen_Macro) { lit("memory_set"),                       MT_Expression,  }),
-		((gen_Macro) { lit("memory_compare"),                   MT_Expression,  }),
-		((gen_Macro) { lit("memory_str_len"),                   MT_Expression,  }),
-		((gen_Macro) { lit("memory_copy_struct"),               MT_Expression,  }),
-		((gen_Macro) { lit("memory_copy_array"),                MT_Expression,  }),
-		((gen_Macro) { lit("memory_copy_type"),                 MT_Expression,  }),
-		((gen_Macro) { lit("memory_zero"),                      MT_Expression,  }),
-		((gen_Macro) { lit("memory_zero_struct"),               MT_Expression,  }),
-		((gen_Macro) { lit("memory_zero_array"),                MT_Expression,  }),
-		((gen_Macro) { lit("memory_zero_type"),                 MT_Expression,  }),
-		((gen_Macro) { lit("memory_match"),                     MT_Expression,  }),
-		((gen_Macro) { lit("memory_match_struct"),              MT_Expression,  }),
-		((gen_Macro) { lit("memory_match_array"),               MT_Expression,  }),
-		((gen_Macro) { lit("memory_read"),                      MT_Expression,  }),
-		((gen_Macro) { lit("memory_consume"),                   MT_Expression,  }),
-		((gen_Macro) { lit("ins_atomic_u64_eval"),              MT_Expression,  }),
-		((gen_Macro) { lit("ins_atomic_u64_inc_eval"),          MT_Expression,  }),
-		((gen_Macro) { lit("ins_atomic_u64_dec_eval"),          MT_Expression,  }),
-		((gen_Macro) { lit("ins_atomic_u64_eval_assign"),       MT_Expression,  }),
-		((gen_Macro) { lit("ins_atomic_u64_add_eval"),          MT_Expression,  }),
-		((gen_Macro) { lit("ins_atomic_u64_eval_cond_assign"),  MT_Expression,  }),
-		((gen_Macro) { lit("ins_atomic_u32_eval"),              MT_Expression,  }),
-		((gen_Macro) { lit("ins_atomic_u32_eval_assign"),       MT_Expression,  }),
-		((gen_Macro) { lit("ins_atomic_u32_eval_cond_assign"),  MT_Expression,  }),
-		((gen_Macro) { lit("check_nil"),                        MT_Expression,  }),
-		((gen_Macro) { lit("set_nil"),                          MT_Expression,  }),
+	gen_register_macros(args(
+		((gen_Macro) { lit("KILOBYTES"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("MEGABYTES"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("GIGABYTES"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("TERABYTES"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("KB"),                               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("MB"),                               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("GB"),                               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("TB"),                               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("thousand"),                         MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("million"),                          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("billion"),                          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("align_of"),                         MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("member"),                           MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("offset_of"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("member_from_offset"),               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("cast_from_member"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("cast_from_member"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("memory_copy"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("memory_set"),                       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("memory_compare"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("memory_str_len"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("memory_copy_struct"),               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("memory_copy_array"),                MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("memory_copy_type"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("memory_zero"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("memory_zero_struct"),               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("memory_zero_array"),                MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("memory_zero_type"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("memory_match"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("memory_match_struct"),              MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("memory_match_array"),               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("memory_read"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("memory_consume"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("ins_atomic_u64_eval"),              MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("ins_atomic_u64_inc_eval"),          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("ins_atomic_u64_dec_eval"),          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("ins_atomic_u64_eval_assign"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("ins_atomic_u64_add_eval"),          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("ins_atomic_u64_eval_cond_assign"),  MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("ins_atomic_u32_eval"),              MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("ins_atomic_u32_eval_assign"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("ins_atomic_u32_eval_cond_assign"),  MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("check_nil"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("set_nil"),                          MT_Expression, MF_Functional }),
 		((gen_Macro) { lit("MD_LINKED_LIST_PURE_MACRO"),        MT_Expression,  }),
-		((gen_Macro) { lit("dll_insert_npz"),                   MT_Expression,  }),
-		((gen_Macro) { lit("dll_push_back_npz"),                MT_Expression,  }),
-		((gen_Macro) { lit("dll_push_front_npz"),               MT_Expression,  }),
-		((gen_Macro) { lit("dll_remove_npz"),                   MT_Expression,  }),
-		((gen_Macro) { lit("sll_queue_push_nz"),                MT_Expression,  }),
-		((gen_Macro) { lit("sll_queue_push_front_nz"),          MT_Expression,  }),
-		((gen_Macro) { lit("sll_queue_pop_nz"),                 MT_Expression,  }),
-		((gen_Macro) { lit("sll_stack_push_n"),                 MT_Expression,  }),
-		((gen_Macro) { lit("sll_stack_pop_n"),                  MT_Expression,  }),
-		((gen_Macro) { lit("dll_insert_np"),                    MT_Expression,  }),
-		((gen_Macro) { lit("dll_push_back_np"),                 MT_Expression,  }),
-		((gen_Macro) { lit("dll_push_front_np"),                MT_Expression,  }),
-		((gen_Macro) { lit("dll_remove_np"),                    MT_Expression,  }),
-		((gen_Macro) { lit("dll_insert"),                       MT_Expression,  }),
-		((gen_Macro) { lit("dll_push_back"),                    MT_Expression,  }),
-		((gen_Macro) { lit("dll_push_front"),                   MT_Expression,  }),
-		((gen_Macro) { lit("dll_remove"),                       MT_Expression,  }),
-		((gen_Macro) { lit("sll_queue_push_n"),                 MT_Expression,  }),
-		((gen_Macro) { lit("sll_queue_push_front_n"),           MT_Expression,  }),
-		((gen_Macro) { lit("sll_queue_pop_n"),                  MT_Expression,  }),
-		((gen_Macro) { lit("sll_queue_push"),                   MT_Expression,  }),
-		((gen_Macro) { lit("sll_queue_push_front"),             MT_Expression,  }),
-		((gen_Macro) { lit("sll_queue_pop"),                    MT_Expression,  }),
-		((gen_Macro) { lit("sll_stack_push"),                   MT_Expression,  }),
-		((gen_Macro) { lit("sll_stack_pop"),                    MT_Expression,  }),
+		((gen_Macro) { lit("dll_insert_npz"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("dll_push_back_npz"),                MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("dll_push_front_npz"),               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("dll_remove_npz"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sll_queue_push_nz"),                MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sll_queue_push_front_nz"),          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sll_queue_pop_nz"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sll_stack_push_n"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sll_stack_pop_n"),                  MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("dll_insert_np"),                    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("dll_push_back_np"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("dll_push_front_np"),                MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("dll_remove_np"),                    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("dll_insert"),                       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("dll_push_back"),                    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("dll_push_front"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("dll_remove"),                       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sll_queue_push_n"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sll_queue_push_front_n"),           MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sll_queue_pop_n"),                  MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sll_queue_push"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sll_queue_push_front"),             MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sll_queue_pop"),                    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sll_stack_push"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sll_stack_pop"),                    MT_Expression, MF_Functional }),
 		((gen_Macro) { lit("NO_ASAN"),                          MT_Expression,  }),
 		((gen_Macro) { lit("MD_ASAN_ENABLED"),                  MT_Expression,  }),
-		((gen_Macro) { lit("asan_poison_memory_region"),        MT_Expression,  }),
-		((gen_Macro) { lit("asan_unpoison_memory_region"),      MT_Expression,  }),
-		((gen_Macro) { lit("array_count"),                      MT_Expression,  }),
-		((gen_Macro) { lit("ceil_integer_div"),                 MT_Expression,  }),
-		((gen_Macro) { lit("swap"),                             MT_Expression,  }),
-		((gen_Macro) { lit("int_from_ptr"),                     MT_Expression,  }),
-		((gen_Macro) { lit("ptr_from_int"),                     MT_Expression,  }),
-		((gen_Macro) { lit("compose_64bit"),                    MT_Expression,  }),
-		((gen_Macro) { lit("align_pow2"),                       MT_Expression,  }),
-		((gen_Macro) { lit("align_down_pow2"),                  MT_Expression,  }),
-		((gen_Macro) { lit("align_pad_pow2"),                   MT_Expression,  }),
-		((gen_Macro) { lit("is_pow2"),                          MT_Expression,  }),
-		((gen_Macro) { lit("is_pow2_or_zero"),                  MT_Expression,  }),
-		((gen_Macro) { lit("extract_bit"),                      MT_Expression,  }),
-		((gen_Macro) { lit("zero_struct"),                      MT_Expression,  }),
-		((gen_Macro) { lit("this_function_name"),               MT_Expression,  }),
-		((gen_Macro) { lit("read_only"),                        MT_Expression,  }),
-		((gen_Macro) { lit("local_persist"),                    MT_Expression,  }),
-		((gen_Macro) { lit("thread_static"),                    MT_Expression,  }),
-		((gen_Macro) { lit("thread_local"),                     MT_Expression,  }),
-		((gen_Macro) { lit("from_be_u16"),                      MT_Expression,  }),
-		((gen_Macro) { lit("from_be_u32"),                      MT_Expression,  }),
-		((gen_Macro) { lit("from_be_u64"),                      MT_Expression,  })
+		((gen_Macro) { lit("asan_poison_memory_region"),        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("asan_unpoison_memory_region"),      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("array_count"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("ceil_integer_div"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("swap"),                             MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("int_from_ptr"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("ptr_from_int"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("compose_64bit"),                    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("align_pow2"),                       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("align_down_pow2"),                  MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("align_pad_pow2"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("is_pow2"),                          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("is_pow2_or_zero"),                  MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("extract_bit"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("zero_struct"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("this_function_name"),               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("read_only"),                        MT_Expression, MF_Functional | MF_Allow_As_Specifier }),
+		((gen_Macro) { lit("thread_static"),                    MT_Expression, MF_Allow_As_Specifier }),
+		((gen_Macro) { lit("from_be_u16"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("from_be_u32"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("from_be_u64"),                      MT_Expression, MF_Functional })
 	));
-	register_library_macros(args(
+	// base/memory_substrate.h
+	gen_register_macros(args(
 		((gen_Macro) { lit("MD__ONES"),                    MT_Expression,  }),
 		((gen_Macro) { lit("MD__HIGHS"),                   MT_Expression,  }),
 		((gen_Macro) { lit("MD__HAS_ZERO"),                MT_Expression,  }),
 		((gen_Macro) { lit("MD_DEFAULT_MEMORY_ALIGNMENT"), MT_Expression,  }),
 		((gen_Macro) { lit("MD_HEAP_ANALYSIS"),            MT_Expression,  }),
-		((gen_Macro) { lit("heap"),                        MT_Expression,  }),
-		((gen_Macro) { lit("md_malloc"),                   MT_Expression,  }),
+		((gen_Macro) { lit("heap"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("md_malloc"),                   MT_Expression, MF_Functional }),
 		((gen_Macro) { lit("md_free"),                     MT_Expression,  }),
 		((gen_Macro) { lit("VARENA_DEFUALT_RESERVE"),      MT_Expression,  }),
 		((gen_Macro) { lit("VARENA_DEFUALT_COMMIT"),       MT_Expression,  }),
-		((gen_Macro) { lit("varena_alloc"),                MT_Expression,  }),
-		((gen_Macro) { lit("varena_allocator"),            MT_Expression,  }),
-		((gen_Macro) { lit("farena_from_byteslice"),       MT_Expression,  }),
-		((gen_Macro) { lit("farena_from_memory"),          MT_Expression,  }),
-		((gen_Macro) { lit("farena_allocator"),            MT_Expression,  }),
-		((gen_Macro) { lit("farena_allocator"),            MT_Expression,  }),
-		((gen_Macro) { lit("farena_allocator"),            MT_Expression,  }),
-		((gen_Macro) { lit("farena_allocator"),            MT_Expression,  }),
+		((gen_Macro) { lit("varena_alloc"),                MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("varena_allocator"),            MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("farena_from_byteslice"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("farena_from_memory"),          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("farena_allocator"),            MT_Expression, MF_Functional })
+	));
+	// base/arena.h
+	gen_register_macros(args(
+		((gen_Macro) { lit("ARENA_DEFAULT_BLOCK_SIZE"),      MT_Expression,  }),
+		((gen_Macro) { lit("arena_alloc"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("push_array_no_zero_aligned"),    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("push_array_aligned"),            MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("push_array_no_zero"),            MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("push_array"),                    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("MD_OVERRIDE_DEFAULT_ALLOCATOR"), MT_Expression,  })
+	));
+	// base/math.h
+	gen_register_macros(args(
+		((gen_Macro) { lit("md_min"),                       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("md_max"),                       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("clamp_top"),                    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("clamp_bot"),                    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("clamp"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("abs_s64"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sqrt_f32"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("mod_f32"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("pow_f32"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("ceil_f32"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("floor_f32"),                    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("round_f32"),                    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("abs_f32"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("radians_from_turns_f32"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("turns_from_radians_f32"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("degrees_from_turns_f32"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("turns_from_degrees_f32"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("degrees_from_radians_f32"),     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("radians_from_degrees_f32"),     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sin_f32"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("cos_f32"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("tan_f32"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sqrt_f64"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("mod_f64"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("pow_f64"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("ceil_f64"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("floor_f64"),                    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("round_f64"),                    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("abs_f64"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("radians_from_turns_f64"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("turns_from_radians_f64"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("degrees_from_turns_f64"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("turns_from_degrees_f64"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("degrees_from_radians_f64"),     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("radians_from_degrees_f64"),     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sin_f64"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("cos_f64"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("tan_f64"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("v2f32"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("v2s64"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("v2s32"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("v2s16"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("vec2"),                         MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("add_vec2"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sub_vec2"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("mul_vec2"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("div_vec2"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("scale_vec2"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("dot_vec2"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("length_squared_vec2"),          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("length_vec2"),                  MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("normalize_vec2"),               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("mix_vec2"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("v3f32"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("v3s32"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("vec3"),                         MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("add_vec3"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sub_vec3"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("mul_vec3"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("div_vec3"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("scale_vec3"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("dot_vec3"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("length_squared_vec3"),          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("length_vec3"),                  MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("normalize_vec3"),               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("mix_vec3"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("cross_vec3"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("v4f32"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("v4s32"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("vec4"),                         MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("add_vec4"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("sub_vec4"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("mul_vec4"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("div_vec4"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("scale_vec4"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("dot_vec4"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("length_squared_vec4"),          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("length_vec4"),                  MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("normalize_vec4"),               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("mix_vec4"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("r1u32"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("r1s32"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("r1u64"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("r1s64"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("r1f32"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("r2s16"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("r2s16p"),                       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("r2s32"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("r2s32p"),                       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("r2s64"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("r2s64p"),                       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("rgba_from_u32_lit_comp"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("rng1s64_list_push"),            MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("rng1s64_array_from_list_push"), MT_Expression, MF_Functional })
+	));
+	// base/sort.h
+	gen_register_macro((gen_Macro) { lit("quick_sort"), MT_Expression, MF_Functional });
+	// base/strings.h
+	gen_register_macros(args(
+		((gen_Macro) { lit("STB_SPRINTF_DECORATE"),            MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("cstring_length"),                  MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_lit"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_lit_comp"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_varg"),                       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_array"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_array_fixed"),                MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_struct"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str_range"),                       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str_cstring"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_cat"),                        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_copy"),                       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8fv"),                          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8f"),                           MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("upper_from_str8"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("lower_from_str8"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("backslashed_from_str8"),           MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_match_lit"),                  MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_match_cstr"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_ends_with_lit"),              MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_from_memory_size"),           MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_from_u64"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_from_s64"),                   MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_from_bits_u32"),              MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_from_bits_u64"),              MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_list_first"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_list_aligner"),               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_list_copy"),                  MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_list_push"),                  MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_list_push_front"),            MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_list_pushf"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_list_push_frontf"),           MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_split"),                      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_split_by_string_chars"),      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_list_split_by_string_chars"), MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_list_join"),                  MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_array_from_list"),            MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_array_reserve"),              MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_split_path"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_path_list_join_by_style"),    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_from_str16"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str16_from_str8"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_from_str32"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str32_from_str8"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("date_time_string"),                MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("file_name_date_time_string"),      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("string_from_elapsed_time"),        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("string_from_guid"),                MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("indented_from_string"),            MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("escaped_from_raw_str8"),           MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("raw_from_escaped_str8"),           MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("wrapped_lines_from_string"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("hex_string_from_rgba_4f32"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("fuzzy_match_find"),                MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("fuzzy_match_range_list_copy"),     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_serial_push_array"),          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_serial_push_struct"),         MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_serial_begin"),               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_serial_end"),                 MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_serial_push_align"),          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_serial_push_size"),           MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_serial_push_data"),           MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_serial_push_data_list"),      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_serial_push_u64"),            MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_serial_push_u32"),            MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_serial_push_u16"),            MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_serial_push_u8"),             MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_serial_push_cstr"),           MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_serial_push_string"),         MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_deserial_read_array"),        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_deserial_read_struct"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str8_from"),                       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("str16_from"),                      MT_Expression, MF_Functional })
+	));
+	// base/thread_context.h
+	gen_register_macros(args(
+		((gen_Macro) { lit("tctx_write_this_srcloc"), MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("scratch_begin"),          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("scratch_end"),            MT_Expression, MF_Functional })
+	));
+	// base/command_line.h
+	gen_register_macros(args(
+		((gen_Macro) { lit("cmd_line_insert_opt"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("cmd_line_from_string_list"), MT_Expression, MF_Functional })
+	));
+	// base/markup.h
+	gen_register_macros(args(
+		((gen_Macro) { lit("thread_namef"), MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("thraed_name"),  MT_Expression, MF_Functional })
+	));
+	// base/logger.h
+	gen_register_macros(args(
+		((gen_Macro) { lit("LOG_DEFAULT_ARENA_BLOCK_SIZE"), MT_Expression,  }),
+		((gen_Macro) { lit("log_info"),                     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("log_infof"),                    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("log_user_error"),               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("log_user_errorf"),              MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("log_info_named_block"),         MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("log_info_named_blockf"),        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("log_scope_begin"),              MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("log_scope_end"),                MT_Expression, MF_Functional })
+	));
+
+
+	// os/os.h
+	gen_register_macros(args(
+		((gen_Macro) { lit("os_handle_ist_push"),        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("os_handle_array_from_list"), MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("os_string_list_from_argcv"), MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("os_full_path_from_path"),    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("os_file_iter_begin"),        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("os_data_from_file_path"),    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("os_string_from_file_range"), MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("os_string_from_guid"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("os_get_current_path"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("os_mutex_scope"),            MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("os_mutex_scope_r"),          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("os_mutex_scope_W"),          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("os_mutex_scope_rw_promote"), MT_Expression, MF_Functional })
+	));
+	// os/os_resolve.h
+	gen_register_macros(args(
+		((gen_Macro) { lit("OS_FEATURE_GRAPHICAL"), MT_Expression,  }),
+		((gen_Macro) { lit("OS_GFX_STUB"),          MT_Expression,  })
+	));
+	// os/win32/os_win32_includes.h
+	gen_register_macros(args(
+		((gen_Macro) { lit("NOMINMAX"),            MT_Expression,  }),
+		((gen_Macro) { lit("WIN32_LEAN_AND_MEAN"), MT_Expression,  }),
+		((gen_Macro) { lit("WIN32_MEAN_AND_LEAN"), MT_Expression,  }),
+		((gen_Macro) { lit("VC_EXTRALEAN"),        MT_Expression,  })
+	));
+	// os/linux/os_linux_includes.h
+	gen_register_macro((gen_Macro) { lit("_GNU_SOURCE"), MT_Expression, });
+
+	// mdesk/mdesk.h
+	gen_register_macros(args(
+		((gen_Macro) { lit("NodeFlag_AfterFromBefore"),     MT_Expression,  }),
+		((gen_Macro) { lit("msg_list_push"),                MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("msg_list_pushf"),               MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("string_list_from_token_flags"), MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("token_chunk_list_push"),        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("token_array_from_chunk_list"),  MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("each_node"),                    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("node_rec_depth_first_pre"),     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("node_rec_depth_first_pre_rev"), MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("push_node"),                    MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("string_from_children"),         MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("tokenize_from_text"),           MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("parse_from_text_tokens"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("parse_from_text"),              MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("tree_from_string"),             MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("debug_string_list_from_tree"),  MT_Expression, MF_Functional })
 	));
 }

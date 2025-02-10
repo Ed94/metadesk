@@ -85,7 +85,10 @@
 		"text.h": "c",
 		"forward_list": "c",
 		"iomanip": "cpp",
-		"gen_common.h": "c"
+		"gen_common.h": "c",
+		"processthreadsapi.h": "c",
+		"timeapi.h": "c",
+		"stdlib.h": "c"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

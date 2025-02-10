@@ -13,7 +13,7 @@ void clang_format_file( char const* path, char const* style_path )
 	gen_StrBuilder style_arg;
 	if (style_path) {
 		style_arg = gen_strbuilder_make_str(gen_get_context()->Allocator_Temp, gen_txt("-style=file:"));
-		gne_strbuilder_append_fmt( & style_arg, "%s ", style_path );
+		gen_strbuilder_append_fmt( & style_arg, "%s ", style_path );
 	}
 
 	gen_Str clang_format      = gen_txt("clang-format ");
@@ -38,9 +38,9 @@ void refactor_file( char const* path, char const* refactor_script )
 
 	gen_StrBuilder command = gen_strbuilder_make_str(gen_get_context()->Allocator_Temp, gen_txt("refactor "));
 	// strbuilder_append_str( & command, gen_txt("-debug ") );
-	gn_strbuilder_append_str( & command, gen_txt("-num=1 ") );
-	gn_strbuilder_append_fmt( & command, "-src=%s ", path );
-	gn_strbuilder_append_fmt( & command,"-spec=%s ", refactor_script );
+	gen_strbuilder_append_str( & command, gen_txt("-num=1 ") );
+	gen_strbuilder_append_fmt( & command, "-src=%s ", path );
+	gen_strbuilder_append_fmt( & command,"-spec=%s ", refactor_script );
 	system(command);
 	gen_log_fmt("\n");
 }
@@ -63,7 +63,7 @@ gen_Code code_refactor_and_format( gen_Code code, char const* scratch_path, char
 		clang_format_file(scratch_path, clang_format_sytle_path);
 	}
 
-	gen_Code result = scan_file( scratch_path );
+	gen_Code result = gen_scan_file( scratch_path );
 	remove(scratch_path);
 	return result;
 }

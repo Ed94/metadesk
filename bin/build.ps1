@@ -42,6 +42,7 @@ $release      = $null
 [bool] $verbose         = $false
 [bool] $code_sanity     = $false
 [bool] $compile_sanity  = $false
+[bool] $gen_c11         = $false
 
 [array] $vendors = @( "clang", "msvc" )
 
@@ -55,6 +56,7 @@ if ( $args ) { $args | ForEach-Object {
 		"debug"             { $release        = $false }
 		"code_sanity"       { $code_sanity    = $true }
 		"compile_sanity"    { $compile_sanity = $true }
+		"gen_c11"           { $gen_c11        = $true }
 		}
 	}
 }
@@ -83,6 +85,7 @@ else {
 
 $cannot_build =                    $code_sanity    -eq $false
 $cannot_build = $cannot_build -and $compile_sanity -eq $false
+$cannot_build = $cannot_build -and $gen_c11        -eq $false
 if ( $cannot_build ) {
 	throw "No build target specified. One must be specified, this script will not assume one"
 }
@@ -143,6 +146,40 @@ if ($code_sanity)
 	Push-Location $path_build
 		if ( Test-Path( $executable ) ) {
 			write-host "`nRunning test/code_sanity"
+			$time_taken = Measure-Command { & $executable
+					| ForEach-Object {
+						write-host `t $_ -ForegroundColor Green
+					}
+				}
+			write-host "`ntest/code_sanity completed in $($time_taken.TotalMilliseconds) ms"
+		}
+	Pop-Location
+}
+
+if ($gen_c11)
+{
+	write-host "Building gen_c11/gen_c11.c"
+
+	$compiler_args = @()
+	$compiler_args += $flag_all_c
+	$compiler_args += $flag_updated_cpp_macro
+	$compiler_args += $flag_c11
+
+	$linker_args = @()
+	$linker_args += $flag_link_win_subsystem_console
+
+	$includes   = @( $path_gen_c11, $path_root )
+	$unit       = join-path $path_gen_c11 'gen_c11.c'
+	$executable = join-path $path_build   'gen_c11.exe'
+
+	$result = build-simple $path_build $includes $compiler_args $linker_args $unit $executable
+
+	$path_gen = join-path $path_gen_c11 'gen'
+	verify-path $path_gen
+
+	Push-Location $path_root
+		if ( Test-Path( $executable ) ) {
+			write-host "`nRunninggen_c11/gen_c11.exe"
 			$time_taken = Measure-Command { & $executable
 					| ForEach-Object {
 						write-host `t $_ -ForegroundColor Green

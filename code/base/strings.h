@@ -889,6 +889,11 @@ MD_API OperatingSystem operating_system_from_string(String8 string);
 ////////////////////////////////
 //~ rjf: Basic Types & Space Enum -> String Conversions
 
+String8 string_from_dimension       (Dimension       dimension);
+String8 string_from_side            (Side            side);
+String8 string_from_operating_system(OperatingSystem os);
+String8 string_from_architecture    (Arch            arch);
+
 inline String8
 string_from_dimension(Dimension dimension) {
 	local_persist String8 strings[] = {
@@ -1171,7 +1176,6 @@ MD_API void    str8_serial_push_u32__ainfo      (AllocatorInfo ainfo, String8Lis
 #define str8_serial_push_u8(allocator, srl, x)             _Generic(allocator, Arena*: str8_serial_push_u8__arena,        AllocatorInfo: str8_serial_push_u8__ainfo,        default: assert_generic_selection_fail) resolved_function_call(allocator, srl, x)
 #define str8_serial_push_cstr(allocator, srl, str)         _Generic(allocator, Arena*: str8_serial_push_cstr__arena,      AllocatorInfo: str8_serial_push_cstr__ainfo,      default: assert_generic_selection_fail) resolved_function_call(allocator, srl, str)
 #define str8_serial_push_string(allocator, slr, str)       _Generic(allocator, Arena*: str8_serial_push_string__arena,    AllocatorInfo: str8_serial_push_string__ainfo,    default: assert_generic_selection_fail) resolved_function_call(allocator, srl, str)
-
 
 force_inline U64   str8_serial_push_align__arena(Arena* arena, String8List* srl, U64 align) { return str8_serial_push_align__ainfo(arena_allocator(arena), srl, align); }
 force_inline void* str8_serial_push_size__arena (Arena* arena, String8List* srl, U64 size)  { return str8_serial_push_size__ainfo (arena_allocator(arena), srl, size); }

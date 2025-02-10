@@ -1,8 +1,9 @@
 #ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
-#	include "base/file.h"
 #	include "base/debug.h"
-#	include "os_resolve.h"
+#	include "base/strings.h"
+#	include "base/thread_context.h"
+#	include "base/file.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools
@@ -150,38 +151,16 @@ typedef void OS_ThreadFunctionType(void *ptr);
 force_inline OS_Handle os_handle_zero (void)                     { OS_Handle handle = {0}; return handle; }
 force_inline B32       os_handle_match(OS_Handle a, OS_Handle b) { return a.u64[0] == b.u64[0]; }
 
-void           os_handle_list_push            (Arena*        arena, OS_HandleList* handles, OS_Handle handle);
-void           os_handle_list_alloc           (AllocatorInfo ainfo, OS_HandleList* handles, OS_Handle handle);
-OS_HandleArray os_handle_array_from_list      (Arena*        arena, OS_HandleList* list);
-OS_HandleArray os_handle_array_from_list_alloc(AllocatorInfo ainfo, OS_HandleList* list);
+void           os_handle_list_push__arena      (Arena*        arena, OS_HandleList* handles, OS_Handle handle);
+void           os_handle_list_push__ainfo      (AllocatorInfo ainfo, OS_HandleList* handles, OS_Handle handle);
+OS_HandleArray os_handle_array_from_list__arena(Arena*        arena, OS_HandleList* list);
+OS_HandleArray os_handle_array_from_list__ainfo(AllocatorInfo ainfo, OS_HandleList* list);
 
-inline void
-os_handle_list_push(Arena* arena, OS_HandleList* handles, OS_Handle handle) {
-#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
-	OS_HandleNode* n = push_array(arena, OS_HandleNode, 1);
-	n->v = handle;
-	sll_queue_push(handles->first, handles->last, n);
-	handles->count += 1;
-#else
-	os_handle_list_alloc(arena_allocator(arena), handles, handle);
-#endif
-}
+#define os_handle_ist_push(arena, handles, handle) _Generic(allocator, Arena*: os_handle_list_push__arena,       AllocatorInfo: os_handle_list_push__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, handles, handle)
+#define os_handle_array_from_list(allocator, list) _Generic(allocator, Arena*: os_handle_array_from_list__arena, AllocatorInfo: os_handle_list_push__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, list)
 
-inline OS_HandleArray
-os_handle_array_from_list(Arena* arena, OS_HandleList* list) {
-#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
-	OS_HandleArray result = {0};
-	result.count = list->count;
-	result.v     = push_array_no_zero(arena, OS_Handle, result.count);
-	U64 idx = 0;
-	for(OS_HandleNode* n = list->first; n != 0; n = n->next, idx += 1) {
-		result.v[idx] = n->v;
-	}
-	return result;
-#else
-	return os_handle_array_from_list_alloc(arena_allocator(arena), list);
-#endif
-}
+force_inline void           os_handle_list_push__arena      (Arena* arena, OS_HandleList* handles, OS_Handle handle) {        os_handle_list__push_ainfo      (arena_allocator(arena), handles, handle); }
+force_inline OS_HandleArray os_handle_array_from_list__arena(Arena* arena, OS_HandleList* list)                      { return os_handle_array_from_list__ainfo(arena_allocator(arena), list); }
 
 inline void
 os_handle_list_alloc(AllocatorInfo ainfo, OS_HandleList* handles, OS_Handle handle) {
@@ -206,44 +185,45 @@ os_handle_array_from_list_alloc(AllocatorInfo ainfo, OS_HandleList* list) {
 ////////////////////////////////
 //~ rjf: Command Line Argc/Argv Helper (Helper, Implemented Once)
 
+String8List os_string_list_from_argcv__arena(Arena*        arena, int argc, char** argv);
+String8List os_string_list_from_argcv__ainfo(AllocatorInfo ainfo, int argc, char** argv);
+
 inline String8List
-os_string_list_from_argcv_alloc(AllocatorInfo ainfo, int argc, char** argv) {
+os_string_list_from_argcv__ainfo(AllocatorInfo ainfo, int argc, char** argv) {
 	String8List result = {0};
 	for(int i = 0; i < argc; i += 1)
 	{
 		String8 str = str8_cstring(argv[i]);
-		str8_list(ainfo, &result, str);
+		str8_list_push(ainfo, &result, str);
 	}
 	return result;
 }
 
-inline String8List
-os_string_list_from_argcv(Arena* arena, int argc, char** argv) {
-	String8List result = {0};
-	for(int i = 0; i < argc; i += 1)
-	{
-		String8 str = str8_cstring(argv[i]);
-		str8_list_push(arena, &result, str);
-	}
-	return result;
-}
+#define os_string_list_from_argcv(allocator, argc, argv) _Generic(allocator, Arena*: os_string_list_from_argcv__arena, AllocatorInfo: os_string_list_from_argcv__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, argc, argv)
+
+force_inline String8List os_string_list_from_argcv__arena(Arena* arena, int argc, char** argv) { return os_string_list_from_argcv__ainfo(arena_allocator(arena), argc, argv); }
 
 ////////////////////////////////
 //~ rjf: @os_hooks File System (Implemented Per-OS)
 
 //- rjf: files
-MD_API OS_Handle      os_file_open                (OS_AccessFlags flags, String8 path);
-MD_API void           os_file_close               (OS_Handle file);
-MD_API U64            os_file_read                (OS_Handle file, Rng1U64 rng, void *out_data);
-MD_API U64            os_file_write               (OS_Handle file, Rng1U64 rng, void *data);
-MD_API B32            os_file_set_times           (OS_Handle file, DateTime time);
-MD_API FileProperties os_properties_from_file     (OS_Handle file);
-MD_API OS_FileID      os_id_from_file             (OS_Handle file);
-MD_API B32            os_delete_file_at_path      (String8   path);
-MD_API B32            os_copy_file_path           (String8   dst,   String8 src);
-MD_API String8        os_full_path_from_path      (Arena*    arena, String8 path);
-MD_API B32            os_file_path_exists         (String8   path);
-MD_API FileProperties os_properties_from_file_path(String8   path);
+MD_API OS_Handle      os_file_open                 (OS_AccessFlags flags, String8 path);
+MD_API void           os_file_close                (OS_Handle file);
+MD_API U64            os_file_read                 (OS_Handle file, Rng1U64 rng, void *out_data);
+MD_API U64            os_file_write                (OS_Handle file, Rng1U64 rng, void *data);
+MD_API B32            os_file_set_times            (OS_Handle file, DateTime time);
+MD_API FileProperties os_properties_from_file      (OS_Handle file);
+MD_API OS_FileID      os_id_from_file              (OS_Handle file);
+MD_API B32            os_delete_file_at_path       (String8   path);
+MD_API B32            os_copy_file_path            (String8   dst,   String8 src);
+MD_API B32            os_file_path_exists          (String8   path);
+MD_API FileProperties os_properties_from_file_path (String8   path);
+MD_API String8        os_full_path_from_path__arena(Arena*        arena, String8 path);
+MD_API String8        os_full_path_from_path__ainfo(AllocatorInfo arena, String8 path);
+
+#define os_full_path_from_path(allocator, path) _Generic(allocator, Arena*: os_full_path_from_path__arena, AllocatorInfo: os_full_path_from_path__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, path)
+
+force_inline String8 os_full_path_from_path__arena(Arena* arena, String8 path) { return os_full_path_from_path__ainfo(arena_allocator(arena), path); }
 
 //- rjf: file maps
 MD_API OS_Handle os_file_map_open      (OS_AccessFlags flags, OS_Handle file);
@@ -252,9 +232,17 @@ MD_API void*     os_file_map_view_open (OS_Handle map, OS_AccessFlags flags, Rng
 MD_API void      os_file_map_view_close(OS_Handle map, void* ptr, Rng1U64 range);
 
 //- rjf: directory iteration
-MD_API OS_FileIter* os_file_iter_begin(Arena* arena, String8      path, OS_FileIterFlags flags);
-MD_API B32          os_file_iter_next (Arena* arena, OS_FileIter* iter, OS_FileInfo*     info_out);
-MD_API void         os_file_iter_end  (              OS_FileIter* iter);
+       OS_FileIter* os_file_iter_begin__arena(Arena*        arena, String8      path, OS_FileIterFlags flags);
+MD_API OS_FileIter* os_file_iter_begin__ainfo(AllocatorInfo ainfo, String8      path, OS_FileIterFlags flags);
+       B32          os_file_iter_next__arena (Arena*        arena, OS_FileIter* iter, OS_FileInfo*     info_out);
+MD_API B32          os_file_iter_next__ainfo (AllocatorInfo arena, OS_FileIter* iter, OS_FileInfo*     info_out);
+MD_API void         os_file_iter_end         (                     OS_FileIter* iter);
+
+#define os_file_iter_begin(allocator, path, flags)   _Generic(allocator, Arena*: os_file_iter_begin__arena, AllocatorInfo: os_file_iter_begin__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, path)
+#define os_file_iter_next(allocator, iter, info_out) _Generic(allocator, Arena*: os_file_iter_next__arena,  AllocatorInfo: os_file_iter_next__ainfo,  default: assert_generic_selection_fail) resolved_function_call(allocator, path)
+
+force_inline OS_FileIter* os_file_iter_begin__arena(Arena* arena, String8      path, OS_FileIterFlags flags)    { reutrn (); }
+force_inline B32          os_file_iter_next__arena (Arena* arena, OS_FileIter* iter, OS_FileInfo*     info_out) { reutrn (); }
 
 //- rjf: directory creation
 MD_API B32 os_make_directory(String8 path);
@@ -268,35 +256,23 @@ MD_API B32       os_append_data_to_file_path    (String8 path, String8     data)
        OS_FileID os_id_from_file_path           (String8 path);
        S64       os_file_id_compare             (OS_FileID a, OS_FileID b);
 
-       String8 os_data_from_file_path         (Arena*        arena, String8 path);
-       String8 os_data_from_file_path_alloc   (AllocatorInfo ainfo, String8 path);
-MD_API String8 os_string_from_file_range      (Arena*        arena, OS_Handle file, Rng1U64 range);
-MD_API String8 os_string_from_file_range_alloc(AllocatorInfo ainfo, OS_Handle file, Rng1U64 range);
+       String8 os_data_from_file_path__arena   (Arena*        arena, String8 path);
+       String8 os_data_from_file_path__ainfo   (AllocatorInfo ainfo, String8 path);
+MD_API String8 os_string_from_file_range__arena(Arena*        arena, OS_Handle file, Rng1U64 range);
+MD_API String8 os_string_from_file_range__ainfo(AllocatorInfo ainfo, OS_Handle file, Rng1U64 range);
+
+#define os_data_from_file_path(allocator, path)           _Generic(allocator, Arena*: os_data_from_file_path__arena,    AllocatorInfo: os_data_from_file_path__ainfo,    default: assert_generic_selection_fail) resolved_function_call(allocator, path)
+#define os_string_from_file_range(allocator, file, range) _Generic(allocator, Arena*: os_string_from_file_range__arena, AllocatorInfo: os_string_from_file_range__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, file, range)
 
 inline String8
-os_data_from_file_path(Arena* arena, String8 path)
-{
-#if MD_DONT_MAP_ARENA_TO_ALLOCATOR_IMPL
-	OS_Handle      file  = os_file_open(OS_AccessFlag_Read | OS_AccessFlag_ShareRead, path);
-	FileProperties props = os_properties_from_file(file);
-	String8        data  = os_string_from_file_range(arena, file, r1u64(0, props.size));
-	os_file_close(file);
-	return data;
-#else
-	return os_data_from_file_path_alloc(arena_allocator(arena), path);
-#endif
-}
-
-inline String8
-os_data_from_file_path_alloc(AllocatorInfo ainfo, String8 path)
+os_data_from_file_path__ainfo(AllocatorInfo ainfo, String8 path)
 {
 	OS_Handle      file  = os_file_open(OS_AccessFlag_Read|OS_AccessFlag_ShareRead, path);
 	FileProperties props = os_properties_from_file(file);
-	String8        data  = os_string_from_file_range_alloc(ainfo, file, r1u64(0, props.size));
+	String8        data  = os_string_from_file_range(ainfo, file, r1u64(0, props.size));
 	os_file_close(file);
 	return data;
 }
-
 
 inline OS_FileID
 os_id_from_file_path(String8 path) {
@@ -311,28 +287,17 @@ inline S64 os_file_id_compare(OS_FileID a, OS_FileID b) { S64 cmp = memory_compa
 ////////////////////////////////
 //~ rjf: GUID Helpers (Helpers, Implemented Once)
 
-inline String8
-os_string_from_guid_alloc(AllocatorInfo ainfo, OS_Guid guid) {
-	String8 result = str8f(ainfo, 
-		"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-		guid.data1,
-		guid.data2,
-		guid.data3,
-		guid.data4[0],
-		guid.data4[1],
-		guid.data4[2],
-		guid.data4[3],
-		guid.data4[4],
-		guid.data4[5],
-		guid.data4[6],
-		guid.data4[7]
-	);
-	return result;
-}
+String8 os_string_from_guid__arena(Arena*        arena, OS_Guid guid);
+String8 os_string_from_guid__ainfo(AllocatorInfo ainfo, OS_Guid guid);
+
+#define os_string_from_guid(allocator, guid) _Generic(allocator, Arena*: os_string_from_guid__arena, AllocatorInfo: os_string_from_guid__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, guid)
+
+force_inline String8 os_string_from_guid__arena(Arena* arena, OS_Guid guid) { os_string_from_guid__ainfo(arena_allocator(arena), guid); }
 
 inline String8
-os_string_from_guid(Arena* arena, OS_Guid guid) {
-	String8 result = str8f(arena, 
+os_string_from_guid_alloc(AllocatorInfo ainfo, OS_Guid guid) {
+
+	String8 result = str8f(ainfo, 
 		"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
 		guid.data1,
 		guid.data2,
@@ -355,7 +320,12 @@ os_string_from_guid(Arena* arena, OS_Guid guid) {
 MD_API OS_SystemInfo*  os_get_system_info (void);
 MD_API OS_ProcessInfo* os_get_process_info(void);
 
-String8 os_get_current_path(Arena* arena);
+String8 os_get_current_path__arena(Arena*        arena);
+String8 os_get_current_path__ainfo(AllocatorInfo arena);
+
+#define os_get_current_path(allocator) _Generic(allocator, Arena*: os_get_current_path__arena, AllocatorInfo: os_get_current_path__ainfo) resolved_function_call(allocator)
+
+force_inline String8 os_get_current_path__arena(Arena* arena) { return os_get_current_path__ainfo(arena_allocator(arena)); }
 
 ////////////////////////////////
 //~ rjf: @os_hooks Memory Allocation (Implemented Per-OS)
@@ -373,7 +343,8 @@ B32   os_commit_large (void* ptr, U64 size);
 ////////////////////////////////
 //~ rjf: @os_hooks Thread Info (Implemented Per-OS)
 
-       U32  os_tid            (void);
+U32 os_tid(void);
+
 MD_API void os_set_thread_name(String8 string);
 
 ////////////////////////////////
@@ -424,12 +395,12 @@ MD_API void      os_mutex_take   (OS_Handle mutex);
 MD_API void      os_mutex_drop   (OS_Handle mutex);
 
 //- rjf: reader/writer mutexes
-MD_API OS_Handle os_rw_mutex_alloc(void);
+MD_API OS_Handle os_rw_mutex_alloc  (void);
 MD_API void      os_rw_mutex_release(OS_Handle rw_mutex);
-MD_API void      os_rw_mutex_take_r(OS_Handle mutex);
-MD_API void      os_rw_mutex_drop_r(OS_Handle mutex);
-MD_API void      os_rw_mutex_take_w(OS_Handle mutex);
-MD_API void      os_rw_mutex_drop_w(OS_Handle mutex);
+MD_API void      os_rw_mutex_take_r (OS_Handle mutex);
+MD_API void      os_rw_mutex_drop_r (OS_Handle mutex);
+MD_API void      os_rw_mutex_take_w (OS_Handle mutex);
+MD_API void      os_rw_mutex_drop_w (OS_Handle mutex);
 
 //- rjf: condition variables
 MD_API OS_Handle os_condition_variable_alloc  (void);
@@ -450,10 +421,10 @@ MD_API B32       os_semaphore_take   (OS_Handle semaphore, U64 endt_us);
 MD_API void      os_semaphore_drop   (OS_Handle semaphore);
 
 //- rjf: scope macros
-#define OS_MutexScope(mutex)          defer_loop( os_mutex_take     (mutex), os_mutex_drop     (mutex))
-#define OS_MutexScopeR(mutex)         defer_loop( os_rw_mutex_take_r(mutex), os_rw_mutex_drop_r(mutex))
-#define OS_MutexScopeW(mutex)         defer_loop( os_rw_mutex_take_w(mutex), os_rw_mutex_drop_w(mutex))
-#define OS_MutexScopeRWPromote(mutex) defer_loop((os_rw_mutex_drop_r(mutex), os_rw_mutex_take_w(mutex)), (os_rw_mutex_drop_w(mutex), os_rw_mutex_take_r(mutex)))
+#define os_mutex_scope(mutex)            defer_loop( os_mutex_take     (mutex), os_mutex_drop     (mutex))
+#define os_mutex_scope_r(mutex)          defer_loop( os_rw_mutex_take_r(mutex), os_rw_mutex_drop_r(mutex))
+#define os_mutex_scope_W(mutex)          defer_loop( os_rw_mutex_take_w(mutex), os_rw_mutex_drop_w(mutex))
+#define os_mutex_scope_rw_promote(mutex) defer_loop((os_rw_mutex_drop_r(mutex), os_rw_mutex_take_w(mutex)), (os_rw_mutex_drop_w(mutex), os_rw_mutex_take_r(mutex)))
 
 ////////////////////////////////
 //~ rjf: @os_hooks Dynamically-Loaded Libraries (Implemented Per-OS)

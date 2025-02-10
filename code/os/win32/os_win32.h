@@ -164,7 +164,7 @@ MD_API DWORD os_w32_thread_entry_point(void* ptr);
 //~ rjf: @os_hooks System/Process Info (Implemented Per-OS)
 
 inline String8
-os_get_current_path_alloc(AllocatorInfo ainfo) {
+os_get_current_path__ainfo(AllocatorInfo ainfo) {
 	String8 name;
 	TempArena scratch = scratch_begin(ainfo);
 	{
@@ -172,20 +172,6 @@ os_get_current_path_alloc(AllocatorInfo ainfo) {
 		U16*    memory  = push_array_no_zero(scratch.arena, U16, length + 1);
 				length  = GetCurrentDirectoryW(length + 1, (WCHAR*)memory);
 		        name    = str8_from(ainfo, str16(memory, length));
-	}
-	scratch_end(scratch);
-	return name;
-}
-
-inline String8
-os_get_current_path(Arena* arena) {
-	String8 name;
-	TempArena scratch = scratch_begin(&arena, 1);
-	{
-		DWORD   length  = GetCurrentDirectoryW(0, 0);
-		U16*    memory  = push_array_no_zero(scratch.arena, U16, length + 1);
-				length  = GetCurrentDirectoryW(length + 1, (WCHAR*)memory);
-		        name    = str8_from(arena, str16(memory, length));
 	}
 	scratch_end(scratch);
 	return name;

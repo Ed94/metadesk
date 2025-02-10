@@ -57,6 +57,18 @@ word defer_loop_checked, md_defer_loop_checked
 word each_enum_val,          md_each_enum_val
 word each_non_zero_enum_val, md_each_non_zero_enum_val
 
+word stringify,  md_stringify
+word stringify_, md_stringify_
+
+word glue,  md_glue
+word glue_, md_glue_
+
+word do_once,       md_do_once
+word do_once_defer, md_do_once_defer
+word do_once_start, md_do_once_start
+
+// base/generic_macros.h
+
 // base/profiling.h
 
 word MARKUP_LAYER_COLOR, MD_MARKUP_LAYER_COLOR
@@ -345,30 +357,12 @@ namespace ins_atomic_, md_ins_atomic_
 word check_nil, md_check_nil
 word set_nil,   md_set_nil
 
-// word dll_insert_npz,     md_dll_insert_npz, 
-// word dll_push_back_npz,  md_dll_push_back_npz, 
-// word dll_push_front_npz, md_dll_push_front_npz, 
-// word dll_remove_npz,     md_dll_remove_npz
-
-// word sll_queue_push_nz,       md_sll_queue_push_nz
-// word sll_queue_push_front_nz, md_sll_queue_push_front_nz
-// word sll_queue_pop_nz,        md_sll_queue_pop_nz
-
-// word sll_stack_push_n, md_sll_stack_push_n
-// word sll_stack_pop_n,  md_sll_stack_pop_n
-
 namespace dll_, md_dll_
 namespace sll_, md_sll_
 
 word NO_ASAN, MD_NO_ASAN
 
 namespace asan_, md_asan_
-
-word stringify,  md_stringify
-word stringify_, md_stringify_
-
-word glue,  md_glue
-word glue_, md_glue_
 
 word array_count, md_array_count
 
@@ -1030,6 +1024,8 @@ word      TokenArray,      MD_TokenArray
 
 namespace NodeKind, MD_NodeKind
 word      Node,     MD_Node
+
+
 
 // metagen module
 

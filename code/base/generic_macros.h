@@ -71,7 +71,7 @@ UNRESOLVED_GENERIC_SELECTION const assert_generic_selection_fail = {0};
 // ----------------------------------------------------------------------------------------------------------------------------------
 
 // Then each definiton of a function has an associated define:
-#// #define GENERIC_SLOT_<#>_<generic identifier> <typename>, <function_to_resolve>
+// #define GENERIC_SLOT_<#>_<generic identifier> <typename>, <function_to_resolve>
 
 // Then somehwere later on
 // <etc> <return_type> <function_id> ( <arguments> ) { <implementation> }
@@ -129,8 +129,8 @@ size_t example_hash__P_long_long( long long val ) { return val * 2654435761ull; 
 #ifndef type_to_expression
 // Used to keep the _Generic keyword happy as bare types are not considered "expressions"
 #define type_to_expression(type) (* (type*)NULL)
-#endif
 // Instead of using this macro, it should be directly expanded by code generation.
+#endif
 
 // _Generic also suffers from type compability flatting distinctions between typedef by resolving the selection to the underling type and qualifier.
 // To resolve this these distinctions must be enforced using structs that enforce the typedef

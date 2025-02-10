@@ -1,5 +1,6 @@
 #ifdef INTELLISENSE_DIRECTIVES
 #	include "os_win32.h"
+#	include "os.h"
 #endif
 
 // Copyright (c) 2024 Epic Games Tools
@@ -346,14 +347,14 @@ os_copy_file_path(String8 dst, String8 src)
 }
 
 String8
-os_full_path_from_path(Arena* arena, String8 path)
+os_full_path_from_path__ainfo(AllocatorInfo ainfo, String8 path)
 {
-	TempArena scratch = scratch_begin(&arena, 1);
+	TempArena scratch = scratch_begin(ainfo);
 	DWORD     buffer_size = MAX_PATH + 1;
 	U16*      buffer      = push_array_no_zero(scratch.arena, U16, buffer_size);
 	String16  path16      = str16_from(scratch.arena, path);
 	DWORD     path16_size = GetFullPathNameW((WCHAR*)path16.str, buffer_size, (WCHAR*)buffer, NULL);
-	String8   full_path   = str8_from(arena, str16(buffer, path16_size));
+	String8   full_path   = str8_from(ainfo, str16(buffer, path16_size));
 	scratch_end(scratch);
 	return full_path;
 }
@@ -476,15 +477,15 @@ os_file_map_view_close(OS_Handle map, void* ptr, Rng1U64 range) {
 //- rjf: directory iteration
 
 OS_FileIter*
-os_file_iter_begin(Arena* arena, String8 path, OS_FileIterFlags flags)
+os_file_iter_begin__ainfo(AllocatorInfo ainfo, String8 path, OS_FileIterFlags flags)
 {
-	TempArena scratch = scratch_begin(&arena, 1);
+	TempArena scratch = scratch_begin(ainfo);
 
 	String8   path_with_wildcard = str8_cat(scratch.arena, path, str8_lit("\\*"));
 	String16  path16             = str16_from(scratch.arena, path_with_wildcard);
 
 	OS_FileIter* 
-	iter        = push_array(arena, OS_FileIter, 1); 
+	iter        = alloc_array(ainfo, OS_FileIter, 1); 
 	iter->flags = flags;
 
 	OS_W32_FileIter* w32_iter = (OS_W32_FileIter*)iter->memory;
@@ -500,11 +501,11 @@ os_file_iter_begin(Arena* arena, String8 path, OS_FileIterFlags flags)
 		{
 			String16 next_drive_string_16  = str16_cstring((U16*)buffer + off);
 			         off                  += next_drive_string_16.size + 1;
-			String8  next_drive_string     = str8_from(arena, next_drive_string_16);
+			String8  next_drive_string     = str8_from(ainfo, next_drive_string_16);
 			         next_drive_string     = str8_chop_last_slash(next_drive_string);
 			str8_list_push(scratch.arena, &drive_strings, next_drive_string);
 		}
-		w32_iter->drive_strings          = str8_array_from_list(arena, &drive_strings);
+		w32_iter->drive_strings          = str8_array_from_list(ainfo, &drive_strings);
 		w32_iter->drive_strings_iter_idx = 0;
 	}
 	else
@@ -516,7 +517,7 @@ os_file_iter_begin(Arena* arena, String8 path, OS_FileIterFlags flags)
 }
 
 B32
-os_file_iter_next(Arena* arena, OS_FileIter* iter, OS_FileInfo* info_out)
+os_file_iter_next__ainfo(AllocatorInfo ainfo, OS_FileIter* iter, OS_FileInfo* info_out)
 {
 	B32 result = 0;
 
@@ -566,7 +567,7 @@ os_file_iter_next(Arena* arena, OS_FileIter* iter, OS_FileInfo* info_out)
 					// emit if usable
 					if (usable_file)
 					{
-						info_out->name       = str8_from(arena, str16_cstring((U16*)file_name));
+						info_out->name       = str8_from(ainfo, str16_cstring((U16*)file_name));
 						info_out->props.size = (U64)w32_iter->find_data.nFileSizeLow | (((U64)w32_iter->find_data.nFileSizeHigh) << 32);
 						os_w32_dense_time_from_file_time(&info_out->props.created,  &w32_iter->find_data.ftCreationTime);
 						os_w32_dense_time_from_file_time(&info_out->props.modified, &w32_iter->find_data.ftLastWriteTime);

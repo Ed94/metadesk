@@ -184,16 +184,9 @@ MD_API void* os_lnx_thread_entry_point(void* ptr);
 //~ rjf: @os_hooks System/Process Info (Implemented Per-OS)
 
 inline String8
-os_get_current_path(Arena* arena) {
+os_get_current_path__ainfo(AllocatorInfo ainfo) {
 	char*   cwdir  = getcwd(0, 0);
-	String8 string = push_str8_copy(arena, str8_cstring(cwdir));
-	return  string;
-}
-
-inline String8
-os_get_current_path(AllocatorInfo ainfo) {
-	char*   cwdir  = getcwd(0, 0);
-	String8 string = alloc_str8_copy(ainfo, str8_cstring(cwdir));
+	String8 string = str8_copy(ainfo, str8_cstring(cwdir));
 	return  string;
 }
 

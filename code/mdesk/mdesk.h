@@ -270,21 +270,26 @@ nil_node()
 // NOTE(Ed): The are see comments in Context struct, this is only necessary when not utilizing 
 // the metadesk os runtime provided entry_point interface
 
-MD_API void init  (Context* ctx);
+MD_API void init(Context* ctx);
 // MD_API void deinit(Context* ctx);
 
 ////////////////////////////////
 //~ rjf: Message Type Functions
 
-MD_API void msg_list_push  (Arena*        arena, MsgList* msgs, Node* node, MsgKind kind, String8 string);
-MD_API void msg_list_alloc (AllocatorInfo ainfo, MsgList* msgs, Node* node, MsgKind kind, String8 string);
-       void msg_list_pushf (Arena*        arena, MsgList* msgs, Node* node, MsgKind kind, char *fmt, ...);
-       void msg_list_allocf(AllocatorInfo ainfo, MsgList* msgs, Node* node, MsgKind kind, char *fmt, ...);
+       void msg_list_push__arena (Arena*        arena, MsgList* msgs, Node* node, MsgKind kind, String8 string);
+MD_API void msg_list_push__ainfo (AllocatorInfo ainfo, MsgList* msgs, Node* node, MsgKind kind, String8 string);
+       void msg_list_pushf__arena(Arena*        arena, MsgList* msgs, Node* node, MsgKind kind, char *fmt, ...);
+       void msg_list_pushf__ainfo(AllocatorInfo ainfo, MsgList* msgs, Node* node, MsgKind kind, char *fmt, ...);
+
+#define msg_list_push(allocator, msgs, node, kind, string)            _Generic(allocator, Arena*: msg_list_push__arena,  AllocatorInfo: msg_list_push__ainfo,  default: assert_generic_selection_fail) resolved_function_call(allocator, msgs, node, kind, string)
+#define msg_list_pushf(allocator, msgs, node, kind, string, fmt, ...) _Generic(allocator, Arena*: msg_list_pushf__arena, AllocatorInfo: msg_list_pushf__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, msgs, node, kind, fmt, __VA_ARGS__)
 
 MD_API void msg_list_concat_in_place(MsgList* dst, MsgList* to_push);
 
+force_inline void msg_list_push__arena(Arena* arena, MsgList* msgs, Node* node, MsgKind kind, String8 string) { msg_list_push__ainfo(arena_allocator(arena), msgs, node, kind, string); }
+
 inline void
-msg_list_pushf(Arena* arena, MsgList* msgs, Node* node, MsgKind kind, char* fmt, ...) {
+msg_list_pushf__arena(Arena* arena, MsgList* msgs, Node* node, MsgKind kind, char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
 	String8 string = str8fv(arena, fmt, args);
@@ -293,11 +298,11 @@ msg_list_pushf(Arena* arena, MsgList* msgs, Node* node, MsgKind kind, char* fmt,
 }
 
 inline void
-msg_list_allocf(AllocatorInfo ainfo, MsgList* msgs, Node* node, MsgKind kind, char* fmt, ...) {
+msg_list_pushf__ainfo(AllocatorInfo ainfo, MsgList* msgs, Node* node, MsgKind kind, char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
 	String8 string = str8fv(ainfo, fmt, args);
-	msg_list_alloc(ainfo, msgs, node, kind, string);
+	msg_list_push(ainfo, msgs, node, kind, string);
 	va_end(args);
 }
 
@@ -309,12 +314,20 @@ B32   token_match(Token      a,     Token      b);
 
 MD_API String8 content_string_from_token_flags_str8(TokenFlags flags, String8 string);
 
-MD_API String8List string_list_from_token_flags(Arena*        arena, TokenFlags flags);
-MD_API String8List string_list_from_token_flags_alloc(AllocatorInfo ainfo, TokenFlags flags);
-MD_API void        token_chunk_list_push       (Arena* arena, TokenChunkList* list, U64 cap, Token token);
-MD_API void        token_chunk_list_alloc      (AllocatorInfo ainfo, TokenChunkList* list, U64 cap, Token token);
-MD_API TokenArray  token_array_from_chunk_list_push(Arena* arena, TokenChunkList* chunks);
-MD_API TokenArray  token_array_from_chunk_list_alloc(AllocatorInfo aino, TokenChunkList* chunks);
+       String8List string_list_from_token_flags__arena(Arena*        arena, TokenFlags flags);
+MD_API String8List string_list_from_token_flags__ainfo(AllocatorInfo ainfo, TokenFlags flags);
+MD_API void        token_chunk_list_push__arena       (Arena*        arena, TokenChunkList* list, U64 cap, Token token);
+MD_API void        token_chunk_list_push__ainfo       (AllocatorInfo ainfo, TokenChunkList* list, U64 cap, Token token);
+MD_API TokenArray  token_array_from_chunk_list__arena (Arena*        arena, TokenChunkList* chunks);
+MD_API TokenArray  token_array_from_chunk_list__ainfo (AllocatorInfo ainfo, TokenChunkList* chunks);
+
+#define string_list_from_token_flags(allocator, flags)     _Generic(allocator, Arena*: string_list_from_token_flags__arena, AllocatorInfo: string_list_from_token_flags__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, flags)
+#define token_chunk_list_push(allocator, list, cap, token) _Generic(allocator, Arena*: token_chunk_list_push__arena,        AllocatorInfo: token_chunk_list_push__ainfo,        default: assert_generic_selection_fail) resolved_function_call(allocator, list, cap, token)
+#define token_array_from_chunk_list(allocator, chunks)     _Generic(allocator, Arena*: token_array_from_chunk_list__arena,  AllocatorInfo: token_array_from_chunk_list__ainfo,  default: assert_generic_selection_fail) resolved_function_call(allocator, chunks)
+
+force_inline String8List string_list_from_token_flags__arena(Arena* arena, TokenFlags flags)                           { return string_list_from_token_flags__ainfo(arena_allocator(arena), flags); }
+force_inline void        token_chunk_list_push__arena       (Arena* arena, TokenChunkList* list, U64 cap, Token token) { token_chunk_list_push__ainfo(arena_allocator(arena), list, cap, token); }
+force_inline TokenArray  token_array_from_chunk_list__arena (Arena* arena, TokenChunkList* chunks)                     { return token_array_from_chunk_list__ainfo(arena_allocator(arena), chunks); }
 
 inline Token
 token_make(Rng1U64 range, TokenFlags flags) {
@@ -364,8 +377,10 @@ MD_API NodeRec node_rec_depth_first(Node* node, Node* subtree_root, U64 child_of
 
 //- rjf: tree building
 
-Node* push_node (Arena*        arena, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset);
-Node* alloc_node(AllocatorInfo ainfo, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset);
+Node* push_node__arena(Arena*        arena, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset);
+Node* push_node__ainfo(AllocatorInfo ainfo, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset);
+
+#define push_node(allocator, kind, flags, string, raw_string, src_offset) _Generic(allocator, Arena*: push_node__arena, AllocatorInfo: push_node__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, kind, flags, string, raw_string, src_offset)
 
 void  node_insert_tag  (Node* parent, Node* prev_child, Node* node);
 void  node_insert_child(Node* parent, Node* prev_child, Node* node);
@@ -373,24 +388,10 @@ void  node_push_child  (Node* parent, Node* node);
 void  node_push_tag    (Node* parent, Node* node);
 void  unhook           (Node* node);
 
-inline Node*
-push_node(Arena* arena, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset) {
-#if MD_DONT_MAP_ANREA_TO_ALLOCATOR_IMPL
-	Node* node = push_array(arena, Node, 1);
-	node->first      = node->last = node->parent = node->next = node->prev = node->first_tag = node->last_tag = nil_node();
-	node->kind       = kind;
-	node->flags      = flags;
-	node->string     = string;
-	node->raw_string = raw_string;
-	node->src_offset = src_offset;
-	return node;
-#else
-	alloc_node(arena_allocator(arena), kind, flags, string, raw_string, src_offset);
-#endif
-}
+inline Node* push_node__arena(Arena* arena, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset) { push_node__ainfo(arena_allocator(arena), kind, flags, string, raw_string, src_offset); }
 
 inline Node*
-alloc_node(AllocatorInfo ainfo, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset) {
+push_node__ainfo(AllocatorInfo ainfo, NodeKind kind, NodeFlags flags, String8 string, String8 raw_string, U64 src_offset) {
 	Node* node = alloc_array(ainfo, Node, 1);
 	node->first      = node->last = node->parent = node->next = node->prev = node->first_tag = node->last_tag = nil_node();
 	node->kind       = kind;
@@ -445,7 +446,12 @@ B32   node_has_tag          (Node* node, String8 string, StringMatchFlags flags)
 U64   child_count_from_node (Node* node);
 U64   tag_count_from_node   (Node* node);
 
-MD_API String8 string_from_children(Arena* arena, Node* root);
+MD_API String8 string_from_children__arena(Arena*        arena, Node* root);
+       String8 string_from_children__ainfo(AllocatorInfo ainfo, Node* root);
+
+#define string_from_children(allocator, root) _Generic(allocator, Arena*: string_from_children__arena, AllocatorInfo: string_from_children__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, root)
+
+force_inline String8 string_from_children__arena(Arena* arena, Node* root) { return string_from_children__ainfo(arena_allocator(arena), root); }
 
 inline Node*
 node_from_chain_string(Node* first, Node* opl, String8 string, StringMatchFlags flags)
@@ -552,32 +558,51 @@ MD_API B32 node_match(Node* a, Node* b, StringMatchFlags flags);
 
 //- rjf: tree duplication
 
-MD_API Node* tree_copy      (Arena*        arena, Node* src_root);
-MD_API Node* tree_copy_alloc(AllocatorInfo ainfo, Node* src_root);
+MD_API Node* tree_copy__arena(Arena*        arena, Node* src_root);
+MD_API Node* tree_copy__ainfo(AllocatorInfo ainfo, Node* src_root);
+
+#define tree_copy(allocator, src_root) _Generic(allocator, Arena*: tree_copy__arena, AllocatorInfo: tree_copy__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, src_root)
+
+force_inline Node* tree_copy__arena(Arena* arena, Node* src_root) { return tree_copy__ainfo(arena_allocator(arena), src_root); }
 
 ////////////////////////////////
 //~ rjf: Text -> Tokens Functions
 
-MD_API TokenizeResult tokenize_from_text      (Arena*        arena, String8 text);
-MD_API TokenizeResult tokenize_from_text_alloc(AllocatorInfo ainfo, String8 text);
+MD_API TokenizeResult tokenize_from_text__arena(Arena*        arena, String8 text);
+MD_API TokenizeResult tokenize_from_text__ainfo(AllocatorInfo ainfo, String8 text);
+
+#define tokenize_from_text(allocator, text) _Generic(allocator, Arena*: tokenize_from_text__arena, AllocatorInfo: tokenize_from_text__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, text)
+
+force_inline TokenizeResult tokenize_from_text__arena(Arena* arena, String8 text) {  return tokenize_from_text__ainfo(arena_allocator(arena), text); }
 
 ////////////////////////////////
 //~ rjf: Tokens -> Tree Functions
 
-MD_API ParseResult parse_from_text_tokens      (Arena*        arena, String8 filename, String8 text, TokenArray tokens);
-MD_API ParseResult parse_from_text_tokens_alloc(AllocatorInfo ainfo, String8 filename, String8 text, TokenArray tokens);
+MD_API ParseResult parse_from_text_tokens__arena(Arena*        arena, String8 filename, String8 text, TokenArray tokens);
+MD_API ParseResult parse_from_text_tokens__ainfo(AllocatorInfo ainfo, String8 filename, String8 text, TokenArray tokens);
+
+#define parse_from_text_tokens(allocator, filename, text, tokens) _Generic(allocator, Arena*: parse_from_text_tokens__arena, AllocatorInfo: parse_from_text_tokens__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, filename, text, tokens)
+
+force_inline ParseResult parse_from_text_tokens__arena(Arena* arena, String8 filename, String8 text, TokenArray tokens) { return parse_from_text_tokens__ainfo(arena_allocator(arena), filename, text, tokens); }
+
 
 ////////////////////////////////
 //~ rjf: Bundled Text -> Tree Functions
 
-MD_API ParseResult parse_from_text      (Arena*        arena, String8 filename, String8 text);
-MD_API ParseResult parse_from_text_alloc(AllocatorInfo ainfo, String8 filename, String8 text);
+MD_API ParseResult parse_from_text__arena(Arena*        arena, String8 filename, String8 text);
+MD_API ParseResult parse_from_text__ainfo(AllocatorInfo ainfo, String8 filename, String8 text);
 
-#define tree_from_string(arena, string)       (parse_from_text      ((arena), str8_zero(), (string)).root)
-#define tree_from_string_alloc(ainfo, string) (parse_from_text_alloc((ainfo), str8_zero(), (string)).root)
+#define parse_from_text(allocator, filename, text) _Generic(allocator, Arena*: parse_from_text__arena, AllocatorInfo: parse_from_text__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, filename, text)
+#define tree_from_string(allocator, string)       (parse_from_text((allocator), str8_zero(), (string)).root)
+
+force_inline ParseResult parse_from_text__arena(Arena* arena, String8 filename, String8 text) { return parse_from_text__ainfo(arena_allocator(arena), filename, text); }
 
 ////////////////////////////////
 //~ rjf: Tree -> Text Functions
 
-MD_API String8List debug_string_list_from_tree      (Arena*        arena, Node* root);
-MD_API String8List debug_string_list_from_tree_alloc(AllocatorInfo ainfo, Node* root);
+MD_API String8List debug_string_list_from_tree__arena(Arena*        arena, Node* root);
+MD_API String8List debug_string_list_from_tree__ainfo(AllocatorInfo ainfo, Node* root);
+
+#define debug_string_list_from_tree(allocator, string) _Generic(allocator, Arena*: debug_string_list_from_tree__arena, AllocatorInfo: debug_string_list_from_tree__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, string)
+
+force_inline String8List debug_string_list_from_tree__arena(Arena* arena, Node* root) { return debug_string_list_from_tree__ainfo(arena_allocator(arena), root); }

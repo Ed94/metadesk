@@ -274,23 +274,10 @@ os_copy_file_path(String8 dst, String8 src)
 }
 
 String8
-os_full_path_from_path(Arena* arena, String8 path)
+os_full_path_from_path__ainfo(AllocatorInfo ainfo, String8 path)
 {
 	char buffer[PATH_MAX] = {0};
-	TempArena scratch = scratch_begin(&arena, 1); {
-		String8 path_copy = push_str8_copy(scratch.arena, path);
-		realpath((char *)path_copy.str, buffer);
-	}
-	scratch_end(scratch);
-	String8 result = push_str8_copy(arena, str8_cstring(buffer));
-	return result;
-}
-
-String8
-os_full_path_from_path_alloc(AllocatorInfo ainfo, String8 path)
-{
-	char buffer[PATH_MAX] = {0};
-	TempArena scratch = scratch_begin_alloc(ainfo); {
+	TempArena scratch = scratch_begin(ainfo); {
 		String8 path_copy = push_str8_copy(scratch.arena, path);
 		realpath((char *)path_copy.str, buffer);
 	}
@@ -363,15 +350,15 @@ os_file_map_view_close(OS_Handle map, void* ptr, Rng1U64 range) {
 //- rjf: directory iteration
 
 OS_FileIter*
-os_file_iter_begin(Arena* arena, String8 path, OS_FileIterFlags flags)
+os_file_iter_begin__ainfo(AllocatorInfo ainfo, String8 path, OS_FileIterFlags flags)
 {
 	OS_FileIter* 
-	base_iter        = push_array(arena, OS_FileIter, 1);
+	base_iter        = alloc_array(ainfo, OS_FileIter, 1);
 	base_iter->flags = flags;
 
 	OS_LNX_FileIter* iter = (OS_LNX_FileIter*)base_iter->memory;
 	{
-		String8 path_copy = push_str8_copy(arena, path);
+		String8 path_copy = str8_copy(arena, path);
 		iter->dir  = opendir((char*)path_copy.str);
 		iter->path = path_copy;
 	}
@@ -395,7 +382,7 @@ os_file_iter_next(Arena* arena, OS_FileIter* iter, OS_FileInfo* info_out)
 		if(good)
 		{
 			TempArena scratch     = scratch_begin(&arena, 1);
-			String8   full_path   = push_str8f(scratch.arena, "%S/%s", lnx_iter->path, lnx_iter->dp->d_name);
+			String8   full_path   = str8f(scratch.arena, "%S/%s", lnx_iter->path, lnx_iter->dp->d_name);
 			          stat_result = stat((char *)full_path.str, &st);
 			scratch_end(scratch);
 		}
@@ -413,7 +400,7 @@ os_file_iter_next(Arena* arena, OS_FileIter* iter, OS_FileInfo* info_out)
 		// rjf: output & exit, if good & unfiltered
 		if (good && !filtered)
 		{
-			info_out->name = push_str8_copy(arena, str8_cstring(lnx_iter->dp->d_name));
+			info_out->name = str8_copy(arena, str8_cstring(lnx_iter->dp->d_name));
 			if (stat_result != -1) {
 				info_out->props = os_lnx_file_properties_from_stat(&st);
 			}

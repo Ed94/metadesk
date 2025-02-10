@@ -465,6 +465,9 @@ String8 str8_from_bits_u64__ainfo(AllocatorInfo ainfo, U64 x);
 #define str8_from_u64(allocator, u64, radix, min_digits, digit_group_separator) _Generic(allocator, Arena*: str8_from_u64__arena,         AllocatorInfo: str8_from_u64__ainfo,          default: assert_generic_selection_fail) resolved_function_call(allocator, u64, radix, min_digits, digit_group_separator)
 #define str8_from_s64(allocator, s64, radix, min_digits, digit_group_separator) _Generic(allocator, Arena*: str8_from_s64__arena,         AllocatorInfo: str8_from_s64__ainfo ,         default: assert_generic_selection_fail) resolved_function_call(allocator, s64, radix, min_digits, digit_group_separator)
 
+#define str8_from_bits_u32(allocator, x) _Generic(allocator, Arena*: str8_from_bits_u32__arena, AllocatorInfo: str8_from_bits_u32__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, x)
+#define str8_from_bits_u64(allocator, x) _Generic(allocator, Arena*: str8_from_bits_u64__arena, AllocatorInfo: str8_from_bits_u64__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, x)
+
 force_inline String8 str8_from_memory_size__arena(Arena* arena, SSIZE z)                                                     { return str8_from_memory_size__ainfo(arena_allocator(arena), z); }
 force_inline String8 str8_from_u64__arena        (Arena* arena, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator) { return str8_from_u64__ainfo        (arena_allocator(arena), u64, radix, min_digits, digit_group_separator); }
 force_inline String8 str8_from_s64__arena        (Arena* arena, S64 s64, U32 radix, U8 min_digits, U8 digit_group_separator) { return str8_from_s64__ainfo        (arena_allocator(arena), s64, radix, min_digits, digit_group_separator); }
@@ -783,6 +786,7 @@ str8_list_from_flags__ainfo(AllocatorInfo ainfo, String8List* list, U32 flags, S
 //~ rjf; String Arrays
 
 #define str8_array_from_list(allocator, list) _Generic(allocator, Arena*: str8_array_from_list__arena, AllocatorInfo: str8_array_from_list__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, list)
+#define str8_array_reserve(allocator, count)  _Generic(allocaotr, Arena*: str8_array_reserve__arena    AllocatorInfo: str8_array_reserve__ainfo,   default: assert_generic_selection_fail) resolved_function_call(allocator, count)
 
 inline String8Array
 str8_array_from_list__ainfo(AllocatorInfo ainfo, String8List* list) {

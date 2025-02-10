@@ -17,7 +17,7 @@ int main()
 	ctx.os_ctx.enable_large_pages = true;
 	init(& ctx);
 
-	printf("metadesk: got past init!");
+	printf("metadesk: got past init!\n");
 
 	Arena* arena = arena_alloc();
 	String8 hello_world_mdesk = os_data_from_file_path(arena, text(path_hello_world_mdesk));
@@ -29,11 +29,15 @@ int main()
 	String8List debug_list = debug_string_list_from_tree(arena, parsed.root);
 
 	printf("Parsed listing:\n");
-	// for (String8Node* elem = str8_list_iter(debug_list, elem))
-	for (String8Node* elem = debug_list.first; elem; elem = elem->next)
+	for (String8Node* elem = str8_list_iter(debug_list, elem))
 	{
 		String8 entry = elem->string;
-		printf("\tentry: %*s\n", (int)entry.size, entry.str);
+		if (str8_find_needle(entry, 0, str8_lit("\n"), 0) < entry.size) {
+			printf("%*s", (int)entry.size, entry.str);
+		}
+		else {
+			printf("%*s\n", (int)entry.size, entry.str);
+		}
 	}
 
 	deinit(& ctx);

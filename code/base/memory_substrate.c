@@ -249,8 +249,9 @@ varena__alloc(VArenaParams params)
 		reserve_size = align_pow2(reserve_size, os_get_system_info()->page_size);
 		commit_size  = align_pow2(commit_size,  os_get_system_info()->page_size);
 
-		base = os_reserve(reserve_size);
-		os_commit(base, commit_size);
+		    base          = os_reserve(reserve_size);
+		B32 commit_result = os_commit(base, commit_size);
+		assert(commit_result == 1);
 		asan_poison_memory_region(base, params.commit_size);
 	}
 
@@ -302,7 +303,8 @@ varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_
 			UPTR current_offset   = vm->reserve_start + vm->commit_used;
 			UPTR size_to_allocate = requested_size;
 			UPTR to_be_used       = vm->commit_used + size_to_allocate;
-			assert(to_be_used < vm->reserve);
+			SPTR reserve_left     = vm->reserve - vm->committed;
+			assert(to_be_used < reserve_left);
 
 			UPTR header_offset = vm->reserve_start - scast(UPTR, vm);
 
@@ -310,19 +312,20 @@ varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_
 			B32  needs_more_commited = commit_left < size_to_allocate;
 			if (needs_more_commited) 
 			{
-				SPTR reserve_left     = vm->reserve - vm->committed;
 				UPTR next_commit_size;
 				if (vm->flags & VArenaFlag_LargePages) {
-					next_commit_size = reserve_left > 0 ? md_max(vm->commit_size, size_to_allocate) : scast(UPTR, align_pow2( -reserve_left, os_get_system_info()->large_page_size));
+					next_commit_size = reserve_left > 0 ? md_max(vm->commit_size, size_to_allocate) : scast(UPTR, align_pow2( abs(reserve_left), os_get_system_info()->large_page_size));
 				}
 				else {
 					next_commit_size = reserve_left > 0 ? md_max(vm->commit_size, size_to_allocate) : scast(UPTR, align_pow2(abs(reserve_left), os_get_system_info()->page_size));
 				} 	 
 				if (next_commit_size) {
-					B32 commit_result = os_commit(vm, next_commit_size);
+					void* next_commit_start = rcast(void*, rcast(UPTR, vm) + vm->committed);
+					B32   commit_result     = os_commit(next_commit_start, next_commit_size);
 					if (commit_result == false) {
 						break;
 					}
+					vm->committed += next_commit_size;
 				}
 			}
 
@@ -390,11 +393,6 @@ varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_
 			vm->commit_used += size_to_allocate;
 		}
 		break;
-
-		// case AllocatorMode_Pop:
-		// break;
-		// case AllocatorMode_Pop_To:
-		// break;
 
 		case AllocatorMode_QueryType:
 		{
@@ -474,18 +472,13 @@ farena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZ
 		}
 		break;
 
-		// case AllocatorMode_Pop:
-		// break;
-		// case AllocatorMode_Pop_To:
-		// break;
-
 		case AllocatorMode_QueryType:
 			return (void*) AllocatorType_FArena;
 		break;
 
 		case AllocatorMode_QuerySupport:
-			return (void*) (AllocatorQuery_Alloc | AllocatorQuery_FreeAll | AllocatorQuery_Resize 
-				// | AllocatorQuery_Pop | AllocatorQuery_Pop_To
+			return (void*) (
+				AllocatorQuery_Alloc | AllocatorQuery_FreeAll | AllocatorQuery_Resize | AllocatorQuery_ResizeGrow | AllocatorQuery_ResizeShrink
 			);
 		break;
 	}

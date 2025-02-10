@@ -271,7 +271,7 @@ nil_node()
 // the metadesk os runtime provided entry_point interface
 
 MD_API void init(Context* ctx);
-// MD_API void deinit(Context* ctx);
+MD_API void deinit(Context* ctx); // Does nothing for now.
 
 ////////////////////////////////
 //~ rjf: Message Type Functions

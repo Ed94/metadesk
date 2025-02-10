@@ -18,9 +18,10 @@ void init(Context* ctx)
 	
 }
 
-// void deinit(Context* ctx)
-// {
-// }
+void deinit(Context* ctx)
+{
+	// Nothing for now
+}
 
 ////////////////////////////////
 //~ rjf: Message Type Functions

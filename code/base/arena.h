@@ -19,6 +19,8 @@ enum
 	// Only relevant if backing is virtual memory, will prevent allocating a new backing VArena when the current block exhausts
 	// Will assume backing can chain multiple block_size arenas however. If there is an allocation failure it will assert.
 	ArenaFlag_NoChainVirtual = (1 << 1),
+	// Backing allocator identified as VArena during initialization
+	ArenaFlag_Virtual        = (1 << 0),
 };
 
 typedef struct ArenaParams ArenaParams;

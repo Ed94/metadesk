@@ -21,12 +21,16 @@ arena__alloc(ArenaParams* optional_params)
 
 	U64 const varena_reserve_size = VARENA_DEFAULT_RESERVE;
 
+	B32 is_virtual = allocator_type(params.backing) & AllocatorType_VArena;
+	params.flags  |= ArenaFlag_Virtual * is_virtual;
+
+
 	if (params.backing.proc == nullptr) params.backing    = default_allocator();
 	if (params.block_size   == 0      ) params.block_size = ARENA_DEFAULT_BLOCK_SIZE;
 
-	// TODO(Ed): Do we need to be slapping the arena onto the memory now?
-	// (its technically not needed a its no longer always backed by vmem)
-	void* base = alloc(params.backing, params.block_size);
+	SSIZE alloc_size = is_virtual ? header_size : params.block_size;
+
+	void* base = alloc(params.backing, alloc_size);
 	// rjf: extract arena header & fill
 	Arena* arena      = (Arena*) base;
 	arena->prev       = nullptr;
@@ -43,57 +47,60 @@ arena__alloc(ArenaParams* optional_params)
 //- rjf: arena push/pop core functions
 
 void*
-arena_push(Arena *arena, SSIZE size, SSIZE align)
+arena_push(Arena* arena, SSIZE size, SSIZE align)
 {
 	SPTR const header_size = align_pow2(size_of(Arena), MD_DEFAULT_MEMORY_ALIGNMENT);
 
-	Arena *current = arena->current;
+	Arena* current   = arena->current;
+	SPTR   curr_sptr = scast(SPTR, current);
 
-	SPTR pos_pre = align_pow2(current->pos, align);
-	SPTR pos_pst = pos_pre + size;
+	SSIZE aligned_size = align_pow2(size, align);
+
+	SPTR pos_pre = current->pos;
+	SPTR pos_pst = pos_pre + aligned_size;
+
+	B32 is_virtual = arena->flags & ArenaFlag_Virtual;
   
 	// rjf: chain, if needed
 	if ( current->block_size < pos_pst && ! (arena->flags & ArenaFlag_NoChain) )
 	{
-		SSIZE res_size = current->block_size;
-		if(size + header_size > res_size) {
-			res_size = size + header_size;
-		}
-
 		Arena* new_block = nullptr;
 
-		B32 
-		vmem_chain  = (arena->flags & ArenaFlag_NoChainVirtual);
-		vmem_chain &= allocator_type(arena->backing) == AllocatorType_VArena;
+		B32 vmem_chain  = is_virtual && (arena->flags & ArenaFlag_NoChainVirtual);
 		if (vmem_chain) {
 			SPTR const varena_header_size = align_pow2(size_of(VArena), MD_DEFAULT_MEMORY_ALIGNMENT);
-			U64 const  arena_block_size   = VARENA_DEFAULT_RESERVE - varena_header_size;
+			SPTR const arena_block_size   = VARENA_DEFAULT_RESERVE - varena_header_size;
 
-			VArena* new_vm    = varena_alloc(.reserve_size = VARENA_DEFAULT_RESERVE, .commit_size = VARENA_DEFAULT_COMMIT);
+			VArena* vcurrent = rcast(VArena*, arena->backing.data);
+
+			VArena* new_vm    = varena_alloc(.reserve_size = vcurrent->reserve, .commit_size = vcurrent->commit_size);
 			        new_block = arena_alloc(.backing = varena_allocator(new_vm), .block_size = arena_block_size);
 		}
 		else {
-			U64 const arena_block_size = arena->block_size + header_size;
-		
+			SPTR const arena_block_size = arena->block_size + header_size;
 			new_block = arena_alloc(.backing = arena->backing, .block_size = arena_block_size);
 		}
-		
 		new_block->base_pos = current->base_pos + current->block_size;
 
 		sll_stack_push_n(arena->current, new_block, prev);
 		
 		current = new_block;
-		pos_pre = align_pow2(current->pos, align);
-		pos_pst = pos_pre + size;
+		pos_pre = current->pos;
+		pos_pst = pos_pre + aligned_size;
 	}
-  
+
 	// rjf: push onto current block
 	void* result = 0;
-	// if(current->cmt >= pos_pst)
 	{
-		result       = (U8*)current + pos_pre;
+		result       = scast(void*, curr_sptr + pos_pre);
 		current->pos = pos_pst;
 		asan_unpoison_memory_region(result, size);
+	}
+
+	if (is_virtual) {
+		// Sync virtual arena
+		void* vresult = alloc_align(arena->backing, size, align);
+		assert(vresult == result);
 	}
 	
 	// rjf: panic on failure
@@ -113,18 +120,32 @@ arena_pop_to(Arena *arena, SSIZE pos)
 {
 	SPTR const header_size = align_pow2(size_of(Arena), MD_DEFAULT_MEMORY_ALIGNMENT);
 
-	U64    big_pos = clamp_bot(header_size, pos);
-	Arena* current = arena->current;
+	Arena*        current    = arena->current;
+	AllocatorInfo backing    = current->backing;
+	B32           is_virtual = allocator_type(backing) & AllocatorType_VArena;
+
+	SSIZE  big_pos = clamp_bot(header_size, pos);
+	// If base position is larger than the position to pop to:
+	//	We are in a previous arena and msut free the current
 	for(Arena* prev = 0; current->base_pos >= big_pos; current = prev)
 	{
 		prev = current->prev;
-		alloc_free(current->backing, current);
+
+		if (is_virtual) {
+			varena_release(rcast(VArena*, current->backing.data));
+		}
+		else if (allocator_query_support(backing) & AllocatorQuery_Free) {
+			alloc_free(current->backing, current);
+		}
 	}
 	arena->current = current;
-	U64 new_pos = big_pos - current->base_pos;
+	SSIZE new_pos  = big_pos - current->base_pos;
 	assert_always(new_pos <= current->pos);
 	asan_poison_memory_region((U8*)current + new_pos, (current->pos - new_pos));
 	current->pos = new_pos;
+	if (is_virtual) {
+		varena_rewind(rcast(VArena*, current->backing.data), current->pos);
+	}
 }
 
 void* arena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags)

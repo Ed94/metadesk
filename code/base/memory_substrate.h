@@ -194,6 +194,8 @@ MD_API VArena* varena__alloc(VArenaParams params PARAM_DEFAULT);
 MD_API void varena_commit (VArena* vm, SSIZE commit_size);
 MD_API void varena_release(VArena* vm);
 
+force_inline void varena_rewind(VArena* vm, SSIZE pos) { vm->commit_used = pos; }
+
 MD_API void* varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags);
 
 #define varena_allocator(vm) (AllocatorInfo) { varena_allocator_proc, vm }

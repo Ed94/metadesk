@@ -264,10 +264,12 @@ MD_API String8 os_string_from_file_range__ainfo(AllocatorInfo ainfo, OS_Handle f
 #define os_data_from_file_path(allocator, path)           _Generic(allocator, Arena*: os_data_from_file_path__arena,    AllocatorInfo: os_data_from_file_path__ainfo,    default: assert_generic_selection_fail) resolved_function_call(allocator, path)
 #define os_string_from_file_range(allocator, file, range) _Generic(allocator, Arena*: os_string_from_file_range__arena, AllocatorInfo: os_string_from_file_range__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, file, range)
 
+force_inline String8 os_data_from_file_path__arena(Arena* arena, String8 path) { return os_data_from_file_path__ainfo(arena_allocator(arena), path); }
+
 inline String8
 os_data_from_file_path__ainfo(AllocatorInfo ainfo, String8 path)
 {
-	OS_Handle      file  = os_file_open(OS_AccessFlag_Read|OS_AccessFlag_ShareRead, path);
+	OS_Handle      file  = os_file_open(OS_AccessFlag_Read | OS_AccessFlag_ShareRead, path);
 	FileProperties props = os_properties_from_file(file);
 	String8        data  = os_string_from_file_range(ainfo, file, r1u64(0, props.size));
 	os_file_close(file);

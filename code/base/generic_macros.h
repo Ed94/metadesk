@@ -79,17 +79,17 @@ UNRESOLVED_GENERIC_SELECTION const assert_generic_selection_fail = {0};
 // Concrete example:
 
 // To add support for long:
-#define GENERIC_SLOT_1__example_hash long, example_hash__P_long
-size_t example_hash__P_long( long val ) { return val * 2654435761ull; }
+#define GENERIC_SLOT_1__example_hash long, generic_example_hash__P_long
+size_t generic_example_hash__P_long( long val ) { return val * 2654435761ull; }
 
 // To add support for long long:
-#define GENERIC_SLOT_2__example_hash  long long, example_hash__P_long_long
-size_t example_hash__P_long_long( long long val ) { return val * 2654435761ull; }
+#define GENERIC_SLOT_2__example_hash  long long, generic_example_hash__P_long_long
+size_t generic_example_hash__P_long_long( long long val ) { return val * 2654435761ull; }
 
 // If using an Editor with support for syntax hightlighting macros:
 // GENERIC_SLOT_1__example_hash and GENERIC_SLOT_2__example_hash should show color highlighting indicating the slot is enabled,
 // or, "defined" for usage during the compilation pass that handles the _Generic instrinsic.
-#define hash_example( function_arguments ) _Generic(                         \
+#define generic_example_hash( function_arguments ) _Generic(                 \
 (function_arguments), /* Select Via Expression*/                             \
   /* Extendibility slots: */                                                 \
 	if_generic_selector_defined_include_slot( GENERIC_SLOT_1__example_hash ) \
@@ -149,7 +149,7 @@ size_t example_hash__P_long_long( long long val ) { return val * 2654435761ull; 
 
 // Example: -------------------------------------------------------------------------------------------------------------------------
 // Now this can work so long as typedef_generic_selector was used on the S64 && SSIZE typedefs
-#define do_something_with(selector_arg, in) _Generic(                                        \
+#define generic_example_do_something_with(selector_arg, in) _Generic(                        \
 (selector_arg),                                                                              \
 	distinct_lookup(S64)  : do_something_with_s64,   default: assert_generic_selection_fail, \
 	distinct_lookup(SSIZE): do_something_with_ssize, default: assert_generic_selection_fail, \
@@ -168,8 +168,8 @@ size_t example_hash__P_long_long( long long val ) { return val * 2654435761ull; 
 #undef function_generic_example
 #undef GENERIC_SLOT_1__example_hash
 #undef GENERIC_SLOT_2__example_hash
-#undef hash_example
+#undef generic_example_hash
 #undef function_generic_example_varadic
 #undef function_generic_example_direct_type
-#undef do_something_with
+#undef generic_example_do_something_with
 #pragma endregion _Generic Macros

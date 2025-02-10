@@ -57,6 +57,8 @@ word defer_loop_checked, md_defer_loop_checked
 word each_enum_val,          md_each_enum_val
 word each_non_zero_enum_val, md_each_non_zero_enum_val
 
+word src_line_str, md_src_line_str
+
 word stringify,  md_stringify
 word stringify_, md_stringify_
 
@@ -68,6 +70,25 @@ word do_once_defer, md_do_once_defer
 word do_once_start, md_do_once_start
 
 // base/generic_macros.h
+
+word COMMA_OPERATOR, MD_COMMA_OPERATOR
+
+namespace select_arg_,        md_select_arg_
+namespace generic_sel_entry_, md_generic_sel_entry_
+
+word resolved_function_call, md_resolved_function_call
+
+word if_generic_selector_defined_include_slot, md_if_generic_selector_defined_include_slot
+
+word UNRESOLVED_GENERIC_SELECTION, MD_UNRESOLVED_GENERIC_SELECTION
+
+namespace GENERIC_SLOT_1__,           MD_GENERIC_SLOT_1__
+namespace generic_example_hash_,      md_generic_example_hash_
+namespace function_generic_example_,  md_function_generic_example_
+word      type_to_expression,         md_type_to_expression
+word      distinct_register_selector, md_distinct_register_selector
+word      distinct_lookup,            md_distinct_lookup
+word      distinct,                   md_distinct
 
 // base/profiling.h
 
@@ -989,15 +1010,12 @@ word FileProperties,    MD_FileProperties
 
 namespace FilePropertyFlag_, MD_FilePropertyFlag_
 
-
-
 // os/os.h
 
 namespace OS_, MD_OS_
 namespace os_, md_os_
 
 namespace entry_point, md_entry_point
-
 
 // metadesk module
 
@@ -1008,7 +1026,6 @@ namespace entry_point, md_entry_point
 // word MsgKind_Error,      MD_MsgKind_Error
 // word MsgKind_FatalError, MD_MsgKind_FatalError
 namespace MsgKind, MD_MsgKind
-
 
 word Msg,     MD_Msg
 word MsgList, MD_MsgList
@@ -1022,10 +1039,58 @@ word      TokenChunkNode,  MD_TokenChunkNode
 word      TokenChunkList,  MD_TokenChunkList
 word      TokenArray,      MD_TokenArray
 
-namespace NodeKind, MD_NodeKind
-word      Node,     MD_Node
+namespace NodeKind,       MD_NodeKind
+namespace NodeFlag_,      MD_NodeFlag_
+word      Node,           MD_Node
+word      NodeRec,        MD_NodeRec
+word      TokenizeResult, MD_TokenizeResult
+word      ParseResult,    MD_ParseResult
+word      Context,        MD_Context
 
+word nil_node, md_nil_node
 
+word init,   md_init
+word deinit, md_deinit
+
+namespace msg_,         md_msg_
+namespace token_,       md_token_
+namespace string_list_, md_string_list_
+namespace token_chunk_, md_token_chunk_
+namespace token_array_, md_token_array_
+namespace node_,        md_node_
+
+word each_node, md_each_node
+word unhook,    md_unhook
+//word push_node, md_push_node
+
+//namespace push_node_, md_push_node_
+
+word index_from_node,       md_index_from_node
+word root_from_node,        md_root_from_node
+word child_from_string,     md_child_from_string
+word tag_from_string,       md_tag_from_string
+word child_from_index,      md_child_from_index
+word tag_from_index,        md_tag_from_index
+word tag_arg_from_index,    md_tag_arg_from_index
+word tag_arg_from_string,   md_tag_arg_from_string
+word child_count_from_node, md_child_count_from_node
+word tag_count_from_node,   md_tag_count_from_node
+
+namespace string_from_children_,  md_string_from_children_
+
+word tree_match, md_tree_match
+word node_match, md_node_match
+
+namespace tree_copy_,                   md_tree_copy_
+word      tree_copy,                    md_treecopy
+namespace tokenize_from_text_,          md_tokenize_from_text_
+word      tokenize_from_text,           md_tokenize_from_text
+namespace parse_from_text_tokens_,      md_parse_from_text_tokens_
+word      parse_from_text_tokens,       md_parse_from_text_tokens
+namespace parse_from_text_,             md_parse_from_text_
+word      parse_from_text,              md_parse_from_text
+namespace debug_string_list_from_tree_, md_debug_string_list_from_tree_
+word      debug_string_list_from_tree,  md_debug_string_list_from_tree
 
 // metagen module
 

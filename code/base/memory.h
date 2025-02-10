@@ -391,7 +391,7 @@ dll__insert_npz(
 	void*  n, void** n_prev, void** n_next 
 )
 {
-	if (*f == nil) {
+	if (check_nil(nil, *f)) {
 		*f      = n;
 		*l      = n;
 		*n_prev = nil;
@@ -399,7 +399,7 @@ dll__insert_npz(
 	}
 	else
 	{
-		if (p == nil) {
+		if (check_nil(nil, p)) {
 			*n_next = *f;
 			*f_prev =  n;
 			*f      =  n;
@@ -415,7 +415,7 @@ dll__insert_npz(
 			}
 			else
 			{
-				if ( ! (! (p == nil) && *p_next == nil)) {
+				if ( ! check_nil(nil, p) && check_nil(nil, *p_next)) {
 					*p_next_prev = n;
 				}
 				*n_next = *p_next;
@@ -494,10 +494,10 @@ dll__remove_npz(
 	if (n == *l) {
 		*l = l_prev;
 	}
-	if (n_prev != nil) {
+	if (check_nil(nil, n_prev)) {
 		*n_prev_next = n_next;
 	}
-	if (n_next != nil) {
+	if (! check_nil(nil, n_next)) {
 		*n_next_prev = n_prev;
 	}
 }
@@ -546,14 +546,15 @@ sll__queue_push_nz(
 	void*  n, void** n_next
 ) 
 {
-	if (*f == nil) {
+	if (check_nil(nil, *f)) {
 		*f      = n;
+		*l      = n;
 		*n_next = nil;
 	}
 	else {
 		*l_next = n;
 		*l      = n;
-		n_next  = nil;
+		*n_next = nil;
 	}
 }
 
@@ -581,7 +582,7 @@ sll__queue_push_nz(
 #ifndef sll_queue_push_front_nz
 inline void
 sll__queue_push_front_nz(void* nil, void** f, void** l, void* n, void** n_next) {
-	if (*f == nil) {
+	if (check_nil(nil, *f)) {
 		*f = n;
 		*l = n;
 	}

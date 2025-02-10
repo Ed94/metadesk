@@ -12,8 +12,10 @@
 //- rjf: arena creation/destruction
 
 Arena*
-arena__alloc(ArenaParams params)
+arena__alloc(ArenaParams* optional_params)
 {
+	ArenaParams params = optional_params ? *optional_params : (ArenaParams){0};
+
 	SPTR const varena_header_size = align_pow2(size_of(VArena), MD_DEFAULT_MEMORY_ALIGNMENT);
 	SPTR const header_size        = align_pow2(size_of(Arena),  MD_DEFAULT_MEMORY_ALIGNMENT);
 

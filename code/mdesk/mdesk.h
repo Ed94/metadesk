@@ -287,7 +287,7 @@ inline void
 msg_list_pushf(Arena* arena, MsgList* msgs, Node* node, MsgKind kind, char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
-	String8 string = push_str8fv(arena, fmt, args);
+	String8 string = str8fv(arena, fmt, args);
 	msg_list_push(arena, msgs, node, kind, string);
 	va_end(args);
 }
@@ -296,7 +296,7 @@ inline void
 msg_list_allocf(AllocatorInfo ainfo, MsgList* msgs, Node* node, MsgKind kind, char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
-	String8 string = alloc_str8fv(ainfo, fmt, args);
+	String8 string = str8fv(ainfo, fmt, args);
 	msg_list_alloc(ainfo, msgs, node, kind, string);
 	va_end(args);
 }

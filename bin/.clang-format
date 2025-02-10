@@ -9,7 +9,7 @@ StatementMacros: [
   MD_NS_END, 
   MD_API_C_BEGIN, 
   MD_API_C_END,
-  MD_IF_MACRO_DEFINED_INCLUDE_THIS_SLOT
+  if_generic_selector_defined_include_slot
 ]
 Macros:
 - enum_underlying(type)=type

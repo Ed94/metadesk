@@ -616,7 +616,7 @@ size_t gen_example_hash__P_long_long( long long val ) { return val * 2654435761u
 // Additional Variations:
 
 // If the function takes more than one argument the following is used:
-#define GEN_FUNCTION_GENERIC_EXAMPLE_VARADIC( selector_arg, ... ) _Generic( \
+#define GEN_function_generic_example_varadic( selector_arg, ... ) _Generic( \
 (selector_arg),                                                             \
 	GEN_IF_MACRO_DEFINED_INCLUDE_THIS_SLOT( GENERIC_SLOT_1__function_sig )  \
 	GEN_IF_MACRO_DEFINED_INCLUDE_THIS_SLOT( GENERIC_SLOT_2__function_sig )  \
@@ -626,7 +626,7 @@ size_t gen_example_hash__P_long_long( long long val ) { return val * 2654435761u
 ) GEN_RESOLVED_FUNCTION_CALL( selector_arg, __VA_ARG__ )
 
 // If the function does not take the arugment as a parameter:
-#define GEN_FUNCTION_GENERIC_EXAMPLE_DIRECT_TYPE( selector_arg ) _Generic( \
+#define GEN_function_generic_example_direct_type( selector_arg ) _Generic( \
 ( GEN_TYPE_TO_EXP(selector_arg) ),                                         \
 	GEN_IF_MACRO_DEFINED_INCLUDE_THIS_SLOT( GENERIC_SLOT_1__function_sig ) \
 	GEN_IF_MACRO_DEFINED_INCLUDE_THIS_SLOT( GENERIC_SLOT_2__function_sig ) \
@@ -640,7 +640,7 @@ size_t gen_example_hash__P_long_long( long long val ) { return val * 2654435761u
 // Instead of using this macro, you'll see it directly expanded by the code generation.
 
 // typedef void* GEN_GenericExampleType;
-// GEN_FUNCTION_GENERIC_EXAMPLE_DIRECT_TYPE( GEN_GenericExampleType );
+// GEN_function_generic_example_direct_type( GEN_GenericExampleType );
 #pragma endregion _Generic Macros
 
 GEN_API_C_BEGIN

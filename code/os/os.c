@@ -60,7 +60,7 @@ os_append_data_to_file_path(String8 path, String8 data)
 }
 
 String8
-os_string_from_file_range(Arena* arena, OS_Handle file, Rng1U64 range)
+os_string_from_file_range__arena(Arena* arena, OS_Handle file, Rng1U64 range)
 {
 	U64 pre_pos = arena_pos(arena);
 	String8 result;
@@ -76,16 +76,12 @@ os_string_from_file_range(Arena* arena, OS_Handle file, Rng1U64 range)
 }
 
 String8
-os_string_from_file_range_alloc(AllocatorInfo ainfo, OS_Handle file, Rng1U64 range) {
+os_string_from_file_range__ainfo(AllocatorInfo ainfo, OS_Handle file, Rng1U64 range) {
 	String8 result;
 	result.size = dim_1u64(range);
 	result.str  = alloc_array_no_zero(ainfo, U8, result.size);
 	U64 actual_read_size = os_file_read(file, range, result.str);
-	if(actual_read_size < result.size)
-	{
-		// TODO(Ed): It may be better to actually wrap the alloation in an arena and then rewind it.
-		// This would ensure resize isn't doing an expensive shrink (from a bad heap realloc, or something else)
-		// That or we just leave it up to the user to make sure to pass in an arena.
+	if ((allocator_query_support(ainfo) & AllocatorQuery_ResizeShrink) && actual_read_size < result.size) {
 		resize(ainfo, result.str, result.size, scast(U64, result.str) + actual_read_size);
 		result.size = actual_read_size;
 	}

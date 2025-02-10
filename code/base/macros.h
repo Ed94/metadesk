@@ -151,8 +151,8 @@
 #endif
 
 #ifndef glue
-#define glue_(A,B) A ## B
-#define glue(A,B)  glue_(A,B)
+#define glue_(A, B) A ## B
+#define glue(A, B)  glue_(A,B)
 #endif
 
 #define src_line_str stringify(__LINE__)

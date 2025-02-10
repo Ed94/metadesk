@@ -302,8 +302,8 @@ tree_copy_alloc(AllocatorInfo ainfo, Node* src_root)
 			dst->first_tag  = dst->last_tag = nil_node();
 			dst->kind       = src->kind;
 			dst->flags      = src->flags;
-			dst->string     = alloc_str8_copy(ainfo, src->string);
-			dst->raw_string = alloc_str8_copy(ainfo, src->raw_string);
+			dst->string     = str8_copy(ainfo, src->string);
+			dst->raw_string = str8_copy(ainfo, src->raw_string);
 			dst->src_offset = src->src_offset;
 			dst->parent     = dst_parent;
 			if (dst_parent != nil_node()) {
@@ -336,7 +336,7 @@ tokenize_from_text(Arena* arena, String8 text) {
 TokenizeResult
 tokenize_from_text_alloc(AllocatorInfo ainfo, String8 text)
 {
-	TempArena scratch = scratch_begin_alloc(ainfo);
+	TempArena scratch = scratch_begin(ainfo);
 
 	TokenChunkList tokens = {0};
 	MsgList        msgs = {0};
@@ -720,7 +720,7 @@ parse_from_text_tokens_push(Arena* arena, String8 filename, String8 text, TokenA
 ParseResult
 parse_from_text_tokens_alloc(AllocatorInfo ainfo, String8 filename, String8 text, TokenArray tokens)
 {
-	TempArena scratch = scratch_begin_alloc(ainfo);
+	TempArena scratch = scratch_begin(ainfo);
 	
 	//- rjf: set up outputs
 	MsgList msgs = {0};
@@ -820,7 +820,7 @@ parse_from_text_tokens_alloc(AllocatorInfo ainfo, String8 filename, String8 text
 		//- rjf: [main, main_implicit] unexpected reserved tokens
 		if (mode_main_or_main_implict && found_unexpected) {
 			Node*   error        = alloc_node(ainfo, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
-			String8 error_string = alloc_str8f(ainfo, "Unexpected reserved symbol \"%S\".", token_string);
+			String8 error_string = str8f(ainfo, "Unexpected reserved symbol \"%S\".", token_string);
 			msg_list_alloc(ainfo, &msgs, error, MsgKind_Error, error_string);
 			token += 1;
 			goto end_consume;
@@ -961,7 +961,7 @@ parse_from_text_tokens_alloc(AllocatorInfo ainfo, String8 filename, String8 text
 			{
 				Node*   node         = work_top->parent;
 				Node*   error        = alloc_node(ainfo, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
-				String8 error_string = alloc_str8f(ainfo, "More than two newlines following \"%S\", which has implicitly-delimited children, resulting in an empty list of children.", node->string);
+				String8 error_string = str8f(ainfo, "More than two newlines following \"%S\", which has implicitly-delimited children, resulting in an empty list of children.", node->string);
 				msg_list_alloc(ainfo, &msgs, error, MsgKind_Warning, error_string);
 				parse_work_pop();
 			}
@@ -1010,7 +1010,7 @@ parse_from_text_tokens_alloc(AllocatorInfo ainfo, String8 filename, String8 text
 		//- rjf: no consumption -> unexpected token! we don't know what to do with this.
 		{
 			Node*   error        = alloc_node(ainfo, NodeKind_ErrorMarker, 0, token_string, token_string, token->range.min);
-			String8 error_string = alloc_str8f(ainfo, "Unexpected \"%S\" token.", token_string);
+			String8 error_string = str8f(ainfo, "Unexpected \"%S\" token.", token_string);
 			msg_list_alloc(ainfo, &msgs, error, MsgKind_Error, error_string);
 			token += 1;
 			// ???
@@ -1044,7 +1044,7 @@ parse_from_text(Arena* arena, String8 filename, String8 text) {
 
 ParseResult
 parse_from_text_alloc(AllocatorInfo ainfo, String8 filename, String8 text) {
-	TempArena      scratch  = scratch_begin_alloc(ainfo);
+	TempArena      scratch  = scratch_begin(ainfo);
 	TokenizeResult tokenize = tokenize_from_text(scratch.arena, text);
 	ParseResult    parse    = parse_from_text_tokens_alloc(ainfo, filename, text, tokenize.tokens); 
 	scratch_end(scratch);

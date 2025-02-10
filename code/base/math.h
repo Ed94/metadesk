@@ -972,8 +972,8 @@ void         rng1s64_list_push__ainfo           (AllocatorInfo ainfo, Rng1S64Lis
 Rng1S64Array rng1s64_array_from_list_push__arena(Arena*        arena, Rng1S64List* list);
 Rng1S64Array rng1s64_array_from_list_push__ainfo(AllocatorInfo ainfo, Rng1S64List* list);
 
-#define rng1s64_list_push(allocator, list, rng)       _Generic(allocator, Arena*: rng1s64_list_push__arena,            AllocatorInfo: rng1s64_list_push__ainfo,            default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, list, rng)
-#define rng1s64_array_from_list_push(allocator, list) _Generic(allocator, Arena*: rng1s64_array_from_list_push__arena, AllocatorInfo: rng1s64_array_from_list_push__ainfo, default: MD_generic_selection_fail) MD_RESOLVED_FUNCTION_CALL(allocator, list)
+#define rng1s64_list_push(allocator, list, rng)       _Generic(allocator, Arena*: rng1s64_list_push__arena,            AllocatorInfo: rng1s64_list_push__ainfo,            default: assert_generic_selection_fail) resolved_function_call(allocator, list, rng)
+#define rng1s64_array_from_list_push(allocator, list) _Generic(allocator, Arena*: rng1s64_array_from_list_push__arena, AllocatorInfo: rng1s64_array_from_list_push__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, list)
 
 force_inline void         rng1s64_list_push__arena           (Arena* arena, Rng1S64List* list, Rng1S64 rng) {        rng1s64_list_push__ainfo           (arena_allocator(arena), list, rng); }
 force_inline Rng1S64Array rng1s64_array_from_list_push__arena(Arena* arena, Rng1S64List* list)              { return rng1s64_array_from_list_push__ainfo(arena_allocator(arena), list); }

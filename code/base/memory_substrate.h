@@ -42,10 +42,12 @@ enum AllocatorMode
 typedef U64 AllocatorQueryFlags;
 enum
 {
-	AllocatorQuery_Alloc   = (1 << 0),
-	AllocatorQuery_Free    = (1 << 1),
-	AllocatorQuery_FreeAll = (1 << 2),
-	AllocatorQuery_Resize  = (1 << 3),
+	AllocatorQuery_Alloc         = (1 << 0),
+	AllocatorQuery_Free          = (1 << 1),
+	AllocatorQuery_FreeAll       = (1 << 2),
+	AllocatorQuery_Resize        = (1 << 3), // Supports both grow and shrink
+	AllocatorQuery_ResizeShrink  = (1 << 4),
+	AllocatorQuery_ResizeGrow    = (1 << 5),
 };
 
 typedef void*(AllocatorProc)( void* allocator_data, AllocatorMode type, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags );

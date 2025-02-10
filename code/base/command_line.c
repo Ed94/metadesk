@@ -49,7 +49,7 @@ cmd_line_insert_opt_alloc(AllocatorInfo ainfo, CmdLine* cmd_line, String8 string
 		var = alloc_array(ainfo, CmdLineOpt, 1);
 		var->hash_next    = *slot;
 		var->hash         = cmd_line_hash_from_string(string);
-		var->string       = alloc_str8_copy(ainfo, string);
+		var->string       = str8_copy(ainfo, string);
 		var->value_strings = values;
 
 		StringJoin join = {0};
@@ -57,7 +57,7 @@ cmd_line_insert_opt_alloc(AllocatorInfo ainfo, CmdLine* cmd_line, String8 string
 		join.sep  = str8_lit(",");
 		join.post = str8_lit("");
 
-		var->value_string = str8_list_join_alloc(ainfo, &var->value_strings, &join);
+		var->value_string = str8_list_join(ainfo, &var->value_strings, &join);
 		*slot = var;
 		cmd_line_push_opt(&cmd_line->options, var);
 	}
@@ -139,9 +139,9 @@ cmd_line_from_string_list_alloc(AllocatorInfo ainfo, String8List command_line)
 					}
 					
 					U8          splits[] = { ',' };
-					String8List args_in_this_string = str8_split_alloc(ainfo, string, splits, array_count(splits), 0);
+					String8List args_in_this_string = str8_split(ainfo, string, splits, array_count(splits), 0);
 					for (String8Node* sub_arg = args_in_this_string.first; sub_arg; sub_arg = sub_arg->next) {
-						str8_list_alloc(ainfo, &arguments, sub_arg->string);
+						str8_list(ainfo, &arguments, sub_arg->string);
 					}
 					if ( !str8_match(str8_postfix(n->string, 1), str8_lit(","), 0) && (n != node || arg_portion_this_string.size != 0)) {
 						break;

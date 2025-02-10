@@ -313,7 +313,7 @@ inline S64 os_file_id_compare(OS_FileID a, OS_FileID b) { S64 cmp = memory_compa
 
 inline String8
 os_string_from_guid_alloc(AllocatorInfo ainfo, OS_Guid guid) {
-	String8 result = alloc_str8f(ainfo, 
+	String8 result = str8f(ainfo, 
 		"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
 		guid.data1,
 		guid.data2,
@@ -332,7 +332,7 @@ os_string_from_guid_alloc(AllocatorInfo ainfo, OS_Guid guid) {
 
 inline String8
 os_string_from_guid(Arena* arena, OS_Guid guid) {
-	String8 result = push_str8f(arena, 
+	String8 result = str8f(arena, 
 		"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
 		guid.data1,
 		guid.data2,

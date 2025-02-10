@@ -200,7 +200,7 @@ heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE
 
 		case AllocatorMode_QuerySupport:
 			return (void*) (
-				AllocatorQuery_Alloc | AllocatorQuery_Free | AllocatorQuery_Resize
+				AllocatorQuery_Alloc | AllocatorQuery_Free | AllocatorQuery_Resize | AllocatorQuery_ResizeGrow | AllocatorQuery_ResizeShrink
 			);
 	}
 
@@ -404,8 +404,8 @@ varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_
 
 		case AllocatorMode_QuerySupport:
 		{
-			return (void*) (AllocatorQuery_Alloc | AllocatorQuery_FreeAll | AllocatorQuery_Resize 
-				// | AllocatorQuery_Pop | AllocatorQuery_Pop_To 
+			return (void*) (
+				AllocatorQuery_Alloc | AllocatorQuery_FreeAll | AllocatorQuery_Resize | AllocatorQuery_ResizeGrow | AllocatorQuery_ResizeShrink
 			);
 		}
 		break;

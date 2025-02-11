@@ -4,7 +4,6 @@
 // or have their usage removed during the library generation pass.
 #endif
 
-#pragma region _Generic Macros
 //   ____                       _        ______                _   _                ____                  _                 __ _
 //  / ___}                     (_)      |  ____}              | | (_)              / __ \                | |               | |(_)
 // | | ___  ___ _ __   ___ _ __ _  ___  | |__ _   _ _ __   ___| |_ _  ___  _ __   | |  | |_   _____ _ __ | | ___   __ _  __| | _ _ __   __ _
@@ -172,4 +171,3 @@ size_t generic_example_hash__P_long_long( long long val ) { return val * 2654435
 #undef function_generic_example_varadic
 #undef function_generic_example_direct_type
 #undef generic_example_do_something_with
-#pragma endregion _Generic Macros

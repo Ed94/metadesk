@@ -95,7 +95,7 @@ typedef distinct(S16, B16);
 typedef distinct(S32, B32);
 
 typedef void VoidProc(void);
-typedef_generic_selector(VoidProc);
+distinct_register_selector(VoidProc);
 
 ////////////////////////////////
 //~ NOTE(allen): Constants

@@ -99,7 +99,7 @@ BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeComma
 BreakStringLiterals: true
 
-ColumnLimit: 160
+ColumnLimit: 180
 
 CompactNamespaces: true
 

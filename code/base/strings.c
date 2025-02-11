@@ -1129,7 +1129,7 @@ indented_from_string__ainfo(AllocatorInfo ainfo, String8 string)
 {
 	TempArena scratch = scratch_begin(ainfo);
 
-	read_only local_persist U8 indentation_bytes[] = "                                                                                                                                ";
+	local_persist U8 indentation_bytes[] = "                                                                                                                                ";
 	String8List indented_strings = {0};
 
 	S64 depth          = 0;

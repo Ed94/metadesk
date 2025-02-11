@@ -9634,8 +9634,8 @@ struct gen_Opts_def_define
 };
 typedef struct gen_Opts_def_define gen_Opts_def_define;
 
-GEN_API gen_CodeDefine gen_def__define(gen_Str name, gen_MacroType type, gen_Opts_def_define opts GEN_PARAM_DEFAULT);
-#define gen_def_define(name, type, ...) gen_def__define(name, type, (gen_Opts_def_define) { __VA_ARGS__ })
+GEN_API gen_CodeDefine gen_def__define(gen_Str name, gen_MacroType type, gen_Opts_def_define* opts GEN_PARAM_DEFAULT);
+#define gen_def_define(name, type, ...) gen_def__define(name, type, & (gen_Opts_def_define) { __VA_ARGS__ })
 
 struct gen_Opts_def_destructor
 {
@@ -18579,8 +18579,10 @@ gen_CodeClass gen_def__class(gen_Str name, gen_Opts_def_struct p)
 	return result;
 }
 
-gen_CodeDefine gen_def__define(gen_Str name, gen_MacroType type, gen_Opts_def_define p)
+gen_CodeDefine gen_def__define(gen_Str name, gen_MacroType type, gen_Opts_def_define* opts)
 {
+	gen_Opts_def_define p = opts ? *opts : (gen_Opts_def_define){0};
+
 	if (! name_check(gen_def_define, name))
 	{
 		GEN_DEBUG_TRAP();

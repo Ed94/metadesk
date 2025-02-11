@@ -153,7 +153,7 @@ struct FuzzyMatchRangeList
 
 inline U8
 integer_symbols(U8 value) {
-	read_only local_persist
+	local_persist
 	U8 lookup_table[16] = {
 		'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F',
 	};
@@ -162,7 +162,7 @@ integer_symbols(U8 value) {
 
 inline U8
 base64(U8 value) {
-	read_only local_persist
+	local_persist
 	U8 lookup_table[64] = {
 		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
@@ -176,7 +176,7 @@ base64(U8 value) {
 
 inline U8
 base64_reverse(U8 value) {
-	read_only local_persist
+	local_persist
 	U8 lookup_table[128] = {
 		0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 		0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
@@ -193,8 +193,8 @@ base64_reverse(U8 value) {
 // NOTE(allen): Includes reverses for uppercase and lowercase hex.
 inline U8
 integer_symbol_reverse(U8 value) {
-	read_only local_persist
-	lookup_table[128] = {
+	local_persist 
+	U8 lookup_table[128] = {
 		0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 		0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
 		0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
@@ -839,7 +839,7 @@ force_inline String8 str8_path_list_join_by_style__arena(Arena* arena, String8Li
 inline U8
 utf8_class(U8 value)
 {
-	read_only local_persist
+	local_persist
 	U8 lookup_table[32] = {
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,2,2,2,2,3,3,4,5,
 	};

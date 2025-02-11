@@ -2,6 +2,8 @@
 #	pragma once
 #endif
 
+#pragma region Build Options
+
 ////////////////////////////////
 //~ rjf: Build Options
 
@@ -68,6 +70,8 @@
 
 #define BUILD_TITLE_STRING_LITERAL BUILD_TITLE " (" BUILD_VERSION_STRING_LITERAL " " BUILD_RELEASE_PHASE_STRING_LITERAL ") - " __DATE__ "" BUILD_GIT_HASH_STRING_LITERAL_APPEND BUILD_MODE_STRING_LITERAL_APPEND
 
+#pragma endregion Build Options
+
 #pragma region Compiler Vendor
 
 #if defined( _MSC_VER )
@@ -126,7 +130,7 @@
 
 #pragma endregion Compiler Vendor
 
-#pragma endregion Language
+#pragma region Language
 
 #if ! defined(LANG_C)
 #	ifdef __cplusplus
@@ -264,9 +268,6 @@
 #endif
 
 #pragma endregion Operating System
-
-#pragma region Language
-#pragma endregion Langage
 
 ////////////////////////////////
 //~ rjf: Zero All Undefined Options

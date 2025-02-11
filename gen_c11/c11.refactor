@@ -38,12 +38,12 @@ word expect,   md_expect
 word likely,   md_likely
 word unlikely, md_unlikely
 
-word ccast, word md_ccast
-word pcast, word md_pcast
-word rcast, word md_rcast 
-word scast, word md_scast
+word ccast, md_ccast
+word pcast, md_pcast
+word rcast, md_rcast 
+word scast, md_scast
 
-// word typeof, word md_typeof
+// word typeof, md_typeof
 
 word enum_underlying, md_enum_underlying
 word nullptr,         md_nullptr
@@ -1077,9 +1077,6 @@ word child_count_from_node, md_child_count_from_node
 word tag_count_from_node,   md_tag_count_from_node
 
 namespace string_from_children_,  md_string_from_children_
-
-word tree_match, md_tree_match
-word node_match, md_node_match
 
 namespace tree_copy_,                   md_tree_copy_
 word      tree_copy,                    md_treecopy

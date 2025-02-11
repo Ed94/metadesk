@@ -7,7 +7,7 @@
 #endif
 
 #ifndef GENERATE_SINGLEHEADER
-#define GENERATE_SINGLEHEADER 1
+#define GENERATE_SINGLEHEADER 0
 #endif
 
 #define path_refactor_script path_gen_c11 "c11.refactor"
@@ -27,20 +27,6 @@ int main()
 	gen_init(& ctx);
 
 	register_library_macros();
-
-	gen_CodeBody tb_stb_printf_h_parsed = gen_parse_file(path_third_party "stb/stb_sprintf.h");
-	gen_CodeBody tb_stb_printf_header = gen_def_body(CT_Global_Body);
-	gen_CodeBody tb_stb_printf_source = gen_def_body(CT_Global_Body);
-
-	for (gen_Code stb_code = gen_iterator(CodeBody, tb_stb_printf_h_parsed, stb_code)) switch(stb_code->Type)
-	{
-		case CT_Preprocess_Define: 
-		{
-
-		}
-		break;
-
-	}
 
 	gen_Str generation_notice = lit(
 		"// This file was generated automatially by metadesk's gen_c11.c  "
@@ -121,6 +107,65 @@ int main()
 
 #pragma region Refactored / Formatted
 	gen_Code r_tp_stb_sprintf_h = refactor(tp_stb_sprintf_h);
+
+	gen_CodeBody r_tp_stb_sprintf_h_parsed  = gen_parse_global_body(tp_stb_sprintf_h->Content);
+	gen_CodeBody r_tp_stb_sprintf_header    = gen_def_body(CT_Global_Body);
+	gen_CodeBody r_tp_stb_sprintf_source    = gen_def_body(CT_Global_Body);
+
+	gen_b32 past_header = false;
+	gen_b32 past_source = false;
+	for (gen_Code stb_code = gen_iterator(CodeBody, r_tp_stb_sprintf_h_parsed, stb_code)) switch(stb_code->Type)
+	{
+		case CT_Preprocess_IfNotDef: 
+		{
+			gen_CodePreprocessCond cond_if = gen_cast(gen_CodePreprocessCond, stb_code);
+			if (gen_str_are_equal(cond_if->Content, lit("STB_SPRINTF_H_INCLUDE"))) 
+			{
+				gen_body_append(r_tp_stb_sprintf_header, cond_if);
+				
+				gen_Code header_code = gen_next_CodeBody(r_tp_stb_sprintf_h_parsed, stb_code);
+				while (header_code->Type != CT_Comment || !gen_str_contains(header_code->Content, lit("STB_SPRINTF_H_INCLUDE"))) 
+				{
+					gen_body_append(r_tp_stb_sprintf_header, header_code);
+					header_code = gen_next_CodeBody(r_tp_stb_sprintf_h_parsed, header_code);
+				}
+				// should be: <// STB_SPRINTF_H_INCLUDE>
+				gen_body_append(r_tp_stb_sprintf_header, header_code);
+				past_header = true;
+
+				stb_code = gen_next_CodeBody(r_tp_stb_sprintf_h_parsed, header_code);
+			}
+		}
+		break;
+		case CT_Preprocess_IfDef:
+		{
+			gen_CodePreprocessCond cond_if = gen_cast(gen_CodePreprocessCond, stb_code);
+			if (gen_str_are_equal(cond_if->Content, lit("STB_SPRINTF_IMPLEMENTATION"))) 
+			{
+				gen_body_append(r_tp_stb_sprintf_source, cond_if);
+				
+				gen_Code source_code = gen_next_CodeBody(r_tp_stb_sprintf_h_parsed, stb_code);
+				while (source_code->Type != CT_Comment || !gen_str_contains(source_code->Content, lit("STB_SPRINTF_IMPLEMENTATION"))) 
+				{
+					gen_body_append(r_tp_stb_sprintf_source, source_code);
+					source_code = gen_next_CodeBody(r_tp_stb_sprintf_h_parsed, source_code);
+				}
+				// should be: <// STB_SPRINTF_IMPLEMENTATION>
+				gen_body_append(r_tp_stb_sprintf_source, source_code);
+				past_source = true;
+
+				stb_code = gen_next_CodeBody(r_tp_stb_sprintf_h_parsed, source_code);
+			}
+		}
+		break;
+
+		default:
+			if ( ! past_header || past_source) {
+				gen_body_append(r_tp_stb_sprintf_header, stb_code);
+			}
+			gen_body_append(r_tp_stb_sprintf_source, stb_code);
+		break;
+	}
 
 	gen_Code r_base_context_cracking_h = refactor(base_context_cracking_h);
 	gen_Code r_base_platform_h         = refactor(base_platform_h);
@@ -393,7 +438,7 @@ int main()
 		preprocess_endif();
 		new_line();
 
-		print_section(r_tp_stb_sprintf_h, lit("STB snprintf Header"));
+		print_section(refactor_and_format(r_tp_stb_sprintf_header), lit("STB snprintf Header"));
 		new_line();
 
 		print_section(r_base_base_types_h,       lit("Types"));
@@ -490,7 +535,8 @@ int main()
 		preprocess_endif();
 		new_line();
 
-		print_section(r_tp_stb_sprintf_h, lit("STB snprintf Header"));
+		define(lit("STB_SPRINTF_IMPLEMENTATION"), MT_Statement);
+		print_section(refactor_and_format(r_tp_stb_sprintf_source), lit("STB snprintf Source"));
 		new_line();
 
 		print_section(r_base_platform_c,         lit("Platform"));

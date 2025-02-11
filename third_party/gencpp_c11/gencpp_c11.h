@@ -10105,7 +10105,7 @@ inline void gen_body_to_strbuilder_ref(gen_CodeBody body, gen_StrBuilder* result
 	{
 		gen_code_to_strbuilder_ref(curr, result);
 		// gen_strbuilder_append_fmt( result, "%SB", gen_code_to_strbuilder(curr) );
-		++curr;
+		curr = curr->Next;
 	}
 }
 
@@ -16069,13 +16069,13 @@ void gen_body_to_strbuilder_export( gen_CodeBody body, gen_StrBuilder* result )
 	GEN_ASSERT(result != gen_nullptr);
 	gen_strbuilder_append_fmt( result, "export\n{\n" );
 
-	gen_Code curr = gen_cast(gen_Code, body);
+	gen_Code curr = body->Front;
 	gen_s32  left = body->NumEntries;
 	while ( left-- )
 	{
 		gen_code_to_strbuilder_ref(curr, result);
 		// gen_strbuilder_append_fmt( result, "%SB", gen_code_to_strbuilder(curr) );
-		++curr;
+		curr = curr->Next;
 	}
 
 	gen_strbuilder_append_fmt( result, "};\n" );
@@ -23953,7 +23953,7 @@ gen_internal gen_neverinline gen_CodeBody gen_parse_global_nspace(gen_CodeType w
 
 			case Tok_Preprocess_Macro_Expr:
 			{
-				if (gen_tok_is_attribute(currtok))
+				if (!gen_tok_is_attribute(currtok))
 				{
 					gen_log_failure("Unbounded macro expression residing in class/struct body\n%S", gen_parser_to_strbuilder(gen__ctx->parser));
 					return gen_InvalidCode;
@@ -25364,6 +25364,7 @@ gen_internal gen_Code gen_parse_simple_preprocess(gen_TokType which)
 
 Leave_Scope_Early:
 	gen_Code result              = gen_untyped_str(full_macro.Text);
+	// gen_Code result              = gen_untyped_str(gen_strbuilder_to_str(gen_strbuilder_fmt_buf(gen__ctx->Allocator_Temp, "%S ", full_macro.Text)));
 	gen__ctx->parser.Scope->Name = full_macro.Text;
 
 	gen_parser_pop(&gen__ctx->parser);

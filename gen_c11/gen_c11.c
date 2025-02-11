@@ -28,6 +28,20 @@ int main()
 
 	register_library_macros();
 
+	gen_CodeBody tb_stb_printf_h_parsed = gen_parse_file(path_third_party "stb/stb_sprintf.h");
+	gen_CodeBody tb_stb_printf_header = gen_def_body(CT_Global_Body);
+	gen_CodeBody tb_stb_printf_source = gen_def_body(CT_Global_Body);
+
+	for (gen_Code stb_code = gen_iterator(CodeBody, tb_stb_printf_h_parsed, stb_code)) switch(stb_code->Type)
+	{
+		case CT_Preprocess_Define: 
+		{
+
+		}
+		break;
+
+	}
+
 	gen_Str generation_notice = lit(
 		"// This file was generated automatially by metadesk's gen_c11.c  "
 		"(See: https://github.com/Ed94/metadesk/tree/master)\n\n"
@@ -348,20 +362,6 @@ int main()
 
 	if (GENERATE_SEGEREGATED)
 	{
-		gen_CodeBody tb_stb_printf_h_parsed = gen_parse_file(path_third_party "stb/stb_sprintf.h");
-		gen_CodeBody tb_stb_printf_header = gen_def_body(CT_Global_Body);
-		gen_CodeBody tb_stb_printf_source = gen_def_body(CT_Global_Body);
-
-		for (gen_Code stb_code = gen_iterator(CodeBody, tb_stb_printf_h_parsed, stb_code)) switch(stb_code->Type)
-		{
-			case CT_Preprocess_Define: 
-			{
-
-			}
-			break;
-
-		}
-
 		// Dependencies
 
 	#define builder  header_deps

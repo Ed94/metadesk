@@ -229,23 +229,34 @@ STBSP__PUBLICDEC void STB_SPRINTF_DECORATE(set_separators)(char comma, char peri
 
 #ifdef STB_SPRINTF_IMPLEMENTATION
 
-#define stbsp__uint32 unsigned int
-#define stbsp__int32  signed   int
+// NOTE(Ed): Modifying because I don't want to introduce this kind of mess to the gencpp parser
+
+// #define stbsp__uint32 unsigned int
+// #define stbsp__int32  signed   int
+typedef unsigned int stbsp__uint32;
+typedef signed   int stbsp__int32;
 
 #ifdef _MSC_VER
-#	define stbsp__uint64 unsigned __int64
-#	define stbsp__int64  signed   __int64
+// #	define stbsp__uint64 unsigned __int64
+// #	define stbsp__int64  signed   __int64
+typedef unsigned __int64 stbsp__uint64;
+typedef signed   __int64 stbsp__int64;
 #else
-#	define stbsp__uint64 unsigned long long
-#	define stbsp__int64 signed long long
+// #	define stbsp__uint64 unsigned long long
+// #	define stbsp__int64 signed long long
+typedef unsigned long long stbsp__uint64;
+typedef signed long long   stbsp__int64;
 #endif
-#define stbsp__uint16 unsigned short
+// #define stbsp__uint16 unsigned short
+typedef unsigned short stbsp__uint16;
 
 #ifndef stbsp__uintptr
 #	if defined(__ppc64__) || defined(__powerpc64__) || defined(__aarch64__) || defined(_M_X64) || defined(__x86_64__) || defined(__x86_64) || defined(__s390x__)
-#		define stbsp__uintptr stbsp__uint64
+// #		define stbsp__uintptr stbsp__uint64
+			typedef stbsp__uint64 stbsp__uintptr;
 #	else
-#		define stbsp__uintptr stbsp__uint32
+// #		define stbsp__uintptr stbsp__uint32
+			typedef stbsp__uint32 stbsp__uintptr;
 #	endif
 #endif
 

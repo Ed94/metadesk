@@ -9508,6 +9508,9 @@ struct gen_Context
 	gen_u32 InitSize_LexerTokens;
 	gen_u32 SizePer_StringArena;
 
+	gen_u32 InitSize_StrCacheTable;
+	gen_u32 InitSize_MacrosTable;
+
 	// TODO(Ed): Symbol Table
 	// Keep track of all resolved symbols (naemspaced identifiers)
 
@@ -17745,6 +17748,15 @@ void gen_init(gen_Context* ctx)
 		ctx->InitSize_Fallback_Allocator_Bucket_Size = gen_megabytes(8);
 	}
 
+	if (ctx->InitSize_StrCacheTable == 0)
+	{
+		ctx->InitSize_StrCacheTable = gen_kilobytes(8);
+	}
+	if (ctx->InitSize_MacrosTable == 0)
+	{
+		ctx->InitSize_MacrosTable = gen_kilobytes(8);
+	}
+
 	// Override the current context (user has to put it back if unwanted).
 	gen__ctx = ctx;
 
@@ -17773,11 +17785,11 @@ void gen_init(gen_Context* ctx)
 	}
 	// Setup the gen_hash tables
 	{
-		ctx->StrCache = gen_hashtable_init(gen_StrCached, ctx->Allocator_DyanmicContainers);
+		ctx->StrCache = gen_hashtable_init_reserve(gen_StrCached, ctx->Allocator_DyanmicContainers, ctx->InitSize_StrCacheTable);
 		if (ctx->StrCache.Entries == gen_nullptr)
 			GEN_FATAL("gen::gen_init: Failed to initialize the StringCache");
 
-		ctx->Macros = gen_hashtable_init(gen_Macro, ctx->Allocator_DyanmicContainers);
+		ctx->Macros = gen_hashtable_init_reserve(gen_Macro, ctx->Allocator_DyanmicContainers, ctx->InitSize_MacrosTable);
 		if (ctx->Macros.Hashes == gen_nullptr || ctx->Macros.Entries == gen_nullptr)
 		{
 			GEN_FATAL("gen::gen_init: Failed to initialize the PreprocessMacros table");
@@ -23636,22 +23648,33 @@ gen_internal inline gen_CodeFn gen_parse_function_after_name(
 			eat(Tok_Number);
 			// <Attributes> <Specifiers> <ReturnType> <Name> ( <Paraemters> ) <Specifiers> = 0
 		}
-		gen_Token stmt_end = currtok;
-		eat(Tok_Statement_End);
-
-		if (currtok_noskip.Type == Tok_Comment && currtok_noskip.Line == stmt_end.Line)
-			inline_cmt = gen_parse_comment();
-		// <Attributes> <Specifiers> <ReturnType> <Name> ( <Paraemters> ) <Specifiers>; <InlineCmt>
 	}
-	else
+	
+	if (body == gen_nullptr) 
 	{
+		// Check for trailing specifiers...
+		gen_CodeAttributes post_rt_attributes = gen_parse_attributes();
+		if (post_rt_attributes)
+		{
+			if (attributes)
+			{
+				gen_StrBuilder merged = gen_strbuilder_fmt_buf(gen__ctx->Allocator_Temp, "%S %S", attributes->Content, post_rt_attributes->Content);
+				attributes->Content   = gen_cache_str(gen_strbuilder_to_str(merged));
+			}
+			else
+			{
+				attributes = post_rt_attributes;
+			}
+		}
+		// <Attributes> <Specifiers> <ReturnType> <Name> ( <Paraemters> ) <Specifiers> <Attributes>
+
 		gen_Token stmt_end = currtok;
 		eat(Tok_Statement_End);
-		// <Attributes> <Specifiers> <ReturnType> <Name> ( <Paraemters> ) <Specifiers>;
+		// <Attributes> <Specifiers> <ReturnType> <Name> ( <Paraemters> ) <Specifiers> <Attributes> < = 0 or delete > ;
 
 		if (currtok_noskip.Type == Tok_Comment && currtok_noskip.Line == stmt_end.Line)
 			inline_cmt = gen_parse_comment();
-		// <Attributes> <Specifiers> <ReturnType> <Name> ( <Paraemters> ) <Specifiers>; <InlineCmt>
+		// <Attributes> <Specifiers> <ReturnType> <Name> ( <Paraemters> ) <Specifiers> <Attributes> < = 0 or delete > ; <InlineCmt>
 	}
 
 	gen_StrBuilder name_stripped = gen_strbuilder_make_str(gen__ctx->Allocator_Temp, name.Text);
@@ -24223,8 +24246,16 @@ gen_internal gen_Token gen_parse_identifier(bool* possible_member_function)
 
 	// Typename can be: '::' <name>
 	// If that is the case first  option will be Tok_Access_StaticSymbol below
-	if (check(Tok_Identifier) || accept_as_identifier)
-		eat(Tok_Identifier);
+	if (check(Tok_Identifier) || accept_as_identifier) 
+	{
+		if (macro) {
+			gen_Code name_macro = gen_parse_simple_preprocess(currtok.Type);
+			name.Text.Len = ( ( gen_sptr )prevtok.Text.Ptr + prevtok.Text.Len ) - ( gen_sptr )name.Text.Ptr;
+		}	
+		else {
+			eat(Tok_Identifier);
+		}
+	}
 	// <Name>
 
 	gen_parse_template_args(&name);
@@ -26908,32 +26939,49 @@ gen_internal gen_CodeTypename gen_parser_parse_type(bool from_template, bool* ge
 	// All kinds of nonsense can makeup a type signature, first we check for a in-place definition of a class, enum, struct, or union
 	else if (currtok.Type == Tok_Decl_Class || currtok.Type == Tok_Decl_Enum || currtok.Type == Tok_Decl_Struct || currtok.Type == Tok_Decl_Union)
 	{
-		switch (currtok.Type)
+		gen_Token next = nexttok;
+
+		// names are optional if its an inplace
+		if (next.Type == Tok_Identifier)
 		{
-			case Tok_Decl_Class:
-				tag = Tag_Class;
-				break;
-			case Tok_Decl_Enum:
-				tag = Tag_Enum;
-				break;
-			case Tok_Decl_Struct:
-				tag = Tag_Struct;
-				break;
-			case Tok_Decl_Union:
-				tag = Tag_Union;
-				break;
-			default:
-				break;
+			switch (currtok.Type)
+			{
+				case Tok_Decl_Class:
+					tag = Tag_Class;
+					break;
+				case Tok_Decl_Enum:
+					tag = Tag_Enum;
+					break;
+				case Tok_Decl_Struct:
+					tag = Tag_Struct;
+					break;
+				case Tok_Decl_Union:
+					tag = Tag_Union;
+					break;
+				default:
+					break;
+			}
+			eat(currtok.Type);
+			// <Attributes> <Specifiers> <class, enum, struct, union>
+
+			name = gen_parse_identifier(gen_nullptr);
+			// <Attributes> <Specifiers> <class, enum, struct, union> <Name> 
 		}
-		eat(currtok.Type);
-		// <Attributes> <Specifiers> <class, enum, struct, union>
+		else if (next.Type == Tok_BraceCurly_Open)
+		{
+			name = currtok;
+			// We have an inplace definition, we need to consume that...
 
-		name = gen_parse_identifier(gen_nullptr);
+			// TODO(Ed): we need to add a way for AST_CodeTypename to track an implace definition..
+			gen_b32 const inplace = true;
+			gen_Code indplace_def = gen_cast(gen_Code, gen_parser_parse_struct(inplace));
 
-		// name.Length = ( ( gen_sptr )currtok.Text + currtok.Length ) - ( gen_sptr )name.Text;
-		// eat( Tok_Identifier );
-		gen__ctx->parser.Scope->Name = name.Text;
-		// <Attributes> <Specifiers> <class, enum, struct, union> <Name>
+			// For now we lose the structural information, 
+			name.Text.Len = ( ( gen_sptr )prevtok.Text.Ptr + prevtok.Text.Len ) - ( gen_sptr )name.Text.Ptr;
+			// eat( Tok_Identifier );
+			gen__ctx->parser.Scope->Name = name.Text;
+			// <Attributes> <Specifiers> <class, enum, struct, union> <inplace def>
+		}
 	}
 
 // Decltype draft implementation

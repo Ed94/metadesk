@@ -6347,17 +6347,25 @@ enum gen_EMacroFlags gen_enum_underlying(gen_u16)
 	MF_Expects_Body = gen_bit(1),    // Expects to assign a braced scope to its body.
 
 	// gen_lex__eat wil treat this macro as an identifier if the parser attempts to consume it as one.
-	//  ^^^ This is a kludge because we don't support push/pop macro pragmas rn.
+	//  This is a kludge because we don't support push/pop macro pragmas rn.
 	MF_Allow_As_Identifier = gen_bit(2),    // gen_lex__eat wil treat this macro as an attribute if the parser attempts to consume it as one.
-	//  ^^^ This a kludge because unreal has a macro that behaves as both a 'statement' and an attribute (UE_DEPRECATED, PRAGMA_ENABLE_DEPRECATION_WARNINGS, etc)
+
+	// When parsing identifiers, it will allow the consumption of the macro parameters (as its expected to be a part of constructing the identifier)
+	// Example of a decarator macro from stb_sprintf.h: 
+	// STBSP__PUBLICDEC int STB_SPRINTF_DECORATE(sprintf)(char* buf, char const *fmt, ...) STBSP__ATTRIBUTE_FORMAT(2,3);
+	//                       ^^ STB_SPRINTF_DECORATE is decorating sprintf
+	MF_Identifier_Decorator = gen_bit(3), 
+
+	//  This a kludge because unreal has a macro that behaves as both a 'statement' and an attribute (UE_DEPRECATED, PRAGMA_ENABLE_DEPRECATION_WARNINGS, etc)
 	// TODO(Ed): We can keep the MF_Allow_As_Attribute flag for macros, however, we need to add the ability of gen_AST_Attributes to chain themselves.
 	// Its thats already a thing in the standard language anyway
 	// & it would allow UE_DEPRECATED, (UE_PROPERTY / UE_FUNCTION) to chain themselves as attributes of a resolved member function/variable definition
-	MF_Allow_As_Attribute = gen_bit(3),    // When a macro is encountered after attributes and specifiers while parsing a function, or variable:
+	MF_Allow_As_Attribute = gen_bit(4),    // When a macro is encountered after attributes and specifiers while parsing a function, or variable:
 	// It will consume the macro and treat it as resolving the definition. (Yes this is for Unreal Engine)
 	// (MUST BE OF MT_Statement TYPE)
-	MF_Allow_As_Definition = gen_bit(4),
-	MF_Allow_As_Specifier  = gen_bit(5),    // Created for Unreal's PURE_VIRTUAL
+
+	MF_Allow_As_Definition = gen_bit(5),
+	MF_Allow_As_Specifier  = gen_bit(6),    // Created for Unreal's PURE_VIRTUAL
 
 	MF_Null                = 0,
 	MF_UnderlyingType      = GEN_U16_MAX,
@@ -24243,12 +24251,13 @@ gen_internal gen_Token gen_parse_identifier(bool* possible_member_function)
 
 	gen_Macro* macro                = lookup_macro(currtok.Text);
 	gen_b32    accept_as_identifier = macro && gen_bitfield_is_set(gen_MacroFlags, macro->Flags, MF_Allow_As_Identifier);
+	gen_b32    is_decarator         = macro && gen_bitfield_is_set(gen_MacroFlags, macro->Flags, MF_Identifier_Decorator);
 
 	// Typename can be: '::' <name>
 	// If that is the case first  option will be Tok_Access_StaticSymbol below
 	if (check(Tok_Identifier) || accept_as_identifier) 
 	{
-		if (macro) {
+		if (is_decarator) {
 			gen_Code name_macro = gen_parse_simple_preprocess(currtok.Type);
 			name.Text.Len = ( ( gen_sptr )prevtok.Text.Ptr + prevtok.Text.Len ) - ( gen_sptr )name.Text.Ptr;
 		}	

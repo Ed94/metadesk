@@ -75,7 +75,7 @@ void register_library_macros()
 		((gen_Macro) { lit("STBSP__NOTUSED"),          MT_Expression, MF_Functional | MF_Allow_As_Attribute }),
 		((gen_Macro) { lit("STBSP__NOTUSED"),          MT_Expression, MF_Functional }),
 		((gen_Macro) { lit("STB_SPRINTF_MIN"),         MT_Expression,                 MF_Allow_As_Identifier }),
-		((gen_Macro) { lit("STB_SPRINTF_DECORATE"),    MT_Expression, MF_Functional | MF_Allow_As_Identifier }),
+		((gen_Macro) { lit("STB_SPRINTF_DECORATE"),    MT_Expression, MF_Functional | MF_Allow_As_Identifier | MF_Identifier_Decorator }),
 		((gen_Macro) { lit("STB_SPRINTF_MSVC_MODE"),   MT_Expression,  }),
 		((gen_Macro) { lit("STBSP__PUBLICDEF"),        MT_Expression,                 MF_Allow_As_Attribute }),
 		((gen_Macro) { lit("STBSP__UNALIGNED"),        MT_Expression, MF_Functional }),

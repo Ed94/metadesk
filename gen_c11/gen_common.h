@@ -26,6 +26,11 @@
 #define path_scratch_file    path_gen     "scratch.h"
 #define path_format_style    path_bin     ".clang-format "
 
+#define gen_iterator( Type, container, iter )   \
+	        gen_begin_ ## Type(container);      \
+	iter != gen_end_   ## Type(container);      \
+	iter  = gen_next_  ## Type(container, iter)
+
 // Codegen DSL
 
 #define lit     gen_txt
@@ -61,6 +66,53 @@ void print__section(gen_Builder* builder, gen_Code code, gen_Str label) {
 
 void register_library_macros() 
 {
+	// third_party/stb/stb_sprintf.h
+	gen_register_macros( args(
+		((gen_Macro) { lit("STB_SPRINTF_H_INCLUDE"),   MT_Statement,  }),
+		((gen_Macro) { lit("STBSP__ASAN"),             MT_Statement,  }),
+		((gen_Macro) { lit("STBSP__PUBLICDEC"),        MT_Statement,                  MF_Allow_As_Attribute }),
+		((gen_Macro) { lit("STBSP__ATTRIBUTE_FORMAT"), MT_Statement,  MF_Functional | MF_Allow_As_Attribute }),
+		((gen_Macro) { lit("STBSP__NOTUSED"),          MT_Expression, MF_Functional | MF_Allow_As_Attribute }),
+		((gen_Macro) { lit("STBSP__NOTUSED"),          MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("STB_SPRINTF_MIN"),         MT_Expression, MF_Allow_As_Identifier }),
+		((gen_Macro) { lit("STB_SPRINTF_DECORATE"),    MT_Expression, MF_Functional | MF_Allow_As_Identifier }),
+		((gen_Macro) { lit("stbsp__uint32"),           MT_Expression,  }),
+		((gen_Macro) { lit("stbsp__int32"),            MT_Expression,  }),
+		((gen_Macro) { lit("stbsp__uint64"),           MT_Expression,  }),
+		((gen_Macro) { lit("stbsp__int64"),            MT_Expression,  }),
+		((gen_Macro) { lit("stbsp__uint16"),           MT_Expression,  }),
+		((gen_Macro) { lit("stbsp__uintptr"),          MT_Expression,  }),
+		((gen_Macro) { lit("STB_SPRINTF_MSVC_MODE"),   MT_Expression,  }),
+		((gen_Macro) { lit("STBSP__PUBLICDEF"),        MT_Expression,  }),
+		((gen_Macro) { lit("STBSP__UNALIGNED"),        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("STBSP__SPECIAL"),          MT_Expression,  }),
+		((gen_Macro) { lit("STBSP__LEFTJUST"),         MT_Expression,  }),
+		((gen_Macro) { lit("STBSP__LEADINGPLUS"),      MT_Expression,  }),
+		((gen_Macro) { lit("STBSP__LEADINGSPACE"),     MT_Expression,  }),
+		((gen_Macro) { lit("STBSP__LEADING_0X"),       MT_Expression,  }),
+		((gen_Macro) { lit("STBSP__LEADINGZERO"),      MT_Expression,  }),
+		((gen_Macro) { lit("STBSP__INTMAX"),           MT_Expression,  }),
+		((gen_Macro) { lit("STBSP__TRIPLET_COMMA"),    MT_Expression,  }),
+		((gen_Macro) { lit("STBSP__NEGATIVE"),         MT_Expression,  }),
+		((gen_Macro) { lit("STBSP__METRIC_SUFFIX"),    MT_Expression,  }),
+		((gen_Macro) { lit("STBSP__HALFWIDTH"),        MT_Expression,  }),
+		((gen_Macro) { lit("STBSP__METRIC_NOSPACE"),   MT_Expression,  }),
+		((gen_Macro) { lit("STBSP__METRIC_1024"),      MT_Expression,  }),
+		((gen_Macro) { lit("STBSP__METRIC_JEDEC"),     MT_Expression,  }),
+		((gen_Macro) { lit("stbsp__chk_cb_bufL"),      MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("stbsp__chk_cb_buf"),       MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("stbsp__flush_cb"),         MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("stbsp__cb_buf_clamp"),     MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("STBSP__NUMSZ"),            MT_Expression, }),
+		((gen_Macro) { lit("STBSP__COPYFP"),           MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("stbsp__tento19th"),        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("stbsp__ddmulthi"),         MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("stbsp__ddrenorm"),         MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("stbsp__ddmultlo"),         MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("stbsp__ddmultlos"),        MT_Expression, MF_Functional }),
+		((gen_Macro) { lit("stbsp__ddtoS64"),          MT_Expression, MF_Functional })
+	));
+
 	// These in the same order as metadesk.h
 
 	// base/context_cracking.h
@@ -578,7 +630,6 @@ void register_library_macros()
 	gen_register_macro((gen_Macro) { lit("quick_sort"), MT_Expression, MF_Functional });
 	// base/strings.h
 	gen_register_macros(args(
-		((gen_Macro) { lit("STB_SPRINTF_DECORATE"),            MT_Expression, MF_Functional }),
 		((gen_Macro) { lit("cstring_length"),                  MT_Expression, MF_Functional }),
 		((gen_Macro) { lit("str8_lit"),                        MT_Expression, MF_Functional }),
 		((gen_Macro) { lit("str8_lit_comp"),                   MT_Expression, MF_Functional }),

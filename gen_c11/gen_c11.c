@@ -22,6 +22,8 @@ gen_Code refactor_and_format( gen_Code code ) {
 int main()
 {
 	gen_Context ctx = {0};
+	ctx.InitSize_MacrosTable   = gen_kilobytes(64);
+	ctx.InitSize_StrCacheTable = gen_kilobytes(64);
 	gen_init(& ctx);
 
 	register_library_macros();
@@ -84,7 +86,7 @@ int main()
 
 	gen_Code mdesk_h = gen_scan_file(path_mdesk "mdesk.h");
 
-	gen_Code base_platfom_c          = gen_scan_file(path_base "platform.c");
+	gen_Code base_platform_c         = gen_scan_file(path_base "platform.c");
 	gen_Code base_debug_c            = gen_scan_file(path_base "debug.c");
 	gen_Code base_memory_substrate_c = gen_scan_file(path_base "memory_substrate.c");
 	gen_Code base_arena_c            = gen_scan_file(path_base "arena.c");
@@ -140,7 +142,7 @@ int main()
 
 	gen_Code r_mdesk_h = refactor_and_format(mdesk_h);
 
-	gen_Code r_base_platform_c         = refactor(base_platfom_c);
+	gen_Code r_base_platform_c         = refactor(base_platform_c);
 	gen_Code r_base_debug_c            = refactor(base_debug_c);
 	gen_Code r_base_memory_substrate_c = refactor(base_memory_substrate_c);
 	gen_Code r_base_arena_c            = refactor(base_arena_c);
@@ -158,6 +160,7 @@ int main()
 	gen_Code r_os_c       = refactor(os_os_c);
 
 	gen_Code r_mdesk_c = refactor_and_format(mdesk_c);
+
 #pragma endregion Refactored / Formatted
 
 	if (GENERATE_SINGLEHEADER)
@@ -295,6 +298,7 @@ int main()
 		new_line();
 
 		print_section(r_base_platform_c,         lit("Platform"));
+		print_section(r_base_debug_c,            lit("Debug"));
 		print_section(r_base_memory_substrate_c, lit("Memory Substrate"));
 		print_section(r_base_arena_c,            lit("Arena"));
 		print_section(r_base_strings_c,          lit("Strings"));
@@ -344,6 +348,20 @@ int main()
 
 	if (GENERATE_SEGEREGATED)
 	{
+		gen_CodeBody tb_stb_printf_h_parsed = gen_parse_file(path_third_party "stb/stb_sprintf.h");
+		gen_CodeBody tb_stb_printf_header = gen_def_body(CT_Global_Body);
+		gen_CodeBody tb_stb_printf_source = gen_def_body(CT_Global_Body);
+
+		for (gen_Code stb_code = gen_iterator(CodeBody, tb_stb_printf_h_parsed, stb_code)) switch(stb_code->Type)
+		{
+			case CT_Preprocess_Define: 
+			{
+
+			}
+			break;
+
+		}
+
 		// Dependencies
 
 	#define builder  header_deps
@@ -447,10 +465,7 @@ int main()
 		include(lit("metadesk_deps.h"));
 
 		print(r_mdesk_h);
-
-		print(banner_mdesk);
-		new_line();		new_line();
-
+		new_line();
 		gen_builder_write(header);
 	#undef builder
 
@@ -479,6 +494,7 @@ int main()
 		new_line();
 
 		print_section(r_base_platform_c,         lit("Platform"));
+		print_section(r_base_debug_c,            lit("Debug"));
 		print_section(r_base_memory_substrate_c, lit("Memory Substrate"));
 		print_section(r_base_arena_c,            lit("Arena"));
 		print_section(r_base_strings_c,          lit("Strings"));

@@ -27,6 +27,10 @@ namespace OS_,       MD_OS_
 
 word HAS_ATTRIBUTE, MD_HAS_ATTRIBUTE
 
+// base/platform.h
+
+include assert, assert
+
 // base/linkage.h
 
 word global,   md_global
@@ -1094,6 +1098,8 @@ namespace FilePropertyFlag_, MD_FilePropertyFlag_
 namespace OS_, MD_OS_
 namespace os_, md_os_
 
+word os_ctx, os_ctx
+
 namespace entry_point, md_entry_point
 
 // metadesk module
@@ -1167,6 +1173,12 @@ namespace parse_from_text_,             md_parse_from_text_
 word      parse_from_text,              md_parse_from_text
 namespace debug_string_list_from_tree_, md_debug_string_list_from_tree_
 word      debug_string_list_from_tree,  md_debug_string_list_from_tree
+
+word ParseWorkKind, MD_ParseWorkKind
+word ParseWorkNode, MD_ParseWorkNode
+
+word parse__work_push, md_parse__work_push
+word parse__work_pop,  md_parse__work_pop
 
 // metagen module
 

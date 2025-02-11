@@ -19,6 +19,27 @@
             "compilerArgs": [
                 "/Zc:preprocessor"
             ]
+        },
+        {
+            "name": "Win32 tests",
+            "includePath": [
+                // "${workspaceFolder}",
+                "${workspaceFolder}/gen_c11/gen"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "INTELLISENSE_DIRECTIVES"
+            ],
+            "windowsSdkVersion": "10.0.22621.0",
+            "compilerPath": "cl.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "msvc-x64",
+            "compilerArgs": [
+                "/Zc:preprocessor"
+            ]
         }
     ],
     "version": 4

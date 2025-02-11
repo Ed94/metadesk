@@ -43,6 +43,7 @@ $release      = $null
 [bool] $code_sanity     = $false
 [bool] $compile_sanity  = $false
 [bool] $gen_c11         = $false
+[bool] $tests           = $false
 
 [array] $vendors = @( "clang", "msvc" )
 
@@ -57,6 +58,7 @@ if ( $args ) { $args | ForEach-Object {
 		"code_sanity"       { $code_sanity    = $true }
 		"compile_sanity"    { $compile_sanity = $true }
 		"gen_c11"           { $gen_c11        = $true }
+		"tests"             { $tests          = $true }
 		}
 	}
 }
@@ -86,7 +88,9 @@ else {
 $cannot_build =                    $code_sanity    -eq $false
 $cannot_build = $cannot_build -and $compile_sanity -eq $false
 $cannot_build = $cannot_build -and $gen_c11        -eq $false
+$cannot_build = $cannot_build -and $test           -eq $false
 if ( $cannot_build ) {
+	Pop-Location
 	throw "No build target specified. One must be specified, this script will not assume one"
 }
 
@@ -180,6 +184,40 @@ if ($gen_c11)
 	Push-Location $path_root
 		if ( Test-Path( $executable ) ) {
 			write-host "`nRunninggen_c11/gen_c11.exe"
+			$time_taken = Measure-Command { & $executable
+					| ForEach-Object {
+						write-host `t $_ -ForegroundColor Green
+					}
+				}
+			write-host "`ntest/code_sanity completed in $($time_taken.TotalMilliseconds) ms"
+		}
+	Pop-Location
+}
+
+
+if ($tests)
+{
+	write-host " Bulding tests/c11_sanity.c"
+
+	$compiler_args = @()
+	$compiler_args += $flag_all_c
+	$compiler_args += $flag_updated_cpp_macro
+	$compiler_args += $flag_c11
+
+	$linker_args = @()
+	$linker_args += $flag_link_win_subsystem_console
+
+	$path_gen = join-path $path_gen_c11 'gen'
+
+	$includes   = @( $path_gen, $path_root )
+	$unit       = join-path $path_tests  'c11_sanity.c'
+	$executable = join-path $path_build  'c11_sanity.exe'
+
+	$result = build-simple $path_build $includes $compiler_args $linker_args $unit $executable
+
+	Push-Location $path_root
+		if ( Test-Path( $executable ) ) {
+			write-host "`nRunning tests/c11_sanity.exe"
 			$time_taken = Measure-Command { & $executable
 					| ForEach-Object {
 						write-host `t $_ -ForegroundColor Green

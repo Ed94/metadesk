@@ -88,7 +88,9 @@
 		"gen_common.h": "c",
 		"processthreadsapi.h": "c",
 		"timeapi.h": "c",
-		"stdlib.h": "c"
+		"stdlib.h": "c",
+		"metadesk_deps.h": "c",
+		"stdbool.h": "c"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

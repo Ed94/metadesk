@@ -25,4 +25,4 @@ set_thread_namef(char *fmt, ...)
 }
 
 #define thread_namef(...) (set_thread_namef(__VA_ARGS__))
-#define thraed_name(str)  (set_thread_name(str))
+#define thread_name(str)  (set_thread_name(str))

@@ -1,4 +1,4 @@
-#if INTELLISENSE_DIRECTIVES
+#ifdef INTELLISENSE_DIRECTIVES
 #	pragma once
 #	include "os/os.h"
 #endif

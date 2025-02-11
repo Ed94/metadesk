@@ -26,7 +26,6 @@
 #define path_scratch_file    path_gen     "scratch.h"
 #define path_format_style    path_bin     ".clang-format "
 
-
 // Codegen DSL
 
 #define lit     gen_txt
@@ -41,7 +40,7 @@
 #define pragma_endregion(label)     print(gen_def_pragma(str_fmt("endregion %S", lit(label))))
 #define define(id, type, ...)       print(gen_def__define(id, type, &(gen_Opts_def_define){ __VA_ARGS__ }))
 #define comment(content)            print(gen_def_comment(lit(content)))
-#define include                     gen_def_include
+#define include(content, ...)       print(gen_def__include(content, &(gen_Opts_def_include){ __VA_ARGS__}))
 #define preprocess_cond(type, expr) gen_def_preprocess_cond(type, expr)
 #define preprocess_if(expr)         print(preprocess_cond(PreprocessCond_If,       lit(expr))); new_line()
 #define preprocess_ifndef(expr)     print(preprocess_cond(PreprocessCond_IfNotDef, lit(expr))); new_line()
@@ -667,7 +666,7 @@ void register_library_macros()
 	// base/markup.h
 	gen_register_macros(args(
 		((gen_Macro) { lit("thread_namef"), MT_Expression, MF_Functional }),
-		((gen_Macro) { lit("thraed_name"),  MT_Expression, MF_Functional })
+		((gen_Macro) { lit("thread_name"),  MT_Expression, MF_Functional })
 	));
 	// base/logger.h
 	gen_register_macros(args(

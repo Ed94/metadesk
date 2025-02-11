@@ -72,7 +72,7 @@
 
 #pragma endregion Build Options
 
-#pragma region Compiler Vendor
+#pragma region Vendor
 
 #if defined( _MSC_VER )
 #	pragma message("Detected MSVC")
@@ -128,7 +128,7 @@
 #	define GCC_VERSION_CHECK(major,minor,patch) (0)
 #endif
 
-#pragma endregion Compiler Vendor
+#pragma endregion Vendor
 
 #pragma region Language
 

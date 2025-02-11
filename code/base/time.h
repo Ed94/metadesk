@@ -7,7 +7,7 @@
 //~ allen: Time
 
 typedef enum WeekDay WeekDay;
-enum Weekday
+enum WeekDay
 {
 	WeekDay_Sun,
 	WeekDay_Mon,
@@ -101,15 +101,15 @@ date_time_from_dense_time(DenseTime time) {
 
 inline DateTime
 date_time_from_micro_seconds(U64 time){
-  DateTime result = {0};
-  result.micro_sec = time % 1000; time /= 1000;
-  result.msec = time % 1000; time /= 1000;
-  result.sec  = time % 60;   time /= 60;
-  result.min  = time % 60;   time /= 60; 
-  result.hour = time % 24;   time /= 24;
-  result.day  = time % 31;   time /= 31;
-  result.mon  = time % 12;   time /= 12;
-  assert(time <= MAX_U32);
-  result.year = (U32)time;
-  return(result);
+	DateTime result = {0};
+	result.micro_sec = time % 1000; time /= 1000;
+	result.msec      = time % 1000; time /= 1000;
+	result.sec       = time % 60;   time /= 60;
+	result.min       = time % 60;   time /= 60; 
+	result.hour      = time % 24;   time /= 24;
+	result.day       = time % 31;   time /= 31;
+	result.mon       = time % 12;   time /= 12;
+	assert(time <= MAX_U32);
+	result.year      = (U32)time;
+	return(result);
 }

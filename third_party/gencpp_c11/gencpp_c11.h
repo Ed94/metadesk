@@ -9697,8 +9697,8 @@ struct gen_Opts_def_namespace
 };
 typedef struct gen_Opts_def_namespace gen_Opts_def_namespace;
 
-GEN_API gen_CodeInclude gen_def__include(gen_Str content, gen_Opts_def_include opts GEN_PARAM_DEFAULT);
-#define gen_def_include(content, ...) gen_def__include(content, (gen_Opts_def_include) { __VA_ARGS__ })
+GEN_API gen_CodeInclude gen_def__include(gen_Str content, gen_Opts_def_include* opts GEN_PARAM_DEFAULT);
+#define gen_def_include(content, ...) gen_def__include(content, &(gen_Opts_def_include) { __VA_ARGS__ })
 
 GEN_API gen_CodeModule gen_def__module(gen_Str name, gen_Opts_def_module opts GEN_PARAM_DEFAULT);
 #define gen_def_module(name, ...) gen_def__module(name, (gen_Opts_def_module) { __VA_ARGS__ })
@@ -18830,8 +18830,10 @@ gen_CodeFn gen_def__function(gen_Str name, gen_Opts_def_function p)
 	return result;
 }
 
-gen_CodeInclude gen_def__include(gen_Str path, gen_Opts_def_include p)
+gen_CodeInclude gen_def__include(gen_Str path, gen_Opts_def_include* opts)
 {
+	gen_Opts_def_include p = opts ? *opts : (gen_Opts_def_include){0};
+
 	if (path.Len <= 0 || path.Ptr == gen_nullptr)
 	{
 		gen_log_failure("gen::gen_def_include: Invalid path provided - %d");

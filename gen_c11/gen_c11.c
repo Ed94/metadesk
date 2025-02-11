@@ -103,7 +103,7 @@ int main()
 
 	gen_Code mdesk_c = gen_scan_file(path_mdesk "mdesk.c");
 
-	#pragma region Refactored / Formatted
+#pragma region Refactored / Formatted
 	gen_Code r_tp_stb_sprintf_h = refactor(tp_stb_sprintf_h);
 
 	gen_Code r_base_context_cracking_h = refactor(base_context_cracking_h);
@@ -116,9 +116,9 @@ int main()
 	gen_Code r_base_ring_h             = refactor(base_ring_h);
 	gen_Code r_base_debug_h            = refactor(base_debug_h);
 	gen_Code r_base_memory_h           = refactor(base_memory_h);
-	gen_Code r_base_memory_substrate_h = refactor(base_memory_substrate_h);
+	gen_Code r_base_memory_substrate_h = refactor_and_format(base_memory_substrate_h);
 	gen_Code r_base_arena_h            = refactor(base_arena_h);
-	gen_Code r_base_space_h            = refactor(base_space_h);
+	gen_Code r_base_space_h            = refactor_and_format(base_space_h);
 	gen_Code r_base_math_h             = refactor_and_format(base_math_h);
 	gen_Code r_base_sort_h             = refactor(base_sort_h);
 	gen_Code r_base_toolchain_h        = refactor(base_toolchain_h);
@@ -128,17 +128,17 @@ int main()
 	gen_Code r_base_thread_context_h   = refactor(base_thread_context_h);
 	gen_Code r_base_command_line_h     = refactor(base_command_line_h);
 	gen_Code r_base_markup_h           = refactor(base_markup_h);
-	gen_Code r_base_logger_h           = refactor(base_logger_h);
+	gen_Code r_base_logger_h           = refactor_and_format(base_logger_h);
 	gen_Code r_base_entry_point_h      = refactor(base_entry_point_h);
 	gen_Code r_base_file_h             = refactor(base_file_h);
 
-	gen_Code r_os_h                = refactor(os_h);
+	gen_Code r_os_h                = refactor_and_format(os_h);
 	gen_Code r_os_win32_includes_h = refactor(os_win32_includes_h);
-	gen_Code r_os_win32_h          = refactor(os_win32_h);
+	gen_Code r_os_win32_h          = refactor_and_format(os_win32_h);
 	gen_Code r_os_linux_includes_h = refactor(os_linux_includes_h);
-	gen_Code r_os_linux_h          = refactor(os_linux_h);
+	gen_Code r_os_linux_h          = refactor_and_format(os_linux_h);
 
-	gen_Code r_mdesk_h = refactor(mdesk_h);
+	gen_Code r_mdesk_h = refactor_and_format(mdesk_h);
 
 	gen_Code r_base_platform_c         = refactor(base_platfom_c);
 	gen_Code r_base_debug_c            = refactor(base_debug_c);
@@ -157,14 +157,14 @@ int main()
 	gen_Code r_os_linux_c = refactor(os_linux_c);
 	gen_Code r_os_c       = refactor(os_os_c);
 
-	gen_Code r_mdesk_c = refactor(mdesk_c);
-	#pragma endregion Refactored / Formatted
+	gen_Code r_mdesk_c = refactor_and_format(mdesk_c);
+#pragma endregion Refactored / Formatted
 
 	if (GENERATE_SINGLEHEADER)
 	{
-		#define builder header
-		gen_Builder header_ = gen_builder_open(path_gen "metadesk_singleheader.h");
-		gen_Builder* header = & header_;
+	#define builder  header
+		gen_Builder  header_ = gen_builder_open(path_gen "metadesk_singleheader.h");
+		gen_Builder* header  = & header_;
 
 		gen_Str implementation_guard_start = lit(
 			// "#pragma region METADESK IMPLEMENTATION GUARD\n"
@@ -268,7 +268,7 @@ int main()
 		comment("#elif OS_LINUX");
 		preprocess_endif();
 
-		pragma_endregion("Operting System")
+		pragma_endregion("Operating System")
 		new_line();
 
 		pragma_region("MDesk")
@@ -339,12 +339,190 @@ int main()
 		new_line();
 
 		gen_builder_write(header);
-		#undef builder
+	#undef builder
 	}
 
 	if (GENERATE_SEGEREGATED)
 	{
+		// Dependencies
 
+	#define builder  header_deps
+		gen_Builder  header_deps_ = gen_builder_open(path_gen "metadesk_deps.h");
+		gen_Builder* header_deps  = & header_deps_;
+
+		// Header files
+
+		print_fmt("%S", generation_notice);
+		print(gen_pragma_once);
+		new_line();
+
+		pragma_region("Base");
+		print(banner_base);
+		new_line();
+
+		print_section(r_base_context_cracking_h, lit("Context Cracking"));
+		print_section(r_base_platform_h,         lit("platform"));
+		print_section(r_base_linkage_h,          lit("Linkage"));
+		print_section(r_base_macros_h,           lit("Macros"));
+		print_section(r_base_generic_macros_h,   lit("_Generic Macros"));
+		print_section(r_base_profiling_h,        lit("Profiling"));
+
+		define(lit("STB_SPRINTF_DECORATE(name)"), MT_Expression, .content = lit("md_##name"), .flags = MF_Functional);
+		// print();
+		preprocess_if("MD_BUILD_STATIC"); {
+			define(lit("STB_BUILD_STATIC"), MT_Statement);
+		}
+		preprocess_endif();
+		new_line();
+
+		print_section(r_tp_stb_sprintf_h, lit("STB snprintf Header"));
+		new_line();
+
+		print_section(r_base_base_types_h,       lit("Types"));
+		print_section(r_base_ring_h,             lit("Ring"));
+		print_section(r_base_debug_h,            lit("Debug"));
+		print_section(r_base_memory_h,           lit("Memory"));
+		print_section(r_base_memory_substrate_h, lit("Memory Substrate"));
+		print_section(r_base_arena_h,            lit("Arena"));
+		print_section(r_base_space_h,            lit("Space"));
+		print_section(r_base_math_h,             lit("Math"));
+		print_section(r_base_sort_h,             lit("Sort"));
+		print_section(r_base_toolchain_h,        lit("Toolchain"));
+		print_section(r_base_time_h,             lit("Time"));
+		print_section(r_base_strings_h,          lit("strings"));
+		print_section(r_base_text_h,             lit("Text"));
+		print_section(r_base_thread_context_h,   lit("Thread Context"));
+		print_section(r_base_command_line_h,     lit("Command Line"));
+		print_section(r_base_markup_h,           lit("Markup"));
+		print_section(r_base_logger_h,           lit("Logger"));
+		print_section(r_base_entry_point_h,      lit("Entry Point"));
+		print_section(r_base_file_h,             lit("File"));
+
+		pragma_endregion("Base");
+		new_line();
+
+		pragma_region("Operating System");
+		print(banner_os);
+		new_line();
+
+		print_section(r_os_h, lit("OS"));
+		
+		preprocess_if("!defined(MD_OS_FEATURE_GRAPHICAL)"); {
+			define(lit("MD_OS_FEATURE_GRAPHICAL"), MT_Expression, .content = lit("0") );
+		}
+		preprocess_endif();
+		new_line();
+
+		preprocess_if("!defined(MD_OS_GFX_STUB)"); {
+			define(lit("MD_OS_GFX_STUB"), MT_Expression, .content = lit("0") );
+		}
+		preprocess_endif();
+		new_line();
+
+		preprocess_if("MD_OS_WINDOWS"); {
+			print_section(r_os_win32_includes_h, lit("Win32 Includes"));
+			print_section(r_os_win32_h, lit("OS Win32"));
+		}
+		comment("#if MD_OS_WINDOWS"); new_line();
+		preprocess_elif("MD_OS_LINUX"); {
+			print_section(r_os_linux_includes_h, lit("Linux Includes"));
+			print_section(r_os_linux_h, lit("OS Linux"));
+		}
+		comment("#elif OS_LINUX");
+		preprocess_endif();
+
+		pragma_endregion("Operating System")
+		new_line();
+		gen_builder_write(header_deps);
+	#undef  builder
+
+	#define builder  header
+		gen_Builder  header_ = gen_builder_open(path_gen "metadesk.h");
+		gen_Builder* header  = & header_;
+
+		print(gen_scan_file(path_gen_c11 "banner_segregated.h"));
+		print(gen_pragma_once);
+		new_line();
+
+		include(lit("metadesk_deps.h"));
+
+		print(r_mdesk_h);
+
+		print(banner_mdesk);
+		new_line();		new_line();
+
+		gen_builder_write(header);
+	#undef builder
+
+		// Source files
+
+	#define builder  source_deps
+		gen_Builder  source_deps_ = gen_builder_open(path_gen "metadesk_deps.c");
+		gen_Builder* source_deps  = & source_deps_;
+
+		include(lit("metadesk_deps.h"));
+		new_line();
+
+		pragma_region("Base");
+		print(banner_base);
+		new_line();
+
+		define(lit("STB_SPRINTF_IMPLEMENTATION"), MT_Statement);
+		// print();
+		preprocess_if("MD_BUILD_STATIC"); {
+			define(lit("STB_BUILD_STATIC"), MT_Statement);
+		}
+		preprocess_endif();
+		new_line();
+
+		print_section(r_tp_stb_sprintf_h, lit("STB snprintf Header"));
+		new_line();
+
+		print_section(r_base_platform_c,         lit("Platform"));
+		print_section(r_base_memory_substrate_c, lit("Memory Substrate"));
+		print_section(r_base_arena_c,            lit("Arena"));
+		print_section(r_base_strings_c,          lit("Strings"));
+		print_section(r_base_text_c,             lit("Text"));
+		print_section(r_base_thread_context_c,   lit("Thread Context"));
+		print_section(r_base_markup_c,           lit("Markup"));
+		print_section(r_base_command_line_c,     lit("Command Line"));
+		print_section(r_base_logger_c,           lit("Logger"));
+		print_section(r_base_entry_point_c,      lit("Entry Point"));
+		print_section(r_base_time_c,             lit("Time"));
+
+		pragma_endregion("Base");
+		new_line();
+
+		pragma_region("Operating System");
+		print(banner_os);
+		new_line();
+
+		preprocess_if("MD_OS_WINDOWS"); {
+			print(r_os_win32_c)
+		}
+		preprocess_elif("MD_OS_LINUX"); {
+			print(r_os_linux_c);
+		}
+		preprocess_endif();
+
+		print(r_os_c);;
+
+		pragma_endregion("Operating System");
+		new_line();
+		gen_builder_write(source_deps);
+	#undef builder
+
+	#define builder  source
+		gen_Builder  source_ = gen_builder_open(path_gen "metadesk.c");
+		gen_Builder* source  = & source_;
+
+		include(lit("metadesk.h"));
+
+		print(r_mdesk_c);
+
+		new_line();
+		gen_builder_write(source);
+	#undef builder
 	}
 
 	// gen_deinit(& ctx);

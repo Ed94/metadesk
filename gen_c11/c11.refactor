@@ -48,6 +48,8 @@ word scast, md_scast
 word enum_underlying, md_enum_underlying
 word nullptr,         md_nullptr
 
+word PARAM_DEFAULT, MD_PARAM_DEFAULT
+
 word force_inline, md_force_inline
 word never_inline, md_never_inline
 
@@ -68,6 +70,7 @@ word glue_, md_glue_
 word do_once,       md_do_once
 word do_once_defer, md_do_once_defer
 word do_once_start, md_do_once_start
+word do_once_end,   md_do_once_end
 
 // base/generic_macros.h
 
@@ -80,7 +83,8 @@ word resolved_function_call, md_resolved_function_call
 
 word if_generic_selector_defined_include_slot, md_if_generic_selector_defined_include_slot
 
-word UNRESOLVED_GENERIC_SELECTION, MD_UNRESOLVED_GENERIC_SELECTION
+word UNRESOLVED_GENERIC_SELECTION,  MD_UNRESOLVED_GENERIC_SELECTION
+word assert_generic_selection_fail, md_assert_generic_selection_fail
 
 namespace GENERIC_SLOT_1__,           MD_GENERIC_SLOT_1__
 namespace generic_example_hash_,      md_generic_example_hash_
@@ -92,6 +96,7 @@ word      distinct,                   md_distinct
 
 // base/profiling.h
 
+word PROFILE_TELEMETRY,  MD_PROFILE_TELEMETRY
 word MARKUP_LAYER_COLOR, MD_MARKUP_LAYER_COLOR
 
 namespace prof_, md_prof_
@@ -110,6 +115,8 @@ word S128, MD_S128
 
 word USIZE, MD_USIZE
 word SSIZE, MD_SSIZE
+
+word sizeo_of, md_size_of
 
 word SPTR, MD_SPTR
 word UPTR, MD_UPTR
@@ -311,7 +318,8 @@ namespace ring_, md_ring_
 
 word trap,          md_trap
 word assert_always, md_assert_always
-word assert,        md_asert
+word assert,        md_assert
+word assert_msg,    md_assert_msg
 
 word invalid_path,    md_invalid_path
 word not_implemented, md_not_implemented
@@ -342,6 +350,7 @@ word clamp_top, md_clamp_top
 word clamp_bot, md_clamp_bot
 word clamp,     md_clamp
 
+word member,             md_member
 word align_of,           md_align_of
 word offset_of,          md_offset_of
 word member_from_offset, md_member_from_offset
@@ -358,7 +367,7 @@ word memory_copy_type,   md_memory_copy_type
 
 word memory_zero,        md_memory_zero
 word memory_zero_struct, md_memory_zero_struct
-word memroy_zero_array,  md_memory_zero_array
+word memory_zero_array,  md_memory_zero_array
 word memory_zero_type,   md_memory_zero_type
 
 word memory_match,        md_memory_match
@@ -381,7 +390,8 @@ word set_nil,   md_set_nil
 namespace dll_, md_dll_
 namespace sll_, md_sll_
 
-word NO_ASAN, MD_NO_ASAN
+word NO_ASAN,      MD_NO_ASAN
+word ASAN_ENABLED, MD_ASAN_ENABLED
 
 namespace asan_, md_asan_
 
@@ -489,11 +499,13 @@ word mfree,  md_mfree
 
 namespace VARENA_, MD_VARENA_
 
-word VArenaFlags, MD_VArenaFlags
-word VArena,      MD_VArena
+word VArenaParams, MD_VArenaParams
+word VArenaFlags,  MD_VArenaFlags
+word VArena,       MD_VArena
 
 namespace VArenaFlag_, MD_VArenaFlag_
 
+word varena_alloc,          md_varena_alloc
 word varena__alloc,         md_varena__alloc
 word varena_commit,         md_varena_commit
 word varena_release,        md_varena_release
@@ -509,6 +521,10 @@ word farena_from_byteslice, md_farena_from_byteslice
 word farena_from_memory,    md_farena_from_memory
 
 // base/arena.h
+
+namespace ArenaFlag, MD_ArenaFlag
+
+word ARENA_DEFAULT_BLOCK_SIZE, MD_ARENA_DEFAULT_BLOCK_SIZE
 
 word ArenaFlags,  MD_ArenaFlags
 word ArenaParams, MD_ArenaParams
@@ -539,8 +555,8 @@ namespace Axis2_,     MD_Axis2_
 namespace Corner_,    MD_Corner_
 namespace Dir2_,      MD_Dir2_
 
-word axis_from_dir2, md_axis_from_dir2
-word side_from_dir2, md_side_from_dir2
+word axis2_from_dir2, md_axis2_from_dir2
+word side_from_dir2,  md_side_from_dir2
 
 word sign_from_side_f32, md_side_from_side_f32
 wrod sign_from_side_f64, md_side_from_side_f64
@@ -592,9 +608,29 @@ word round_f32, md_round_f32
 word abs_f32,   md_abs_f32
 
 word radians_from_turns_f32, md_radians_from_turns_f32
+word turns_from_radians_f32, md_turns_from_radians_f32
+word degrees_from_turns_f32, md_degrees_from_turns_f32
+word turns_from_degrees_f32, md_turns_from_degrees_f32
+
+word degrees_from_radians_f32, md_degrees_from_radians_f32
+word radians_from_degrees_f32, md_radians_from_degrees_f32
+
+word sin_f32, md_sin_f32
+word cos_f32, md_cos_f32
+word tan_f32, md_tan_f32
+
+word radians_from_turns_f64, md_radians_from_turns_f64
 word turns_from_radians_f64, md_turns_from_radians_f64
 word degrees_from_turns_f64, md_degrees_from_turns_f64
-word turns_from_degrees_f64, md_turns_from_degrees_f64
+word degrees_from_turns_f64, md_degrees_from_turns_f64
+
+word sqrt_f64,  md_sqrt_f64
+word mod_f64,   md_mod_f64
+word pow_f64,   md_pow_f64
+word ceil_f64,  md_ceil_f64
+word floor_f64, md_floor_f64
+word round_f64, md_round_f64
+word abs_f64,   md_abs_f64
 
 word degrees_from_radians_f64, md_degrees_from_radians_f64
 word radians_from_degrees_f64, md_radians_from_degrees_f64
@@ -602,6 +638,10 @@ word radians_from_degrees_f64, md_radians_from_degrees_f64
 word sin_f64, md_sin_f64
 word cos_f64, md_cos_f64
 word tan_f64, md_tan_f64
+
+word sin_f32, md_sin_f32
+word cos_f32, md_cos_f32
+word tan_f32, md_tan_f32
 
 word mix_1f32, md_mix_1f32
 word mix_1f64, md_mix_1f64
@@ -857,7 +897,7 @@ word contains_2s64,  md_contains_2s64
 word dim_2s64,       md_dim_2s64
 word union_2s64,     md_union_2s64
 word intersect_2s64, md_intersect_2s64
-word clamp_2s32,     md_clamp_2s32
+word clamp_2s64,     md_clamp_2s64
 
 word hsv_from_rgb,   md_hsv_from_rgb
 word rgb_from_hsv,   md_rgb_from_hsv
@@ -868,10 +908,15 @@ word u32_from_rgba,  md_u32_from_rgba
 
 namespace rgba_from_, md_rgba_from_
 
-word rng1s64_list_push,             md_rng1s64_list_push
-word rng1s64_array_from_list,       md_rng1s64_array_from_list
+namespace rng1s64_list_push_,       md_rng1s64_list_push_
+namespace rng1s64_array_from_list_, md_rng1s64_array_from_list_
+
 word rng1s64_list_alloc,            md_rng1s64_list_alloc
 word rng1s64_array_from_list_alloc, md_rng1s64_array_from_list_alloc
+
+// base/sort.h
+
+word quick_sort, md_quick_sort
 
 // base/toolchain.h
 
@@ -893,6 +938,11 @@ word compiler_from_context,          md_compiler_from_context
 
 // base/strings.h
 
+word integer_symbols, md_integer_symbols
+word base64, md_base64
+word base64_reverse, md_base64_reverse
+word integer_symbol_reverse, md_integer_symbol_reverse
+
 word String8,             MD_String8
 word String16,            MD_String16
 word String32,            MD_String32
@@ -912,12 +962,23 @@ namespace StringMatchFlag_, MD_StringMatchFlag_
 namespace StringSplitFlag_, MD_StringSplitFlag_
 namespace PathStyle_,       MD_PathStyle_
 
-namepsace char_, md_char_
+namespace char_, md_char_
 
 word cstring8_length,  md_cstring8_length
 word cstring16_length, md_cstring16_length
 word cstring32_length, md_cstring32_length
 word cstring_length,   md_cstring_length
+
+word str8,  md_str8
+word str16, md_str16
+
+word str8fv__arena, md_str8fv__arena
+word str8f__arena,  md_str8f__arena
+word str8fv__ainfo, md_str8fv__ainfo
+word str8f__ainfo,  md_str8f__ainfo
+
+word str8fv, md_str8fv
+word str8f,  md_str8f
 
 namespace str8_,             md_str8_
 namespace str16_,            md_str16_
@@ -944,11 +1005,30 @@ namespace hex_string_,       md_hex_string_
 //namespace rgba_from_,        md_rgba_from_ (done by math.h)
 namespace fuzzy_match_,      md_fuzzy_match_
 
+word path_style_from_str8, md_path_style_from_str8
+
+namespace utf8_,  md_utf8_
+namespace utf16_, md_utf16_
+
+word operating_system_from_string, md_operating_system_from_string
+
+namespace file_name_date_time_string_, md_file_name_date_time_string_
+
+// base/text.h
+
+word TxtRng,           MD_TxtRng
+word TxtPt,            MD_TxtPt
+word String8TxtPtPair, MD_String8TxtPtPair
+
+namespace txt_, md_txt_
+
 // base/thread_context.h
 
 word TCTX, MD_TCTX
 
 namespace tctx, md_tctx
+
+namespace scratch_begin_, md_scratch_begin_
 
 word scratch_begin,       md_scratch_begin
 word scratch_begin_alloc, md_scratch_begin_alloc
@@ -975,8 +1055,7 @@ word LogScope,       MD_LogScope
 word LogScopeResult, MD_LogScopeResult
 word Log,            MD_Log
 
-namespace LogMsgKind_, MD_LogMsgKind_
-
+namespace LogMsgKind_,  MD_LogMsgKind_
 namespace LOG_DEFAULT_, MD_LOG_DEFAULT_
 
 namespace log_, md_log_

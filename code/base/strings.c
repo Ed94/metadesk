@@ -4,12 +4,8 @@
 #	include "debug.h"
 #	include "strings.h"
 #	include "thread_context.h"
-////////////////////////////////
-//~ rjf: Third Party Includes
 #	define STB_SPRINTF_IMPLEMENTATION
-#	if BUILD_STATIC
-#		#define STB_SPRINTF_STATIC
-#	endif
+#	define STB_SPRINTF_STATIC
 #	include "third_party/stb/stb_sprintf.h"
 #endif
 

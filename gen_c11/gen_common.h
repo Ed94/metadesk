@@ -26,9 +26,39 @@
 #define path_scratch_file    path_gen     "scratch.h"
 #define path_format_style    path_bin     ".clang-format "
 
+
+// Codegen DSL
+
 #define lit     gen_txt
 #define nullptr gen_nullptr
 // #define args    
+
+#define str_fmt(fmt, ...)           gen_strbuilder_to_str(gen_strbuilder_fmt_buf(gen_get_context()->Allocator_Temp, fmt, __VA_ARGS__))
+#define print(code)                 gen_builder_print(builder, code);
+#define print_fmt(fmt, ...)         gen_builder_print_fmt(builder, fmt, __VA_ARGS__)
+#define new_line()                  gen_builder_print(builder, gen_fmt_newline)
+#define pragma_region(label)        print(gen_def_pragma(str_fmt("region %S",    lit(label))))
+#define pragma_endregion(label)     print(gen_def_pragma(str_fmt("endregion %S", lit(label))))
+#define define(id, type, ...)       print(gen_def__define(id, type, &(gen_Opts_def_define){ __VA_ARGS__ }))
+#define comment(content)            print(gen_def_comment(lit(content)))
+#define include                     gen_def_include
+#define preprocess_cond(type, expr) gen_def_preprocess_cond(type, expr)
+#define preprocess_if(expr)         print(preprocess_cond(PreprocessCond_If,       lit(expr))); new_line()
+#define preprocess_ifndef(expr)     print(preprocess_cond(PreprocessCond_IfNotDef, lit(expr))); new_line()
+#define preprocess_elif(expr)       print(preprocess_cond(PreprocessCond_ElIf,     lit(expr))); new_line()
+#define preprocess_endif()		    print(gen_preprocess_endif)
+
+#ifndef PRINT_SECTION_REGION_PRAGMAS
+#define PRINT_SECTION_REGION_PRAGMAS 1
+#endif
+
+#define print_section(code, label) print__section(builder, code, label)
+void print__section(gen_Builder* builder, gen_Code code, gen_Str label) {
+	if (PRINT_SECTION_REGION_PRAGMAS) gen_builder_print(builder, gen_def_pragma(str_fmt("region %S", label)) );
+	gen_builder_print(builder, code);
+	if (PRINT_SECTION_REGION_PRAGMAS) gen_builder_print(builder, gen_def_pragma(str_fmt("endregion %S", label)) );
+	gen_builder_print(builder, gen_fmt_newline);
+}
 
 void register_library_macros() 
 {

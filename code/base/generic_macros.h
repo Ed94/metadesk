@@ -34,8 +34,8 @@
 #define generic_sel_entry_comma_delimiter  select_arg_3 // Use the arg expansion macro to select arg 3 which should have the comma delimiter ','.
 #endif
 
-#ifndef resolved_function_call
-#define resolved_function_call // Just used to indicate where the call "occurs"
+#ifndef generic_call
+#define generic_call // Just used to indicate where the call "occurs"
 #endif
 
 // ----------------------------------------------------------------------------------------------------------------------------------
@@ -54,7 +54,7 @@ typedef struct UNRESOLVED_GENERIC_SELECTION UNRESOLVED_GENERIC_SELECTION;
 struct UNRESOLVED_GENERIC_SELECTION {
 	void* _THE_VOID_SLOT_;
 };
-UNRESOLVED_GENERIC_SELECTION const assert_generic_selection_fail = {0};
+UNRESOLVED_GENERIC_SELECTION const assert_generic_sel_fail = {0};
 // Which will provide the message:  error: called object type 'struct NO_RESOLVED_GENERIC_SELECTION' is not a function or function pointer
 // ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -65,8 +65,8 @@ UNRESOLVED_GENERIC_SELECTION const assert_generic_selection_fail = {0};
   /* Extendibility slots: */                                                 \
 	if_generic_selector_defined_include_slot( GENERIC_SLOT_1__function_sig ) \
 	if_generic_selector_defined_include_slot( GENERIC_SLOT_2__function_sig ) \
-	default: assert_generic_selection_fail                                   \
-) resolved_function_call( selector_arg )
+	default: assert_generic_sel_fail                                         \
+) generic_call( selector_arg )
 // ----------------------------------------------------------------------------------------------------------------------------------
 
 // Then each definiton of a function has an associated define:
@@ -99,8 +99,8 @@ size_t generic_example_hash__P_long_long( long long val ) { return val * 2654435
 	if_generic_selector_defined_include_slot( GENERIC_SLOT_6__example_hash ) \
 	if_generic_selector_defined_include_slot( GENERIC_SLOT_7__example_hash ) \
 	if_generic_selector_defined_include_slot( GENERIC_SLOT_8__example_hash ) \
-	default: assert_generic_selection_fail                                   \
-) resolved_function_call( function_arguments )
+	default: assert_generic_sel_fail                                         \
+) generic_call( function_arguments )
 
 // Additional Variations:
 
@@ -111,8 +111,8 @@ size_t generic_example_hash__P_long_long( long long val ) { return val * 2654435
 	if_generic_selector_defined_include_slot( GENERIC_SLOT_2__function_sig )  \
 	/* ... */                                                                 \
 	if_generic_selector_defined_include_slot(GENERIC_SLOT_N__function_sig )   \
-	default: assert_generic_selection_fail                                    \
-) resolved_function_call( selector_arg, __VA_ARG__ )
+	default: assert_generic_sel_fail                                          \
+) generic_call( selector_arg, __VA_ARG__ )
 
 // If the function does not take the arugment as a parameter:
 #define function_generic_example_direct_type( selector_arg ) _Generic(       \
@@ -121,8 +121,8 @@ size_t generic_example_hash__P_long_long( long long val ) { return val * 2654435
 	if_generic_selector_defined_include_slot( GENERIC_SLOT_2__function_sig ) \
 	/* ... */                                                                \
 	if_generic_selector_defined_include_slot(GENERIC_SLOT_N__function_sig )  \
-	default: assert_generic_selection_fail                                   \
-) resolved_function_call()
+	default: assert_generic_sel_fail                                         \
+) generic_call(selector_arg)
 
 
 #ifndef type_to_expression
@@ -132,38 +132,37 @@ size_t generic_example_hash__P_long_long( long long val ) { return val * 2654435
 #endif
 
 // _Generic also suffers from type compability flatting distinctions between typedef by resolving the selection to the underling type and qualifier.
-// To resolve this these distinctions must be enforced using structs that enforce the typedef
+// To resolve this these distinctions must be enforce by keeping "compatible" types in separate _Generic expressions:
 
-#ifndef distinct_register_selector
-// Will define the metadata struct for generic selection usage with the distinct_lookup function macro
-// Generally does not need to be used unless getting an error similar to: "_Generic association compatible with previous association type"
-#define distinct_register_selector(type) typedef struct { type* UNUSED__; } Distinct_Typedef_ ## type
-#endif
+#define example_with__l2(expr) _Generic( \
+(expr),                                  \
+    S64    : example_with_s64,           \
+    default: assert_generic_sel_fail     \
+)
+#define example_with(expr)                          \
+_Generic((expr),                                    \
+    SSIZE   : example_with_SSIZEZ                   \
+    default : example_with_not_SSIZE(allocator, in) \
+) generic_call(allocator, in)
 
-#ifndef distinct_lookup
-// This is used by a generic selector to lookup a unique struct typeid of a typedef if distinct_register_selector function macro was utilized
-// Only necessary to use with _Generic if getting an error similar to: "_Generic association compatible with previous association type"
-#define distinct_lookup(type) Distinct_Typedef_ ## type
-#endif
+// This can be made more concise with he following "layer" indicating _Generic macros
 
-// Example: -------------------------------------------------------------------------------------------------------------------------
-// Now this can work so long as typedef_generic_selector was used on the S64 && SSIZE typedefs
-#define generic_example_do_something_with(selector_arg, in) _Generic(                        \
-(selector_arg),                                                                              \
-	distinct_lookup(S64)  : do_something_with_s64,   default: assert_generic_selection_fail, \
-	distinct_lookup(SSIZE): do_something_with_ssize, default: assert_generic_selection_fail, \
-	default               : assert_generic_selection_fail                                    \
-) resolved_function_call(selector_arg)
-// ----------------------------------------------------------------------------------------------------------------------------------
+#define _Generic_L2(expr, ...) default: _Generic(expr, __VA_ARGS__)
+#define _Generic_L3(expr, ...) default: _Generic(expr, __VA_ARGS__)
 
-#ifndef distinct
-// Can inlay with typedef and a distinct_register_selector. Usage: typedef distinct(int, SomeType);
-// Generally does not need to be used unless getting an error similar to: "_Generic association compatible with previous association type"
-// Use distinct_lookup, to resolve the distinct type for the generic selection entry.
-#define distinct(underlying_type, type) underlying_type type; distinct_register_selector(type)
-#endif
+#define example_with_generic_layers(expr)   \
+_Generic(   (expr),                         \
+	S64 : example_with_s64,                 \
+_Generic_L2((expr),                         \
+	SSIZE: example_with_SSIZZE              \
+	default: assert_generic_sel_fail        \
+),                                          \
+) generic_call(expr)
 
 // Removing example definitions
+#undef example_with
+#undef example_with__l2
+#undef example_with_generic_layers
 #undef function_generic_example
 #undef GENERIC_SLOT_1__example_hash
 #undef GENERIC_SLOT_2__example_hash

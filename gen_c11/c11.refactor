@@ -83,12 +83,12 @@ word COMMA_OPERATOR, MD_COMMA_OPERATOR
 namespace select_arg_,        md_select_arg_
 namespace generic_sel_entry_, md_generic_sel_entry_
 
-word resolved_function_call, md_resolved_function_call
+word generic_call, md_generic_call
 
 word if_generic_selector_defined_include_slot, md_if_generic_selector_defined_include_slot
 
-word UNRESOLVED_GENERIC_SELECTION,  MD_UNRESOLVED_GENERIC_SELECTION
-word assert_generic_selection_fail, md_assert_generic_selection_fail
+word UNRESOLVED_GENERIC_SELECTION, MD_UNRESOLVED_GENERIC_SELECTION
+word assert_generic_sel_fail,      md_assert_generic_sel_fail
 
 namespace GENERIC_SLOT_1__,           MD_GENERIC_SLOT_1__
 namespace generic_example_hash_,      md_generic_example_hash_
@@ -1115,7 +1115,7 @@ namespace MsgKind, MD_MsgKind
 word Msg,     MD_Msg
 word MsgList, MD_MsgList
 
-word      TokenFlags,      MD_MsgFlags
+word      TokenFlags,      MD_TokenFlags
 namespace TokenFlag_,      MD_TokenFlag_
 word      TokenFlagGroups, MD_TokenFlagGroups
 namespace TokenFlagGroup_, MD_TokenFlagGroup_

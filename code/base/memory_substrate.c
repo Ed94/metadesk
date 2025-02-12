@@ -296,7 +296,7 @@ varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_
 	{
 		case AllocatorMode_Alloc:
 		{
-			assert(requested_size != 0);
+			assert_msg(requested_size != 0, "requested_size is 0");
 
 			requested_size = align_pow2(requested_size, alignment);
 

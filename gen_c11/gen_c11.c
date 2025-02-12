@@ -272,7 +272,7 @@ int main()
 		preprocess_endif();
 		new_line();
 
-		print_section(r_tp_stb_sprintf_h, lit("STB snprintf Header"));
+		print_section(r_tp_stb_sprintf_header, lit("STB snprintf Header"));
 		print_fmt("%S", implementation_guard_end);
 		new_line();
 

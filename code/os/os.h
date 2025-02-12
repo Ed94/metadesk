@@ -156,8 +156,8 @@ void           os_handle_list_push__ainfo      (AllocatorInfo ainfo, OS_HandleLi
 OS_HandleArray os_handle_array_from_list__arena(Arena*        arena, OS_HandleList* list);
 OS_HandleArray os_handle_array_from_list__ainfo(AllocatorInfo ainfo, OS_HandleList* list);
 
-#define os_handle_ist_push(arena, handles, handle) _Generic(allocator, Arena*: os_handle_list_push__arena,       AllocatorInfo: os_handle_list_push__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, handles, handle)
-#define os_handle_array_from_list(allocator, list) _Generic(allocator, Arena*: os_handle_array_from_list__arena, AllocatorInfo: os_handle_list_push__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, list)
+#define os_handle_ist_push(arena, handles, handle) _Generic(allocator, Arena*: os_handle_list_push__arena,       AllocatorInfo: os_handle_list_push__ainfo, default: assert_generic_sel_fail) generic_call(allocator, handles, handle)
+#define os_handle_array_from_list(allocator, list) _Generic(allocator, Arena*: os_handle_array_from_list__arena, AllocatorInfo: os_handle_list_push__ainfo, default: assert_generic_sel_fail) generic_call(allocator, list)
 
 force_inline void           os_handle_list_push__arena      (Arena* arena, OS_HandleList* handles, OS_Handle handle) {        os_handle_list__push_ainfo      (arena_allocator(arena), handles, handle); }
 force_inline OS_HandleArray os_handle_array_from_list__arena(Arena* arena, OS_HandleList* list)                      { return os_handle_array_from_list__ainfo(arena_allocator(arena), list); }
@@ -199,7 +199,7 @@ os_string_list_from_argcv__ainfo(AllocatorInfo ainfo, int argc, char** argv) {
 	return result;
 }
 
-#define os_string_list_from_argcv(allocator, argc, argv) _Generic(allocator, Arena*: os_string_list_from_argcv__arena, AllocatorInfo: os_string_list_from_argcv__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, argc, argv)
+#define os_string_list_from_argcv(allocator, argc, argv) _Generic(allocator, Arena*: os_string_list_from_argcv__arena, AllocatorInfo: os_string_list_from_argcv__ainfo, default: assert_generic_sel_fail) generic_call(allocator, argc, argv)
 
 force_inline String8List os_string_list_from_argcv__arena(Arena* arena, int argc, char** argv) { return os_string_list_from_argcv__ainfo(arena_allocator(arena), argc, argv); }
 
@@ -221,7 +221,7 @@ MD_API FileProperties os_properties_from_file_path (String8   path);
 MD_API String8        os_full_path_from_path__arena(Arena*        arena, String8 path);
 MD_API String8        os_full_path_from_path__ainfo(AllocatorInfo arena, String8 path);
 
-#define os_full_path_from_path(allocator, path) _Generic(allocator, Arena*: os_full_path_from_path__arena, AllocatorInfo: os_full_path_from_path__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, path)
+#define os_full_path_from_path(allocator, path) _Generic(allocator, Arena*: os_full_path_from_path__arena, AllocatorInfo: os_full_path_from_path__ainfo, default: assert_generic_sel_fail) generic_call(allocator, path)
 
 force_inline String8 os_full_path_from_path__arena(Arena* arena, String8 path) { return os_full_path_from_path__ainfo(arena_allocator(arena), path); }
 
@@ -238,8 +238,8 @@ MD_API OS_FileIter* os_file_iter_begin__ainfo(AllocatorInfo ainfo, String8      
 MD_API B32          os_file_iter_next__ainfo (AllocatorInfo arena, OS_FileIter* iter, OS_FileInfo*     info_out);
 MD_API void         os_file_iter_end         (                     OS_FileIter* iter);
 
-#define os_file_iter_begin(allocator, path, flags)   _Generic(allocator, Arena*: os_file_iter_begin__arena, AllocatorInfo: os_file_iter_begin__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, path)
-#define os_file_iter_next(allocator, iter, info_out) _Generic(allocator, Arena*: os_file_iter_next__arena,  AllocatorInfo: os_file_iter_next__ainfo,  default: assert_generic_selection_fail) resolved_function_call(allocator, path)
+#define os_file_iter_begin(allocator, path, flags)   _Generic(allocator, Arena*: os_file_iter_begin__arena, AllocatorInfo: os_file_iter_begin__ainfo, default: assert_generic_sel_fail) generic_call(allocator, path)
+#define os_file_iter_next(allocator, iter, info_out) _Generic(allocator, Arena*: os_file_iter_next__arena,  AllocatorInfo: os_file_iter_next__ainfo,  default: assert_generic_sel_fail) generic_call(allocator, path)
 
 force_inline OS_FileIter* os_file_iter_begin__arena(Arena* arena, String8      path, OS_FileIterFlags flags)    { reutrn (); }
 force_inline B32          os_file_iter_next__arena (Arena* arena, OS_FileIter* iter, OS_FileInfo*     info_out) { reutrn (); }
@@ -261,8 +261,8 @@ MD_API B32       os_append_data_to_file_path    (String8 path, String8     data)
 MD_API String8 os_string_from_file_range__arena(Arena*        arena, OS_Handle file, Rng1U64 range);
 MD_API String8 os_string_from_file_range__ainfo(AllocatorInfo ainfo, OS_Handle file, Rng1U64 range);
 
-#define os_data_from_file_path(allocator, path)           _Generic(allocator, Arena*: os_data_from_file_path__arena,    AllocatorInfo: os_data_from_file_path__ainfo,    default: assert_generic_selection_fail) resolved_function_call(allocator, path)
-#define os_string_from_file_range(allocator, file, range) _Generic(allocator, Arena*: os_string_from_file_range__arena, AllocatorInfo: os_string_from_file_range__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, file, range)
+#define os_data_from_file_path(allocator, path)           _Generic(allocator, Arena*: os_data_from_file_path__arena,    AllocatorInfo: os_data_from_file_path__ainfo,    default: assert_generic_sel_fail) generic_call(allocator, path)
+#define os_string_from_file_range(allocator, file, range) _Generic(allocator, Arena*: os_string_from_file_range__arena, AllocatorInfo: os_string_from_file_range__ainfo, default: assert_generic_sel_fail) generic_call(allocator, file, range)
 
 force_inline String8 os_data_from_file_path__arena(Arena* arena, String8 path) { return os_data_from_file_path__ainfo(arena_allocator(arena), path); }
 
@@ -292,7 +292,7 @@ inline S64 os_file_id_compare(OS_FileID a, OS_FileID b) { S64 cmp = memory_compa
 String8 os_string_from_guid__arena(Arena*        arena, OS_Guid guid);
 String8 os_string_from_guid__ainfo(AllocatorInfo ainfo, OS_Guid guid);
 
-#define os_string_from_guid(allocator, guid) _Generic(allocator, Arena*: os_string_from_guid__arena, AllocatorInfo: os_string_from_guid__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, guid)
+#define os_string_from_guid(allocator, guid) _Generic(allocator, Arena*: os_string_from_guid__arena, AllocatorInfo: os_string_from_guid__ainfo, default: assert_generic_sel_fail) generic_call(allocator, guid)
 
 force_inline String8 os_string_from_guid__arena(Arena* arena, OS_Guid guid) { os_string_from_guid__ainfo(arena_allocator(arena), guid); }
 
@@ -325,7 +325,7 @@ MD_API OS_ProcessInfo* os_get_process_info(void);
 String8 os_get_current_path__arena(Arena*        arena);
 String8 os_get_current_path__ainfo(AllocatorInfo arena);
 
-#define os_get_current_path(allocator) _Generic(allocator, Arena*: os_get_current_path__arena, AllocatorInfo: os_get_current_path__ainfo) resolved_function_call(allocator)
+#define os_get_current_path(allocator) _Generic(allocator, Arena*: os_get_current_path__arena, AllocatorInfo: os_get_current_path__ainfo) generic_call(allocator)
 
 force_inline String8 os_get_current_path__arena(Arena* arena) { return os_get_current_path__ainfo(arena_allocator(arena)); }
 

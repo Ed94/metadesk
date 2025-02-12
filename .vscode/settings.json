@@ -90,7 +90,10 @@
 		"timeapi.h": "c",
 		"stdlib.h": "c",
 		"metadesk_deps.h": "c",
-		"stdbool.h": "c"
+		"stdbool.h": "c",
+		"map": "c",
+		"unordered_map": "c",
+		"stdint.h": "c"
 	},
 	"workbench.colorCustomizations": {
 		"activityBar.activeBackground": "#713fb8",

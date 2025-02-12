@@ -238,7 +238,7 @@ inline U64 cstring8_length (U8*  c) { U8*  p = c; for (; *p != 0; p += 1); retur
 inline U64 cstring16_length(U16* c) { U16* p = c; for (; *p != 0; p += 1); return(p - c); }
 inline U64 cstring32_length(U32* c) { U32* p = c; for (; *p != 0; p += 1); return(p - c); }
 
-#define cstring_length(c) _Generic(c, U8: cstring8_length, U16: cstring16_length, U32: cstring32_length)(c)
+#define cstring_length(c) _Generic(c, U8*: cstring8_length, U16*: cstring16_length, U32*: cstring32_length)(c)
 
 ////////////////////////////////
 //~ rjf: String Constructors
@@ -322,10 +322,10 @@ MD_API String8 str8_copy__ainfo(AllocatorInfo ainfo, String8 s);
 MD_API String8 str8fv__ainfo   (AllocatorInfo ainfo, char* fmt, va_list args);
        String8 str8f__ainfo    (AllocatorInfo ainfo, char* fmt, ...);
 
-#define str8_cat(allocator, s1, s2)  _Generic(allocator, Arena*: str8_cat__arena,  AllocatorInfo: str8_cat__ainfo,  default: assert_generic_selection_fail) resolved_function_call(allocator, s1, s2)
-#define str8_copy(allocator, s)      _Generic(allocator, Arena*: str8_copy__arena, AllocatorInfo: str8_copy__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, s)
-#define str8fv(allocator, fmt, args) _Generic(allocator, Arena*: str8fv__arena,    AllocatorInfo: str8fv__ainfo ,   default: assert_generic_selection_fail) resolved_function_call(allocator, fmt, args)
-#define str8f(allocator, fmt, ...)   _Generic(allocator, Arena*: str8f__arena,     AllocatorInfo: str8f__ainfo ,    default: assert_generic_selection_fail) resolved_function_call(allocator, fmt, __VA_ARGS__)
+#define str8_cat(allocator, s1, s2)  _Generic(allocator, Arena*: str8_cat__arena,  AllocatorInfo: str8_cat__ainfo,  default: assert_generic_sel_fail) generic_call(allocator, s1, s2)
+#define str8_copy(allocator, s)      _Generic(allocator, Arena*: str8_copy__arena, AllocatorInfo: str8_copy__ainfo, default: assert_generic_sel_fail) generic_call(allocator, s)
+#define str8fv(allocator, fmt, args) _Generic(allocator, Arena*: str8fv__arena,    AllocatorInfo: str8fv__ainfo ,   default: assert_generic_sel_fail) generic_call(allocator, fmt, args)
+#define str8f(allocator, fmt, ...)   _Generic(allocator, Arena*: str8f__arena,     AllocatorInfo: str8f__ainfo ,    default: assert_generic_sel_fail) generic_call(allocator, fmt, __VA_ARGS__)
 
 force_inline String8 str8_cat__arena (Arena* arena, String8 s1, String8 s2) { return str8_cat__ainfo (arena_allocator(arena), s1, s2); }
 force_inline String8 str8_copy__arena(Arena* arena, String8 s)              { return str8_copy__ainfo(arena_allocator(arena), s); }
@@ -409,9 +409,9 @@ inline String8 upper_from_str8__ainfo      (AllocatorInfo ainfo, String8 string)
 inline String8 lower_from_str8__ainfo      (AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_to_lower(string.str[idx]);                          } return string; }
 inline String8 backslashed_from_str8__ainfo(AllocatorInfo ainfo, String8 string) { string = str8_copy(ainfo, string); for(U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
 
-#define upper_from_str8(allocator, string)       _Generic(allocator, Arena*: upper_from_str8__arena,       AllocatorInfo: upper_from_str8__ainfo,        default: assert_generic_selection_fail) resolved_function_call(allocator, string)
-#define lower_from_str8(allocator, string)       _Generic(allocator, Arena*: lower_from_str8__arena,       AllocatorInfo: lower_from_str8__ainfo,        default: assert_generic_selection_fail) resolved_function_call(allocator, string)
-#define backslashed_from_str8(allocator, string) _Generic(allocator, Arena*: backslashed_from_str8__arena, AllocatorInfo: backslashed_from_str8__ainfo , default: assert_generic_selection_fail) resolved_function_call(allocator, string)
+#define upper_from_str8(allocator, string)       _Generic(allocator, Arena*: upper_from_str8__arena,       AllocatorInfo: upper_from_str8__ainfo,        default: assert_generic_sel_fail) generic_call(allocator, string)
+#define lower_from_str8(allocator, string)       _Generic(allocator, Arena*: lower_from_str8__arena,       AllocatorInfo: lower_from_str8__ainfo,        default: assert_generic_sel_fail) generic_call(allocator, string)
+#define backslashed_from_str8(allocator, string) _Generic(allocator, Arena*: backslashed_from_str8__arena, AllocatorInfo: backslashed_from_str8__ainfo , default: assert_generic_sel_fail) generic_call(allocator, string)
 
 ////////////////////////////////
 //~ rjf: String Matching
@@ -461,12 +461,12 @@ MD_API String8 str8_from_s64__ainfo        (AllocatorInfo ainfo, S64 u64, U32 ra
 String8 str8_from_bits_u32__ainfo(AllocatorInfo ainfo, U32 x);
 String8 str8_from_bits_u64__ainfo(AllocatorInfo ainfo, U64 x);
 
-#define str8_from_memory_size(allocator, z)                                     _Generic(allocator, Arena*: str8_from_memory_size__arena, AllocatorInfo: str8_from_memory_size__ainfo,  default: assert_generic_selection_fail) resolved_function_call(allocator, z)
-#define str8_from_u64(allocator, u64, radix, min_digits, digit_group_separator) _Generic(allocator, Arena*: str8_from_u64__arena,         AllocatorInfo: str8_from_u64__ainfo,          default: assert_generic_selection_fail) resolved_function_call(allocator, u64, radix, min_digits, digit_group_separator)
-#define str8_from_s64(allocator, s64, radix, min_digits, digit_group_separator) _Generic(allocator, Arena*: str8_from_s64__arena,         AllocatorInfo: str8_from_s64__ainfo ,         default: assert_generic_selection_fail) resolved_function_call(allocator, s64, radix, min_digits, digit_group_separator)
+#define str8_from_memory_size(allocator, z)                                     _Generic(allocator, Arena*: str8_from_memory_size__arena, AllocatorInfo: str8_from_memory_size__ainfo,  default: assert_generic_sel_fail) generic_call(allocator, z)
+#define str8_from_u64(allocator, u64, radix, min_digits, digit_group_separator) _Generic(allocator, Arena*: str8_from_u64__arena,         AllocatorInfo: str8_from_u64__ainfo,          default: assert_generic_sel_fail) generic_call(allocator, u64, radix, min_digits, digit_group_separator)
+#define str8_from_s64(allocator, s64, radix, min_digits, digit_group_separator) _Generic(allocator, Arena*: str8_from_s64__arena,         AllocatorInfo: str8_from_s64__ainfo ,         default: assert_generic_sel_fail) generic_call(allocator, s64, radix, min_digits, digit_group_separator)
 
-#define str8_from_bits_u32(allocator, x) _Generic(allocator, Arena*: str8_from_bits_u32__arena, AllocatorInfo: str8_from_bits_u32__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, x)
-#define str8_from_bits_u64(allocator, x) _Generic(allocator, Arena*: str8_from_bits_u64__arena, AllocatorInfo: str8_from_bits_u64__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, x)
+#define str8_from_bits_u32(allocator, x) _Generic(allocator, Arena*: str8_from_bits_u32__arena, AllocatorInfo: str8_from_bits_u32__ainfo, default: assert_generic_sel_fail) generic_call(allocator, x)
+#define str8_from_bits_u64(allocator, x) _Generic(allocator, Arena*: str8_from_bits_u64__arena, AllocatorInfo: str8_from_bits_u64__ainfo, default: assert_generic_sel_fail) generic_call(allocator, x)
 
 force_inline String8 str8_from_memory_size__arena(Arena* arena, SSIZE z)                                                     { return str8_from_memory_size__ainfo(arena_allocator(arena), z); }
 force_inline String8 str8_from_u64__arena        (Arena* arena, U64 u64, U32 radix, U8 min_digits, U8 digit_group_separator) { return str8_from_u64__ainfo        (arena_allocator(arena), u64, radix, min_digits, digit_group_separator); }
@@ -663,12 +663,12 @@ String8Node* str8_list_push_front__ainfo (AllocatorInfo ainfo, String8List* list
 String8Node* str8_list_pushf__ainfo      (AllocatorInfo ainfo, String8List* list, char* fmt, ...);
 String8Node* str8_list_push_frontf__ainfo(AllocatorInfo ainfo, String8List* list, char* fmt, ...);
 
-#define str8_list_aligner(allocator, list, min, align)   _Generic(allocator, Arena*: str8_list_aligner__arena,     AllocatorInfo: str8_list_aligner__ainfo,     default: assert_generic_selection_fail) resolved_function_call(allocator, list, min, align)
-#define str8_list_copy(allocator, list)                  _Generic(allocator, Arena*: str8_list_copy__arena,        AllocatorInfo: str8_list_copy__ainfo,        default: assert_generic_selection_fail) resolved_function_call(allocator, list)
-#define str8_list_push(allocator, list, string)          _Generic(allocator, Arena*: str8_list_push__arena,        AllocatorInfo: str8_list_push__ainfo,        default: assert_generic_selection_fail) resolved_function_call(allocator, list, string)
-#define str8_list_push_front(allocator, list, string)    _Generic(allocator, Arena*: str8_list_push_front__arena,  AllocatorInfo: str8_list_push_front__ainfo,  default: assert_generic_selection_fail) resolved_function_call(allocator, list, string)
-#define str8_list_pushf(allocator, list, fmt, ...)       _Generic(allocator, Arena*: str8_list_pushf__arena,       AllocatorInfo: str8_list_pushf__ainfo,       default: assert_generic_selection_fail) resolved_function_call(allocator, list, fmt, __VA_ARGS__)
-#define str8_list_push_frontf(allocaotr, list, fmt, ...) _Generic(allocator, Arena*: str8_list_push_frontf__arena, AllocatorInfo: str8_list_push_frontf__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, list, fmt, __VA_ARGS__)
+#define str8_list_aligner(allocator, list, min, align)   _Generic(allocator, Arena*: str8_list_aligner__arena,     AllocatorInfo: str8_list_aligner__ainfo,     default: assert_generic_sel_fail) generic_call(allocator, list, min, align)
+#define str8_list_copy(allocator, list)                  _Generic(allocator, Arena*: str8_list_copy__arena,        AllocatorInfo: str8_list_copy__ainfo,        default: assert_generic_sel_fail) generic_call(allocator, list)
+#define str8_list_push(allocator, list, string)          _Generic(allocator, Arena*: str8_list_push__arena,        AllocatorInfo: str8_list_push__ainfo,        default: assert_generic_sel_fail) generic_call(allocator, list, string)
+#define str8_list_push_front(allocator, list, string)    _Generic(allocator, Arena*: str8_list_push_front__arena,  AllocatorInfo: str8_list_push_front__ainfo,  default: assert_generic_sel_fail) generic_call(allocator, list, string)
+#define str8_list_pushf(allocator, list, fmt, ...)       _Generic(allocator, Arena*: str8_list_pushf__arena,       AllocatorInfo: str8_list_pushf__ainfo,       default: assert_generic_sel_fail) generic_call(allocator, list, fmt, __VA_ARGS__)
+#define str8_list_push_frontf(allocaotr, list, fmt, ...) _Generic(allocator, Arena*: str8_list_push_frontf__arena, AllocatorInfo: str8_list_push_frontf__ainfo, default: assert_generic_sel_fail) generic_call(allocator, list, fmt, __VA_ARGS__)
 
 force_inline String8Node* str8_list_ligner__arena    (Arena* arena, String8List* list, U64 min, U64 align) { return str8_list_aligner__ainfo   (arena_allocator(arena), list, min, align); }
 force_inline String8List  str8_list_copy__arena      (Arena* arena, String8List* list)                     { return str8_list_copy__ainfo      (arena_allocator(arena), list); }
@@ -745,10 +745,10 @@ MD_API String8 str8_list_join__ainfo      (AllocatorInfo ainfo, String8List* lis
        void    str8_list_from_flags__arena(Arena*        arena, String8List* list, U32 flags, String8* flag_string_table, U32 flag_string_count);
        void    str8_list_from_flags__ainfo(AllocatorInfo ainfo, String8List* list, U32 flags, String8* flag_string_table, U32 flag_string_count);
 
-#define str8_split(allocator, string, split_chars, split_char_count, flags)  _Generic(allocator, Arena*: str8_split__arena,                      AllocatorInfo: str8_split__ainfo,                      default: assert_generic_selection_fail) resolved_function_call(allocator, string, split_chars, split_char_count, flags)
-#define str8_split_by_string_chars(allocator, string, split_chars, flags)    _Generic(allocator, Arena*: str8_split_by_string_chars__arena,      AllocatorInfo: str8_split_by_string_chars__ainfo,      default: assert_generic_selection_fail) resolved_function_call(allocator, string, split_chars, flags)
-#define str8_list_split_by_string_chars(allocator, list, split_chars, flags) _Generic(allocator, Arena*: str8_list_split_by_string_chars__arena, AllocatorInfo: str8_list_split_by_string_chars__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, list,   split_chars, flags)
-#define str8_list_join(allocator, list, params)                              _Generic(allocator, Arena*: str8_list_join__arena,                  AllocatorInfo: str8_list_join__ainfo,                  default: assert_generic_selection_fail) resolved_function_call(allocator, list, params )
+#define str8_split(allocator, string, split_chars, split_char_count, flags)  _Generic(allocator, Arena*: str8_split__arena,                      AllocatorInfo: str8_split__ainfo,                      default: assert_generic_sel_fail) generic_call(allocator, string, split_chars, split_char_count, flags)
+#define str8_split_by_string_chars(allocator, string, split_chars, flags)    _Generic(allocator, Arena*: str8_split_by_string_chars__arena,      AllocatorInfo: str8_split_by_string_chars__ainfo,      default: assert_generic_sel_fail) generic_call(allocator, string, split_chars, flags)
+#define str8_list_split_by_string_chars(allocator, list, split_chars, flags) _Generic(allocator, Arena*: str8_list_split_by_string_chars__arena, AllocatorInfo: str8_list_split_by_string_chars__ainfo, default: assert_generic_sel_fail) generic_call(allocator, list,   split_chars, flags)
+#define str8_list_join(allocator, list, params)                              _Generic(allocator, Arena*: str8_list_join__arena,                  AllocatorInfo: str8_list_join__ainfo,                  default: assert_generic_sel_fail) generic_call(allocator, list, params )
 
 force_inline String8List str8_split__arena                     (Arena* arena, String8 string,    U8*     split_chars, U64 split_char_count, StringSplitFlags flags) { return str8_split__ainfo                      (arena_allocator(arena), string, split_chars, split_char_count, flags); }
 force_inline String8List str8_split_by_string_chars__arena     (Arena* arena, String8 string,    String8 split_chars, StringSplitFlags flags)                       { return str8_split_by_string_chars__ainfo      (arena_allocator(arena), string, split_chars, flags); }
@@ -785,8 +785,8 @@ str8_list_from_flags__ainfo(AllocatorInfo ainfo, String8List* list, U32 flags, S
 ////////////////////////////////
 //~ rjf; String Arrays
 
-#define str8_array_from_list(allocator, list) _Generic(allocator, Arena*: str8_array_from_list__arena, AllocatorInfo: str8_array_from_list__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, list)
-#define str8_array_reserve(allocator, count)  _Generic(allocaotr, Arena*: str8_array_reserve__arena    AllocatorInfo: str8_array_reserve__ainfo,   default: assert_generic_selection_fail) resolved_function_call(allocator, count)
+#define str8_array_from_list(allocator, list) _Generic(allocator, Arena*: str8_array_from_list__arena, AllocatorInfo: str8_array_from_list__ainfo, default: assert_generic_sel_fail) generic_call(allocator, list)
+#define str8_array_reserve(allocator, count)  _Generic(allocaotr, Arena*: str8_array_reserve__arena    AllocatorInfo: str8_array_reserve__ainfo,   default: assert_generic_sel_fail) generic_call(allocator, count)
 
 inline String8Array
 str8_array_from_list__ainfo(AllocatorInfo ainfo, String8List* list) {
@@ -822,14 +822,14 @@ MD_API String8 str8_skip_last_dot  (String8 string);
 force_inline String8List str8_split_path__arena(Arena*        arena, String8 string) { String8List result = str8_split(arena, string, (U8*)"/\\", 2, 0); return(result); }
 force_inline String8List str8_split_path__ainfo(AllocatorInfo ainfo, String8 string) { String8List result = str8_split(ainfo, string, (U8*)"/\\", 2, 0); return(result); }
 
-#define str8_split_path(allocator, string) _Generic(allocator, Arena*: str8_split_path__arena, AllocatorInfo: str8_split_path__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, string)
+#define str8_split_path(allocator, string) _Generic(allocator, Arena*: str8_split_path__arena, AllocatorInfo: str8_split_path__ainfo, default: assert_generic_sel_fail) generic_call(allocator, string)
 
 MD_API PathStyle   path_style_from_str8                (String8 string);
 MD_API void        str8_path_list_resolve_dots_in_place(                     String8List* path, PathStyle style);
 MD_API String8     str8_path_list_join_by_style__arena (Arena*        arena, String8List* path, PathStyle style);
 MD_API String8     str8_path_list_join_by_style__ainfo (AllocatorInfo ainfo, String8List* path, PathStyle style);
 
-#define str8_path_list_join_by_style(allocator, path, style) _Generic(allocator, Arena*: str8_path_list_join_by_style__arena, AllocatorInfo: str8_split_path__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, path, style)
+#define str8_path_list_join_by_style(allocator, path, style) _Generic(allocator, Arena*: str8_path_list_join_by_style__arena, AllocatorInfo: str8_split_path__ainfo, default: assert_generic_sel_fail) generic_call(allocator, path, style)
 
 force_inline String8 str8_path_list_join_by_style__arena(Arena* arena, String8List* path, PathStyle style) { return str8_path_list_join_by_style__ainfo(arena_allocator(arena), path, style); }
 
@@ -870,10 +870,10 @@ inline U32 utf8_from_utf32_single(U8* buffer, U32 character){ return(utf8_encode
 ////////////////////////////////
 //~ rjf: Unicode String Conversions
 
-#define str8_from_str16(allocator, string_in) _Generic(allocator, Arena*: str8_from_str16__arena, AllocatorInfo: str8_from_str16__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, string_in)
-#define str16_from_str8(allocator, string_in) _Generic(allocator, Arena*: str16_from_str8__arena, AllocatorInfo: str16_from_str8__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, string_in)
-#define str8_from_str32(allocator, string_in) _Generic(allocator, Arena*: str8_from_str32__arena, AllocatorInfo: str8_from_str32__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, string_in)
-#define str32_from_str8(allocator, string_in) _Generic(allocator, Arena*: str32_from_str8__arena, AllocatorInfo: str32_from_str8__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, string_in)
+#define str8_from_str16(allocator, string_in) _Generic(allocator, Arena*: str8_from_str16__arena, AllocatorInfo: str8_from_str16__ainfo, default: assert_generic_sel_fail) generic_call(allocator, string_in)
+#define str16_from_str8(allocator, string_in) _Generic(allocator, Arena*: str16_from_str8__arena, AllocatorInfo: str16_from_str8__ainfo, default: assert_generic_sel_fail) generic_call(allocator, string_in)
+#define str8_from_str32(allocator, string_in) _Generic(allocator, Arena*: str8_from_str32__arena, AllocatorInfo: str8_from_str32__ainfo, default: assert_generic_sel_fail) generic_call(allocator, string_in)
+#define str32_from_str8(allocator, string_in) _Generic(allocator, Arena*: str32_from_str8__arena, AllocatorInfo: str32_from_str8__ainfo, default: assert_generic_sel_fail) generic_call(allocator, string_in)
 
 MD_API String8  str8_from_str16__arena(Arena* arena, String16 in);
 MD_API String16 str16_from_str8__arena(Arena* arena, String8  in);
@@ -1011,9 +1011,9 @@ MD_API String8 date_time_string__ainfo          (AllocatorInfo ainfo, DateTime* 
 MD_API String8 file_name_date_time_string__ainfo(AllocatorInfo ainfo, DateTime* date_time);
 MD_API String8 string_from_elapsed_time__ainfo  (AllocatorInfo ainfo, DateTime  date_time);
 
-#define date_time_string(allocator, date_time)           _Generic(allocator, Arena*: date_time_string__arena,           AllocatorInfo: date_time_string__ainfo,           default: assert_generic_selection_fail) resolved_function_call(allocator, date_time)
-#define file_name_date_time_string(allocator, date_time) _Generic(allocator, Arena*: file_name_date_time_string__arena, AllocatorInfo: file_name_date_time_string__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, date_time)
-#define string_from_elapsed_time(allocator, date_time)   _Generic(allocator, Arena*: string_from_elapsed_time__arena,   AllocatorInfo: string_from_elapsed_time__ainfo,   default: assert_generic_selection_fail) resolved_function_call(allocator, date_time)
+#define date_time_string(allocator, date_time)           _Generic(allocator, Arena*: date_time_string__arena,           AllocatorInfo: date_time_string__ainfo,           default: assert_generic_sel_fail) generic_call(allocator, date_time)
+#define file_name_date_time_string(allocator, date_time) _Generic(allocator, Arena*: file_name_date_time_string__arena, AllocatorInfo: file_name_date_time_string__ainfo, default: assert_generic_sel_fail) generic_call(allocator, date_time)
+#define string_from_elapsed_time(allocator, date_time)   _Generic(allocator, Arena*: string_from_elapsed_time__arena,   AllocatorInfo: string_from_elapsed_time__ainfo,   default: assert_generic_sel_fail) generic_call(allocator, date_time)
 
 force_inline String8 push_date_time_string__arena          (Arena* arena, DateTime* date_time) { return date_time_string__ainfo          (arena_allocator(arena), date_time); }
 force_inline String8 push_file_name_date_time_string__arena(Arena* arena, DateTime* date_time) { return file_name_date_time_string__ainfo(arena_allocator(arena), date_time); }
@@ -1060,7 +1060,7 @@ string_from_guid__ainfo(AllocatorInfo ainfo, Guid guid) {
 	return result;
 }
 
-#define string_from_guid(allocator, guid) _Generic(allocator, Arena*: string_from_guid__arena, AllocatorInfo: string_from_guid__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, guid)
+#define string_from_guid(allocator, guid) _Generic(allocator, Arena*: string_from_guid__arena, AllocatorInfo: string_from_guid__ainfo, default: assert_generic_sel_fail) generic_call(allocator, guid)
 
 inline Guid guid_from_string(String8 string) { Guid guid = {0}; try_guid_from_string(string, &guid); return guid; }
 
@@ -1072,7 +1072,7 @@ MD_API B32 try_guid_from_string(String8 string, Guid* guid_out);
        String8 indented_from_string__arena(Arena*        arena, String8 string);
 MD_API String8 indented_from_string__ainfo(AllocatorInfo arena, String8 string);
 
-#define indented_from_string(allocator, string) _Generic(allocator, Arena*: indented_from_string__arena, AllocatorInfo: indented_from_string__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, string)
+#define indented_from_string(allocator, string) _Generic(allocator, Arena*: indented_from_string__arena, AllocatorInfo: indented_from_string__ainfo, default: assert_generic_sel_fail) generic_call(allocator, string)
 
 force_inline String8 indented_from_string__arena(Arena* arena, String8 string) { return indented_from_string__ainfo(arena_allocator(arena), string); }
 
@@ -1084,8 +1084,8 @@ MD_API String8 escaped_from_raw_str8__ainfo(AllocatorInfo ainfo, String8 string)
        String8 raw_from_escaped_str8__arena(Arena*        arena, String8 string);
 MD_API String8 raw_from_escaped_str8__ainfo(AllocatorInfo ainfo, String8 string);
 
-#define escaped_from_raw_str8(allocator, string) _Generic(allocator, Arena*: escaped_from_raw_str8__arena, AllocatorInfo: escaped_from_raw_str8__ainfo(, default): assert_generic_selection_fail) resolved_function_call(allocator, string)
-#define raw_from_escaped_str8(allocator, string) _Generic(allocator, Arena*: raw_from_escaped_str8__arena, AllocatorInfo: raw_from_escaped_str8__ainfo(, default): assert_generic_selection_fail) resolved_function_call(allocator, string)
+#define escaped_from_raw_str8(allocator, string) _Generic(allocator, Arena*: escaped_from_raw_str8__arena, AllocatorInfo: escaped_from_raw_str8__ainfo(, default): assert_generic_sel_fail) generic_call(allocator, string)
+#define raw_from_escaped_str8(allocator, string) _Generic(allocator, Arena*: raw_from_escaped_str8__arena, AllocatorInfo: raw_from_escaped_str8__ainfo(, default): assert_generic_sel_fail) generic_call(allocator, string)
 
 force_inline String8 escaped_from_raw_str8__arena(Arena* arena, String8 string) { return escaped_from_raw_str8__ainfo(arena_allocator(arena), string); }
 force_inline String8 raw_from_escaped_str8__arena(Arena* arena, String8 string) { return raw_from_escaped_str8__ainfo(arena_allocator(arena), string); }
@@ -1097,7 +1097,7 @@ force_inline String8 raw_from_escaped_str8__arena(Arena* arena, String8 string) 
 MD_API String8List wrapped_lines_from_string__ainfo(AllocatorInfo ainfo, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent);
 
 #define wrapped_lines_from_string(allocator, string, first_line_max_width, max_width, wrap_indent) \
-_Generic(allocator, Arena*: wrapped_lines_from_string__arena, AllocatorInfo: wrapped_lines_from_string__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, string, first_line_max_width, max_width, wrap_indent)
+_Generic(allocator, Arena*: wrapped_lines_from_string__arena, AllocatorInfo: wrapped_lines_from_string__ainfo, default: assert_generic_sel_fail) generic_call(allocator, string, first_line_max_width, max_width, wrap_indent)
 
 force_inline String8List wrapped_lines_from_string__arena(Arena* arena, String8 string, U64 first_line_max_width, U64 max_width, U64 wrap_indent) { return wrapped_lines_from_string__ainfo(arena_allocator(arena), string, first_line_max_width, max_width, wrap_indent); }
 
@@ -1107,7 +1107,7 @@ force_inline String8List wrapped_lines_from_string__arena(Arena* arena, String8 
 inline String8 hex_string_from_rgba_4f32__arena(Arena*        arena, Vec4F32 rgba) { String8 hex_string = str8f(arena, "%02x%02x%02x%02x", (U8)(rgba.x * 255.f), (U8)(rgba.y * 255.f), (U8)(rgba.z * 255.f), (U8)(rgba.w * 255.f));  return hex_string; }
 inline String8 hex_string_from_rgba_4f32__ainfo(AllocatorInfo ainfo, Vec4F32 rgba) { String8 hex_string = str8f(ainfo, "%02x%02x%02x%02x", (U8)(rgba.x * 255.f), (U8)(rgba.y * 255.f), (U8)(rgba.z * 255.f), (U8)(rgba.w * 255.f));  return hex_string; }
 
-#define hex_string_from_rgba_4f32(allocator, rgba) _Generic(allocator, Arena*: hex_string_from_rgba_4f32__arena, AllocatorInfo: hex_string_from_rgba_4f32__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, rgba)
+#define hex_string_from_rgba_4f32(allocator, rgba) _Generic(allocator, Arena*: hex_string_from_rgba_4f32__arena, AllocatorInfo: hex_string_from_rgba_4f32__ainfo, default: assert_generic_sel_fail) generic_call(allocator, rgba)
 
 MD_API Vec4F32 rgba_from_hex_string_4f32(String8 hex_string);
 
@@ -1119,8 +1119,8 @@ MD_API FuzzyMatchRangeList fuzzy_match_find__ainfo           (AllocatorInfo ainf
        FuzzyMatchRangeList fuzzy_match_range_list_copy__arena(Arena*        arena, FuzzyMatchRangeList* src);
 MD_API FuzzyMatchRangeList fuzzy_match_range_list_copy__ainfo(AllocatorInfo ainfo, FuzzyMatchRangeList* src);
 
-#define fuzzy_match_find(allocator, needle, haystack) _Generic(allocator, Arena*: fuzzy_match_find__arena,            AllocatorInfo: fuzzy_match_find__ainfo)            resolved_function_call(allocator, needle, haystack)
-#define fuzzy_match_range_list_copy(allocator, src)   _Generic(allocator, Arena*: fuzzy_match_range_list_copy__arena, AllocatorInfo: fuzzy_match_range_list_copy__ainfo) resolved_function_call(allocator, src)
+#define fuzzy_match_find(allocator, needle, haystack) _Generic(allocator, Arena*: fuzzy_match_find__arena,            AllocatorInfo: fuzzy_match_find__ainfo)            generic_call(allocator, needle, haystack)
+#define fuzzy_match_range_list_copy(allocator, src)   _Generic(allocator, Arena*: fuzzy_match_range_list_copy__arena, AllocatorInfo: fuzzy_match_range_list_copy__ainfo) generic_call(allocator, src)
 
 force_inline FuzzyMatchRangeList fuzzy_match_find__arena           (Arena *arena, String8 needle, String8 haystack) { return fuzzy_match_find__ainfo           (arena_allocator(arena), needle, haystack); }
 force_inline FuzzyMatchRangeList fuzzy_match_range_list_copy__arena(Arena* arena, FuzzyMatchRangeList* src)         { return fuzzy_match_range_list_copy__ainfo(arena_allocator(arena), src); }
@@ -1168,18 +1168,18 @@ MD_API void    str8_serial_push_u32__ainfo      (AllocatorInfo ainfo, String8Lis
        void    str8_serial_push_cstr__ainfo     (AllocatorInfo ainfo, String8List* srl, String8 str);
        void    str8_serial_push_string__ainfo   (AllocatorInfo ainfo, String8List* srl, String8 str);
 
-#define str8_serial_begin(allocator, srl)                  _Generic(allocator, Arena*: str8_serial_begin__arena,          AllocatorInfo: str8_serial_begin__ainfo,          default: assert_generic_selection_fail) resolved_function_call(allocator, srl)
-#define str8_serial_end(allocator, srl)                    _Generic(allocator, Arena*: str8_serial_end__arena,            AllocatorInfo: str8_serial_end__ainfo,            default: assert_generic_selection_fail) resolved_function_call(allocator, srl)
-#define str8_serial_push_align(allocator, srl, align)      _Generic(allocator, Arena*: str8_serial_push_align__arena,     AllocatorInfo: str8_serial_push_align__ainfo,     default: assert_generic_selection_fail) resolved_function_call(allocator, srl, align)
-#define str8_serial_push_size(allocator, srl, size)        _Generic(allocator, Arena*: str8_serial_push_size__arena,      AllocatorInfo: str8_serial_push_size__ainfo,      default: assert_generic_selection_fail) resolved_function_call(allocator, srl, size)
-#define str8_serial_push_data(allocator, srl, data, usize) _Generic(allocator, Arena*: str8_serial_push_data__arena,      AllocatorInfo: str8_serial_push_data__ainfo,      default: assert_generic_selection_fail) resolved_function_call(allocator, srl, data, usize)
-#define str8_serial_push_data_list(allocator, srl, first)  _Generic(allocator, Arena*: str8_serial_push_data_list__arena, AllocatorInfo: str8_serial_push_data_list__ainfo, default: assert_generic_selection_fail) resolved_function_call(allocator, srl, first)
-#define str8_serial_push_u64(allocator, srl, x)            _Generic(allocator, Arena*: str8_serial_push_u64__arena,       AllocatorInfo: str8_serial_push_u64__ainfo,       default: assert_generic_selection_fail) resolved_function_call(allocator, srl, x)
-#define str8_serial_push_u32(allocator, srl, x)            _Generic(allocator, Arena*: str8_serial_push_u32__arena,       AllocatorInfo: str8_serial_push_u32__ainfo,       default: assert_generic_selection_fail) resolved_function_call(allocator, srl, x)
-#define str8_serial_push_u16(allocator, srl, x)            _Generic(allocator, Arena*: str8_serial_push_u16__arena,       AllocatorInfo: str8_serial_push_u16__ainfo,       default: assert_generic_selection_fail) resolved_function_call(allocator, srl, x)
-#define str8_serial_push_u8(allocator, srl, x)             _Generic(allocator, Arena*: str8_serial_push_u8__arena,        AllocatorInfo: str8_serial_push_u8__ainfo,        default: assert_generic_selection_fail) resolved_function_call(allocator, srl, x)
-#define str8_serial_push_cstr(allocator, srl, str)         _Generic(allocator, Arena*: str8_serial_push_cstr__arena,      AllocatorInfo: str8_serial_push_cstr__ainfo,      default: assert_generic_selection_fail) resolved_function_call(allocator, srl, str)
-#define str8_serial_push_string(allocator, slr, str)       _Generic(allocator, Arena*: str8_serial_push_string__arena,    AllocatorInfo: str8_serial_push_string__ainfo,    default: assert_generic_selection_fail) resolved_function_call(allocator, srl, str)
+#define str8_serial_begin(allocator, srl)                  _Generic(allocator, Arena*: str8_serial_begin__arena,          AllocatorInfo: str8_serial_begin__ainfo,          default: assert_generic_sel_fail) generic_call(allocator, srl)
+#define str8_serial_end(allocator, srl)                    _Generic(allocator, Arena*: str8_serial_end__arena,            AllocatorInfo: str8_serial_end__ainfo,            default: assert_generic_sel_fail) generic_call(allocator, srl)
+#define str8_serial_push_align(allocator, srl, align)      _Generic(allocator, Arena*: str8_serial_push_align__arena,     AllocatorInfo: str8_serial_push_align__ainfo,     default: assert_generic_sel_fail) generic_call(allocator, srl, align)
+#define str8_serial_push_size(allocator, srl, size)        _Generic(allocator, Arena*: str8_serial_push_size__arena,      AllocatorInfo: str8_serial_push_size__ainfo,      default: assert_generic_sel_fail) generic_call(allocator, srl, size)
+#define str8_serial_push_data(allocator, srl, data, usize) _Generic(allocator, Arena*: str8_serial_push_data__arena,      AllocatorInfo: str8_serial_push_data__ainfo,      default: assert_generic_sel_fail) generic_call(allocator, srl, data, usize)
+#define str8_serial_push_data_list(allocator, srl, first)  _Generic(allocator, Arena*: str8_serial_push_data_list__arena, AllocatorInfo: str8_serial_push_data_list__ainfo, default: assert_generic_sel_fail) generic_call(allocator, srl, first)
+#define str8_serial_push_u64(allocator, srl, x)            _Generic(allocator, Arena*: str8_serial_push_u64__arena,       AllocatorInfo: str8_serial_push_u64__ainfo,       default: assert_generic_sel_fail) generic_call(allocator, srl, x)
+#define str8_serial_push_u32(allocator, srl, x)            _Generic(allocator, Arena*: str8_serial_push_u32__arena,       AllocatorInfo: str8_serial_push_u32__ainfo,       default: assert_generic_sel_fail) generic_call(allocator, srl, x)
+#define str8_serial_push_u16(allocator, srl, x)            _Generic(allocator, Arena*: str8_serial_push_u16__arena,       AllocatorInfo: str8_serial_push_u16__ainfo,       default: assert_generic_sel_fail) generic_call(allocator, srl, x)
+#define str8_serial_push_u8(allocator, srl, x)             _Generic(allocator, Arena*: str8_serial_push_u8__arena,        AllocatorInfo: str8_serial_push_u8__ainfo,        default: assert_generic_sel_fail) generic_call(allocator, srl, x)
+#define str8_serial_push_cstr(allocator, srl, str)         _Generic(allocator, Arena*: str8_serial_push_cstr__arena,      AllocatorInfo: str8_serial_push_cstr__ainfo,      default: assert_generic_sel_fail) generic_call(allocator, srl, str)
+#define str8_serial_push_string(allocator, slr, str)       _Generic(allocator, Arena*: str8_serial_push_string__arena,    AllocatorInfo: str8_serial_push_string__ainfo,    default: assert_generic_sel_fail) generic_call(allocator, srl, str)
 
 force_inline U64   str8_serial_push_align__arena(Arena* arena, String8List* srl, U64 align) { return str8_serial_push_align__ainfo(arena_allocator(arena), srl, align); }
 force_inline void* str8_serial_push_size__arena (Arena* arena, String8List* srl, U64 size)  { return str8_serial_push_size__ainfo (arena_allocator(arena), srl, size); }
@@ -1270,18 +1270,19 @@ inline U64   str8_deserial_read_block (String8 string, U64 off, U64 size, String
 ////////////////////////////////
 // Second-order Generic Selectors
 
-#define str8_from(allocator, in)                                                                                                                                            \
-_Generic(in,                                                                                                                                                                \
-	String16              : _Generic(allocator, Arena*: str8_from_str16__arena,       AllocatorInfo: str8_from_str16__ainfo,       default: assert_generic_selection_fail), \
-	String32              : _Generic(allocator, Arena*: str8_from_str32__arena,       AllocatorInfo: str8_from_str32__ainfo,       default: assert_generic_selection_fail), \
-	distinct_lookup(U64)  : _Generic(allocator, Arena*: str8_from_u64__arena,         AllocatorInfo: str8_from_s64__ainfo,         default: assert_generic_selection_fail), \
-	distinct_lookup(S64)  : _Generic(allocator, Arena*: str8_from_s64__arena,         AllocatorInfo: str8_from_s64__ainfo,         default: assert_generic_selection_fail), \
-	distinct_lookup(SSIZE): _Generic(allocator, Arena*: str8_from_memory_size__arena, AllocatorInfo: str8_from_memory_size__ainfo, default: assert_generic_selection_fail), \
-	default               :  assert_generic_selection_fail                                                                                                                  \
-) resolved_function_call(allocator, in)
+#define str8_from(allocator, in)                                                                                                                        \
+_Generic((in),                                                                                                                                          \
+    SSIZE   : _Generic(allocator, Arena*: str8_from_memory_size__arena, AllocatorInfo: str8_from_memory_size__ainfo, default: assert_generic_sel_fail), \
+_Generic_L2((in),                                                                                                                           \
+	String16: _Generic(allocator, Arena*: str8_from_str16__arena, AllocatorInfo: str8_from_str16__ainfo, default: assert_generic_sel_fail), \
+	String32: _Generic(allocator, Arena*: str8_from_str32__arena, AllocatorInfo: str8_from_str32__ainfo, default: assert_generic_sel_fail), \
+	U64     : _Generic(allocator, Arena*: str8_from_u64__arena,   AllocatorInfo: str8_from_u64__ainfo,   default: assert_generic_sel_fail), \
+	S64     : _Generic(allocator, Arena*: str8_from_s64__arena,   AllocatorInfo: str8_from_s64__ainfo,   default: assert_generic_sel_fail), \
+	default : assert_generic_sel_fail)                                                                                                      \
+) generic_call(allocator, in)
 
-#define str16_from(allocator, in)                                                                                                                 \
-_Generic(in,                                                                                                                                      \
-	String8: _Generic(allocator, Arena*: str16_from_str8__arena, AllocatorInfo: str16_from_str8__ainfo,  default: assert_generic_selection_fail), \
-	default:  assert_generic_selection_fail                                                                                                       \
-) resolved_function_call(allocator, in)
+#define str16_from(allocator, in)                                                                                                           \
+_Generic(in,                                                                                                                                \
+	String8: _Generic(allocator, Arena*: str16_from_str8__arena, AllocatorInfo: str16_from_str8__ainfo,  default: assert_generic_sel_fail), \
+	default:  assert_generic_sel_fail                                                                                                       \
+) generic_call(allocator, in)

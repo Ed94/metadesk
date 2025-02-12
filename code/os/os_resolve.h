@@ -1,4 +1,4 @@
-ifdef INTELLISENSE_DIRECTIVES
+#ifdef INTELLISENSE_DIRECTIVES
 #	include "base/context_cracking.h"
 #	include "base/namespace.h"
 #endif

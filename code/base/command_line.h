@@ -61,15 +61,15 @@ MD_API CmdLine      cmd_line_from_string_list__ainfo(AllocatorInfo ainfo, String
 _Generic(allocator,                                              \
 	Arena*:        cmd_line_insert_opt__arena,                   \
 	AllocatorInfo: cmd_line_insert_opt__ainfo,                   \
-	default:       assert_generic_selection_fail                 \
-) resolved_function_call(allocator, cmd_line, string, values)
+	default:       assert_generic_sel_fail                       \
+) generic_call(allocator, cmd_line, string, values)
 
 #define cmd_line_from_string_list(allocator, arguments) \
 _Generic(allocator,                                     \
 	Arena*:        cmd_line_from_string_list__arena,    \
 	AllocatorInfo: cmd_line_from_string_list__ainfo,    \
-	default:       assert_generic_selection_fail        \
-) resolved_function_call(allocator, arguments)
+	default:       assert_generic_sel_fail              \
+) generic_call(allocator, arguments)
 
 inline U64
 cmd_line_hash_from_string(String8 string) { 

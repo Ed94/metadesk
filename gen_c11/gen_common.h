@@ -182,7 +182,7 @@ void register_library_macros()
 		((gen_Macro) { lit("generic_sel_entry_type"),                   MT_Expression,                }),
 		((gen_Macro) { lit("generic_sel_entry_function"),               MT_Expression,                }),
 		((gen_Macro) { lit("generic_sel_entry_comma_delimiter"),        MT_Expression,                }),
-		((gen_Macro) { lit("resolved_function_call"),                   MT_Expression, MF_Functional  }),
+		((gen_Macro) { lit("generic_call"),                   MT_Expression, MF_Functional  }),
 		((gen_Macro) { lit("if_generic_selector_defined_include_slot"), MT_Expression,                }),
 		((gen_Macro) { lit("function_generic_example"),                 MT_Expression, MF_Functional  }),
 		((gen_Macro) { lit("GENERIC_SLOT_1__example_hash"),             MT_Expression,                }),
@@ -191,10 +191,8 @@ void register_library_macros()
 		((gen_Macro) { lit("function_generic_example_varadic"),         MT_Expression, MF_Functional  }),
 		((gen_Macro) { lit("function_generic_example_direct_type"),     MT_Expression, MF_Functional  }),
 		((gen_Macro) { lit("type_to_expression"),                       MT_Expression, MF_Functional  }),
-		((gen_Macro) { lit("distinct_register_selector"),               MT_Statement,  MF_Functional  }),
-		((gen_Macro) { lit("distinct_lookup"),                          MT_Expression, MF_Functional  }),
-		((gen_Macro) { lit("generic_example_do_something_with"),        MT_Expression, MF_Functional  }),
-		((gen_Macro) { lit("distinct"),                                 MT_Typename,   MF_Functional  })
+		((gen_Macro) { lit("_Generic_L2"),                              MT_Expression, MF_Functional  }),
+		((gen_Macro) { lit("_Generic_L3"),                              MT_Expression, MF_Functional  })
 	));
 	// base/profiling.h
 	gen_register_macros(args(

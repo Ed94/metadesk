@@ -55,8 +55,8 @@ _Generic(conflicts,                          \
 	int          : scratch_begin__arena,     \
 	Arena**      : scratch_begin__arena,     \
 	AllocatorInfo: scratch_begin__ainfo,     \
-	default      : assert_generic_selection_fail \
-) resolved_function_call(conflicts, (Opt_ScratchBegin){__VA_ARGS__})
+	default      : assert_generic_sel_fail \
+) generic_call(conflicts, (Opt_ScratchBegin){__VA_ARGS__})
 
 #define scratch_end(scratch) temp_end(scratch)
 

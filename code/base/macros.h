@@ -179,3 +179,9 @@
 	}                      \
 	while(0);
 #endif
+
+#define ct_if(expr, then, else) _Generic( \
+(&(char[1 + !!(EXPR)]){0}), \
+	char (*)[2]: (THEN),    \
+	char (*)[1]: (ELSE)     \
+)

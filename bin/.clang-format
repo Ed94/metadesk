@@ -16,6 +16,9 @@ Macros:
 - md_enum_underlying(type)=type
 # WhitespaceSensitiveMacros: [
 # ]
+IfMacros:
+- _Generic_L2
+- _Generic_L3
 
 # TypenameMacros: [Array, Hashtable]
 SkipMacroDefinitionBody: false
@@ -99,7 +102,7 @@ BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeComma
 BreakStringLiterals: true
 
-ColumnLimit: 180
+ColumnLimit: 160
 
 CompactNamespaces: true
 

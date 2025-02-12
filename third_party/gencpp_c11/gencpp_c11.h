@@ -404,21 +404,16 @@ GEN_NS_BEGIN
 #ifndef        gen_forceinline
 #	if GEN_COMPILER_MSVC
 #		define gen_forceinline __forceinline
-#		define gen_neverinline __declspec( noinline )
 #	elif GEN_COMPILER_GCC
 #		define gen_forceinline inline __attribute__((__always_inline__))
-#		define gen_neverinline __attribute__( ( __noinline__ ) )
 #	elif GEN_COMPILER_CLANG
 #	if __has_attribute(__always_inline__)
 #		define gen_forceinline inline __attribute__((__always_inline__))
-#		define gen_neverinline __attribute__( ( __noinline__ ) )
 #	else
 #		define gen_forceinline
-#		define gen_neverinline
 #	endif
 #	else
 #		define gen_forceinline
-#		define gen_neverinline
 #	endif
 #endif
 
@@ -525,6 +520,14 @@ GEN_NS_BEGIN
 #	define GEN_OPITMIZE_MAPPINGS_END
 #endif
 
+#ifndef get_optional
+#	if GEN_COMPILER_C
+#		define get_optional(opt) opt ? *opt : (gen_typeof(*opt)){0}
+#	else
+#		define get_optional(opt) opt
+#	endif
+#endif
+
 #pragma endregion Macros
 
 #pragma region _Generic Macros
@@ -616,7 +619,7 @@ size_t gen_example_hash__P_long_long( long long val ) { return val * 2654435761u
 // Additional Variations:
 
 // If the function takes more than one argument the following is used:
-#define GEN_function_generic_example_varadic( selector_arg, ... ) _Generic( \
+#define GEN_FUNCTION_GENERIC_EXAMPLE_VARADIC( selector_arg, ... ) _Generic( \
 (selector_arg),                                                             \
 	GEN_IF_MACRO_DEFINED_INCLUDE_THIS_SLOT( GENERIC_SLOT_1__function_sig )  \
 	GEN_IF_MACRO_DEFINED_INCLUDE_THIS_SLOT( GENERIC_SLOT_2__function_sig )  \
@@ -626,7 +629,7 @@ size_t gen_example_hash__P_long_long( long long val ) { return val * 2654435761u
 ) GEN_RESOLVED_FUNCTION_CALL( selector_arg, __VA_ARG__ )
 
 // If the function does not take the arugment as a parameter:
-#define GEN_function_generic_example_direct_type( selector_arg ) _Generic( \
+#define GEN_FUNCTION_GENERIC_EXAMPLE_DIRECT_TYPE( selector_arg ) _Generic( \
 ( GEN_TYPE_TO_EXP(selector_arg) ),                                         \
 	GEN_IF_MACRO_DEFINED_INCLUDE_THIS_SLOT( GENERIC_SLOT_1__function_sig ) \
 	GEN_IF_MACRO_DEFINED_INCLUDE_THIS_SLOT( GENERIC_SLOT_2__function_sig ) \
@@ -640,7 +643,7 @@ size_t gen_example_hash__P_long_long( long long val ) { return val * 2654435761u
 // Instead of using this macro, you'll see it directly expanded by the code generation.
 
 // typedef void* GEN_GenericExampleType;
-// GEN_function_generic_example_direct_type( GEN_GenericExampleType );
+// GEN_FUNCTION_GENERIC_EXAMPLE_DIRECT_TYPE( GEN_GenericExampleType );
 #pragma endregion _Generic Macros
 
 GEN_API_C_BEGIN
@@ -999,7 +1002,7 @@ GEN_API void*
 #define gen_malloc(sz) gen_alloc(gen_heap(), sz)
 
 //! Helper to free memory allocated by gen_heap allocator.
-#define gen_mfree(ptr) free(gen_heap(), ptr)
+#define gen_mfree(ptr) gen_allocator_free(gen_heap(), ptr)
 
 struct gen_VirtualMemory
 {
@@ -2963,7 +2966,7 @@ struct gen_Str
 #define gen_cast_to_str(str) *gen_rcast(gen_Str*, (str) - sizeof(gen_ssize))
 
 #ifndef gen_txt
-#define gen_txt(text)                \
+#define gen_txt(text)            \
 	(GEN_NS gen_Str)             \
 	{                            \
 		(text), sizeof(text) - 1 \
@@ -6343,30 +6346,25 @@ inline gen_Str gen_macrotype__to_str(gen_MacroType type)
 
 enum gen_EMacroFlags gen_enum_underlying(gen_u16)
 {
-	MF_Functional   = gen_bit(0),    // gen_Macro has parameters (args expected to be passed)
-	MF_Expects_Body = gen_bit(1),    // Expects to assign a braced scope to its body.
-
-	// gen_lex__eat wil treat this macro as an identifier if the parser attempts to consume it as one.
-	//  This is a kludge because we don't support push/pop macro pragmas rn.
-	MF_Allow_As_Identifier = gen_bit(2),    // gen_lex__eat wil treat this macro as an attribute if the parser attempts to consume it as one.
-
-	// When parsing identifiers, it will allow the consumption of the macro parameters (as its expected to be a part of constructing the identifier)
-	// Example of a decarator macro from stb_sprintf.h: 
+	// gen_Macro has parameters (args expected to be passed)
+	MF_Functional   = gen_bit(0),    // Expects to assign a braced scope to its body.
+	MF_Expects_Body = gen_bit(1),    // gen_lex__eat wil treat this macro as an identifier if the parser attempts to consume it as one.
+	// This is a kludge because we don't support push/pop macro pragmas rn.
+	MF_Allow_As_Identifier = gen_bit(2
+	),    // When parsing identifiers, it will allow the consumption of the macro parameters (as its expected to be a part of constructing the identifier)
+	// Example of a decarator macro from stb_sprintf.h:
 	// STBSP__PUBLICDEC int STB_SPRINTF_DECORATE(sprintf)(char* buf, char const *fmt, ...) STBSP__ATTRIBUTE_FORMAT(2,3);
 	//                       ^^ STB_SPRINTF_DECORATE is decorating sprintf
-	MF_Identifier_Decorator = gen_bit(3), 
-
-	//  This a kludge because unreal has a macro that behaves as both a 'statement' and an attribute (UE_DEPRECATED, PRAGMA_ENABLE_DEPRECATION_WARNINGS, etc)
+	MF_Identifier_Decorator = gen_bit(3),    // gen_lex__eat wil treat this macro as an attribute if the parser attempts to consume it as one.
+	// This a kludge because unreal has a macro that behaves as both a 'statement' and an attribute (UE_DEPRECATED, PRAGMA_ENABLE_DEPRECATION_WARNINGS, etc)
 	// TODO(Ed): We can keep the MF_Allow_As_Attribute flag for macros, however, we need to add the ability of gen_AST_Attributes to chain themselves.
 	// Its thats already a thing in the standard language anyway
 	// & it would allow UE_DEPRECATED, (UE_PROPERTY / UE_FUNCTION) to chain themselves as attributes of a resolved member function/variable definition
 	MF_Allow_As_Attribute = gen_bit(4),    // When a macro is encountered after attributes and specifiers while parsing a function, or variable:
-	// It will consume the macro and treat it as resolving the definition. (Yes this is for Unreal Engine)
+	// It will consume the macro and treat it as resolving the definition.
 	// (MUST BE OF MT_Statement TYPE)
-
-	MF_Allow_As_Definition = gen_bit(5),
-	MF_Allow_As_Specifier  = gen_bit(6),    // Created for Unreal's PURE_VIRTUAL
-
+	MF_Allow_As_Definition = gen_bit(5),    // Created for Unreal's PURE_VIRTUAL
+	MF_Allow_As_Specifier  = gen_bit(6),
 	MF_Null                = 0,
 	MF_UnderlyingType      = GEN_U16_MAX,
 };
@@ -9622,8 +9620,8 @@ struct gen_Opts_def_struct
 };
 typedef struct gen_Opts_def_struct gen_Opts_def_struct;
 
-GEN_API gen_CodeClass gen_def__class(gen_Str name, gen_Opts_def_struct opts GEN_PARAM_DEFAULT);
-#define gen_def_class(name, ...) gen_def__class(name, (gen_Opts_def_struct) { __VA_ARGS__ })
+GEN_API gen_CodeClass gen_def__class(gen_Str name, gen_Opts_def_struct* opts GEN_PARAM_DEFAULT);
+#define gen_def_class(name, ...) gen_def__class(name, &(gen_Opts_def_struct) { __VA_ARGS__ })
 
 struct gen_Opts_def_constructor
 {
@@ -9633,8 +9631,8 @@ struct gen_Opts_def_constructor
 };
 typedef struct gen_Opts_def_constructor gen_Opts_def_constructor;
 
-GEN_API gen_CodeConstructor gen_def__constructor(gen_Opts_def_constructor opts);
-#define gen_def_constructor(...) gen_def__constructor((gen_Opts_def_constructor) { __VA_ARGS__ })
+GEN_API gen_CodeConstructor gen_def__constructor(gen_Opts_def_constructor* opts);
+#define gen_def_constructor(...) gen_def__constructor(&(gen_Opts_def_constructor) { __VA_ARGS__ })
 
 struct gen_Opts_def_define
 {
@@ -9646,7 +9644,7 @@ struct gen_Opts_def_define
 typedef struct gen_Opts_def_define gen_Opts_def_define;
 
 GEN_API gen_CodeDefine gen_def__define(gen_Str name, gen_MacroType type, gen_Opts_def_define* opts GEN_PARAM_DEFAULT);
-#define gen_def_define(name, type, ...) gen_def__define(name, type, & (gen_Opts_def_define) { __VA_ARGS__ })
+#define gen_def_define(name, type, ...) gen_def__define(name, type, &(gen_Opts_def_define) { __VA_ARGS__ })
 
 struct gen_Opts_def_destructor
 {
@@ -9655,8 +9653,8 @@ struct gen_Opts_def_destructor
 };
 typedef struct gen_Opts_def_destructor gen_Opts_def_destructor;
 
-GEN_API gen_CodeDestructor gen_def__destructor(gen_Opts_def_destructor opts);
-#define gen_def_destructor(...) gen_def__destructor((gen_Opts_def_destructor) { __VA_ARGS__ })
+GEN_API gen_CodeDestructor gen_def__destructor(gen_Opts_def_destructor* opts);
+#define gen_def_destructor(...) gen_def__destructor(&(gen_Opts_def_destructor) { __VA_ARGS__ })
 
 struct gen_Opts_def_enum
 {
@@ -9669,8 +9667,8 @@ struct gen_Opts_def_enum
 };
 typedef struct gen_Opts_def_enum gen_Opts_def_enum;
 
-GEN_API gen_CodeEnum gen_def__enum(gen_Str name, gen_Opts_def_enum opts GEN_PARAM_DEFAULT);
-#define gen_def_enum(name, ...) gen_def__enum(name, (gen_Opts_def_enum) { __VA_ARGS__ })
+GEN_API gen_CodeEnum gen_def__enum(gen_Str name, gen_Opts_def_enum* opts GEN_PARAM_DEFAULT);
+#define gen_def_enum(name, ...) gen_def__enum(name, &(gen_Opts_def_enum) { __VA_ARGS__ })
 
 GEN_API gen_CodeExec   gen_def_execution(gen_Str content);
 GEN_API gen_CodeExtern gen_def_extern_link(gen_Str name, gen_CodeBody body);
@@ -9687,8 +9685,8 @@ struct gen_Opts_def_function
 };
 typedef struct gen_Opts_def_function gen_Opts_def_function;
 
-GEN_API gen_CodeFn gen_def__function(gen_Str name, gen_Opts_def_function opts GEN_PARAM_DEFAULT);
-#define gen_def_function(name, ...) gen_def__function(name, (gen_Opts_def_function) { __VA_ARGS__ })
+GEN_API gen_CodeFn gen_def__function(gen_Str name, gen_Opts_def_function* opts GEN_PARAM_DEFAULT);
+#define gen_def_function(name, ...) gen_def__function(name, &(gen_Opts_def_function) { __VA_ARGS__ })
 
 struct gen_Opts_def_include
 {
@@ -9711,11 +9709,11 @@ typedef struct gen_Opts_def_namespace gen_Opts_def_namespace;
 GEN_API gen_CodeInclude gen_def__include(gen_Str content, gen_Opts_def_include* opts GEN_PARAM_DEFAULT);
 #define gen_def_include(content, ...) gen_def__include(content, &(gen_Opts_def_include) { __VA_ARGS__ })
 
-GEN_API gen_CodeModule gen_def__module(gen_Str name, gen_Opts_def_module opts GEN_PARAM_DEFAULT);
-#define gen_def_module(name, ...) gen_def__module(name, (gen_Opts_def_module) { __VA_ARGS__ })
+GEN_API gen_CodeModule gen_def__module(gen_Str name, gen_Opts_def_module* opts GEN_PARAM_DEFAULT);
+#define gen_def_module(name, ...) gen_def__module(name, &(gen_Opts_def_module) { __VA_ARGS__ })
 
-GEN_API gen_CodeNS gen_def__namespace(gen_Str name, gen_CodeBody body, gen_Opts_def_namespace opts GEN_PARAM_DEFAULT);
-#define gen_def_namespace(name, body, ...) gen_def__namespace(name, body, (gen_Opts_def_namespace) { __VA_ARGS__ })
+GEN_API gen_CodeNS gen_def__namespace(gen_Str name, gen_CodeBody body, gen_Opts_def_namespace* opts GEN_PARAM_DEFAULT);
+#define gen_def_namespace(name, body, ...) gen_def__namespace(name, body, &(gen_Opts_def_namespace) { __VA_ARGS__ })
 
 struct gen_Opts_def_operator
 {
@@ -9728,8 +9726,8 @@ struct gen_Opts_def_operator
 };
 typedef struct gen_Opts_def_operator gen_Opts_def_operator;
 
-GEN_API gen_CodeOperator gen_def__operator(gen_Operator op, gen_Str nspace, gen_Opts_def_operator opts GEN_PARAM_DEFAULT);
-#define gen_def_operator(op, nspace, ...) gen_def__operator(op, nspace, (gen_Opts_def_operator) { __VA_ARGS__ })
+GEN_API gen_CodeOperator gen_def__operator(gen_Operator op, gen_Str nspace, gen_Opts_def_operator* opts GEN_PARAM_DEFAULT);
+#define gen_def_operator(op, nspace, ...) gen_def__operator(op, nspace, &(gen_Opts_def_operator) { __VA_ARGS__ })
 
 struct gen_Opts_def_operator_cast
 {
@@ -9738,8 +9736,8 @@ struct gen_Opts_def_operator_cast
 };
 typedef struct gen_Opts_def_operator_cast gen_Opts_def_operator_cast;
 
-GEN_API gen_CodeOpCast gen_def__operator_cast(gen_CodeTypename type, gen_Opts_def_operator_cast opts GEN_PARAM_DEFAULT);
-#define gen_def_operator_cast(type, ...) gen_def__operator_cast(type, (gen_Opts_def_operator_cast) { __VA_ARGS__ })
+GEN_API gen_CodeOpCast gen_def__operator_cast(gen_CodeTypename type, gen_Opts_def_operator_cast* opts GEN_PARAM_DEFAULT);
+#define gen_def_operator_cast(type, ...) gen_def__operator_cast(type, &(gen_Opts_def_operator_cast) { __VA_ARGS__ })
 
 struct gen_Opts_def_param
 {
@@ -9747,8 +9745,8 @@ struct gen_Opts_def_param
 };
 typedef struct gen_Opts_def_param gen_Opts_def_param;
 
-GEN_API gen_CodeParams gen_def__param(gen_CodeTypename type, gen_Str name, gen_Opts_def_param opts GEN_PARAM_DEFAULT);
-#define gen_def_param(type, name, ...) gen_def__param(type, name, (gen_Opts_def_param) { __VA_ARGS__ })
+GEN_API gen_CodeParams gen_def__param(gen_CodeTypename type, gen_Str name, gen_Opts_def_param* opts GEN_PARAM_DEFAULT);
+#define gen_def_param(type, name, ...) gen_def__param(type, name, &(gen_Opts_def_param) { __VA_ARGS__ })
 
 GEN_API gen_CodePragma gen_def_pragma(gen_Str directive);
 
@@ -9756,8 +9754,8 @@ GEN_API gen_CodePreprocessCond gen_def_preprocess_cond(gen_EPreprocessCOnd type,
 
 GEN_API gen_CodeSpecifiers gen_def_specifier(gen_Specifier specifier);
 
-GEN_API gen_CodeStruct gen_def__struct(gen_Str name, gen_Opts_def_struct opts GEN_PARAM_DEFAULT);
-#define gen_def_struct(name, ...) gen_def__struct(name, (gen_Opts_def_struct) { __VA_ARGS__ })
+GEN_API gen_CodeStruct gen_def__struct(gen_Str name, gen_Opts_def_struct* opts GEN_PARAM_DEFAULT);
+#define gen_def_struct(name, ...) gen_def__struct(name, &(gen_Opts_def_struct) { __VA_ARGS__ })
 
 struct gen_Opts_def_template
 {
@@ -9765,8 +9763,8 @@ struct gen_Opts_def_template
 };
 typedef struct gen_Opts_def_template gen_Opts_def_template;
 
-GEN_API gen_CodeTemplate gen_def__template(gen_CodeParams params, gen_Code definition, gen_Opts_def_template opts GEN_PARAM_DEFAULT);
-#define gen_def_template(params, definition, ...) gen_def__template(params, definition, (gen_Opts_def_template) { __VA_ARGS__ })
+GEN_API gen_CodeTemplate gen_def__template(gen_CodeParams params, gen_Code definition, gen_Opts_def_template* opts GEN_PARAM_DEFAULT);
+#define gen_def_template(params, definition, ...) gen_def__template(params, definition, &(gen_Opts_def_template) { __VA_ARGS__ })
 
 struct gen_Opts_def_type
 {
@@ -9777,8 +9775,8 @@ struct gen_Opts_def_type
 };
 typedef struct gen_Opts_def_type gen_Opts_def_type;
 
-GEN_API gen_CodeTypename gen_def__type(gen_Str name, gen_Opts_def_type opts GEN_PARAM_DEFAULT);
-#define gen_def_type(name, ...) gen_def__type(name, (gen_Opts_def_type) { __VA_ARGS__ })
+GEN_API gen_CodeTypename gen_def__type(gen_Str name, gen_Opts_def_type* opts GEN_PARAM_DEFAULT);
+#define gen_def_type(name, ...) gen_def__type(name, &(gen_Opts_def_type) { __VA_ARGS__ })
 
 struct gen_Opts_def_typedef
 {
@@ -9787,8 +9785,8 @@ struct gen_Opts_def_typedef
 };
 typedef struct gen_Opts_def_typedef gen_Opts_def_typedef;
 
-GEN_API gen_CodeTypedef gen_def__typedef(gen_Str name, gen_Code type, gen_Opts_def_typedef opts GEN_PARAM_DEFAULT);
-#define gen_def_typedef(name, type, ...) gen_def__typedef(name, type, (gen_Opts_def_typedef) { __VA_ARGS__ })
+GEN_API gen_CodeTypedef gen_def__typedef(gen_Str name, gen_Code type, gen_Opts_def_typedef* opts GEN_PARAM_DEFAULT);
+#define gen_def_typedef(name, type, ...) gen_def__typedef(name, type, &(gen_Opts_def_typedef) { __VA_ARGS__ })
 
 struct gen_Opts_def_union
 {
@@ -9797,8 +9795,8 @@ struct gen_Opts_def_union
 };
 typedef struct gen_Opts_def_union gen_Opts_def_union;
 
-GEN_API gen_CodeUnion gen_def__union(gen_Str name, gen_CodeBody body, gen_Opts_def_union opts GEN_PARAM_DEFAULT);
-#define gen_def_union(name, body, ...) gen_def__union(name, body, (gen_Opts_def_union) { __VA_ARGS__ })
+GEN_API gen_CodeUnion gen_def__union(gen_Str name, gen_CodeBody body, gen_Opts_def_union* opts GEN_PARAM_DEFAULT);
+#define gen_def_union(name, body, ...) gen_def__union(name, body, &(gen_Opts_def_union) { __VA_ARGS__ })
 
 struct gen_Opts_def_using
 {
@@ -9807,8 +9805,8 @@ struct gen_Opts_def_using
 };
 typedef struct gen_Opts_def_using gen_Opts_def_using;
 
-GEN_API gen_CodeUsing gen_def__using(gen_Str name, gen_CodeTypename type, gen_Opts_def_using opts GEN_PARAM_DEFAULT);
-#define gen_def_using(name, type, ...) gen_def__using(name, type, (gen_Opts_def_using) { __VA_ARGS__ })
+GEN_API gen_CodeUsing gen_def__using(gen_Str name, gen_CodeTypename type, gen_Opts_def_using* opts GEN_PARAM_DEFAULT);
+#define gen_def_using(name, type, ...) gen_def__using(name, type, &(gen_Opts_def_using) { __VA_ARGS__ })
 
 GEN_API gen_CodeUsing gen_def_using_namespace(gen_Str name);
 
@@ -9821,8 +9819,8 @@ struct gen_Opts_def_variable
 };
 typedef struct gen_Opts_def_variable gen_Opts_def_variable;
 
-GEN_API gen_CodeVar gen_def__variable(gen_CodeTypename type, gen_Str name, gen_Opts_def_variable opts GEN_PARAM_DEFAULT);
-#define gen_def_variable(type, name, ...) gen_def__variable(type, name, (gen_Opts_def_variable) { __VA_ARGS__ })
+GEN_API gen_CodeVar gen_def__variable(gen_CodeTypename type, gen_Str name, gen_Opts_def_variable* opts GEN_PARAM_DEFAULT);
+#define gen_def_variable(type, name, ...) gen_def__variable(type, name, &(gen_Opts_def_variable) { __VA_ARGS__ })
 
 // Constructs an empty body. Use gen_AST::validate_body() to check if the body is was has valid entries.
 gen_CodeBody gen_def_body(gen_CodeType type);
@@ -18503,8 +18501,10 @@ gen_CodeComment gen_def_comment(gen_Str content)
 	return (gen_CodeComment)result;
 }
 
-gen_CodeConstructor gen_def__constructor(gen_Opts_def_constructor p)
+gen_CodeConstructor gen_def__constructor(gen_Opts_def_constructor* opt)
 {
+	gen_Opts_def_constructor p = get_optional(opt);
+
 	if (p.params && p.params->Type != CT_Parameters)
 	{
 		gen_log_failure("gen::gen_def_constructor: params must be of Parameters type - %s", gen_code_debug_str((gen_Code)p.params));
@@ -18544,8 +18544,10 @@ gen_CodeConstructor gen_def__constructor(gen_Opts_def_constructor p)
 	return result;
 }
 
-gen_CodeClass gen_def__class(gen_Str name, gen_Opts_def_struct p)
+gen_CodeClass gen_def__class(gen_Str name, gen_Opts_def_struct* opt)
 {
+	gen_Opts_def_struct p = get_optional(opt);
+
 	if (! name_check(gen_def_class, name))
 	{
 		GEN_DEBUG_TRAP();
@@ -18599,9 +18601,9 @@ gen_CodeClass gen_def__class(gen_Str name, gen_Opts_def_struct p)
 	return result;
 }
 
-gen_CodeDefine gen_def__define(gen_Str name, gen_MacroType type, gen_Opts_def_define* opts)
+gen_CodeDefine gen_def__define(gen_Str name, gen_MacroType type, gen_Opts_def_define* opt)
 {
-	gen_Opts_def_define p = opts ? *opts : (gen_Opts_def_define){0};
+	gen_Opts_def_define p = get_optional(opt);
 
 	if (! name_check(gen_def_define, name))
 	{
@@ -18626,8 +18628,10 @@ gen_CodeDefine gen_def__define(gen_Str name, gen_MacroType type, gen_Opts_def_de
 	return result;
 }
 
-gen_CodeDestructor gen_def__destructor(gen_Opts_def_destructor p)
+gen_CodeDestructor gen_def__destructor(gen_Opts_def_destructor* opt)
 {
+	gen_Opts_def_destructor p = get_optional(opt);
+
 	if (p.specifiers && p.specifiers->Type != CT_Specifiers)
 	{
 		gen_log_failure("gen::gen_def_destructor: specifiers was not a 'Specifiers' type: %s", gen_code_debug_str(p.specifiers));
@@ -18660,8 +18664,10 @@ gen_CodeDestructor gen_def__destructor(gen_Opts_def_destructor p)
 	return result;
 }
 
-gen_CodeEnum gen_def__enum(gen_Str name, gen_Opts_def_enum p)
+gen_CodeEnum gen_def__enum(gen_Str name, gen_Opts_def_enum* opt)
 {
+	gen_Opts_def_enum p = get_optional(opt);
+
 	if (! name_check(gen_def_enum, name))
 	{
 		GEN_DEBUG_TRAP();
@@ -18786,8 +18792,10 @@ gen_CodeFriend gen_def_friend(gen_Code declaration)
 	return result;
 }
 
-gen_CodeFn gen_def__function(gen_Str name, gen_Opts_def_function p)
+gen_CodeFn gen_def__function(gen_Str name, gen_Opts_def_function* opt)
 {
+	gen_Opts_def_function p = get_optional(opt);
+
 	if (! name_check(gen_def_function, name))
 	{
 		GEN_DEBUG_TRAP();
@@ -18850,9 +18858,9 @@ gen_CodeFn gen_def__function(gen_Str name, gen_Opts_def_function p)
 	return result;
 }
 
-gen_CodeInclude gen_def__include(gen_Str path, gen_Opts_def_include* opts)
+gen_CodeInclude gen_def__include(gen_Str path, gen_Opts_def_include* opt)
 {
-	gen_Opts_def_include p = opts ? *opts : (gen_Opts_def_include){0};
+	gen_Opts_def_include p = get_optional(opt);
 
 	if (path.Len <= 0 || path.Ptr == gen_nullptr)
 	{
@@ -18870,8 +18878,10 @@ gen_CodeInclude gen_def__include(gen_Str path, gen_Opts_def_include* opts)
 	return result;
 }
 
-gen_CodeModule gen_def__module(gen_Str name, gen_Opts_def_module p)
+gen_CodeModule gen_def__module(gen_Str name, gen_Opts_def_module* opt)
 {
+	gen_Opts_def_module p = get_optional(opt);
+
 	if (! name_check(gen_def_module, name))
 	{
 		GEN_DEBUG_TRAP();
@@ -18884,8 +18894,10 @@ gen_CodeModule gen_def__module(gen_Str name, gen_Opts_def_module p)
 	return result;
 }
 
-gen_CodeNS gen_def__namespace(gen_Str name, gen_CodeBody body, gen_Opts_def_namespace p)
+gen_CodeNS gen_def__namespace(gen_Str name, gen_CodeBody body, gen_Opts_def_namespace* opt)
 {
+	gen_Opts_def_namespace p = get_optional(opt);
+
 	if (! name_check(gen_def_namespace, name))
 	{
 		GEN_DEBUG_TRAP();
@@ -18910,8 +18922,10 @@ gen_CodeNS gen_def__namespace(gen_Str name, gen_CodeBody body, gen_Opts_def_name
 	return result;
 }
 
-gen_CodeOperator gen_def__operator(gen_Operator op, gen_Str nspace, gen_Opts_def_operator p)
+gen_CodeOperator gen_def__operator(gen_Operator op, gen_Str nspace, gen_Opts_def_operator* opt)
 {
+	gen_Opts_def_operator p = get_optional(opt);
+
 	if (p.attributes && p.attributes->Type != CT_PlatformAttributes)
 	{
 		gen_log_failure("gen::gen_def_operator: PlatformAttributes was provided but its not of attributes type: %s", gen_code_debug_str(p.attributes));
@@ -18977,8 +18991,10 @@ gen_CodeOperator gen_def__operator(gen_Operator op, gen_Str nspace, gen_Opts_def
 	return result;
 }
 
-gen_CodeOpCast gen_def__operator_cast(gen_CodeTypename type, gen_Opts_def_operator_cast p)
+gen_CodeOpCast gen_def__operator_cast(gen_CodeTypename type, gen_Opts_def_operator_cast* opt)
 {
+	gen_Opts_def_operator_cast p = get_optional(opt);
+
 	if (! null_check(gen_def_operator_cast, type))
 	{
 		GEN_DEBUG_TRAP();
@@ -19013,8 +19029,10 @@ gen_CodeOpCast gen_def__operator_cast(gen_CodeTypename type, gen_Opts_def_operat
 	return result;
 }
 
-gen_CodeParams gen_def__param(gen_CodeTypename type, gen_Str name, gen_Opts_def_param p)
+gen_CodeParams gen_def__param(gen_CodeTypename type, gen_Str name, gen_Opts_def_param* opt)
 {
+	gen_Opts_def_param p = get_optional(opt);
+
 	if (! name_check(gen_def_param, name) || ! null_check(gen_def_param, type))
 	{
 		GEN_DEBUG_TRAP();
@@ -19089,8 +19107,10 @@ gen_CodeSpecifiers gen_def_specifier(gen_Specifier spec)
 	return result;
 }
 
-gen_CodeStruct gen_def__struct(gen_Str name, gen_Opts_def_struct p)
+gen_CodeStruct gen_def__struct(gen_Str name, gen_Opts_def_struct* opt)
 {
+	gen_Opts_def_struct p = get_optional(opt);
+
 	if (p.attributes && p.attributes->Type != CT_PlatformAttributes)
 	{
 		gen_log_failure("gen::gen_def_struct: attributes was not a `PlatformAttributes` type - %s", gen_code_debug_str(gen_cast(gen_Code, p.attributes)));
@@ -19136,8 +19156,10 @@ gen_CodeStruct gen_def__struct(gen_Str name, gen_Opts_def_struct p)
 	return result;
 }
 
-gen_CodeTemplate gen_def__template(gen_CodeParams params, gen_Code declaration, gen_Opts_def_template p)
+gen_CodeTemplate gen_def__template(gen_CodeParams params, gen_Code declaration, gen_Opts_def_template* opt)
 {
+	gen_Opts_def_template p = get_optional(opt);
+
 	if (! null_check(gen_def_template, declaration))
 	{
 		GEN_DEBUG_TRAP();
@@ -19172,8 +19194,10 @@ gen_CodeTemplate gen_def__template(gen_CodeParams params, gen_Code declaration, 
 	return result;
 }
 
-gen_CodeTypename gen_def__type(gen_Str name, gen_Opts_def_type p)
+gen_CodeTypename gen_def__type(gen_Str name, gen_Opts_def_type* opt)
 {
+	gen_Opts_def_type p = get_optional(opt);
+
 	if (! name_check(gen_def_type, name))
 	{
 		GEN_DEBUG_TRAP();
@@ -19210,8 +19234,10 @@ gen_CodeTypename gen_def__type(gen_Str name, gen_Opts_def_type p)
 	return result;
 }
 
-gen_CodeTypedef gen_def__typedef(gen_Str name, gen_Code type, gen_Opts_def_typedef p)
+gen_CodeTypedef gen_def__typedef(gen_Str name, gen_Code type, gen_Opts_def_typedef* opt)
 {
+	gen_Opts_def_typedef p = get_optional(opt);
+
 	if (! null_check(gen_def_typedef, type))
 	{
 		GEN_DEBUG_TRAP();
@@ -19279,8 +19305,10 @@ gen_CodeTypedef gen_def__typedef(gen_Str name, gen_Code type, gen_Opts_def_typed
 	return result;
 }
 
-gen_CodeUnion gen_def__union(gen_Str name, gen_CodeBody body, gen_Opts_def_union p)
+gen_CodeUnion gen_def__union(gen_Str name, gen_CodeBody body, gen_Opts_def_union* opt)
 {
+	gen_Opts_def_union p = get_optional(opt);
+
 	if (! null_check(gen_def_union, body))
 	{
 		GEN_DEBUG_TRAP();
@@ -19308,8 +19336,10 @@ gen_CodeUnion gen_def__union(gen_Str name, gen_CodeBody body, gen_Opts_def_union
 	return result;
 }
 
-gen_CodeUsing gen_def__using(gen_Str name, gen_CodeTypename type, gen_Opts_def_using p)
+gen_CodeUsing gen_def__using(gen_Str name, gen_CodeTypename type, gen_Opts_def_using* opt)
 {
+	gen_Opts_def_using p = get_optional(opt);
+
 	if (! name_check(gen_def_using, name) || null_check(gen_def_using, type))
 	{
 		GEN_DEBUG_TRAP();
@@ -19351,8 +19381,10 @@ gen_CodeUsing gen_def_using_namespace(gen_Str name)
 	return result;
 }
 
-gen_CodeVar gen_def__variable(gen_CodeTypename type, gen_Str name, gen_Opts_def_variable p)
+gen_CodeVar gen_def__variable(gen_CodeTypename type, gen_Str name, gen_Opts_def_variable* opt)
 {
+	gen_Opts_def_variable p = get_optional(opt);
+
 	if (! name_check(gen_def_variable, name) || ! null_check(gen_def_variable, type))
 	{
 		GEN_DEBUG_TRAP();
@@ -22290,8 +22322,8 @@ bool _check_parse_args(gen_Str def, char const* func_name)
 #define check_noskip(Type_) (left && currtok_noskip.Type == Type_)
 #define check(Type_)        (left && currtok.Type == Type_)
 
-#define push_scope()                                                                                                                              \
-	gen_Str       null_name = {};                                                                                                                 \
+#define push_scope()                                                                                                                                  \
+	gen_Str       null_name = {};                                                                                                                     \
 	gen_StackNode scope     = { gen_nullptr, gen_lex_current(&gen__ctx->parser.Tokens, gen_lex_dont_skip_formatting), null_name, gen_txt(__func__) }; \
 	gen_parser_push(&gen__ctx->parser, &scope)
 
@@ -23623,6 +23655,22 @@ gen_internal inline gen_CodeFn gen_parse_function_after_name(
 	}
 	// <Attributes> <Specifiers> <ReturnType> <Name> ( <Paraemters> ) <Specifiers>
 
+	// Check for trailing specifiers...
+	gen_CodeAttributes post_rt_attributes = gen_parse_attributes();
+	if (post_rt_attributes)
+	{
+		if (attributes)
+		{
+			gen_StrBuilder merged = gen_strbuilder_fmt_buf(gen__ctx->Allocator_Temp, "%S %S", attributes->Content, post_rt_attributes->Content);
+			attributes->Content   = gen_cache_str(gen_strbuilder_to_str(merged));
+		}
+		else
+		{
+			attributes = post_rt_attributes;
+		}
+	}
+	// <Attributes> <Specifiers> <ReturnType> <Name> ( <Paraemters> ) <Specifiers> <Attributes>
+
 	gen_CodeBody    body       = gen_NullCode;
 	gen_CodeComment inline_cmt = gen_NullCode;
 	if (check(Tok_BraceCurly_Open))
@@ -23656,33 +23704,24 @@ gen_internal inline gen_CodeFn gen_parse_function_after_name(
 			eat(Tok_Number);
 			// <Attributes> <Specifiers> <ReturnType> <Name> ( <Paraemters> ) <Specifiers> = 0
 		}
-	}
-	
-	if (body == gen_nullptr) 
-	{
-		// Check for trailing specifiers...
-		gen_CodeAttributes post_rt_attributes = gen_parse_attributes();
-		if (post_rt_attributes)
-		{
-			if (attributes)
-			{
-				gen_StrBuilder merged = gen_strbuilder_fmt_buf(gen__ctx->Allocator_Temp, "%S %S", attributes->Content, post_rt_attributes->Content);
-				attributes->Content   = gen_cache_str(gen_strbuilder_to_str(merged));
-			}
-			else
-			{
-				attributes = post_rt_attributes;
-			}
-		}
-		// <Attributes> <Specifiers> <ReturnType> <Name> ( <Paraemters> ) <Specifiers> <Attributes>
+		gen_Token stmt_end = currtok;
+		eat(Tok_Statement_End);
 
+		if (currtok_noskip.Type == Tok_Comment && currtok_noskip.Line == stmt_end.Line)
+			inline_cmt = gen_parse_comment();
+		// <Attributes> <Specifiers> <ReturnType> <Name> ( <Paraemters> ) <Specifiers> < = 0 or delete > ; <InlineCmt>
+	}
+
+
+	if (body == gen_nullptr)
+	{
 		gen_Token stmt_end = currtok;
 		eat(Tok_Statement_End);
 		// <Attributes> <Specifiers> <ReturnType> <Name> ( <Paraemters> ) <Specifiers> <Attributes> < = 0 or delete > ;
 
 		if (currtok_noskip.Type == Tok_Comment && currtok_noskip.Line == stmt_end.Line)
 			inline_cmt = gen_parse_comment();
-		// <Attributes> <Specifiers> <ReturnType> <Name> ( <Paraemters> ) <Specifiers> <Attributes> < = 0 or delete > ; <InlineCmt>
+		// <Attributes> <Specifiers> <ReturnType> <Name> ( <Paraemters> ) <Specifiers> < = 0 or delete > ; <InlineCmt>
 	}
 
 	gen_StrBuilder name_stripped = gen_strbuilder_make_str(gen__ctx->Allocator_Temp, name.Text);
@@ -23961,7 +24000,7 @@ gen_internal gen_neverinline gen_CodeBody gen_parse_global_nspace(gen_CodeType w
 
 			case Tok_Preprocess_Macro_Expr:
 			{
-				if (!gen_tok_is_attribute(currtok))
+				if (! gen_tok_is_attribute(currtok))
 				{
 					gen_log_failure("Unbounded macro expression residing in class/struct body\n%S", gen_parser_to_strbuilder(gen__ctx->parser));
 					return gen_InvalidCode;
@@ -24255,13 +24294,15 @@ gen_internal gen_Token gen_parse_identifier(bool* possible_member_function)
 
 	// Typename can be: '::' <name>
 	// If that is the case first  option will be Tok_Access_StaticSymbol below
-	if (check(Tok_Identifier) || accept_as_identifier) 
+	if (check(Tok_Identifier) || accept_as_identifier)
 	{
-		if (is_decarator) {
+		if (is_decarator)
+		{
 			gen_Code name_macro = gen_parse_simple_preprocess(currtok.Type);
-			name.Text.Len = ( ( gen_sptr )prevtok.Text.Ptr + prevtok.Text.Len ) - ( gen_sptr )name.Text.Ptr;
-		}	
-		else {
+			name.Text.Len       = ((gen_sptr)prevtok.Text.Ptr + prevtok.Text.Len) - (gen_sptr)name.Text.Ptr;
+		}
+		else
+		{
 			eat(Tok_Identifier);
 		}
 	}
@@ -25373,7 +25414,6 @@ gen_internal gen_Code gen_parse_simple_preprocess(gen_TokType which)
 
 Leave_Scope_Early:
 	gen_Code result              = gen_untyped_str(full_macro.Text);
-	// gen_Code result              = gen_untyped_str(gen_strbuilder_to_str(gen_strbuilder_fmt_buf(gen__ctx->Allocator_Temp, "%S ", full_macro.Text)));
 	gen__ctx->parser.Scope->Name = full_macro.Text;
 
 	gen_parser_pop(&gen__ctx->parser);
@@ -26951,7 +26991,6 @@ gen_internal gen_CodeTypename gen_parser_parse_type(bool from_template, bool* ge
 	{
 		gen_Token next = nexttok;
 
-		// names are optional if its an inplace
 		if (next.Type == Tok_Identifier)
 		{
 			switch (currtok.Type)
@@ -26975,23 +27014,23 @@ gen_internal gen_CodeTypename gen_parser_parse_type(bool from_template, bool* ge
 			// <Attributes> <Specifiers> <class, enum, struct, union>
 
 			name = gen_parse_identifier(gen_nullptr);
-			// <Attributes> <Specifiers> <class, enum, struct, union> <Name> 
+			// <Attributes> <Specifiers> <class, enum, struct, union> <Name>
 		}
 		else if (next.Type == Tok_BraceCurly_Open)
 		{
 			name = currtok;
 			// We have an inplace definition, we need to consume that...
 
-			// TODO(Ed): we need to add a way for AST_CodeTypename to track an implace definition..
-			gen_b32 const inplace = true;
-			gen_Code indplace_def = gen_cast(gen_Code, gen_parser_parse_struct(inplace));
+			// TODO(Ed): we need to add a way for gen_AST_CodeTypename to track an implace definition..
+			gen_b32 const inplace      = true;
+			gen_Code      indplace_def = gen_cast(gen_Code, gen_parser_parse_struct(inplace));
 
-			// For now we lose the structural information, 
-			name.Text.Len = ( ( gen_sptr )prevtok.Text.Ptr + prevtok.Text.Len ) - ( gen_sptr )name.Text.Ptr;
-			// eat( Tok_Identifier );
-			gen__ctx->parser.Scope->Name = name.Text;
+			// For now we lose the structural information,
+			name.Text.Len = ((gen_sptr)prevtok.Text.Ptr + prevtok.Text.Len) - (gen_sptr)name.Text.Ptr;
 			// <Attributes> <Specifiers> <class, enum, struct, union> <inplace def>
 		}
+		gen__ctx->parser.Scope->Name = name.Text;
+		// <Attributes> <Specifiers> <class, enum, struct, union> <Name>
 	}
 
 // Decltype draft implementation

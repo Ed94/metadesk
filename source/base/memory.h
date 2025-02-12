@@ -93,16 +93,16 @@
 			__movsb((unsigned char*)dest, (const unsigned char*)src, count);
 			return dest;
 		}
-#		define md_memory_copy(dst, src, size)        memcpy_intrinsic((dst), (src), (size))
+#		define md_memory_copy(dst, src, size) memcpy_intrinsic((dst), (src), (size))
 #	else
-#		define md_memory_copy(dst, src, size)        memmove((dst), (src), (size))
+#		define md_memory_copy(dst, src, size) memmove((dst), (src), (size))
 #	endif
 #endif
 #ifndef md_memory_set
 #	if USE_VENDOR_MEMORY_OPS
-#		define md_memory_set(dst, byte, size)    memset((dst), (byte), (size))
+#		define md_memory_set(dst, byte, size) memset((dst), (byte), (size))
 #	else
-#		define md_memory_set(dst, byte, size)    md_mem_set((dst), (byte), (size))
+#		define md_memory_set(dst, byte, size) md_mem_set((dst), (byte), (size))
 #	endif
 #endif
 #ifndef md_memory_compare
@@ -431,25 +431,25 @@ md_dll__insert_npz(
 #define md_dll_insert_npz(nil, f, l, p, n, next, prev) md_dll__insert_npz(nil, &f, &f->prev, &l, &l->next, p, &p->next, &p->next->prev, n, &n->prev, &n->next)
 #else
 // insert next-previous with nil
-#define md_dll_insert_npz(nil, f, l, p, n, next, prev)                        \
+#define md_dll_insert_npz(nil, f, l, p, n, next, prev)                     \
 (                                                                          \
-	md_check_nil(nil, f) ? (                                                  \
+	md_check_nil(nil, f) ? (                                               \
 		(f) = (l) = (n),                                                   \
-		md_set_nil(nil, (n)->next),                                           \
-		md_set_nil(nil, (n)->prev)                                            \
+		md_set_nil(nil, (n)->next),                                        \
+		md_set_nil(nil, (n)->prev)                                         \
 	)                                                                      \
 	: (                                                                    \
-		md_check_nil(nil, p) ? (                                              \
+		md_check_nil(nil, p) ? (                                           \
 			(n)->next = (f),                                               \
 			(f)->prev = (n),                                               \
 			(f) = (n),                                                     \
-			md_set_nil(nil,(n)->prev)                                         \
+			md_set_nil(nil,(n)->prev)                                      \
 		)                                                                  \
 		: ((p) == (l)) ? (                                                 \
 				(l)->next = (n),                                           \
 				(n)->prev = (l),                                           \
 				(l) = (n),                                                 \
-				md_set_nil(nil, (n)->next)                                    \
+				md_set_nil(nil, (n)->next)                                 \
 			)                                                              \
 			: (                                                            \
 				( 	                                                       \
@@ -508,27 +508,27 @@ md_dll__remove_npz(
 #else
 // remove next-previous with nil
 #define md_dll_remove_npz(nil, f, l, n, next, prev) \
-(                                                \
-	(                                            \
-		(n) == (f) ?                             \
-			(f) = (n)->next                      \
-		: 	(0)                                  \
-	),                                           \
-	(                                            \
-		(n) == (l) ?                             \
-			(l) = (l)->prev                      \
-		:	(0)                                  \
-	),                                           \
-	(                                            \
+(                                                   \
+	(                                               \
+		(n) == (f) ?                                \
+			(f) = (n)->next                         \
+		: 	(0)                                     \
+	),                                              \
+	(                                               \
+		(n) == (l) ?                                \
+			(l) = (l)->prev                         \
+		:	(0)                                     \
+	),                                              \
+	(                                               \
 		md_check_nil(nil,(n)->prev) ?               \
-			(0)                                  \
-		: 	((n)->prev->next = (n)->next)        \
-	),                                           \
-	(                                            \
+			(0)                                     \
+		: 	((n)->prev->next = (n)->next)           \
+	),                                              \
+	(                                               \
 		md_check_nil(nil,(n)->next) ?               \
-			(0)                                  \
-		:	((n)->next->prev = (n)->prev)        \
-	)                                            \
+			(0)                                     \
+		:	((n)->next->prev = (n)->prev)           \
+	)                                               \
 )
 // ! MD_LINKED_LIST_PURE_MACRO
 #endif
@@ -563,16 +563,16 @@ md_sll__queue_push_nz(
 #define md_sll_queue_push_nz(nil, f, l, n, next) md_sll__queue_push_nz(nil, &f, &l, &l->next, n, &n->next)
 #else
 #define md_sll_queue_push_nz(nil, f, l, n, next) \
-(                                             \
+(                                                \
 	md_check_nil(nil, f) ? (                     \
-		(f) = (l) = (n),                      \
+		(f) = (l) = (n),                         \
 		md_set_nil(nil, (n)->next)               \
-	)                                         \
-	: (                                       \
-		(l)->next=(n),                        \
-		(l) = (n),                            \
+	)                                            \
+	: (                                          \
+		(l)->next=(n),                           \
+		(l) = (n),                               \
 		md_set_nil(nil,(n)->next)                \
-	)                                         \
+	)                                            \
 )
 // ! MD_LINKED_LIST_PURE_MACRO
 #endif
@@ -598,15 +598,15 @@ md_sll__queue_push_front_nz(void* nil, void** f, void** l, void* n, void** n_nex
 #define md_sll_queue_push_front_nz(nil, f, l, n, next) md_sll__queue_push_front_nz(nil, &f, &l, n, &n->next)
 #else
 #define md_sll_queue_push_front_nz(nil, f, l, n, next) \
-(                                                   \
+(                                                      \
 	md_check_nil(nil, f) ? (                           \
-		(f) = (l) = (n),                            \
+		(f) = (l) = (n),                               \
 		md_set_nil(nil,(n)->next)                      \
-	)                                               \
-	: (                                             \
-		(n)->next = (f),                            \
-		(f) = (n)                                   \
-	)                                               \
+	)                                                  \
+	: (                                                \
+		(n)->next = (f),                               \
+		(f) = (n)                                      \
+	)                                                  \
 )
 // ! MD_LINKED_LIST_PURE_MACRO
 #endif
@@ -630,14 +630,14 @@ md_sll__queue_pop_nz(void* nil, void** f, void* f_next, void** l)
 #define md_sll_queue_pop_nz(nil, f, l, next) md_sll__queue_pop_nz(nil, &f, f->next, &l)
 #else
 #define md_sll_queue_pop_nz(nil, f, l, next) \
-(                                         \
-	(f) == (l) ? (                        \
+(                                            \
+	(f) == (l) ? (                           \
 		md_set_nil(nil,f),                   \
 		md_set_nil(nil,l)                    \
-	)                                     \
-	: (                                   \
-		(f)=(f)->next                     \
-	)                                     \
+	)                                        \
+	: (                                      \
+		(f)=(f)->next                        \
+	)                                        \
 )
 // ! MD_LINKED_LIST_PURE_MACRO
 #endif
@@ -777,7 +777,7 @@ md_sll__queue_pop_nz(void* nil, void** f, void* f_next, void** l)
 #endif
 
 #ifndef md_compose_64bit
-#define md_compose_64bit(a,b)    ((((MD_U64)a) << 32) | ((MD_U64)b));
+#define md_compose_64bit(a,b)   ((((MD_U64)a) << 32) | ((MD_U64)b));
 #endif
 #ifndef md_align_pow2
 #define md_align_pow2(x,b)      (((x) + (b) - 1) & ( ~((b) - 1)))
@@ -910,18 +910,18 @@ md_u64_up_to_pow2(MD_U64 x) {
 
 inline MD_S32
 md_extend_sign32(MD_U32 x, MD_U32 size) {
-  MD_U32 high_bit = size * 8;
-  MD_U32 shift    = 32 - high_bit;
-  MD_S32 result   = ((MD_S32)x << shift) >> shift;
-  return result;
+	MD_U32 high_bit = size * 8;
+	MD_U32 shift    = 32 - high_bit;
+	MD_S32 result   = ((MD_S32)x << shift) >> shift;
+	return result;
 }
 
 inline MD_S64
 md_extend_sign64(MD_U64 x, MD_U64 size) {
-  MD_U64 high_bit = size * 8;
-  MD_U64 shift    = 64 - high_bit;
-  MD_S64 result   = ((MD_S64)x << shift) >> shift;
-  return result;
+	MD_U64 high_bit = size * 8;
+	MD_U64 shift    = 64 - high_bit;
+	MD_S64 result   = ((MD_S64)x << shift) >> shift;
+	return result;
 }
 
 inline MD_F32 md_inf32    (void) { union { MD_U32 u; MD_F32 f; } x; x.u = MD_EXPONENT32;          return(x.f); }
@@ -930,19 +930,19 @@ inline MD_F32 md_neg_inf32(void) { union { MD_U32 u; MD_F32 f; } x; x.u = MD_SIG
 inline MD_U16
 md_bswap_u16(MD_U16 x)
 {
-  MD_U16 result = (((x & 0xFF00) >> 8) |
-                ((x & 0x00FF) << 8));
-  return result;
+	MD_U16 result = (((x & 0xFF00) >> 8) |
+					 ((x & 0x00FF) << 8));
+	return result;
 }
 
 inline MD_U32
 md_bswap_u32(MD_U32 x)
 {
-  MD_U32 result = (((x & 0xFF000000) >> 24) |
-                ((x & 0x00FF0000) >> 8)  |
-                ((x & 0x0000FF00) << 8)  |
-                ((x & 0x000000FF) << 24));
-  return result;
+	MD_U32 result = (((x & 0xFF000000) >> 24) |
+					 ((x & 0x00FF0000) >> 8)  |
+					 ((x & 0x0000FF00) << 8)  |
+					 ((x & 0x000000FF) << 24));
+	return result;
 }
 
 inline MD_U64
@@ -950,13 +950,13 @@ md_bswap_u64(MD_U64 x)
 {
   // TODO(nick): naive bswap, replace with something that is faster like an intrinsic
   MD_U64 result = (((x & 0xFF00000000000000ULL) >> 56) |
-                ((x & 0x00FF000000000000ULL) >> 40) |
-                ((x & 0x0000FF0000000000ULL) >> 24) |
-                ((x & 0x000000FF00000000ULL) >> 8)  |
-                ((x & 0x00000000FF000000ULL) << 8)  |
-                ((x & 0x0000000000FF0000ULL) << 24) |
-                ((x & 0x000000000000FF00ULL) << 40) |
-                ((x & 0x00000000000000FFULL) << 56));
+                   ((x & 0x00FF000000000000ULL) >> 40) |
+                   ((x & 0x0000FF0000000000ULL) >> 24) |
+                   ((x & 0x000000FF00000000ULL) >> 8)  |
+                   ((x & 0x00000000FF000000ULL) << 8)  |
+                   ((x & 0x0000000000FF0000ULL) << 24) |
+                   ((x & 0x000000000000FF00ULL) << 40) |
+                   ((x & 0x00000000000000FFULL) << 56));
   return result;
 }
 

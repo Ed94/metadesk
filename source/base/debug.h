@@ -6,8 +6,6 @@
 #	include "base_types.h"
 #endif
 
-// TODO(Ed): Review this
-
 ////////////////////////////////
 //~ rjf: Asserts
 

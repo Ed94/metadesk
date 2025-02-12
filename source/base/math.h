@@ -432,55 +432,55 @@ inline MD_F64 md_mix_1f64(MD_F64 a, MD_F64 b, MD_F64 t) { MD_F64 c = (a + (b - a
 // ==================== 2D Vectors ====================
 
 #define md_v2f32(x, y) md_vec_2f32((x), (y))
-inline MD_Vec2F32 md_vec_2f32           (MD_F32     x, MD_F32     y)        { MD_Vec2F32 v = { x, y };                                       return v; }
-inline MD_Vec2F32 md_add_2f32           (MD_Vec2F32 a, MD_Vec2F32 b)        { MD_Vec2F32 c = {a.x + b.x, a.y + b.y};                         return c; }
-inline MD_Vec2F32 md_sub_2f32           (MD_Vec2F32 a, MD_Vec2F32 b)        { MD_Vec2F32 c = {a.x - b.x, a.y - b.y};                         return c; }
-inline MD_Vec2F32 md_mul_2f32           (MD_Vec2F32 a, MD_Vec2F32 b)        { MD_Vec2F32 c = {a.x * b.x, a.y * b.y};                         return c; }
-inline MD_Vec2F32 md_div_2f32           (MD_Vec2F32 a, MD_Vec2F32 b)        { MD_Vec2F32 c = {a.x / b.x, a.y / b.y};                         return c; }
-inline MD_Vec2F32 md_scale_2f32         (MD_Vec2F32 v, MD_F32     s)        { MD_Vec2F32 c = {v.x * s,   v.y * s  };                         return c; }
-inline MD_F32     md_dot_2f32           (MD_Vec2F32 a, MD_Vec2F32 b)        { MD_F32     c = a.x * b.x + a.y * b.y;                          return c; }
-inline MD_F32     md_length_squared_2f32(MD_Vec2F32 v)                   { MD_F32     c = v.x * v.x + v.y * v.y;                          return c; }
-inline MD_F32     md_length_2f32        (MD_Vec2F32 v)                   { MD_F32     c = md_sqrt_f32(v.x*v.x + v.y*v.y);                    return c; }
-inline MD_Vec2F32 md_normalize_2f32     (MD_Vec2F32 v)                   {         v = md_scale_2f32(v, 1.f / md_length_2f32(v));            return v; }
+inline MD_Vec2F32 md_vec_2f32           (MD_F32     x, MD_F32     y)           { MD_Vec2F32 v = { x, y };               return v; }
+inline MD_Vec2F32 md_add_2f32           (MD_Vec2F32 a, MD_Vec2F32 b)           { MD_Vec2F32 c = {a.x + b.x, a.y + b.y}; return c; }
+inline MD_Vec2F32 md_sub_2f32           (MD_Vec2F32 a, MD_Vec2F32 b)           { MD_Vec2F32 c = {a.x - b.x, a.y - b.y}; return c; }
+inline MD_Vec2F32 md_mul_2f32           (MD_Vec2F32 a, MD_Vec2F32 b)           { MD_Vec2F32 c = {a.x * b.x, a.y * b.y}; return c; }
+inline MD_Vec2F32 md_div_2f32           (MD_Vec2F32 a, MD_Vec2F32 b)           { MD_Vec2F32 c = {a.x / b.x, a.y / b.y}; return c; }
+inline MD_Vec2F32 md_scale_2f32         (MD_Vec2F32 v, MD_F32     s)           { MD_Vec2F32 c = {v.x * s,   v.y * s  }; return c; }
+inline MD_F32     md_dot_2f32           (MD_Vec2F32 a, MD_Vec2F32 b)           { MD_F32     c = a.x * b.x + a.y * b.y;  return c; }
+inline MD_F32     md_length_squared_2f32(MD_Vec2F32 v)                         { MD_F32     c = v.x * v.x + v.y * v.y;  return c; }
+inline MD_F32     md_length_2f32        (MD_Vec2F32 v)                         { MD_F32     c = md_sqrt_f32(v.x*v.x + v.y*v.y);                       return c; }
+inline MD_Vec2F32 md_normalize_2f32     (MD_Vec2F32 v)                         {            v = md_scale_2f32(v, 1.f / md_length_2f32(v));            return v; }
 inline MD_Vec2F32 md_mix_2f32           (MD_Vec2F32 a, MD_Vec2F32 b, MD_F32 t) { MD_Vec2F32 c = {md_mix_1f32(a.x, b.x, t), md_mix_1f32(a.y, b.y, t)}; return c; }
 
 #define md_v2s64(x, y) md_vec_2s64((x), (y))
-inline MD_Vec2S64 md_vec_2s64           (MD_S64     x, MD_S64     y)        { MD_Vec2S64 v = { x, y };                                       return v; }
-inline MD_Vec2S64 md_add_2s64           (MD_Vec2S64 a, MD_Vec2S64 b)        { MD_Vec2S64 c = {a.x + b.x, a.y + b.y};                         return c; }
-inline MD_Vec2S64 md_sub_2s64           (MD_Vec2S64 a, MD_Vec2S64 b)        { MD_Vec2S64 c = {a.x - b.x, a.y - b.y};                         return c; }
-inline MD_Vec2S64 md_mul_2s64           (MD_Vec2S64 a, MD_Vec2S64 b)        { MD_Vec2S64 c = {a.x * b.x, a.y * b.y};                         return c; }
-inline MD_Vec2S64 md_div_2s64           (MD_Vec2S64 a, MD_Vec2S64 b)        { MD_Vec2S64 c = {a.x / b.x, a.y / b.y};                         return c; }
-inline MD_Vec2S64 md_scale_2s64         (MD_Vec2S64 v, MD_S64     s)        { MD_Vec2S64 c = {v.x * s,   v.y * s  };                         return c; }
-inline MD_S64     md_dot_2s64           (MD_Vec2S64 a, MD_Vec2S64 b)        { MD_S64     c = a.x * b.x + a.y * b.y;                          return c; }
-inline MD_S64     md_length_squared_2s64(MD_Vec2S64 v)                   { MD_S64     c = v.x * v.x + v.y * v.y;                          return c; }
-inline MD_S64     md_length_2s64        (MD_Vec2S64 v)                   { MD_S64     c = (MD_S64)md_sqrt_f64((MD_F64)(v.x*v.x + v.y*v.y));        return c; }
-inline MD_Vec2S64 md_normalize_2s64     (MD_Vec2S64 v)                   {         v = md_scale_2s64(v, (MD_S64)(1.f / md_length_2s64(v)));     return v; }
+inline MD_Vec2S64 md_vec_2s64           (MD_S64     x, MD_S64     y)           { MD_Vec2S64 v = { x, y };               return v; }
+inline MD_Vec2S64 md_add_2s64           (MD_Vec2S64 a, MD_Vec2S64 b)           { MD_Vec2S64 c = {a.x + b.x, a.y + b.y}; return c; }
+inline MD_Vec2S64 md_sub_2s64           (MD_Vec2S64 a, MD_Vec2S64 b)           { MD_Vec2S64 c = {a.x - b.x, a.y - b.y}; return c; }
+inline MD_Vec2S64 md_mul_2s64           (MD_Vec2S64 a, MD_Vec2S64 b)           { MD_Vec2S64 c = {a.x * b.x, a.y * b.y}; return c; }
+inline MD_Vec2S64 md_div_2s64           (MD_Vec2S64 a, MD_Vec2S64 b)           { MD_Vec2S64 c = {a.x / b.x, a.y / b.y}; return c; }
+inline MD_Vec2S64 md_scale_2s64         (MD_Vec2S64 v, MD_S64     s)           { MD_Vec2S64 c = {v.x * s,   v.y * s  }; return c; }
+inline MD_S64     md_dot_2s64           (MD_Vec2S64 a, MD_Vec2S64 b)           { MD_S64     c = a.x * b.x + a.y * b.y;  return c; }
+inline MD_S64     md_length_squared_2s64(MD_Vec2S64 v)                         { MD_S64     c = v.x * v.x + v.y * v.y;  return c; }
+inline MD_S64     md_length_2s64        (MD_Vec2S64 v)                         { MD_S64     c = (MD_S64)md_sqrt_f64((MD_F64)(v.x*v.x + v.y*v.y));    return c; }
+inline MD_Vec2S64 md_normalize_2s64     (MD_Vec2S64 v)                         {            v = md_scale_2s64(v, (MD_S64)(1.f / md_length_2s64(v))); return v; }
 inline MD_Vec2S64 md_mix_2s64           (MD_Vec2S64 a, MD_Vec2S64 b, MD_F32 t) { MD_Vec2S64 c = {(MD_S64)md_mix_1f32((MD_F32)a.x, (MD_F32)b.x, t), (MD_S64)md_mix_1f32((MD_F32)a.y, (MD_F32)b.y, t)}; return c; }
 
 #define md_v2s32(x, y) md_vec_2s32((x), (y))
-inline MD_Vec2S32 md_vec_2s32           (MD_S32 x, MD_S32 y)                { MD_Vec2S32 v = { x, y };                                       return v; }
-inline MD_Vec2S32 md_add_2s32           (MD_Vec2S32 a, MD_Vec2S32 b)        { MD_Vec2S32 c = {a.x + b.x, a.y + b.y};                         return c; }
-inline MD_Vec2S32 md_sub_2s32           (MD_Vec2S32 a, MD_Vec2S32 b)        { MD_Vec2S32 c = {a.x - b.x, a.y - b.y};                         return c; }
-inline MD_Vec2S32 md_mul_2s32           (MD_Vec2S32 a, MD_Vec2S32 b)        { MD_Vec2S32 c = {a.x * b.x, a.y * b.y};                         return c; }
-inline MD_Vec2S32 md_div_2s32           (MD_Vec2S32 a, MD_Vec2S32 b)        { MD_Vec2S32 c = {a.x / b.x, a.y / b.y};                         return c; }
-inline MD_Vec2S32 md_scale_2s32         (MD_Vec2S32 v, MD_S32     s)        { MD_Vec2S32 c = {v.x * s,   v.y * s  };                         return c; }
-inline MD_S32     md_dot_2s32           (MD_Vec2S32 a, MD_Vec2S32 b)        { MD_S32     c = a.x * b.x + a.y * b.y;                          return c; }
-inline MD_S32     md_length_squared_2s32(MD_Vec2S32 v)                   { MD_S32     c = v.x * v.x + v.y * v.y;                          return c; }
-inline MD_S32     md_length_2s32        (MD_Vec2S32 v)                   { MD_S32     c = (MD_S32)md_sqrt_f32((MD_F32)v.x*(MD_F32)v.x + (MD_F32)v.y*(MD_F32)v.y); return c; }
-inline MD_Vec2S32 md_normalize_2s32     (MD_Vec2S32 v)                   {         v = md_scale_2s32(v, (MD_S32)(1.f / md_length_2s32(v)));     return v; }
+inline MD_Vec2S32 md_vec_2s32           (MD_S32 x, MD_S32 y)                   { MD_Vec2S32 v = { x, y };               return v; }
+inline MD_Vec2S32 md_add_2s32           (MD_Vec2S32 a, MD_Vec2S32 b)           { MD_Vec2S32 c = {a.x + b.x, a.y + b.y}; return c; }
+inline MD_Vec2S32 md_sub_2s32           (MD_Vec2S32 a, MD_Vec2S32 b)           { MD_Vec2S32 c = {a.x - b.x, a.y - b.y}; return c; }
+inline MD_Vec2S32 md_mul_2s32           (MD_Vec2S32 a, MD_Vec2S32 b)           { MD_Vec2S32 c = {a.x * b.x, a.y * b.y}; return c; }
+inline MD_Vec2S32 md_div_2s32           (MD_Vec2S32 a, MD_Vec2S32 b)           { MD_Vec2S32 c = {a.x / b.x, a.y / b.y}; return c; }
+inline MD_Vec2S32 md_scale_2s32         (MD_Vec2S32 v, MD_S32     s)           { MD_Vec2S32 c = {v.x * s,   v.y * s  }; return c; }
+inline MD_S32     md_dot_2s32           (MD_Vec2S32 a, MD_Vec2S32 b)           { MD_S32     c = a.x * b.x + a.y * b.y;  return c; }
+inline MD_S32     md_length_squared_2s32(MD_Vec2S32 v)                         { MD_S32     c = v.x * v.x + v.y * v.y;  return c; }
+inline MD_S32     md_length_2s32        (MD_Vec2S32 v)                         { MD_S32     c = (MD_S32)md_sqrt_f32((MD_F32)v.x*(MD_F32)v.x + (MD_F32)v.y*(MD_F32)v.y); return c; }
+inline MD_Vec2S32 md_normalize_2s32     (MD_Vec2S32 v)                         {            v = md_scale_2s32(v, (MD_S32)(1.f / md_length_2s32(v)));                    return v; }
 inline MD_Vec2S32 md_mix_2s32           (MD_Vec2S32 a, MD_Vec2S32 b, MD_F32 t) { MD_Vec2S32 c = {(MD_S32)md_mix_1f32((MD_F32)a.x, (MD_F32)b.x, t), (MD_S32)md_mix_1f32((MD_F32)a.y, (MD_F32)b.y, t)}; return c; }
 
 #define md_v2s16(x, y) md_vec_2s16((x), (y))
-inline MD_Vec2S16 md_vec_2s16           (MD_S16 x, MD_S16 y)                { MD_Vec2S16 v = { x, y };                                       return v; }
-inline MD_Vec2S16 md_add_2s16           (MD_Vec2S16 a, MD_Vec2S16 b)        { MD_Vec2S16 c = {(MD_S16)(a.x + b.x), (MD_S16)(a.y + b.y)};           return c; }
-inline MD_Vec2S16 md_sub_2s16           (MD_Vec2S16 a, MD_Vec2S16 b)        { MD_Vec2S16 c = {(MD_S16)(a.x - b.x), (MD_S16)(a.y - b.y)};           return c; }
-inline MD_Vec2S16 md_mul_2s16           (MD_Vec2S16 a, MD_Vec2S16 b)        { MD_Vec2S16 c = {(MD_S16)(a.x * b.x), (MD_S16)(a.y * b.y)};           return c; }
-inline MD_Vec2S16 md_div_2s16           (MD_Vec2S16 a, MD_Vec2S16 b)        { MD_Vec2S16 c = {(MD_S16)(a.x / b.x), (MD_S16)(a.y / b.y)};           return c; }
-inline MD_Vec2S16 md_scale_2s16         (MD_Vec2S16 v, MD_S16     s)        { MD_Vec2S16 c = {(MD_S16)(v.x * s  ), (MD_S16)(v.y * s  )};           return c; }
-inline MD_S16     md_dot_2s16           (MD_Vec2S16 a, MD_Vec2S16 b)        { MD_S16     c = a.x * b.x + a.y * b.y;                          return c; }
-inline MD_S16     md_length_squared_2s16(MD_Vec2S16 v)                   { MD_S16     c = v.x * v.x + v.y * v.y;                          return c; }
-inline MD_S16     md_length_2s16        (MD_Vec2S16 v)                   { MD_S16     c = (MD_S16)md_sqrt_f32((MD_F32)(v.x*v.x + v.y*v.y));        return c; }
-inline MD_Vec2S16 md_normalize_2s16     (MD_Vec2S16 v)                   {         v = md_scale_2s16(v, (MD_S16)(1.f / md_length_2s16(v)));     return v; }
+inline MD_Vec2S16 md_vec_2s16           (MD_S16 x, MD_S16 y)                   { MD_Vec2S16 v = { x, y };                                                return v; }
+inline MD_Vec2S16 md_add_2s16           (MD_Vec2S16 a, MD_Vec2S16 b)           { MD_Vec2S16 c = {(MD_S16)(a.x + b.x), (MD_S16)(a.y + b.y)};              return c; }
+inline MD_Vec2S16 md_sub_2s16           (MD_Vec2S16 a, MD_Vec2S16 b)           { MD_Vec2S16 c = {(MD_S16)(a.x - b.x), (MD_S16)(a.y - b.y)};              return c; }
+inline MD_Vec2S16 md_mul_2s16           (MD_Vec2S16 a, MD_Vec2S16 b)           { MD_Vec2S16 c = {(MD_S16)(a.x * b.x), (MD_S16)(a.y * b.y)};              return c; }
+inline MD_Vec2S16 md_div_2s16           (MD_Vec2S16 a, MD_Vec2S16 b)           { MD_Vec2S16 c = {(MD_S16)(a.x / b.x), (MD_S16)(a.y / b.y)};              return c; }
+inline MD_Vec2S16 md_scale_2s16         (MD_Vec2S16 v, MD_S16     s)           { MD_Vec2S16 c = {(MD_S16)(v.x * s  ), (MD_S16)(v.y * s  )};              return c; }
+inline MD_S16     md_dot_2s16           (MD_Vec2S16 a, MD_Vec2S16 b)           { MD_S16     c = a.x * b.x + a.y * b.y;                                   return c; }
+inline MD_S16     md_length_squared_2s16(MD_Vec2S16 v)                         { MD_S16     c = v.x * v.x + v.y * v.y;                                   return c; }
+inline MD_S16     md_length_2s16        (MD_Vec2S16 v)                         { MD_S16     c = (MD_S16)md_sqrt_f32((MD_F32)(v.x*v.x + v.y*v.y));        return c; }
+inline MD_Vec2S16 md_normalize_2s16     (MD_Vec2S16 v)                         {            v = md_scale_2s16(v, (MD_S16)(1.f / md_length_2s16(v)));     return v; }
 inline MD_Vec2S16 md_mix_2s16           (MD_Vec2S16 a, MD_Vec2S16 b, MD_F32 t) { MD_Vec2S16 c = {(MD_S16)md_mix_1f32((MD_F32)a.x, (MD_F32)b.x, t), (MD_S16)md_mix_1f32((MD_F32)a.y, (MD_F32)b.y, t)}; return c; }
 
 #define md_vec2(a, b)             _Generic(a, MD_S16: md_vec_2s16,            MD_S32: md_vec_2s32,            MD_S64: md_vec_2s64,            MD_F32: md_vec_2f32           )((a), (b))
@@ -499,31 +499,31 @@ inline MD_Vec2S16 md_mix_2s16           (MD_Vec2S16 a, MD_Vec2S16 b, MD_F32 t) {
 
 #define md_v3f32(x, y, z) md_vec_3f32((x), (y), (z))
 inline MD_Vec3F32 md_vec_3f32           (MD_F32 x, MD_F32 y, MD_F32 z)         { MD_Vec3F32 v = {x, y, z}; return v; }
-inline MD_Vec3F32 md_add_3f32           (MD_Vec3F32 a, MD_Vec3F32 b)        { MD_Vec3F32 c = {a.x + b.x, a.y + b.y, a.z + b.z};           return c; }
-inline MD_Vec3F32 md_sub_3f32           (MD_Vec3F32 a, MD_Vec3F32 b)        { MD_Vec3F32 c = {a.x - b.x, a.y - b.y, a.z - b.z};           return c; }
-inline MD_Vec3F32 md_mul_3f32           (MD_Vec3F32 a, MD_Vec3F32 b)        { MD_Vec3F32 c = {a.x * b.x, a.y * b.y, a.z * b.z};           return c; }
-inline MD_Vec3F32 md_div_3f32           (MD_Vec3F32 a, MD_Vec3F32 b)        { MD_Vec3F32 c = {a.x / b.x, a.y / b.y, a.z / b.z};           return c; }
-inline MD_Vec3F32 md_scale_3f32         (MD_Vec3F32 v, MD_F32     s)        { MD_Vec3F32 c = {v.x * s,   v.y * s,   v.z * s};             return c; }
-inline MD_F32     md_dot_3f32           (MD_Vec3F32 a, MD_Vec3F32 b)        { MD_F32     c = a.x * b.x + a.y * b.y + a.z * b.z;           return c; }
-inline MD_F32     md_length_squared_3f32(MD_Vec3F32 v)                   { MD_F32     c = v.x * v.x + v.y * v.y + v.z * v.z;           return c; }
-inline MD_F32     md_length_3f32        (MD_Vec3F32 v)                   { MD_F32     c = md_sqrt_f32(v.x * v.x + v.y * v.y + v.z * v.z); return c; }
-inline MD_Vec3F32 md_normalize_3f32     (MD_Vec3F32 v)                   {         v = md_scale_3f32(v, 1.f / md_length_3f32(v));         return v; }
+inline MD_Vec3F32 md_add_3f32           (MD_Vec3F32 a, MD_Vec3F32 b)           { MD_Vec3F32 c = {a.x + b.x, a.y + b.y, a.z + b.z};              return c; }
+inline MD_Vec3F32 md_sub_3f32           (MD_Vec3F32 a, MD_Vec3F32 b)           { MD_Vec3F32 c = {a.x - b.x, a.y - b.y, a.z - b.z};              return c; }
+inline MD_Vec3F32 md_mul_3f32           (MD_Vec3F32 a, MD_Vec3F32 b)           { MD_Vec3F32 c = {a.x * b.x, a.y * b.y, a.z * b.z};              return c; }
+inline MD_Vec3F32 md_div_3f32           (MD_Vec3F32 a, MD_Vec3F32 b)           { MD_Vec3F32 c = {a.x / b.x, a.y / b.y, a.z / b.z};              return c; }
+inline MD_Vec3F32 md_scale_3f32         (MD_Vec3F32 v, MD_F32     s)           { MD_Vec3F32 c = {v.x * s,   v.y * s,   v.z * s};                return c; }
+inline MD_F32     md_dot_3f32           (MD_Vec3F32 a, MD_Vec3F32 b)           { MD_F32     c = a.x * b.x + a.y * b.y + a.z * b.z;              return c; }
+inline MD_F32     md_length_squared_3f32(MD_Vec3F32 v)                         { MD_F32     c = v.x * v.x + v.y * v.y + v.z * v.z;              return c; }
+inline MD_F32     md_length_3f32        (MD_Vec3F32 v)                         { MD_F32     c = md_sqrt_f32(v.x * v.x + v.y * v.y + v.z * v.z); return c; }
+inline MD_Vec3F32 md_normalize_3f32     (MD_Vec3F32 v)                         {            v = md_scale_3f32(v, 1.f / md_length_3f32(v));      return v; }
 inline MD_Vec3F32 md_mix_3f32           (MD_Vec3F32 a, MD_Vec3F32 b, MD_F32 t) { MD_Vec3F32 c = {md_mix_1f32(a.x, b.x, t), md_mix_1f32(a.y, b.y, t), md_mix_1f32(a.z, b.z, t)}; return c; }
-inline MD_Vec3F32 md_cross_3f32         (MD_Vec3F32 a, MD_Vec3F32 b)        { MD_Vec3F32 c = {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x}; return c; }
+inline MD_Vec3F32 md_cross_3f32         (MD_Vec3F32 a, MD_Vec3F32 b)           { MD_Vec3F32 c = {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x}; return c; }
 
 #define md_v3s32(x, y, z) md_vec_3s32((x), (y), (z))
 inline MD_Vec3S32 md_vec_3s32           (MD_S32 x, MD_S32 y, MD_S32 z)         { MD_Vec3S32 v = {x, y, z}; return v; }
-inline MD_Vec3S32 md_add_3s32           (MD_Vec3S32 a, MD_Vec3S32 b)        { MD_Vec3S32 c = {a.x + b.x, a.y + b.y, a.z + b.z};                       return c; }
-inline MD_Vec3S32 md_sub_3s32           (MD_Vec3S32 a, MD_Vec3S32 b)        { MD_Vec3S32 c = {a.x - b.x, a.y - b.y, a.z - b.z};                       return c; }
-inline MD_Vec3S32 md_mul_3s32           (MD_Vec3S32 a, MD_Vec3S32 b)        { MD_Vec3S32 c = {a.x * b.x, a.y * b.y, a.z * b.z};                       return c; }
-inline MD_Vec3S32 md_div_3s32           (MD_Vec3S32 a, MD_Vec3S32 b)        { MD_Vec3S32 c = {a.x / b.x, a.y / b.y, a.z / b.z};                       return c; }
-inline MD_Vec3S32 md_scale_3s32         (MD_Vec3S32 v, MD_S32     s)        { MD_Vec3S32 c = {v.x * s,   v.y * s,   v.z * s  };                       return c; }
-inline MD_S32     md_dot_3s32           (MD_Vec3S32 a, MD_Vec3S32 b)        { MD_S32     c = a.x * b.x + a.y * b.y + a.z * b.z;                       return c; }
-inline MD_S32     md_length_squared_3s32(MD_Vec3S32 v)                   { MD_S32     c = v.x * v.x + v.y * v.y + v.z * v.z;                       return c; }
-inline MD_S32     md_length_3s32        (MD_Vec3S32 v)                   { MD_S32     c = (MD_S32)md_sqrt_f32((MD_F32)(v.x * v.x + v.y * v.y + v.z * v.z)); return c; }
-inline MD_Vec3S32 md_normalize_3s32     (MD_Vec3S32 v)                   {         v = md_scale_3s32(v, (MD_S32)(1.f / md_length_3s32(v)));              return v; }
+inline MD_Vec3S32 md_add_3s32           (MD_Vec3S32 a, MD_Vec3S32 b)           { MD_Vec3S32 c = {a.x + b.x, a.y + b.y, a.z + b.z};                                return c; }
+inline MD_Vec3S32 md_sub_3s32           (MD_Vec3S32 a, MD_Vec3S32 b)           { MD_Vec3S32 c = {a.x - b.x, a.y - b.y, a.z - b.z};                                return c; }
+inline MD_Vec3S32 md_mul_3s32           (MD_Vec3S32 a, MD_Vec3S32 b)           { MD_Vec3S32 c = {a.x * b.x, a.y * b.y, a.z * b.z};                                return c; }
+inline MD_Vec3S32 md_div_3s32           (MD_Vec3S32 a, MD_Vec3S32 b)           { MD_Vec3S32 c = {a.x / b.x, a.y / b.y, a.z / b.z};                                return c; }
+inline MD_Vec3S32 md_scale_3s32         (MD_Vec3S32 v, MD_S32     s)           { MD_Vec3S32 c = {v.x * s,   v.y * s,   v.z * s  };                                return c; }
+inline MD_S32     md_dot_3s32           (MD_Vec3S32 a, MD_Vec3S32 b)           { MD_S32     c = a.x * b.x + a.y * b.y + a.z * b.z;                                return c; }
+inline MD_S32     md_length_squared_3s32(MD_Vec3S32 v)                         { MD_S32     c = v.x * v.x + v.y * v.y + v.z * v.z;                                return c; }
+inline MD_S32     md_length_3s32        (MD_Vec3S32 v)                         { MD_S32     c = (MD_S32)md_sqrt_f32((MD_F32)(v.x * v.x + v.y * v.y + v.z * v.z)); return c; }
+inline MD_Vec3S32 md_normalize_3s32     (MD_Vec3S32 v)                         {            v = md_scale_3s32(v, (MD_S32)(1.f / md_length_3s32(v)));              return v; }
 inline MD_Vec3S32 md_mix_3s32           (MD_Vec3S32 a, MD_Vec3S32 b, MD_F32 t) { MD_Vec3S32 c = {(MD_S32)md_mix_1f32((MD_F32)a.x, (MD_F32)b.x, t), (MD_S32)md_mix_1f32((MD_F32)a.y, (MD_F32)b.y, t), (MD_S32)md_mix_1f32((MD_F32)a.z, (MD_F32)b.z, t)}; return c; }
-inline MD_Vec3S32 md_cross_3s32         (MD_Vec3S32 a, MD_Vec3S32 b)        { MD_Vec3S32 c = {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x}; return c; }
+inline MD_Vec3S32 md_cross_3s32         (MD_Vec3S32 a, MD_Vec3S32 b)           { MD_Vec3S32 c = {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x}; return c; }
 
 #define md_vec3(a, b, c)          _Generic(a, MD_S32: md_vec_3s32,            MD_F32: md_vec_3f32           )((a), (b), (c))
 #define md_add_vec3(a, b)         _Generic(a, MD_S32: md_add_3s32,            MD_F32: md_add_3f32           )((a), (b))
@@ -541,30 +541,30 @@ inline MD_Vec3S32 md_cross_3s32         (MD_Vec3S32 a, MD_Vec3S32 b)        { MD
 // ==================== 4D Vectors ====================
 
 #define md_v4f32(x, y, z, w) md_vec_4f32((x), (y), (z), (w))
-inline MD_Vec4F32 md_vec_4f32           (MD_F32 x, MD_F32 y, MD_F32 z, MD_F32 w)  { MD_Vec4F32 v = {x, y, z, w}; return v; }
-inline MD_Vec4F32 md_add_4f32           (MD_Vec4F32 a, MD_Vec4F32 b)        { MD_Vec4F32 c = {a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};            return c; }
-inline MD_Vec4F32 md_sub_4f32           (MD_Vec4F32 a, MD_Vec4F32 b)        { MD_Vec4F32 c = {a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};            return c; }
-inline MD_Vec4F32 md_mul_4f32           (MD_Vec4F32 a, MD_Vec4F32 b)        { MD_Vec4F32 c = {a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w};            return c; }
-inline MD_Vec4F32 md_div_4f32           (MD_Vec4F32 a, MD_Vec4F32 b)        { MD_Vec4F32 c = {a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w};            return c; }
-inline MD_Vec4F32 md_scale_4f32         (MD_Vec4F32 v, MD_F32     s)        { MD_Vec4F32 c = {v.x * s,   v.y * s,   v.z * s,   v.w * s  };            return c; }
-inline MD_F32     md_dot_4f32           (MD_Vec4F32 a, MD_Vec4F32 b)        { MD_F32     c = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;           return c; }
-inline MD_F32     md_length_squared_4f32(MD_Vec4F32 v)                   { MD_F32     c = v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w;           return c; }
-inline MD_F32     md_length_4f32        (MD_Vec4F32 v)                   { MD_F32     c = md_sqrt_f32(v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w); return c; }
-inline MD_Vec4F32 md_normalize_4f32     (MD_Vec4F32 v)                   {         v = md_scale_4f32(v, 1.f / md_length_4f32(v));                     return v; }
-inline MD_Vec4F32 md_mix_4f32           (MD_Vec4F32 a, MD_Vec4F32 b, MD_F32 t) { MD_Vec4F32 c = {md_mix_1f32(a.x, b.x, t), md_mix_1f32(a.y, b.y, t), md_mix_1f32(a.z, b.z, t), md_mix_1f32(a.w, b.w, t)}; return c; }
+inline MD_Vec4F32 md_vec_4f32           (MD_F32 x, MD_F32 y, MD_F32 z, MD_F32 w) { MD_Vec4F32 v = {x, y, z, w}; return v; }
+inline MD_Vec4F32 md_add_4f32           (MD_Vec4F32 a, MD_Vec4F32 b)             { MD_Vec4F32 c = {a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};               return c; }
+inline MD_Vec4F32 md_sub_4f32           (MD_Vec4F32 a, MD_Vec4F32 b)             { MD_Vec4F32 c = {a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};               return c; }
+inline MD_Vec4F32 md_mul_4f32           (MD_Vec4F32 a, MD_Vec4F32 b)             { MD_Vec4F32 c = {a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w};               return c; }
+inline MD_Vec4F32 md_div_4f32           (MD_Vec4F32 a, MD_Vec4F32 b)             { MD_Vec4F32 c = {a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w};               return c; }
+inline MD_Vec4F32 md_scale_4f32         (MD_Vec4F32 v, MD_F32     s)             { MD_Vec4F32 c = {v.x * s,   v.y * s,   v.z * s,   v.w * s  };               return c; }
+inline MD_F32     md_dot_4f32           (MD_Vec4F32 a, MD_Vec4F32 b)             { MD_F32     c = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;              return c; }
+inline MD_F32     md_length_squared_4f32(MD_Vec4F32 v)                           { MD_F32     c = v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w;              return c; }
+inline MD_F32     md_length_4f32        (MD_Vec4F32 v)                           { MD_F32     c = md_sqrt_f32(v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w); return c; }
+inline MD_Vec4F32 md_normalize_4f32     (MD_Vec4F32 v)                           {            v = md_scale_4f32(v, 1.f / md_length_4f32(v));                  return v; }
+inline MD_Vec4F32 md_mix_4f32           (MD_Vec4F32 a, MD_Vec4F32 b, MD_F32 t)   { MD_Vec4F32 c = {md_mix_1f32(a.x, b.x, t), md_mix_1f32(a.y, b.y, t), md_mix_1f32(a.z, b.z, t), md_mix_1f32(a.w, b.w, t)}; return c; }
 
 #define v4s32(x, y, z, w) md_vec_4s32((x), (y), (z), (w))
-inline MD_Vec4S32 md_vec_4s32           (MD_S32 x, MD_S32 y, MD_S32 z, MD_S32 w)  { MD_Vec4S32 v = {x, y, z, w}; return v; }
-inline MD_Vec4S32 md_add_4s32           (MD_Vec4S32 a, MD_Vec4S32 b)        { MD_Vec4S32 c = {a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};                        return c; }
-inline MD_Vec4S32 md_sub_4s32           (MD_Vec4S32 a, MD_Vec4S32 b)        { MD_Vec4S32 c = {a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};                        return c; }
-inline MD_Vec4S32 md_mul_4s32           (MD_Vec4S32 a, MD_Vec4S32 b)        { MD_Vec4S32 c = {a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w};                        return c; }
-inline MD_Vec4S32 md_div_4s32           (MD_Vec4S32 a, MD_Vec4S32 b)        { MD_Vec4S32 c = {a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w};                        return c; }
-inline MD_Vec4S32 md_scale_4s32         (MD_Vec4S32 v, MD_S32 s)            { MD_Vec4S32 c = {v.x * s,   v.y * s,   v.z * s,   v.w * s  };                        return c; }
-inline MD_S32     md_dot_4s32           (MD_Vec4S32 a, MD_Vec4S32 b)        { MD_S32     c = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;                       return c; }
-inline MD_S32     md_length_squared_4s32(MD_Vec4S32 v)                   { MD_S32     c = v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w;                       return c; }
-inline MD_S32     md_length_4s32        (MD_Vec4S32 v)                   { MD_S32     c = (MD_S32)md_sqrt_f32((MD_F32)(v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w)); return c; }
-inline MD_Vec4S32 md_normalize_4s32     (MD_Vec4S32 v)                   {         v = md_scale_4s32(v, (MD_S32)(1.f / md_length_4s32(v)));                          return v; }
-inline MD_Vec4S32 md_mix_4s32           (MD_Vec4S32 a, MD_Vec4S32 b, MD_F32 t) { MD_Vec4S32 c = {(MD_S32)md_mix_1f32((MD_F32)a.x, (MD_F32)b.x, t), (MD_S32)md_mix_1f32((MD_F32)a.y, (MD_F32)b.y, t), (MD_S32)md_mix_1f32((MD_F32)a.z, (MD_F32)b.z, t), (MD_S32)md_mix_1f32((MD_F32)a.w, (MD_F32)b.w, t)}; return c; }
+inline MD_Vec4S32 md_vec_4s32           (MD_S32 x, MD_S32 y, MD_S32 z, MD_S32 w) { MD_Vec4S32 v = {x, y, z, w}; return v; }
+inline MD_Vec4S32 md_add_4s32           (MD_Vec4S32 a, MD_Vec4S32 b)             { MD_Vec4S32 c = {a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};                                 return c; }
+inline MD_Vec4S32 md_sub_4s32           (MD_Vec4S32 a, MD_Vec4S32 b)             { MD_Vec4S32 c = {a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};                                 return c; }
+inline MD_Vec4S32 md_mul_4s32           (MD_Vec4S32 a, MD_Vec4S32 b)             { MD_Vec4S32 c = {a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w};                                 return c; }
+inline MD_Vec4S32 md_div_4s32           (MD_Vec4S32 a, MD_Vec4S32 b)             { MD_Vec4S32 c = {a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w};                                 return c; }
+inline MD_Vec4S32 md_scale_4s32         (MD_Vec4S32 v, MD_S32 s)                 { MD_Vec4S32 c = {v.x * s,   v.y * s,   v.z * s,   v.w * s  };                                 return c; }
+inline MD_S32     md_dot_4s32           (MD_Vec4S32 a, MD_Vec4S32 b)             { MD_S32     c = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;                                return c; }
+inline MD_S32     md_length_squared_4s32(MD_Vec4S32 v)                           { MD_S32     c = v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w;                                return c; }
+inline MD_S32     md_length_4s32        (MD_Vec4S32 v)                           { MD_S32     c = (MD_S32)md_sqrt_f32((MD_F32)(v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w)); return c; }
+inline MD_Vec4S32 md_normalize_4s32     (MD_Vec4S32 v)                           {            v = md_scale_4s32(v, (MD_S32)(1.f / md_length_4s32(v)));                          return v; }
+inline MD_Vec4S32 md_mix_4s32           (MD_Vec4S32 a, MD_Vec4S32 b, MD_F32 t)   { MD_Vec4S32 c = {(MD_S32)md_mix_1f32((MD_F32)a.x, (MD_F32)b.x, t), (MD_S32)md_mix_1f32((MD_F32)a.y, (MD_F32)b.y, t), (MD_S32)md_mix_1f32((MD_F32)a.z, (MD_F32)b.z, t), (MD_S32)md_mix_1f32((MD_F32)a.w, (MD_F32)b.w, t)}; return c; }
 
 #define md_vec4(a, b, c, d)       _Generic(a, MD_S32: md_vec_4s32,            MD_F32: md_vec_4f32           )((a), (b), (c), (d))
 #define md_add_vec4(a, b)         _Generic(a, MD_S32: md_add_4s32,            MD_F32: md_add_4f32           )((a), (b))
@@ -583,18 +583,18 @@ inline MD_Vec4S32 md_mix_4s32           (MD_Vec4S32 a, MD_Vec4S32 b, MD_F32 t) {
 
 // ==================== 3x3 Matrix ====================
 
-inline MD_Mat3x3F32 md_mat_3x3f32           (MD_F32     diag)             { MD_Mat3x3F32 res = {0};             res.v[0][0] = diag;    res.v[1][1] = diag;    res.v[2][2] = diag; return res; }
-inline MD_Mat3x3F32 md_make_translate_3x3f32(MD_Vec2F32 delta)            { MD_Mat3x3F32 mat = md_mat_3x3f32(1.f); mat.v[2][0] = delta.x; mat.v[2][1] = delta.y;                     return mat; }
-inline MD_Mat3x3F32 md_make_scale_3x3f32    (MD_Vec2F32 scale)            { MD_Mat3x3F32 mat = md_mat_3x3f32(1.f); mat.v[0][0] = scale.x; mat.v[1][1] = scale.y;                     return mat; }
+inline MD_Mat3x3F32 md_mat_3x3f32           (MD_F32     diag)                { MD_Mat3x3F32 res = {0};                res.v[0][0] = diag;    res.v[1][1] = diag;    res.v[2][2] = diag; return res; }
+inline MD_Mat3x3F32 md_make_translate_3x3f32(MD_Vec2F32 delta)               { MD_Mat3x3F32 mat = md_mat_3x3f32(1.f); mat.v[2][0] = delta.x; mat.v[2][1] = delta.y;                     return mat; }
+inline MD_Mat3x3F32 md_make_scale_3x3f32    (MD_Vec2F32 scale)               { MD_Mat3x3F32 mat = md_mat_3x3f32(1.f); mat.v[0][0] = scale.x; mat.v[1][1] = scale.y;                     return mat; }
 inline MD_Mat3x3F32 md_mul_3x3f32           (MD_Mat3x3F32 a, MD_Mat3x3F32 b) { MD_Mat3x3F32 c = {0}; for(int j = 0; j < 3; j += 1) for(int i = 0; i < 3; i += 1) { c.v[i][j] = (a.v[0][j]*b.v[i][0] + a.v[1][j] * b.v[i][1] + a.v[2][j] * b.v[i][2]); } return c; }
 
-inline MD_Mat4x4F32 md_mat_4x4f32           (MD_F32     diag)  { MD_Mat4x4F32 res = {0};             res.v[0][0] = diag;    res.v[1][1] = diag;    res.v[2][2] = diag;    res.v[3][3] = diag; return res; }
+inline MD_Mat4x4F32 md_mat_4x4f32           (MD_F32     diag)  { MD_Mat4x4F32 res = {0};                res.v[0][0] = diag;    res.v[1][1] = diag;    res.v[2][2] = diag;    res.v[3][3] = diag; return res; }
 inline MD_Mat4x4F32 md_make_translate_4x4f32(MD_Vec3F32 delta) { MD_Mat4x4F32 res = md_mat_4x4f32(1.f); res.v[3][0] = delta.x; res.v[3][1] = delta.y; res.v[3][2] = delta.z;                     return res; }
 inline MD_Mat4x4F32 md_make_scale_4x4f32    (MD_Vec3F32 scale) { MD_Mat4x4F32 res = md_mat_4x4f32(1.f); res.v[0][0] = scale.x; res.v[1][1] = scale.y; res.v[2][2] = scale.z;                     return res; }
 
 // ==================== 4x4 Matrix ====================
 
-MD_Mat4x4F32 md_make_perspective_4x4f32 (MD_F32 fov,  MD_F32 aspect_ratio,               MD_F32 near_z, MD_F32 far_z);
+MD_Mat4x4F32 md_make_perspective_4x4f32 (MD_F32 fov,  MD_F32 aspect_ratio,                     MD_F32 near_z, MD_F32 far_z);
 MD_Mat4x4F32 md_make_orthographic_4x4f32(MD_F32 left, MD_F32 right, MD_F32 bottom, MD_F32 top, MD_F32 near_z, MD_F32 far_z);
 MD_Mat4x4F32 md_make_look_at_4x4f32     (MD_Vec3F32 eye,  MD_Vec3F32 center, MD_Vec3F32 up);
 MD_Mat4x4F32 md_make_rotate_4x4f32      (MD_Vec3F32 axis, MD_F32 turns);
@@ -642,16 +642,16 @@ md_make_look_at_4x4f32(MD_Vec3F32 eye, MD_Vec3F32 center, MD_Vec3F32 up) {
 	MD_Vec3F32 f = md_normalize_3f32(md_sub_3f32(eye, center));
 	MD_Vec3F32 s = md_normalize_3f32(md_cross_3f32(f, up));
 	MD_Vec3F32 u = md_cross_3f32(s, f);
-	result.v[0][0] =  s.x;              result.v[0][1] =  u.x;              result.v[0][2] = -f.x;              result.v[0][3] = 0.0f; 
-	result.v[1][0] =  s.y;              result.v[1][1] =  u.y;              result.v[1][2] = -f.y;              result.v[1][3] = 0.0f;
-	result.v[2][0] =  s.z;              result.v[2][1] =  u.z;              result.v[2][2] = -f.z;              result.v[2][3] = 0.0f;
+	result.v[0][0] =  s.x;                 result.v[0][1] =  u.x;                 result.v[0][2] = -f.x;                 result.v[0][3] = 0.0f; 
+	result.v[1][0] =  s.y;                 result.v[1][1] =  u.y;                 result.v[1][2] = -f.y;                 result.v[1][3] = 0.0f;
+	result.v[2][0] =  s.z;                 result.v[2][1] =  u.z;                 result.v[2][2] = -f.z;                 result.v[2][3] = 0.0f;
 	result.v[3][0] = -md_dot_3f32(s, eye); result.v[3][1] = -md_dot_3f32(u, eye); result.v[3][2] =  md_dot_3f32(f, eye); result.v[3][3] = 1.0f;
 	return result;
 }
 
 inline MD_Mat4x4F32 
 md_make_rotate_4x4f32(MD_Vec3F32 axis, MD_F32 turns) {
-		axis       = md_normalize_3f32(axis);
+		   axis       = md_normalize_3f32(axis);
 	MD_F32 sin_theta  = md_sin_f32(turns);
 	MD_F32 cos_theta  = md_cos_f32(turns);
 	MD_F32 cos_value  = 1.f - cos_theta;
@@ -725,8 +725,8 @@ md_inverse_4x4f32(MD_Mat4x4F32 m) {
 	MD_Vec4F32 fac4 = { coef16, coef16, coef18, coef19 };
 	MD_Vec4F32 fac5 = { coef20, coef20, coef22, coef23 };
 	
-	MD_Vec4F32 vec0 = { m.v[1][0], m.v[0][0], m.v[0][0], m.v[0][0] };
-	MD_Vec4F32 vec1 = { m.v[1][1], m.v[0][1], m.v[0][1], m.v[0][1] };
+	MD_Vec4F32 vec0    = { m.v[1][0], m.v[0][0], m.v[0][0], m.v[0][0] };
+	MD_Vec4F32 vec1    = { m.v[1][1], m.v[0][1], m.v[0][1], m.v[0][1] };
 	MD_Vec4F32 md_vec2 = { m.v[1][2], m.v[0][2], m.v[0][2], m.v[0][2] };
 	MD_Vec4F32 md_vec3 = { m.v[1][3], m.v[0][3], m.v[0][3], m.v[0][3] };
 	
@@ -774,97 +774,97 @@ md_derotate_4x4f32(MD_Mat4x4F32 mat) {
 // ==================== 1D Ranges ====================
 
 #define md_r1u32(md_min, md_max) md_rng_1u32((md_min), (md_max))
-inline MD_Rng1U32 md_rng_1u32      (MD_U32 md_min, MD_U32 md_max)     { MD_Rng1U32 r = {md_min, md_max}; if(r.md_min > r.md_max) { md_swap(MD_U32, r.md_min, r.md_max); } return r; }
-inline MD_Rng1U32 md_shift_1u32    (MD_Rng1U32 r, MD_U32 x)     {         r.md_min += x; r.md_max += x;                                        return r; }
-inline MD_Rng1U32 md_pad_1u32      (MD_Rng1U32 r, MD_U32 x)     {         r.md_min -= x; r.md_max += x;                                        return r; }
-inline MD_U32     md_center_1u32   (MD_Rng1U32 r)            { MD_U32     c = (r.md_min + r.md_max) / 2;                                       return c; }
-inline MD_B32     md_contains_1u32 (MD_Rng1U32 r, MD_U32 x)     { MD_B32     c = (r.md_min <= x && x < r.md_max);                                 return c; }
-inline MD_U32     md_dim_1u32      (MD_Rng1U32 r)            { MD_U32     c = r.md_max - r.md_min;                                             return c; }
-inline MD_Rng1U32 md_union_1u32    (MD_Rng1U32 a, MD_Rng1U32 b) { MD_Rng1U32 c = {md_min(a.md_min, b.md_min), md_min(a.md_max, b.md_max)};              return c; }
-inline MD_Rng1U32 md_intersect_1u32(MD_Rng1U32 a, MD_Rng1U32 b) { MD_Rng1U32 c = {md_max(a.md_min, b.md_min), md_min(a.md_max, b.md_max)};              return c; }
-inline MD_U32     md_clamp_1u32    (MD_Rng1U32 r, MD_U32 v)     {         v = md_clamp(r.md_min, v, r.md_max);                                    return v; }
+inline MD_Rng1U32 md_rng_1u32      (MD_U32 md_min, MD_U32 md_max) { MD_Rng1U32 r = {md_min, md_max}; if(r.md_min > r.md_max) { md_swap(MD_U32, r.md_min, r.md_max); } return r; }
+inline MD_Rng1U32 md_shift_1u32    (MD_Rng1U32 r, MD_U32 x)       {         r.md_min += x; r.md_max += x;                                        return r; }
+inline MD_Rng1U32 md_pad_1u32      (MD_Rng1U32 r, MD_U32 x)       {         r.md_min -= x; r.md_max += x;                                        return r; }
+inline MD_U32     md_center_1u32   (MD_Rng1U32 r)                 { MD_U32     c = (r.md_min + r.md_max) / 2;                                       return c; }
+inline MD_B32     md_contains_1u32 (MD_Rng1U32 r, MD_U32 x)       { MD_B32     c = (r.md_min <= x && x < r.md_max);                                 return c; }
+inline MD_U32     md_dim_1u32      (MD_Rng1U32 r)                 { MD_U32     c = r.md_max - r.md_min;                                             return c; }
+inline MD_Rng1U32 md_union_1u32    (MD_Rng1U32 a, MD_Rng1U32 b)   { MD_Rng1U32 c = {md_min(a.md_min, b.md_min), md_min(a.md_max, b.md_max)};              return c; }
+inline MD_Rng1U32 md_intersect_1u32(MD_Rng1U32 a, MD_Rng1U32 b)   { MD_Rng1U32 c = {md_max(a.md_min, b.md_min), md_min(a.md_max, b.md_max)};              return c; }
+inline MD_U32     md_clamp_1u32    (MD_Rng1U32 r, MD_U32 v)       {         v = md_clamp(r.md_min, v, r.md_max);                                    return v; }
 
 #define md_r1s32(md_min, md_max) md_rng_1s32((md_min), (md_max))
-inline MD_Rng1S32 md_rng_1s32      (MD_S32 md_min, MD_S32 md_max)     { MD_Rng1S32 r = {md_min, md_max}; if(r.md_min > r.md_max) { md_swap(MD_S32, r.md_min, r.md_max); } return r; }
-inline MD_Rng1S32 md_shift_1s32    (MD_Rng1S32 r, MD_S32 x)     {         r.md_min += x; r.md_max += x;                                        return r; }
-inline MD_Rng1S32 md_pad_1s32      (MD_Rng1S32 r, MD_S32 x)     {         r.md_min -= x; r.md_max += x;                                        return r; }
-inline MD_S32     md_center_1s32   (MD_Rng1S32 r)            { MD_S32     c = (r.md_min+r.md_max) / 2;                                         return c; }
-inline MD_B32     md_contains_1s32 (MD_Rng1S32 r, MD_S32 x)     { MD_B32     c = (r.md_min <= x && x < r.md_max);                                 return c; }
-inline MD_S32     md_dim_1s32      (MD_Rng1S32 r)            { MD_S32     c = r.md_max-r.md_min;                                               return c; }
-inline MD_Rng1S32 md_union_1s32    (MD_Rng1S32 a, MD_Rng1S32 b) { MD_Rng1S32 c = {md_min(a.md_min, b.md_min), md_max(a.md_max, b.md_max)};              return c; }
-inline MD_Rng1S32 md_intersect_1s32(MD_Rng1S32 a, MD_Rng1S32 b) { MD_Rng1S32 c = {md_max(a.md_min, b.md_min), md_min(a.md_max, b.md_max)};              return c; }
-inline MD_S32     md_clamp_1s32    (MD_Rng1S32 r, MD_S32 v)     {         v = md_clamp(r.md_min, v, r.md_max);                                    return v; }
+inline MD_Rng1S32 md_rng_1s32      (MD_S32 md_min, MD_S32 md_max) { MD_Rng1S32 r = {md_min, md_max}; if(r.md_min > r.md_max) { md_swap(MD_S32, r.md_min, r.md_max); } return r; }
+inline MD_Rng1S32 md_shift_1s32    (MD_Rng1S32 r, MD_S32 x)       {         r.md_min += x; r.md_max += x;                                        return r; }
+inline MD_Rng1S32 md_pad_1s32      (MD_Rng1S32 r, MD_S32 x)       {         r.md_min -= x; r.md_max += x;                                        return r; }
+inline MD_S32     md_center_1s32   (MD_Rng1S32 r)                 { MD_S32     c = (r.md_min+r.md_max) / 2;                                         return c; }
+inline MD_B32     md_contains_1s32 (MD_Rng1S32 r, MD_S32 x)       { MD_B32     c = (r.md_min <= x && x < r.md_max);                                 return c; }
+inline MD_S32     md_dim_1s32      (MD_Rng1S32 r)                 { MD_S32     c = r.md_max-r.md_min;                                               return c; }
+inline MD_Rng1S32 md_union_1s32    (MD_Rng1S32 a, MD_Rng1S32 b)   { MD_Rng1S32 c = {md_min(a.md_min, b.md_min), md_max(a.md_max, b.md_max)};              return c; }
+inline MD_Rng1S32 md_intersect_1s32(MD_Rng1S32 a, MD_Rng1S32 b)   { MD_Rng1S32 c = {md_max(a.md_min, b.md_min), md_min(a.md_max, b.md_max)};              return c; }
+inline MD_S32     md_clamp_1s32    (MD_Rng1S32 r, MD_S32 v)       {         v = md_clamp(r.md_min, v, r.md_max);                                    return v; }
 
 #define md_r1u64(md_min, md_max) md_rng_1u64((md_min), (md_max))
-inline MD_Rng1U64 md_rng_1u64      (MD_U64 md_min, MD_U64 md_max)     { MD_Rng1U64 r = {md_min, md_max}; if(r.md_min > r.md_max) { md_swap(MD_U64, r.md_min, r.md_max); } return r; }
-inline MD_Rng1U64 md_shift_1u64    (MD_Rng1U64 r, MD_U64 x)     {         r.md_min += x; r.md_max += x;                                        return r; }
-inline MD_Rng1U64 md_pad_1u64      (MD_Rng1U64 r, MD_U64 x)     {         r.md_min -= x; r.md_max += x;                                        return r; }
-inline MD_U64     md_center_1u64   (MD_Rng1U64 r)            { MD_U64     c = (r.md_min + r.md_max)/2;                                         return c; }
-inline MD_B32     md_contains_1u64 (MD_Rng1U64 r, MD_U64 x)     { MD_B32     c = (r.md_min <= x && x < r.md_max);                                 return c; }
-inline MD_U64     md_dim_1u64      (MD_Rng1U64 r)            { MD_U64     c = r.md_max-r.md_min;                                               return c; }
-inline MD_Rng1U64 md_union_1u64    (MD_Rng1U64 a, MD_Rng1U64 b) { MD_Rng1U64 c = {md_min(a.md_min, b.md_min), md_max(a.md_max, b.md_max)};              return c; }
-inline MD_Rng1U64 md_intersect_1u64(MD_Rng1U64 a, MD_Rng1U64 b) { MD_Rng1U64 c = {md_max(a.md_min, b.md_min), md_min(a.md_max, b.md_max)};              return c; }
-inline MD_U64     md_clamp_1u64    (MD_Rng1U64 r, MD_U64 v)     {         v = md_clamp(r.md_min, v, r.md_max);                                    return v; }
+inline MD_Rng1U64 md_rng_1u64      (MD_U64 md_min, MD_U64 md_max) { MD_Rng1U64 r = {md_min, md_max}; if(r.md_min > r.md_max) { md_swap(MD_U64, r.md_min, r.md_max); } return r; }
+inline MD_Rng1U64 md_shift_1u64    (MD_Rng1U64 r, MD_U64 x)       {            r.md_min += x; r.md_max += x;                                        return r; }
+inline MD_Rng1U64 md_pad_1u64      (MD_Rng1U64 r, MD_U64 x)       {            r.md_min -= x; r.md_max += x;                                        return r; }
+inline MD_U64     md_center_1u64   (MD_Rng1U64 r)                 { MD_U64     c = (r.md_min + r.md_max)/2;                                         return c; }
+inline MD_B32     md_contains_1u64 (MD_Rng1U64 r, MD_U64 x)       { MD_B32     c = (r.md_min <= x && x < r.md_max);                                 return c; }
+inline MD_U64     md_dim_1u64      (MD_Rng1U64 r)                 { MD_U64     c = r.md_max-r.md_min;                                               return c; }
+inline MD_Rng1U64 md_union_1u64    (MD_Rng1U64 a, MD_Rng1U64 b)   { MD_Rng1U64 c = {md_min(a.md_min, b.md_min), md_max(a.md_max, b.md_max)};        return c; }
+inline MD_Rng1U64 md_intersect_1u64(MD_Rng1U64 a, MD_Rng1U64 b)   { MD_Rng1U64 c = {md_max(a.md_min, b.md_min), md_min(a.md_max, b.md_max)};        return c; }
+inline MD_U64     md_clamp_1u64    (MD_Rng1U64 r, MD_U64 v)       {            v = md_clamp(r.md_min, v, r.md_max);                                 return v; }
 
 #define md_r1s64(md_min, md_max) md_rng_1s64((md_min), (md_max))
-inline Rng1S64 md_rng_1s64      (MD_S64 md_min, MD_S64 md_max)     { Rng1S64 r = {md_min, md_max}; if(r.md_min > r.md_max) { md_swap(MD_S64, r.md_min, r.md_max); } return r; }
-inline Rng1S64 md_shift_1s64    (Rng1S64 r, MD_S64 x)     {         r.md_min += x; r.md_max += x;                                        return r; }
-inline Rng1S64 md_pad_1s64      (Rng1S64 r, MD_S64 x)     {         r.md_min -= x; r.md_max += x;                                        return r; }
-inline MD_S64     md_center_1s64   (Rng1S64 r)            { MD_S64     c = (r.md_min + r.md_max) / 2;                                       return c; }
-inline MD_B32     md_contains_1s64 (Rng1S64 r, MD_S64 x)     { MD_B32     c = (r.md_min <= x && x < r.md_max);                                 return c; }
-inline MD_S64     md_dim_1s64      (Rng1S64 r)            { MD_S64     c = r.md_max - r.md_min;                                             return c; }
-inline Rng1S64 md_union_1s64    (Rng1S64 a, Rng1S64 b) { Rng1S64 c = {md_min(a.md_min, b.md_min), md_max(a.md_max, b.md_max)};              return c; }
-inline Rng1S64 md_intersect_1s64(Rng1S64 a, Rng1S64 b) { Rng1S64 c = {md_max(a.md_min, b.md_min), md_min(a.md_max, b.md_max)};              return c; }
-inline MD_S64     md_clamp_1s64    (Rng1S64 r, MD_S64 v)     {         v = md_clamp(r.md_min, v, r.md_max);                                    return v;}
+inline Rng1S64 md_rng_1s64      (MD_S64 md_min, MD_S64 md_max)   { Rng1S64 r = {md_min, md_max}; if(r.md_min > r.md_max) { md_swap(MD_S64, r.md_min, r.md_max); } return r; }
+inline Rng1S64 md_shift_1s64    (Rng1S64 r, MD_S64 x)            {         r.md_min += x; r.md_max += x;                                                          return r; }
+inline Rng1S64 md_pad_1s64      (Rng1S64 r, MD_S64 x)            {         r.md_min -= x; r.md_max += x;                                                          return r; }
+inline MD_S64     md_center_1s64   (Rng1S64 r)                   { MD_S64  c = (r.md_min + r.md_max) / 2;                                                         return c; }
+inline MD_B32     md_contains_1s64 (Rng1S64 r, MD_S64 x)         { MD_B32  c = (r.md_min <= x && x < r.md_max);                                                   return c; }
+inline MD_S64     md_dim_1s64      (Rng1S64 r)                   { MD_S64  c = r.md_max - r.md_min;                                                               return c; }
+inline Rng1S64 md_union_1s64    (Rng1S64 a, Rng1S64 b)           { Rng1S64 c = {md_min(a.md_min, b.md_min), md_max(a.md_max, b.md_max)};                          return c; }
+inline Rng1S64 md_intersect_1s64(Rng1S64 a, Rng1S64 b)           { Rng1S64 c = {md_max(a.md_min, b.md_min), md_min(a.md_max, b.md_max)};                          return c; }
+inline MD_S64     md_clamp_1s64    (Rng1S64 r, MD_S64 v)         {         v = md_clamp(r.md_min, v, r.md_max);                                                   return v;}
 
 #define md_r1f32(md_min, md_max) md_rng_1f32((md_min), (md_max))
-inline Rng1F32 md_rng_1f32      (MD_F32 md_min, MD_F32 md_max)     { Rng1F32 r = {md_min, md_max}; if(r.md_min > r.md_max) { md_swap(MD_F32, r.md_min, r.md_max); } return r; }
-inline Rng1F32 md_shift_1f32    (Rng1F32 r, MD_F32 x)     {         r.md_min += x; r.md_max += x;                                        return r; }
-inline Rng1F32 md_pad_1f32      (Rng1F32 r, MD_F32 x)     {         r.md_min -= x; r.md_max += x;                                        return r; }
-inline MD_F32     md_center_1f32   (Rng1F32 r)            { MD_F32     c = (r.md_min + r.md_max) / 2;                                       return c; }
-inline MD_B32     md_contains_1f32 (Rng1F32 r, MD_F32 x)     { MD_B32     c = (r.md_min <= x && x < r.md_max);                                 return c; }
-inline MD_F32     md_dim_1f32      (Rng1F32 r)            { MD_F32     c = r.md_max - r.md_min;                                             return c; }
-inline Rng1F32 md_union_1f32    (Rng1F32 a, Rng1F32 b) { Rng1F32 c = {md_min(a.md_min, b.md_min), md_max(a.md_max, b.md_max)};              return c; }
-inline Rng1F32 md_intersect_1f32(Rng1F32 a, Rng1F32 b) { Rng1F32 c = {md_max(a.md_min, b.md_min), md_min(a.md_max, b.md_max)};              return c; }
-inline MD_F32     md_clamp_1f32    (Rng1F32 r, MD_F32 v)     {         v = md_clamp(r.md_min, v, r.md_max);                                    return v; }
+inline Rng1F32 md_rng_1f32      (MD_F32 md_min, MD_F32 md_max)   { Rng1F32 r = {md_min, md_max}; if(r.md_min > r.md_max) { md_swap(MD_F32, r.md_min, r.md_max); } return r; }
+inline Rng1F32 md_shift_1f32    (Rng1F32 r, MD_F32 x)            {         r.md_min += x; r.md_max += x;                                                          return r; }
+inline Rng1F32 md_pad_1f32      (Rng1F32 r, MD_F32 x)            {         r.md_min -= x; r.md_max += x;                                                          return r; }
+inline MD_F32     md_center_1f32   (Rng1F32 r)                   { MD_F32  c = (r.md_min + r.md_max) / 2;                                                         return c; }
+inline MD_B32     md_contains_1f32 (Rng1F32 r, MD_F32 x)         { MD_B32  c = (r.md_min <= x && x < r.md_max);                                                   return c; }
+inline MD_F32     md_dim_1f32      (Rng1F32 r)                   { MD_F32  c = r.md_max - r.md_min;                                                               return c; }
+inline Rng1F32 md_union_1f32    (Rng1F32 a, Rng1F32 b)           { Rng1F32 c = {md_min(a.md_min, b.md_min), md_max(a.md_max, b.md_max)};                          return c; }
+inline Rng1F32 md_intersect_1f32(Rng1F32 a, Rng1F32 b)           { Rng1F32 c = {md_max(a.md_min, b.md_min), md_min(a.md_max, b.md_max)};                          return c; }
+inline MD_F32     md_clamp_1f32    (Rng1F32 r, MD_F32 v)         {         v = md_clamp(r.md_min, v, r.md_max);                                                   return v; }
 
 // ==================== 2D Ranges ====================
 
 #define md_r2s16(md_min, md_max) md_rng_2s16((md_min), (md_max))
 #define md_r2s16p(x, y, z, w) md_r2s16(md_v2s16((x), (y)), md_v2s16((z), (w)))
-inline MD_Rng2S16 md_rng_2s16      (MD_Vec2S16 md_min, MD_Vec2S16 md_max) { MD_Rng2S16 r = {md_min, md_max};                                                            return r; }
-inline MD_Rng2S16 md_shift_2s16    (MD_Rng2S16 r, MD_Vec2S16 x)     {         r.md_min = md_add_2s16(r.md_min, x); r.md_max = md_add_2s16(r.md_max, x);                    return r; }
-inline MD_Rng2S16 md_pad_2s16      (MD_Rng2S16 r, MD_S16 x)         { MD_Vec2S16 xv = {x, x}; r.md_min = md_sub_2s16(r.md_min, xv); r.md_max = md_add_2s16(r.md_max, xv);     return r; }
-inline MD_Vec2S16 md_center_2s16   (MD_Rng2S16 r)                { MD_Vec2S16 c = {(MD_S16)((r.md_min.x + r.md_max.x) / 2), (MD_S16)((r.md_min.y + r.md_max.y) / 2)};      return c; }
-inline MD_B32     md_contains_2s16 (MD_Rng2S16 r, MD_Vec2S16 x)     { MD_B32     c = (r.md_min.x <= x.x && x.x < r.md_max.x && r.md_min.y <= x.y && x.y < r.md_max.y);  return c; }
-inline MD_Vec2S16 md_dim_2s16      (MD_Rng2S16 r)                { MD_Vec2S16 dim = {(MD_S16)(r.md_max.x - r.md_min.x), (MD_S16)(r.md_max.y - r.md_min.y)};                return dim; }
-inline MD_Rng2S16 md_union_2s16    (MD_Rng2S16 a, MD_Rng2S16 b)     { MD_Rng2S16 c; c.p0.x = md_min(a.md_min.x, b.md_min.x); c.p0.y = md_min(a.md_min.y, b.md_min.y); c.p1.x = md_max(a.md_max.x, b.md_max.x); c.p1.y = md_max(a.md_max.y, b.md_max.y); return c; }
-inline MD_Rng2S16 md_intersect_2s16(MD_Rng2S16 a, MD_Rng2S16 b)     { MD_Rng2S16 c; c.p0.x = md_max(a.md_min.x, b.md_min.x); c.p0.y = md_max(a.md_min.y, b.md_min.y); c.p1.x = md_min(a.md_max.x, b.md_max.x); c.p1.y = md_min(a.md_max.y, b.md_max.y); return c; }
-inline MD_Vec2S16 md_clamp_2s16    (MD_Rng2S16 r, MD_Vec2S16 v)     {         v.x = md_clamp(r.md_min.x, v.x, r.md_max.x); v.y = md_clamp(r.md_min.y, v.y, r.md_max.y); return v; }
+inline MD_Rng2S16 md_rng_2s16      (MD_Vec2S16 md_min, MD_Vec2S16 md_max) { MD_Rng2S16 r = {md_min, md_max};                                                                    return r; }
+inline MD_Rng2S16 md_shift_2s16    (MD_Rng2S16 r, MD_Vec2S16 x)           {            r.md_min = md_add_2s16(r.md_min, x); r.md_max = md_add_2s16(r.md_max, x);                return r; }
+inline MD_Rng2S16 md_pad_2s16      (MD_Rng2S16 r, MD_S16 x)               { MD_Vec2S16 xv = {x, x}; r.md_min = md_sub_2s16(r.md_min, xv); r.md_max = md_add_2s16(r.md_max, xv); return r; }
+inline MD_Vec2S16 md_center_2s16   (MD_Rng2S16 r)                         { MD_Vec2S16 c = {(MD_S16)((r.md_min.x + r.md_max.x) / 2), (MD_S16)((r.md_min.y + r.md_max.y) / 2)};  return c; }
+inline MD_B32     md_contains_2s16 (MD_Rng2S16 r, MD_Vec2S16 x)           { MD_B32     c = (r.md_min.x <= x.x && x.x < r.md_max.x && r.md_min.y <= x.y && x.y < r.md_max.y);    return c; }
+inline MD_Vec2S16 md_dim_2s16      (MD_Rng2S16 r)                         { MD_Vec2S16 dim = {(MD_S16)(r.md_max.x - r.md_min.x), (MD_S16)(r.md_max.y - r.md_min.y)};            return dim; }
+inline MD_Rng2S16 md_union_2s16    (MD_Rng2S16 a, MD_Rng2S16 b)           { MD_Rng2S16 c; c.p0.x = md_min(a.md_min.x, b.md_min.x); c.p0.y = md_min(a.md_min.y, b.md_min.y); c.p1.x = md_max(a.md_max.x, b.md_max.x); c.p1.y = md_max(a.md_max.y, b.md_max.y); return c; }
+inline MD_Rng2S16 md_intersect_2s16(MD_Rng2S16 a, MD_Rng2S16 b)           { MD_Rng2S16 c; c.p0.x = md_max(a.md_min.x, b.md_min.x); c.p0.y = md_max(a.md_min.y, b.md_min.y); c.p1.x = md_min(a.md_max.x, b.md_max.x); c.p1.y = md_min(a.md_max.y, b.md_max.y); return c; }
+inline MD_Vec2S16 md_clamp_2s16    (MD_Rng2S16 r, MD_Vec2S16 v)           {            v.x = md_clamp(r.md_min.x, v.x, r.md_max.x); v.y = md_clamp(r.md_min.y, v.y, r.md_max.y); return v; }
 
 #define md_r2s32(md_min, md_max) md_rng_2s32((md_min), (md_max))
 #define md_r2s32p(x, y, z, w) md_r2s32(md_v2s32((x), (y)), md_v2s32((z), (w)))
-inline MD_Rng2S32 md_rng_2s32      (MD_Vec2S32 md_min, MD_Vec2S32 md_max) { MD_Rng2S32 r = {md_min, md_max};                                                           return r; }
-inline MD_Rng2S32 md_shift_2s32    (MD_Rng2S32 r, MD_Vec2S32 x)     {         r.md_min = md_add_2s32(r.md_min, x); r.md_max = md_add_2s32(r.md_max, x);                   return r; }
-inline MD_Rng2S32 md_pad_2s32      (MD_Rng2S32 r, MD_S32 x)         { MD_Vec2S32 xv = {x, x}; r.md_min = md_sub_2s32(r.md_min, xv); r.md_max = md_add_2s32(r.md_max, xv);    return r; }
-inline MD_Vec2S32 md_center_2s32   (MD_Rng2S32 r)                { MD_Vec2S32 c = {(r.md_min.x + r.md_max.x) / 2, (r.md_min.y + r.md_max.y) / 2};                   return c; }
-inline MD_B32     md_contains_2s32 (MD_Rng2S32 r, MD_Vec2S32 x)     { MD_B32     c = (r.md_min.x <= x.x && x.x < r.md_max.x && r.md_min.y <= x.y && x.y < r.md_max.y); return c; }
-inline MD_Vec2S32 md_dim_2s32      (MD_Rng2S32 r)                { MD_Vec2S32 dim = {r.md_max.x - r.md_min.x, r.md_max.y - r.md_min.y};                             return dim; }
-inline MD_Rng2S32 md_union_2s32    (MD_Rng2S32 a, MD_Rng2S32 b)     { MD_Rng2S32 c; c.p0.x = md_min(a.md_min.x, b.md_min.x); c.p0.y = md_min(a.md_min.y, b.md_min.y); c.p1.x = md_max(a.md_max.x, b.md_max.x); c.p1.y = md_max(a.md_max.y, b.md_max.y); return c; }
-inline MD_Rng2S32 md_intersect_2s32(MD_Rng2S32 a, MD_Rng2S32 b)     { MD_Rng2S32 c; c.p0.x = md_max(a.md_min.x, b.md_min.x); c.p0.y = md_max(a.md_min.y, b.md_min.y); c.p1.x = md_min(a.md_max.x, b.md_max.x); c.p1.y = md_min(a.md_max.y, b.md_max.y); return c; }
-inline MD_Vec2S32 md_clamp_2s32    (MD_Rng2S32 r, MD_Vec2S32 v)     {         v.x = md_clamp(r.md_min.x, v.x, r.md_max.x); v.y = md_clamp(r.md_min.y, v.y, r.md_max.y); return v; }
+inline MD_Rng2S32 md_rng_2s32      (MD_Vec2S32 md_min, MD_Vec2S32 md_max) { MD_Rng2S32 r = {md_min, md_max};                                                                     return r; }
+inline MD_Rng2S32 md_shift_2s32    (MD_Rng2S32 r, MD_Vec2S32 x)           {            r.md_min = md_add_2s32(r.md_min, x); r.md_max = md_add_2s32(r.md_max, x);                 return r; }
+inline MD_Rng2S32 md_pad_2s32      (MD_Rng2S32 r, MD_S32 x)               { MD_Vec2S32 xv  = {x, x}; r.md_min = md_sub_2s32(r.md_min, xv); r.md_max = md_add_2s32(r.md_max, xv); return r; }
+inline MD_Vec2S32 md_center_2s32   (MD_Rng2S32 r)                         { MD_Vec2S32 c   = {(r.md_min.x + r.md_max.x) / 2, (r.md_min.y + r.md_max.y) / 2};                     return c; }
+inline MD_B32     md_contains_2s32 (MD_Rng2S32 r, MD_Vec2S32 x)           { MD_B32     c   = (r.md_min.x <= x.x && x.x < r.md_max.x && r.md_min.y <= x.y && x.y < r.md_max.y);   return c; }
+inline MD_Vec2S32 md_dim_2s32      (MD_Rng2S32 r)                         { MD_Vec2S32 dim = {r.md_max.x - r.md_min.x, r.md_max.y - r.md_min.y};                                 return dim; }
+inline MD_Rng2S32 md_union_2s32    (MD_Rng2S32 a, MD_Rng2S32 b)           { MD_Rng2S32 c; c.p0.x = md_min(a.md_min.x, b.md_min.x); c.p0.y = md_min(a.md_min.y, b.md_min.y); c.p1.x = md_max(a.md_max.x, b.md_max.x); c.p1.y = md_max(a.md_max.y, b.md_max.y); return c; }
+inline MD_Rng2S32 md_intersect_2s32(MD_Rng2S32 a, MD_Rng2S32 b)           { MD_Rng2S32 c; c.p0.x = md_max(a.md_min.x, b.md_min.x); c.p0.y = md_max(a.md_min.y, b.md_min.y); c.p1.x = md_min(a.md_max.x, b.md_max.x); c.p1.y = md_min(a.md_max.y, b.md_max.y); return c; }
+inline MD_Vec2S32 md_clamp_2s32    (MD_Rng2S32 r, MD_Vec2S32 v)           {            v.x = md_clamp(r.md_min.x, v.x, r.md_max.x); v.y = md_clamp(r.md_min.y, v.y, r.md_max.y); return v; }
 
 #define md_r2s64(md_min, md_max) md_rng_2s64((md_min), (md_max))
 #define md_r2s64p(x, y, z, w) md_r2s64(md_v2s64((x), (y)), md_v2s64((z), (w)))
-inline MD_Rng2S64 md_rng_2s64      (MD_Vec2S64 md_min, MD_Vec2S64 md_max) { MD_Rng2S64 r = {md_min, md_max};                                                           return r; }
-inline MD_Rng2S64 md_shift_2s64    (MD_Rng2S64 r, MD_Vec2S64 x)     {         r.md_min = md_add_2s64(r.md_min, x); r.md_max = md_add_2s64(r.md_max, x);                   return r; }
-inline MD_Rng2S64 md_pad_2s64      (MD_Rng2S64 r, MD_S64 x)         { MD_Vec2S64 xv = {x, x}; r.md_min = md_sub_2s64(r.md_min, xv); r.md_max = md_add_2s64(r.md_max, xv);    return r; }
-inline MD_Vec2S64 md_center_2s64   (MD_Rng2S64 r)                { MD_Vec2S64 c = {(r.md_min.x + r.md_max.x) / 2, (r.md_min.y + r.md_max.y) / 2};                   return c; }
-inline MD_B32     md_contains_2s64 (MD_Rng2S64 r, MD_Vec2S64 x)     { MD_B32     c = (r.md_min.x <= x.x && x.x < r.md_max.x && r.md_min.y <= x.y && x.y < r.md_max.y); return c; }
-inline MD_Vec2S64 md_dim_2s64      (MD_Rng2S64 r)                { MD_Vec2S64 dim = {r.md_max.x - r.md_min.x, r.md_max.y - r.md_min.y};                             return dim; }
-inline MD_Rng2S64 md_union_2s64    (MD_Rng2S64 a, MD_Rng2S64 b)     { MD_Rng2S64 c; c.p0.x = md_min(a.md_min.x, b.md_min.x); c.p0.y = md_min(a.md_min.y, b.md_min.y); c.p1.x = md_max(a.md_max.x, b.md_max.x); c.p1.y = md_max(a.md_max.y, b.md_max.y); return c; }
-inline MD_Rng2S64 md_intersect_2s64(MD_Rng2S64 a, MD_Rng2S64 b)     { MD_Rng2S64 c; c.p0.x = md_max(a.md_min.x, b.md_min.x); c.p0.y = md_max(a.md_min.y, b.md_min.y); c.p1.x = md_min(a.md_max.x, b.md_max.x); c.p1.y = md_min(a.md_max.y, b.md_max.y); return c; }
-inline MD_Vec2S64 md_clamp_2s64    (MD_Rng2S64 r, MD_Vec2S64 v)     {         v.x = md_clamp(r.md_min.x, v.x, r.md_max.x); v.y = md_clamp(r.md_min.y, v.y, r.md_max.y); return v; }
+inline MD_Rng2S64 md_rng_2s64      (MD_Vec2S64 md_min, MD_Vec2S64 md_max) { MD_Rng2S64 r = {md_min, md_max};                                                                    return r; }
+inline MD_Rng2S64 md_shift_2s64    (MD_Rng2S64 r, MD_Vec2S64 x)           {            r.md_min = md_add_2s64(r.md_min, x); r.md_max = md_add_2s64(r.md_max, x);                return r; }
+inline MD_Rng2S64 md_pad_2s64      (MD_Rng2S64 r, MD_S64 x)               { MD_Vec2S64 xv = {x, x}; r.md_min = md_sub_2s64(r.md_min, xv); r.md_max = md_add_2s64(r.md_max, xv); return r; }
+inline MD_Vec2S64 md_center_2s64   (MD_Rng2S64 r)                         { MD_Vec2S64 c = {(r.md_min.x + r.md_max.x) / 2, (r.md_min.y + r.md_max.y) / 2};                      return c; }
+inline MD_B32     md_contains_2s64 (MD_Rng2S64 r, MD_Vec2S64 x)           { MD_B32     c = (r.md_min.x <= x.x && x.x < r.md_max.x && r.md_min.y <= x.y && x.y < r.md_max.y);    return c; }
+inline MD_Vec2S64 md_dim_2s64      (MD_Rng2S64 r)                         { MD_Vec2S64 dim = {r.md_max.x - r.md_min.x, r.md_max.y - r.md_min.y};                                return dim; }
+inline MD_Rng2S64 md_union_2s64    (MD_Rng2S64 a, MD_Rng2S64 b)           { MD_Rng2S64 c; c.p0.x = md_min(a.md_min.x, b.md_min.x); c.p0.y = md_min(a.md_min.y, b.md_min.y); c.p1.x = md_max(a.md_max.x, b.md_max.x); c.p1.y = md_max(a.md_max.y, b.md_max.y); return c; }
+inline MD_Rng2S64 md_intersect_2s64(MD_Rng2S64 a, MD_Rng2S64 b)           { MD_Rng2S64 c; c.p0.x = md_max(a.md_min.x, b.md_min.x); c.p0.y = md_max(a.md_min.y, b.md_min.y); c.p1.x = md_min(a.md_max.x, b.md_max.x); c.p1.y = md_min(a.md_max.y, b.md_max.y); return c; }
+inline MD_Vec2S64 md_clamp_2s64    (MD_Rng2S64 r, MD_Vec2S64 v)           {            v.x = md_clamp(r.md_min.x, v.x, r.md_max.x); v.y = md_clamp(r.md_min.y, v.y, r.md_max.y); return v; }
 
 ////////////////////////////////
 //~ rjf: Miscellaneous Ops
@@ -967,15 +967,15 @@ md_u32_from_rgba(MD_Vec4F32 rgba)
 ////////////////////////////////
 //~ rjf: List Type Functions
 
-void         md_rng1s64_list_push__arena           (MD_Arena*        arena, MD_Rng1S64List* list, Rng1S64 rng);
-void         md_rng1s64_list_push__ainfo           (MD_AllocatorInfo ainfo, MD_Rng1S64List* list, Rng1S64 rng);
+void            md_rng1s64_list_push__arena           (MD_Arena*        arena, MD_Rng1S64List* list, Rng1S64 rng);
+void            md_rng1s64_list_push__ainfo           (MD_AllocatorInfo ainfo, MD_Rng1S64List* list, Rng1S64 rng);
 MD_Rng1S64Array md_rng1s64_array_from_list_push__arena(MD_Arena*        arena, MD_Rng1S64List* list);
 MD_Rng1S64Array md_rng1s64_array_from_list_push__ainfo(MD_AllocatorInfo ainfo, MD_Rng1S64List* list);
 
-#define rng1s64_list_push(allocator, list, rng)       _Generic(allocator, MD_Arena*: md_rng1s64_list_push__arena,            MD_AllocatorInfo: md_rng1s64_list_push__ainfo,            default: md_assert_generic_sel_fail) md_generic_call(allocator, list, rng)
+#define rng1s64_list_push(allocator, list, rng)          _Generic(allocator, MD_Arena*: md_rng1s64_list_push__arena,            MD_AllocatorInfo: md_rng1s64_list_push__ainfo,            default: md_assert_generic_sel_fail) md_generic_call(allocator, list, rng)
 #define md_rng1s64_array_from_list_push(allocator, list) _Generic(allocator, MD_Arena*: md_rng1s64_array_from_list_push__arena, MD_AllocatorInfo: md_rng1s64_array_from_list_push__ainfo, default: md_assert_generic_sel_fail) md_generic_call(allocator, list)
 
-md_force_inline void         md_rng1s64_list_push__arena           (MD_Arena* arena, MD_Rng1S64List* list, Rng1S64 rng) {        md_rng1s64_list_push__ainfo           (md_arena_allocator(arena), list, rng); }
+md_force_inline void            md_rng1s64_list_push__arena           (MD_Arena* arena, MD_Rng1S64List* list, Rng1S64 rng) {        md_rng1s64_list_push__ainfo           (md_arena_allocator(arena), list, rng); }
 md_force_inline MD_Rng1S64Array md_rng1s64_array_from_list_push__arena(MD_Arena* arena, MD_Rng1S64List* list)              { return md_rng1s64_array_from_list_push__ainfo(md_arena_allocator(arena), list); }
 
 inline void
@@ -989,10 +989,10 @@ md_rng1s64_list_alloc(MD_AllocatorInfo ainfo, MD_Rng1S64List* list, Rng1S64 rng)
 inline MD_Rng1S64Array
 md_rng1s64_array_from_list_alloc(MD_AllocatorInfo ainfo, MD_Rng1S64List* list) {
 	MD_Rng1S64Array 
-	arr       = {0};
-	arr.count = list->count;
-	arr.v     = md_alloc_array_no_zero(ainfo, Rng1S64, arr.count);
-	MD_U64 idx   = 0;
+	arr        = {0};
+	arr.count  = list->count;
+	arr.v      = md_alloc_array_no_zero(ainfo, Rng1S64, arr.count);
+	MD_U64 idx = 0;
 	for (MD_Rng1S64Node* n = list->first; n != 0; n = n->next) {
 		arr.v[idx] = n->v;
 		idx       += 1;

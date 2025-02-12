@@ -48,9 +48,9 @@ struct MD_Log
 ////////////////////////////////
 //~ rjf: MD_Log Creation/Selection
 
-       MD_Log* md_log_alloc(MD_AllocatorInfo ainfo, MD_U64 md_arena_block_size);
-       void md_log_release(MD_Log* log);
-MD_API void md_log_select (MD_Log* log);
+		MD_Log* md_log_alloc(MD_AllocatorInfo ainfo, MD_U64 md_arena_block_size);
+       void     md_log_release(MD_Log* log);
+MD_API void     md_log_select (MD_Log* log);
 
 inline MD_Log*
 md_log_alloc(MD_AllocatorInfo ainfo, MD_U64 md_arena_block_size) {

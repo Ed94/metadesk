@@ -54,7 +54,7 @@ md_str8_find_needle(MD_String8 string, MD_U64 start_pos, MD_String8 needle, MD_S
 	MD_U8* stop_p      = string.str + stop_offset;
 	if (needle.size > 0)
 	{
-		MD_U8*              md_string_opl     = string.str + string.size;
+		MD_U8*              md_string_opl  = string.str + string.size;
 		MD_String8          needle_tail    = md_str8_skip(needle, 1);
 		MD_StringMatchFlags adjusted_flags = flags | MD_StringMatchFlag_RightSideSloppy;
 		MD_U8 needle_first_char_adjusted   = needle.str[0];
@@ -292,7 +292,7 @@ md_str8_from_u64__ainfo(MD_AllocatorInfo ainfo, MD_U64 u64, MD_U32 radix, MD_U8 
 					needed_digits += 1;
 				}
 			}
-			    needed_leading_0s = (min_digits > needed_digits) ? min_digits - needed_digits : 0;
+			       needed_leading_0s = (min_digits > needed_digits) ? min_digits - needed_digits : 0;
 			MD_U64 needed_separators = 0;
 			if (digit_group_separator != 0)
 			{
@@ -407,10 +407,10 @@ md_f64_from_str8(MD_String8 string)
 
 void
 md_str8_list_concat_in_place(MD_String8List* list, MD_String8List* to_push) {
-	if(to_push->md_node_count != 0) 
+	if(to_push->node_count != 0) 
 	{
 		if (list->last) {
-			list->md_node_count += to_push->md_node_count;
+			list->node_count += to_push->node_count;
 			list->total_size += to_push->total_size;
 			list->last->next  = to_push->first;
 			list->last        = to_push->last;
@@ -441,7 +441,7 @@ md_str8_list_aligner__ainfo(MD_AllocatorInfo ainfo, MD_String8List* list, MD_U64
 	md_assert(increase_size <= md_array_count(zeroes_buffer));
 
 	md_sll_queue_push(list->first, list->last, node);
-	list->md_node_count += 1;
+	list->node_count += 1;
 	list->total_size  = new_size;
 	node->string.str  = (MD_U8*)zeroes_buffer;
 	node->string.size = increase_size;
@@ -506,8 +506,8 @@ md_str8_list_join__ainfo(MD_AllocatorInfo ainfo, MD_String8List* list, MD_String
 		md_memory_copy_struct(&join, optional_params);
 	}
 	MD_U64        sep_count = 0;
-	if (list->md_node_count > 0){
-		sep_count = list->md_node_count - 1;
+	if (list->node_count > 0){
+		sep_count = list->node_count - 1;
 	}
 	
 	MD_String8 result;
@@ -1079,7 +1079,7 @@ md_try_guid_from_string(MD_String8 string, MD_Guid* md_guid_out)
 	MD_B32 is_parsed = 0;
 
 	MD_String8List list = md_str8_split_by_string_chars(scratch.arena, string, md_str8_lit("-"), MD_StringSplitFlag_KeepEmpties);
-	if(list.md_node_count == 5)
+	if(list.node_count == 5)
 	{
 		MD_String8 data1_str    = list.first->string;
 		MD_String8 data2_str    = list.first->next->string;
@@ -1294,7 +1294,7 @@ md_wrapped_lines_from_string__ainfo(MD_AllocatorInfo ainfo, MD_String8 string, M
 			MD_String8 substr          = md_str8_substr(string, candidate_line_range);
 			MD_U64     width_this_line = max_width-wrapped_indent_level;
 
-			if (list.md_node_count == 0) {
+			if (list.node_count == 0) {
 				width_this_line = first_line_max_width;
 			}
 			if (substr.size > width_this_line) 
@@ -1355,7 +1355,7 @@ md_fuzzy_match_find__ainfo(MD_AllocatorInfo ainfo, MD_String8 needle, MD_String8
 	MD_String8List needles = md_str8_split(scratch.arena, needle, (MD_U8*)" ", 1, 0);
 	MD_FuzzyMatchRangeList 
 	result = {0};
-	result.needle_part_count = needles.md_node_count;
+	result.needle_part_count = needles.node_count;
 	for(MD_String8Node* needle_n = needles.first; needle_n != 0; needle_n = needle_n->next)
 	{
 		MD_U64 find_pos = 0;
@@ -1511,10 +1511,10 @@ MD_U64
 md_str8_deserial_read_cstr(MD_String8 string, MD_U64 off, MD_String8* cstr_out) {
 	MD_U64 cstr_size = 0;
 	if (off < string.size) {
-		MD_U8* ptr   = string.str + off;
-		MD_U8* cap   = string.str + string.size;
-		*cstr_out = md_str8_cstring_capped(ptr, cap);
-		cstr_size = (cstr_out->size + 1);
+		MD_U8* ptr  = string.str + off;
+		MD_U8* cap  = string.str + string.size;
+		*cstr_out   = md_str8_cstring_capped(ptr, cap);
+		 cstr_size  = (cstr_out->size + 1);
 	}
 	return cstr_size;
 }

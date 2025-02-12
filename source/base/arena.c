@@ -68,12 +68,12 @@ md_arena_push(MD_Arena* arena, MD_SSIZE size, MD_SSIZE align)
 
 		MD_B32 vmem_chain  = is_virtual && (arena->flags & MD_ArenaFlag_NoChainVirtual);
 		if (vmem_chain) {
-			MD_SPTR const varena_header_size = md_align_pow2(size_of(MD_VArena), MD_DEFAULT_MEMORY_ALIGNMENT);
-			MD_SPTR const md_arena_block_size   = MD_VARENA_DEFAULT_RESERVE - varena_header_size;
+			MD_SPTR const varena_header_size  = md_align_pow2(size_of(MD_VArena), MD_DEFAULT_MEMORY_ALIGNMENT);
+			MD_SPTR const md_arena_block_size = MD_VARENA_DEFAULT_RESERVE - varena_header_size;
 
 			MD_VArena* vcurrent = md_rcast(MD_VArena*, arena->backing.data);
 
-			MD_VArena* new_vm    = md_varena_alloc(.reserve_size = vcurrent->reserve, .commit_size = vcurrent->commit_size);
+			MD_VArena* new_vm = md_varena_alloc(.reserve_size = vcurrent->reserve, .commit_size = vcurrent->commit_size);
 			        new_block = md_arena_alloc(.backing = md_varena_allocator(new_vm), .block_size = md_arena_block_size);
 		}
 		else {

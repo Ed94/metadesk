@@ -44,7 +44,7 @@ struct MD_CmdLine
        MD_U64          md_cmd_line_hash_from_string(MD_String8 string);
 MD_API MD_CmdLineOpt** md_cmd_line_slot_from_string(MD_CmdLine*        cmd_line, MD_String8 string);
 MD_API MD_CmdLineOpt*  md_cmd_line_opt_from_slot   (MD_CmdLineOpt**    slot,     MD_String8 string);
-       void         md_cmd_line_push_opt        (MD_CmdLineOptList* list,     MD_CmdLineOpt* var);
+       void            md_cmd_line_push_opt        (MD_CmdLineOptList* list,     MD_CmdLineOpt* var);
 
 MD_CmdLineOpt*  md_cmd_line_opt_from_string (MD_CmdLine* cmd_line, MD_String8 name);
 MD_String8List  md_cmd_line_strings         (MD_CmdLine* cmd_line, MD_String8 name);
@@ -58,16 +58,16 @@ inline MD_CmdLine      md_cmd_line_from_string_list__arena(MD_Arena*        aren
 MD_API MD_CmdLine      md_cmd_line_from_string_list__ainfo(MD_AllocatorInfo ainfo, MD_String8List arguments);
 
 #define md_cmd_line_insert_opt(allocator, cmd_line, string, values) \
-_Generic(allocator,                                              \
-	MD_Arena*:        md_cmd_line_insert_opt__arena,                   \
-	MD_AllocatorInfo: md_cmd_line_insert_opt__ainfo,                   \
-	default:       md_assert_generic_sel_fail                       \
+_Generic(allocator,                                                 \
+	MD_Arena*:        md_cmd_line_insert_opt__arena,                \
+	MD_AllocatorInfo: md_cmd_line_insert_opt__ainfo,                \
+	default:          md_assert_generic_sel_fail                    \
 ) md_generic_call(allocator, cmd_line, string, values)
 
 #define md_cmd_line_from_string_list(allocator, arguments) \
-_Generic(allocator,                                     \
-	MD_Arena*:        md_cmd_line_from_string_list__arena,    \
-	MD_AllocatorInfo: md_cmd_line_from_string_list__ainfo,    \
+_Generic(allocator,                                        \
+	MD_Arena*:        md_cmd_line_from_string_list__arena, \
+	MD_AllocatorInfo: md_cmd_line_from_string_list__ainfo, \
 	default:       md_assert_generic_sel_fail              \
 ) md_generic_call(allocator, arguments)
 
@@ -81,7 +81,7 @@ md_cmd_line_hash_from_string(MD_String8 string) {
 }
 
 md_force_inline MD_CmdLineOpt* md_cmd_line_insert_opt__arena      (MD_Arena* arena, MD_CmdLine* cmd_line, MD_String8 string, MD_String8List values) { return md_cmd_line_insert_opt__ainfo      (md_arena_allocator(arena), cmd_line, string, values); }
-md_force_inline MD_CmdLine     md_cmd_line_from_string_list__arena(MD_Arena* arena, MD_String8List command_line)                              { return md_cmd_line_from_string_list__ainfo(md_arena_allocator(arena), command_line); }
+md_force_inline MD_CmdLine     md_cmd_line_from_string_list__arena(MD_Arena* arena, MD_String8List command_line)                                    { return md_cmd_line_from_string_list__ainfo(md_arena_allocator(arena), command_line); }
 
 inline MD_CmdLineOpt* md_cmd_line_opt_from_string(MD_CmdLine *cmd_line, MD_String8 name) { return md_cmd_line_opt_from_slot(md_cmd_line_slot_from_string(cmd_line, name), name); }
 inline MD_B32         md_cmd_line_has_flag       (MD_CmdLine *cmd_line, MD_String8 name) { MD_CmdLineOpt *var = md_cmd_line_opt_from_string(cmd_line, name); return(var != 0); }

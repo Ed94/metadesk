@@ -138,7 +138,7 @@ md_heap_allocator_proc( void* allocator_data, MD_AllocatorMode mode, MD_SSIZE si
 		case MD_AllocatorMode_Resize:
 		{
 			MD_AllocatorInfo a = md_heap();
-			ptr             = md_default_resize_align( a, old_memory, old_size, size, alignment );
+			ptr                = md_default_resize_align( a, old_memory, old_size, size, alignment );
 		}
 		break;
 
@@ -267,7 +267,7 @@ md_varena__alloc(MD_VArenaParams params)
 	MD_SPTR header_size = md_align_pow2(size_of(MD_VArena), MD_DEFAULT_MEMORY_ALIGNMENT);
 	md_asan_unpoison_memory_region(base, header_size);
 
-	MD_VArena* vm        = md_rcast(MD_VArena*, base);
+	MD_VArena* vm     = md_rcast(MD_VArena*, base);
 	vm->reserve_start = md_rcast(MD_SPTR,    base) + header_size;
 	vm->reserve       = reserve_size;
 	vm->commit_size   = params.commit_size;
@@ -321,7 +321,7 @@ md_varena_allocator_proc(void* allocator_data, MD_AllocatorMode mode, MD_SSIZE r
 				} 	 
 				if (next_commit_size) {
 					void* next_commit_start = md_rcast(void*, md_rcast(MD_UPTR, vm) + vm->committed);
-					MD_B32   commit_result     = md_os_commit(next_commit_start, next_commit_size);
+					MD_B32   commit_result  = md_os_commit(next_commit_start, next_commit_size);
 					if (commit_result == false) {
 						break;
 					}
@@ -373,7 +373,7 @@ md_varena_allocator_proc(void* allocator_data, MD_AllocatorMode mode, MD_SSIZE r
 			MD_B32  needs_more_commited = commit_left < size_to_allocate;
 			if (needs_more_commited) 
 			{
-				MD_SPTR reserve_left     = vm->reserve - vm->committed;
+				MD_SPTR reserve_left = vm->reserve - vm->committed;
 				MD_UPTR next_commit_size;
 				if (vm->flags & MD_VArenaFlag_LargePages) {
 					next_commit_size = reserve_left > 0 ? vm->commit_size : md_scast(MD_UPTR, md_align_pow2( -reserve_left, md_os_get_system_info()->large_page_size));
@@ -430,7 +430,7 @@ farena_allocator_proc(void* allocator_data, MD_AllocatorMode mode, MD_SSIZE size
 			}
 
 			allocated_mem = md_scast(void*, end);
-			arena->used  += total_size;
+			arena->used += total_size;
 		}
 		break;
 
@@ -462,8 +462,8 @@ farena_allocator_proc(void* allocator_data, MD_AllocatorMode mode, MD_SSIZE size
 			MD_B32 requested_shrink = size >= old_size;
 			if (requested_shrink) {
 
-				arena->used    -= size;
-				allocated_mem   = old_memory;
+				arena->used  -= size;
+				allocated_mem = old_memory;
 				break;
 			}
 

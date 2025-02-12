@@ -36,9 +36,9 @@ md_cmd_line_opt_from_slot(MD_CmdLineOpt** slot, MD_String8 string) {
 MD_CmdLineOpt*
 md_cmd_line_insert_opt__ainfo(MD_AllocatorInfo ainfo, MD_CmdLine* cmd_line, MD_String8 string, MD_String8List values)
 {
-	MD_CmdLineOpt *var = 0;
-	MD_CmdLineOpt **slot = md_cmd_line_slot_from_string(cmd_line, string);
-	MD_CmdLineOpt *existing_var = md_cmd_line_opt_from_slot(slot, string);
+	MD_CmdLineOpt*  var          = 0;
+	MD_CmdLineOpt** slot         = md_cmd_line_slot_from_string(cmd_line, string);
+	MD_CmdLineOpt*  existing_var = md_cmd_line_opt_from_slot(slot, string);
 	if(existing_var != 0)
 	{
 		var = existing_var;
@@ -62,8 +62,6 @@ md_cmd_line_insert_opt__ainfo(MD_AllocatorInfo ainfo, MD_CmdLine* cmd_line, MD_S
 	}
 	return var;
 }
-
-
 
 MD_CmdLine
 md_cmd_line_from_string_list__ainfo(MD_AllocatorInfo ainfo, MD_String8List command_line)
@@ -89,7 +87,7 @@ md_cmd_line_from_string_list__ainfo(MD_AllocatorInfo ainfo, MD_String8List comma
 		// a flag option. All arguments after a single "--" (with no trailing string
 		// on the command line will be considered as input files.
 		MD_B32 is_option = 1;
-		if(after_passthrough_option == 0)
+		if (after_passthrough_option == 0)
 		{
 			if (md_str8_match(node->string, md_str8_lit("--"), 0)) {
 				after_passthrough_option = 1;
@@ -111,7 +109,7 @@ md_cmd_line_from_string_list__ainfo(MD_AllocatorInfo ainfo, MD_String8List comma
 		}
 		
 		// NOTE(rjf): This string is an option.
-		if(is_option)
+		if (is_option)
 		{
 			MD_B32     has_arguments           = 0;
 			MD_U64     arg_signifier_position1 = md_str8_find_needle(option_name, 0, md_str8_lit(":"), 0);

@@ -43,7 +43,7 @@
 // Expands to ',' if it can find (type): (function) <comma_operator: ',' >
 // Where md_generic_sel_entry_comma_delimiter is specifically looking for that <comma> ,
 #define md_if_generic_selector_defined_include_slot( slot_exp ) md_generic_sel_entry_comma_delimiter( slot_exp, md_generic_sel_entry_type( slot_exp, ): md_generic_sel_entry_function( slot_exp, ) MD_COMMA_OPERATOR, , )
-//                                                            ^ Selects the comma                          ^ is the type                        ^ is the function                       ^ Insert a comma
+//                                                                   ^ Selects the comma                          ^ is the type                            ^ is the function                         ^ Insert a comma
 // The slot won't exist if that comma is not found.
 #endif
 
@@ -58,12 +58,12 @@ MD_UNRESOLVED_GENERIC_SELECTION const md_assert_generic_sel_fail = {0};
 
 // Below are generated on demand for an overlaod depdendent on a type:
 // ----------------------------------------------------------------------------------------------------------------------------------
-#define function_generic_example( selector_arg ) _Generic(                   \
-(selector_arg), /* Select Via Expression*/                                   \
-  /* Extendibility slots: */                                                 \
+#define function_generic_example( selector_arg ) _Generic(                         \
+(selector_arg), /* Select Via Expression*/                                         \
+  /* Extendibility slots: */                                                       \
 	md_if_generic_selector_defined_include_slot( MD_GENERIC_SLOT_1__function_sig ) \
-	md_if_generic_selector_defined_include_slot( GENERIC_SLOT_2__function_sig ) \
-	default: md_assert_generic_sel_fail                                         \
+	md_if_generic_selector_defined_include_slot( GENERIC_SLOT_2__function_sig )    \
+	default: md_assert_generic_sel_fail                                            \
 ) md_generic_call( selector_arg )
 // ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -80,46 +80,46 @@ MD_UNRESOLVED_GENERIC_SELECTION const md_assert_generic_sel_fail = {0};
 size_t md_generic_example_hash__P_long( long val ) { return val * 2654435761ull; }
 
 // To add support for long long:
-#define GENERIC_SLOT_2__example_hash  long long, md_generic_example_hash__P_long_long
+#define MD_GENERIC_SLOT_2__example_hash  long long, md_generic_example_hash__P_long_long
 size_t md_generic_example_hash__P_long_long( long long val ) { return val * 2654435761ull; }
 
 // If using an Editor with support for syntax hightlighting macros:
 // MD_GENERIC_SLOT_1__example_hash and GENERIC_SLOT_2__example_hash should show color highlighting indicating the slot is enabled,
 // or, "defined" for usage during the compilation pass that handles the _Generic instrinsic.
-#define generic_example_hash( function_arguments ) _Generic(                 \
-(function_arguments), /* Select Via Expression*/                             \
-  /* Extendibility slots: */                                                 \
+#define generic_example_hash( function_arguments ) _Generic(                       \
+(function_arguments), /* Select Via Expression*/                                   \
+  /* Extendibility slots: */                                                       \
 	md_if_generic_selector_defined_include_slot( MD_GENERIC_SLOT_1__example_hash ) \
-	md_if_generic_selector_defined_include_slot( GENERIC_SLOT_2__example_hash ) \
-	md_if_generic_selector_defined_include_slot( GENERIC_SLOT_3__example_hash ) \
-	md_if_generic_selector_defined_include_slot( GENERIC_SLOT_4__example_hash ) \
-	md_if_generic_selector_defined_include_slot( GENERIC_SLOT_5__example_hash ) \
-	md_if_generic_selector_defined_include_slot( GENERIC_SLOT_6__example_hash ) \
-	md_if_generic_selector_defined_include_slot( GENERIC_SLOT_7__example_hash ) \
-	md_if_generic_selector_defined_include_slot( GENERIC_SLOT_8__example_hash ) \
-	default: md_assert_generic_sel_fail                                         \
+	md_if_generic_selector_defined_include_slot( MD_GENERIC_SLOT_2__example_hash ) \
+	md_if_generic_selector_defined_include_slot( MD_GENERIC_SLOT_3__example_hash ) \
+	md_if_generic_selector_defined_include_slot( MD_GENERIC_SLOT_4__example_hash ) \
+	md_if_generic_selector_defined_include_slot( MD_GENERIC_SLOT_5__example_hash ) \
+	md_if_generic_selector_defined_include_slot( MD_GENERIC_SLOT_6__example_hash ) \
+	md_if_generic_selector_defined_include_slot( MD_GENERIC_SLOT_7__example_hash ) \
+	md_if_generic_selector_defined_include_slot( MD_GENERIC_SLOT_8__example_hash ) \
+	default: md_assert_generic_sel_fail                                            \
 ) md_generic_call( function_arguments )
 
 // Additional Variations:
 
 // If the function takes more than one argument the following is used:
-#define md_function_generic_example_varadic( selector_arg, ... ) _Generic(       \
-(selector_arg),                                                               \
-	md_if_generic_selector_defined_include_slot( MD_GENERIC_SLOT_1__function_sig )  \
-	md_if_generic_selector_defined_include_slot( GENERIC_SLOT_2__function_sig )  \
-	/* ... */                                                                 \
-	md_if_generic_selector_defined_include_slot(GENERIC_SLOT_N__function_sig )   \
-	default: md_assert_generic_sel_fail                                          \
+#define md_function_generic_example_varadic( selector_arg, ... ) _Generic(         \
+(selector_arg),                                                                    \
+	md_if_generic_selector_defined_include_slot( MD_GENERIC_SLOT_1__function_sig ) \
+	md_if_generic_selector_defined_include_slot( GENERIC_SLOT_2__function_sig )    \
+	/* ... */                                                                      \
+	md_if_generic_selector_defined_include_slot(GENERIC_SLOT_N__function_sig )     \
+	default: md_assert_generic_sel_fail                                            \
 ) md_generic_call( selector_arg, __VA_ARG__ )
 
 // If the function does not take the arugment as a parameter:
-#define md_function_generic_example_direct_type( selector_arg ) _Generic(       \
-( md_type_to_expression(selector_arg) ),                                        \
+#define md_function_generic_example_direct_type( selector_arg ) _Generic(          \
+( md_type_to_expression(selector_arg) ),                                           \
 	md_if_generic_selector_defined_include_slot( MD_GENERIC_SLOT_1__function_sig ) \
-	md_if_generic_selector_defined_include_slot( GENERIC_SLOT_2__function_sig ) \
-	/* ... */                                                                \
-	md_if_generic_selector_defined_include_slot(GENERIC_SLOT_N__function_sig )  \
-	default: md_assert_generic_sel_fail                                         \
+	md_if_generic_selector_defined_include_slot( GENERIC_SLOT_2__function_sig )    \
+	/* ... */                                                                      \
+	md_if_generic_selector_defined_include_slot(GENERIC_SLOT_N__function_sig )     \
+	default: md_assert_generic_sel_fail                                            \
 ) md_generic_call(selector_arg)
 
 
@@ -134,12 +134,12 @@ size_t md_generic_example_hash__P_long_long( long long val ) { return val * 2654
 
 #define example_with__l2(expr) _Generic( \
 (expr),                                  \
-    MD_S64    : example_with_s64,           \
-    default: md_assert_generic_sel_fail     \
+    MD_S64    : example_with_s64,        \
+    default: md_assert_generic_sel_fail  \
 )
 #define example_with(expr)                          \
 _Generic((expr),                                    \
-    MD_SSIZE   : example_with_SSIZEZ                   \
+    MD_SSIZE   : example_with_SSIZEZ                \
     default : example_with_not_SSIZE(allocator, in) \
 ) md_generic_call(allocator, in)
 
@@ -150,10 +150,10 @@ _Generic((expr),                                    \
 
 #define example_with_generic_layers(expr)   \
 _Generic(   (expr),                         \
-	MD_S64 : example_with_s64,                 \
+	MD_S64 : example_with_s64,              \
 _Generic_L2((expr),                         \
-	MD_SSIZE: example_with_SSIZZE              \
-	default: md_assert_generic_sel_fail        \
+	MD_SSIZE: example_with_SSIZZE           \
+	default: md_assert_generic_sel_fail     \
 ),                                          \
 ) md_generic_call(expr)
 
@@ -163,7 +163,7 @@ _Generic_L2((expr),                         \
 #undef example_with_generic_layers
 #undef function_generic_example
 #undef MD_GENERIC_SLOT_1__example_hash
-#undef GENERIC_SLOT_2__example_hash
+#undef MD_GENERIC_SLOT_2__example_hash
 #undef generic_example_hash
 #undef md_function_generic_example_varadic
 #undef md_function_generic_example_direct_type

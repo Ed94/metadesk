@@ -158,30 +158,30 @@
 #define md_src_line_str md_stringify(__LINE__)
 
 #ifndef md_do_once
-#define md_do_once()                                                                            \
+#define md_do_once()                                                                               \
 	md_local_persist int __do_once_counter_##md_src_line_str  = 0;                                 \
     for(;      __do_once_counter_##md_src_line_str != 1; __do_once_counter_##md_src_line_str = 1 ) \
 
-#define md_do_once_defer( expression )                                                                 \
+#define md_do_once_defer( expression )                                                                    \
     md_local_persist int __do_once_counter_##md_src_line_str  = 0;                                        \
     for(;__do_once_counter_##md_src_line_str != 1; __do_once_counter_##md_src_line_str = 1, (expression)) \
 
-#define md_do_once_start      \
+#define md_do_once_start   \
 	do                     \
 	{                      \
-		md_local_persist      \
+		md_local_persist   \
 		bool done = false; \
 		if ( done )        \
 			break;         \
 		done = true;
 
-#define md_do_once_end        \
-	}                      \
+#define md_do_once_end \
+	}                  \
 	while(0);
 #endif
 
 #define ct_if(expr, then, else) _Generic( \
-(&(char[1 + !!(EXPR)]){0}), \
-	char (*)[2]: (THEN),    \
-	char (*)[1]: (ELSE)     \
+(&(char[1 + !!(expr)]){0}), \
+	char (*)[2]: (then),    \
+	char (*)[1]: (else)     \
 )

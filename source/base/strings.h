@@ -66,7 +66,7 @@ struct MD_String8List
 {
 	MD_String8Node* first;
 	MD_String8Node* last;
-	MD_U64 md_node_count;
+	MD_U64 node_count;
 	MD_U64 total_size;
 };
 

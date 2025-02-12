@@ -102,14 +102,14 @@ void* md_resize_align( MD_AllocatorInfo a, void* ptr, MD_SSIZE old_size, MD_SSIZ
 // Allocate memory for an item.
 #define md_alloc_item(allocator, Type)           (Type*)md_memory_zero(md_alloc(allocator,  size_of(Type)), size_of(Type))
 // Allocate memory for an item.
-#define md_alloc_item_no_zero( allocator, Type ) (Type*)            md_alloc(allocator,  size_of(Type))
+#define md_alloc_item_no_zero( allocator, Type ) (Type*)               md_alloc(allocator,  size_of(Type))
 #endif
 
 #ifndef md_alloc_array
 // Allocate memory for an array of items.
 #define md_alloc_array( allocator_, Type, count )         (Type*)md_memory_zero(md_alloc( allocator_, size_of(Type) * (count) ), size_of(Type) * (count))
 // Allocate memory for an array of items. (Don't zero initialize)
-#define md_alloc_array_no_zero( allocator_, Type, count ) (Type*)            md_alloc( allocator_, size_of(Type) * (count) )
+#define md_alloc_array_no_zero( allocator_, Type, count ) (Type*)               md_alloc( allocator_, size_of(Type) * (count) )
 #endif
 
 // Allocate/Resize memory using default options.

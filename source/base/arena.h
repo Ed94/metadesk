@@ -84,15 +84,15 @@ md_extract_arena(MD_AllocatorInfo ainfo) {
 //- rjf: arena creation/destruction
 
 MD_API MD_Arena* md_arena__alloc(MD_ArenaParams* params);
-#define       md_arena_alloc(...) md_arena__alloc( &(MD_ArenaParams){ __VA_ARGS__ } )
+#define          md_arena_alloc(...) md_arena__alloc( &(MD_ArenaParams){ __VA_ARGS__ } )
 
 void md_arena_release(MD_Arena *arena);
 
 //- rjf: arena push/pop/pos core functions
 
-MD_API void* md_arena_push  (MD_Arena* arena, MD_SSIZE size, MD_SSIZE align);
-       MD_U64   md_arena_pos   (MD_Arena* arena);
-MD_API void  md_arena_pop_to(MD_Arena* arena, MD_SSIZE pos);
+MD_API void*  md_arena_push  (MD_Arena* arena, MD_SSIZE size, MD_SSIZE align);
+       MD_U64 md_arena_pos   (MD_Arena* arena);
+MD_API void   md_arena_pop_to(MD_Arena* arena, MD_SSIZE pos);
 
 //- rjf: arena push/pop helpers
 
@@ -102,7 +102,7 @@ void md_arena_pop  (MD_Arena* arena, MD_SSIZE amt);
 //- rjf: temporary arena scopes
 
 MD_TempArena temp_arena_begin(MD_Arena* arena);
-void      temp_arena_end(MD_TempArena temp);
+void         temp_arena_end(MD_TempArena temp);
 
 //- rjf: push helper macros
 
@@ -167,7 +167,7 @@ md_default_allocator()
 	md_local_persist md_thread_local MD_Arena* arena = md_nullptr;
 	if (arena == md_nullptr) {
 		MD_VArena* backing_vmem = md_varena_alloc(.flags = 0, .base_addr = 0x0, .reserve_size = MD_VARENA_DEFAULT_RESERVE, .commit_size = MD_VARENA_DEFAULT_COMMIT);
-		        arena        = md_arena_alloc(.backing = md_varena_allocator(backing_vmem), .block_size = MD_VARENA_DEFAULT_RESERVE);
+		           arena        = md_arena_alloc(.backing = md_varena_allocator(backing_vmem), .block_size = MD_VARENA_DEFAULT_RESERVE);
 	}
 	MD_AllocatorInfo info = { md_arena_allocator_proc, arena };
 	return info;

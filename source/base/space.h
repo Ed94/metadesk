@@ -57,7 +57,7 @@ enum MD_Dir2
 	MD_Dir2_COUNT
 };
 
-#define md_axis2_from_dir2(d) (((d) & 1)          ? MD_Axis2_Y  : MD_Axis2_X)
+#define md_axis2_from_dir2(d) (((d) & 1)             ? MD_Axis2_Y  : MD_Axis2_X)
 #define md_side_from_dir2(d)  (((d) < MD_Dir2_Right) ? MD_Side_Min : MD_Side_Max)
 
 ////////////////////////////////

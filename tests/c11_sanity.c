@@ -10,7 +10,7 @@
 
 // This program expects to be run from the build directory (where it would be after being built)
 #define path_root
-#define path_examples          path_root     ".examples/"
+#define path_examples          path_root     "examples/"
 #define path_intro             path_examples "intro/"
 #define path_hello_world_mdesk path_intro    "hello_world.mdesk"
 

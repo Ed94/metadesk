@@ -69,7 +69,7 @@ void register_library_macros()
 	// third_party/stb/stb_sprintf.h
 	gen_register_macros( args(
 		((gen_Macro) { lit("STB_SPRINTF_H_INCLUDE"),   MT_Statement,  }),
-		((gen_Macro) { lit("STBSP__ASAN"),             MT_Statement, MF_Allow_As_Attribute }),
+		((gen_Macro) { lit("STBSP__ASAN"),             MT_Statement,                  MF_Allow_As_Attribute }),
 		((gen_Macro) { lit("STBSP__PUBLICDEC"),        MT_Expression,                 MF_Allow_As_Attribute }),
 		((gen_Macro) { lit("STBSP__ATTRIBUTE_FORMAT"), MT_Expression, MF_Functional | MF_Allow_As_Attribute }),
 		((gen_Macro) { lit("STBSP__NOTUSED"),          MT_Expression, MF_Functional | MF_Allow_As_Attribute }),

@@ -7,7 +7,7 @@
 #endif
 
 #ifndef GENERATE_SINGLEHEADER
-#define GENERATE_SINGLEHEADER 0
+#define GENERATE_SINGLEHEADER 1
 #endif
 
 #define path_refactor_script path_gen_c11 "c11.refactor"
@@ -264,7 +264,6 @@ int main()
 		print_fmt("%S", implementation_guard_start);
 		new_line();
 
-		define(lit("STB_SPRINTF_IMPLEMENTATION"), MT_Statement);
 		define(lit("STB_SPRINTF_DECORATE(name)"), MT_Expression, .content = lit("md_##name"), .flags = MF_Functional);
 		// print();
 		preprocess_if("MD_BUILD_STATIC"); {
@@ -354,6 +353,10 @@ int main()
 
 		pragma_region("Base");
 		print(banner_base);
+		new_line();
+
+		define(lit("STB_SPRINTF_IMPLEMENTATION"), MT_Statement);
+		print_section(refactor_and_format(r_tp_stb_sprintf_source), lit("STB snprintf Source"));
 		new_line();
 
 		print_section(r_base_platform_c,         lit("Platform"));

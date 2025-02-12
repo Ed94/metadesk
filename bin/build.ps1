@@ -217,7 +217,7 @@ if ($tests)
 
 	Push-Location $path_root
 		if ( Test-Path( $executable ) ) {
-			write-host "`nRunning tests/c11_sanity.exe"
+			write-host "`nRunning tests/c11_sanity_segregated.exe (segregated)"
 			$time_taken = Measure-Command { & $executable
 					| ForEach-Object {
 						write-host `t $_ -ForegroundColor Green
@@ -226,6 +226,22 @@ if ($tests)
 			write-host "`ntest/code_sanity completed in $($time_taken.TotalMilliseconds) ms"
 		}
 	Pop-Location
+
+	$compiler_args += ($flag_define + "TEST_SINGLEHEADER")
+
+	$result = build-simple $path_build $includes $compiler_args $linker_args $unit $executable
+
+	Push-Location $path_root
+	if ( Test-Path( $executable ) ) {
+		write-host "`nRunning tests/c11_sanity.exe (single header)"
+		$time_taken = Measure-Command { & $executable
+				| ForEach-Object {
+					write-host `t $_ -ForegroundColor Green
+				}
+			}
+		write-host "`ntest/code_sanity completed in $($time_taken.TotalMilliseconds) ms"
+	}
+Pop-Location
 }
 
 Pop-Location # $path_root

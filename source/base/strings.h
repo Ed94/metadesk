@@ -251,18 +251,18 @@ inline MD_U64 md_cstring32_length(MD_U32* c) { MD_U32* p = c; for (; *p != 0; p 
 #define md_str8_array_fixed(S) md_str8((MD_U8*)(S), sizeof(S))
 #define md_str8_struct(S)      md_str8((MD_U8*)(S), sizeof(*(S)))
 
-inline MD_String8  md_str8         (MD_U8* str,   MD_U64 size)            { MD_String8  result = {str,   size};                         return(result); } 
-inline MD_String8  md_str8_range   (MD_U8* first, MD_U8* one_past_last)   { MD_String8  result = {first, (MD_U64)(one_past_last - first)}; return(result); }
-inline MD_String8  md_str8_zero    (void)                           { MD_String8  result = {0};                                   return(result); }
-inline MD_String16 md_str16        (MD_U16* str,   MD_U64  size)          { MD_String16 result = {str,   size};                         return(result); }
-inline MD_String16 md_str16_range  (MD_U16* first, MD_U16* one_past_last) { MD_String16 result = {first, (MD_U64)(one_past_last - first)}; return(result); }
-inline MD_String16 md_str16_zero   (void)                           { MD_String16 result = {0};                                   return(result); }
-inline MD_String32 str32        (MD_U32* str,   MD_U64  size)          { MD_String32 result = {str,   size};                         return(result); }
-inline MD_String32 md_str32_range  (MD_U32* first, MD_U32* one_past_last) { MD_String32 result = {first, (MD_U64)(one_past_last - first)}; return(result); }
-inline MD_String32 md_str32_zero   (void)                           { MD_String32 result = {0};                                   return(result); }
-inline MD_String8  md_str8_cstring (char* c)                        { MD_String8  result = {(MD_U8*) c, md_cstring8_length ((MD_U8*) c)};  return(result); }
-inline MD_String16 md_str16_cstring(MD_U16*  c)                        { MD_String16 result = {(MD_U16*)c, md_cstring16_length((MD_U16*)c)};  return(result); }
-inline MD_String32 md_str32_cstring(MD_U32*  c)                        { MD_String32 result = {(MD_U32*)c, md_cstring32_length((MD_U32*)c)};  return(result); }
+inline MD_String8  md_str8         (MD_U8* str,   MD_U64 size)            { MD_String8  result = {str,   size};                                 return(result); } 
+inline MD_String8  md_str8_range   (MD_U8* first, MD_U8* one_past_last)   { MD_String8  result = {first, (MD_U64)(one_past_last - first)};      return(result); }
+inline MD_String8  md_str8_zero    (void)                                 { MD_String8  result = {0};                                           return(result); }
+inline MD_String16 md_str16        (MD_U16* str,   MD_U64  size)          { MD_String16 result = {str,   size};                                 return(result); }
+inline MD_String16 md_str16_range  (MD_U16* first, MD_U16* one_past_last) { MD_String16 result = {first, (MD_U64)(one_past_last - first)};      return(result); }
+inline MD_String16 md_str16_zero   (void)                                 { MD_String16 result = {0};                                           return(result); }
+inline MD_String32 md_str32        (MD_U32* str,   MD_U64  size)          { MD_String32 result = {str,   size};                                 return(result); }
+inline MD_String32 md_str32_range  (MD_U32* first, MD_U32* one_past_last) { MD_String32 result = {first, (MD_U64)(one_past_last - first)};      return(result); }
+inline MD_String32 md_str32_zero   (void)                                 { MD_String32 result = {0};                                           return(result); }
+inline MD_String8  md_str8_cstring (char* c)                              { MD_String8  result = {(MD_U8*) c, md_cstring8_length ((MD_U8*) c)}; return(result); }
+inline MD_String16 md_str16_cstring(MD_U16*  c)                           { MD_String16 result = {(MD_U16*)c, md_cstring16_length((MD_U16*)c)}; return(result); }
+inline MD_String32 md_str32_cstring(MD_U32*  c)                           { MD_String32 result = {(MD_U32*)c, md_cstring32_length((MD_U32*)c)}; return(result); }
 
 #define md_str_range(str, one_past_last) _Generic(str, MD_U8: md_str8_range,   MD_U16: md_str16_range,   MD_U32: md_str32_range  )(str, one_past_last)
 #define md_str_cstring(c)                _Generic(c,   MD_U8: md_str8_cstring, MD_U16: md_str16_cstring, MD_U32: md_str32_cstring)(c)
@@ -328,8 +328,8 @@ MD_API MD_String8 md_str8fv__ainfo   (MD_AllocatorInfo ainfo, char* fmt, va_list
 #define md_str8f(allocator, fmt, ...)   _Generic(allocator, MD_Arena*: md_str8f__arena,     MD_AllocatorInfo: md_str8f__ainfo ,    default: md_assert_generic_sel_fail) md_generic_call(allocator, fmt, __VA_ARGS__)
 
 md_force_inline MD_String8 md_str8_cat__arena (MD_Arena* arena, MD_String8 s1, MD_String8 s2) { return md_str8_cat__ainfo (md_arena_allocator(arena), s1, s2); }
-md_force_inline MD_String8 md_str8_copy__arena(MD_Arena* arena, MD_String8 s)              { return md_str8_copy__ainfo(md_arena_allocator(arena), s); }
-md_force_inline MD_String8 md_str8fv__arena   (MD_Arena* arena, char* fmt, va_list args){ return md_str8fv__ainfo   (md_arena_allocator(arena), fmt, args); }
+md_force_inline MD_String8 md_str8_copy__arena(MD_Arena* arena, MD_String8 s)                 { return md_str8_copy__ainfo(md_arena_allocator(arena), s); }
+md_force_inline MD_String8 md_str8fv__arena   (MD_Arena* arena, char* fmt, va_list args)      { return md_str8fv__ainfo   (md_arena_allocator(arena), fmt, args); }
 
 inline MD_String8
 md_str8f__arena(MD_Arena *arena, char *fmt, ...) {
@@ -401,16 +401,16 @@ md_str8_chop(MD_String8 str, MD_U64 amt){
 ////////////////////////////////
 //~ rjf: String Stylization
 
-inline MD_String8 md_upper_fromstr8__arena      (MD_Arena* arena, MD_String8 string) { string = md_str8_copy(arena, string); for(MD_U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = md_char_to_upper(string.str[idx]);                          } return string; }
-inline MD_String8 md_lower_fromstr8__arena      (MD_Arena* arena, MD_String8 string) { string = md_str8_copy(arena, string); for(MD_U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = md_char_to_lower(string.str[idx]);                          } return string; }
+inline MD_String8 md_upper_fromstr8__arena       (MD_Arena* arena, MD_String8 string) { string = md_str8_copy(arena, string); for(MD_U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = md_char_to_upper(string.str[idx]);                          } return string; }
+inline MD_String8 md_lower_fromstr8__arena       (MD_Arena* arena, MD_String8 string) { string = md_str8_copy(arena, string); for(MD_U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = md_char_to_lower(string.str[idx]);                          } return string; }
 inline MD_String8 md_backslashed_from_str8__arena(MD_Arena* arena, MD_String8 string) { string = md_str8_copy(arena, string); for(MD_U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = md_char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
 
-inline MD_String8 md_upper_fromstr8__ainfo      (MD_AllocatorInfo ainfo, MD_String8 string) { string = md_str8_copy(ainfo, string); for(MD_U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = md_char_to_upper(string.str[idx]);                          } return string; }
-inline MD_String8 md_lower_fromstr8__ainfo      (MD_AllocatorInfo ainfo, MD_String8 string) { string = md_str8_copy(ainfo, string); for(MD_U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = md_char_to_lower(string.str[idx]);                          } return string; }
+inline MD_String8 md_upper_fromstr8__ainfo       (MD_AllocatorInfo ainfo, MD_String8 string) { string = md_str8_copy(ainfo, string); for(MD_U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = md_char_to_upper(string.str[idx]);                          } return string; }
+inline MD_String8 md_lower_fromstr8__ainfo       (MD_AllocatorInfo ainfo, MD_String8 string) { string = md_str8_copy(ainfo, string); for(MD_U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = md_char_to_lower(string.str[idx]);                          } return string; }
 inline MD_String8 md_backslashed_from_str8__ainfo(MD_AllocatorInfo ainfo, MD_String8 string) { string = md_str8_copy(ainfo, string); for(MD_U64 idx = 0; idx < string.size; idx += 1) { string.str[idx] = md_char_is_slash(string.str[idx]) ? '\\' : string.str[idx]; } return string; }
 
-#define md_upper_fromstr8(allocator, string)       _Generic(allocator, MD_Arena*: md_upper_fromstr8__arena,       MD_AllocatorInfo: md_upper_fromstr8__ainfo,        default: md_assert_generic_sel_fail) md_generic_call(allocator, string)
-#define md_lower_fromstr8(allocator, string)       _Generic(allocator, MD_Arena*: md_lower_fromstr8__arena,       MD_AllocatorInfo: md_lower_fromstr8__ainfo,        default: md_assert_generic_sel_fail) md_generic_call(allocator, string)
+#define md_upper_fromstr8(allocator, string)        _Generic(allocator, MD_Arena*: md_upper_fromstr8__arena,        MD_AllocatorInfo: md_upper_fromstr8__ainfo,         default: md_assert_generic_sel_fail) md_generic_call(allocator, string)
+#define md_lower_fromstr8(allocator, string)        _Generic(allocator, MD_Arena*: md_lower_fromstr8__arena,        MD_AllocatorInfo: md_lower_fromstr8__ainfo,         default: md_assert_generic_sel_fail) md_generic_call(allocator, string)
 #define md_backslashed_from_str8(allocator, string) _Generic(allocator, MD_Arena*: md_backslashed_from_str8__arena, MD_AllocatorInfo: md_backslashed_from_str8__ainfo , default: md_assert_generic_sel_fail) md_generic_call(allocator, string)
 
 ////////////////////////////////
@@ -420,10 +420,10 @@ inline MD_String8 md_backslashed_from_str8__ainfo(MD_AllocatorInfo ainfo, MD_Str
 #define md_str8_match_cstr(a_cstr, b, flags)          md_str8_match(md_str8_cstring(a_cstr), (b), (flags))
 #define md_str8_ends_with_lit(string, end_lit, flags) md_str8_ends_with((string), md_str8_lit(end_lit), (flags))
 
-MD_API MD_B32 md_str8_match              (MD_String8 a, MD_String8 b,                          MD_StringMatchFlags flags);
+MD_API MD_B32 md_str8_match              (MD_String8 a, MD_String8 b,                             MD_StringMatchFlags flags);
 MD_API MD_U64 md_str8_find_needle        (MD_String8 string, MD_U64 start_pos, MD_String8 needle, MD_StringMatchFlags flags);
 MD_API MD_U64 md_str8_find_needle_reverse(MD_String8 string, MD_U64 start_pos, MD_String8 needle, MD_StringMatchFlags flags);
-       MD_B32 md_str8_ends_with          (MD_String8 string, MD_String8 end,                   MD_StringMatchFlags flags);
+       MD_B32 md_str8_ends_with          (MD_String8 string, MD_String8 end,                      MD_StringMatchFlags flags);
 
 inline MD_B32
 md_str8_ends_with(MD_String8 string, MD_String8 end, MD_StringMatchFlags flags) {
@@ -441,7 +441,7 @@ MD_API MD_B32 md_str8_is_integer(MD_String8 string, MD_U32      radix);
        MD_U64 md_u64_from_str8  (MD_String8 string, MD_U32      radix);
        MD_S64 md_s64_from_str8  (MD_String8 string, MD_U32      radix);
        MD_U32 md_u32_from_str8  (MD_String8 string, MD_U32 radix);
-       MD_S32 s32_from_str8  (MD_String8 string, MD_U32 radix);
+       MD_S32 s32_from_str8     (MD_String8 string, MD_U32 radix);
 
 MD_API MD_B32 md_try_u64_from_str8_c_rules(MD_String8 string, MD_U64* x);
        MD_B32 md_try_s64_from_str8_c_rules(MD_String8 string, MD_S64* x);
@@ -468,7 +468,7 @@ MD_String8 md_str8_from_bits_u64__ainfo(MD_AllocatorInfo ainfo, MD_U64 x);
 #define md_str8_from_bits_u32(allocator, x) _Generic(allocator, MD_Arena*: md_str8_from_bits_u32__arena, MD_AllocatorInfo: md_str8_from_bits_u32__ainfo, default: md_assert_generic_sel_fail) md_generic_call(allocator, x)
 #define md_str8_from_bits_u64(allocator, x) _Generic(allocator, MD_Arena*: md_str8_from_bits_u64__arena, MD_AllocatorInfo: md_str8_from_bits_u64__ainfo, default: md_assert_generic_sel_fail) md_generic_call(allocator, x)
 
-md_force_inline MD_String8 md_str8_from_memory_size__arena(MD_Arena* arena, MD_SSIZE z)                                                     { return md_str8_from_memory_size__ainfo(md_arena_allocator(arena), z); }
+md_force_inline MD_String8 md_str8_from_memory_size__arena(MD_Arena* arena, MD_SSIZE z)                                                              { return md_str8_from_memory_size__ainfo(md_arena_allocator(arena), z); }
 md_force_inline MD_String8 md_str8_from_u64__arena        (MD_Arena* arena, MD_U64 u64, MD_U32 radix, MD_U8 min_digits, MD_U8 digit_group_separator) { return md_str8_from_u64__ainfo        (md_arena_allocator(arena), u64, radix, min_digits, digit_group_separator); }
 md_force_inline MD_String8 md_str8_from_s64__arena        (MD_Arena* arena, MD_S64 s64, MD_U32 radix, MD_U8 min_digits, MD_U8 digit_group_separator) { return md_str8_from_s64__ainfo        (md_arena_allocator(arena), s64, radix, min_digits, digit_group_separator); }
 
@@ -508,9 +508,9 @@ s32_from_str8(MD_String8 string, MD_U32 radix) {
 inline MD_B32
 md_try_s64_from_str8_c_rules(MD_String8 string, MD_S64* x) {
   MD_String8 md_string_tail = {0};
-  MD_S64     sign        = md_sign_from_str8(string, &md_string_tail);
-  MD_U64     x_u64       = 0;
-  MD_B32     is_integer  = md_try_u64_from_str8_c_rules(md_string_tail, &x_u64);
+  MD_S64     sign           = md_sign_from_str8(string, &md_string_tail);
+  MD_U64     x_u64          = 0;
+  MD_B32     is_integer     = md_try_u64_from_str8_c_rules(md_string_tail, &x_u64);
   *x = x_u64*sign;
   return(is_integer);
 }
@@ -611,7 +611,7 @@ MD_String8Node* md_str8_list_push_node                 (MD_String8List* list, MD
 MD_String8Node* md_str8_list_push_node_set_string      (MD_String8List* list, MD_String8Node* node, MD_String8 string);
 MD_String8Node* md_str8_list_push_node_front           (MD_String8List* list, MD_String8Node* node);
 MD_String8Node* md_str8_list_push_node_front_set_string(MD_String8List* list, MD_String8Node* node, MD_String8 string);
-void         md_str8_list_concat_in_place           (MD_String8List* list, MD_String8List* to_push);
+void         md_str8_list_concat_in_place              (MD_String8List* list, MD_String8List* to_push);
 
 inline MD_String8Node*
 md_str8_list_push_node(MD_String8List* list, MD_String8Node* node) {
@@ -663,17 +663,17 @@ MD_String8Node* md_str8_list_push_front__ainfo (MD_AllocatorInfo ainfo, MD_Strin
 MD_String8Node* md_str8_list_pushf__ainfo      (MD_AllocatorInfo ainfo, MD_String8List* list, char* fmt, ...);
 MD_String8Node* md_str8_list_push_frontf__ainfo(MD_AllocatorInfo ainfo, MD_String8List* list, char* fmt, ...);
 
-#define md_str8_list_aligner(allocator, list, md_min, align)   _Generic(allocator, MD_Arena*: md_str8_list_aligner__arena,     MD_AllocatorInfo: md_str8_list_aligner__ainfo,     default: md_assert_generic_sel_fail) md_generic_call(allocator, list, md_min, align)
-#define md_str8_list_copy(allocator, list)                  _Generic(allocator, MD_Arena*: md_str8_list_copy__arena,        MD_AllocatorInfo: md_str8_list_copy__ainfo,        default: md_assert_generic_sel_fail) md_generic_call(allocator, list)
-#define md_str8_list_push(allocator, list, string)          _Generic(allocator, MD_Arena*: md_str8_list_push__arena,        MD_AllocatorInfo: md_str8_list_push__ainfo,        default: md_assert_generic_sel_fail) md_generic_call(allocator, list, string)
-#define md_str8_list_push_front(allocator, list, string)    _Generic(allocator, MD_Arena*: md_str8_list_push_front__arena,  MD_AllocatorInfo: md_str8_list_push_front__ainfo,  default: md_assert_generic_sel_fail) md_generic_call(allocator, list, string)
-#define md_str8_list_pushf(allocator, list, fmt, ...)       _Generic(allocator, MD_Arena*: md_str8_list_pushf__arena,       MD_AllocatorInfo: md_str8_list_pushf__ainfo,       default: md_assert_generic_sel_fail) md_generic_call(allocator, list, fmt, __VA_ARGS__)
-#define md_str8_list_push_frontf(allocaotr, list, fmt, ...) _Generic(allocator, MD_Arena*: md_str8_list_push_frontf__arena, MD_AllocatorInfo: md_str8_list_push_frontf__ainfo, default: md_assert_generic_sel_fail) md_generic_call(allocator, list, fmt, __VA_ARGS__)
+#define md_str8_list_aligner(allocator, list, md_min, align) _Generic(allocator, MD_Arena*: md_str8_list_aligner__arena,     MD_AllocatorInfo: md_str8_list_aligner__ainfo,     default: md_assert_generic_sel_fail) md_generic_call(allocator, list, md_min, align)
+#define md_str8_list_copy(allocator, list)                   _Generic(allocator, MD_Arena*: md_str8_list_copy__arena,        MD_AllocatorInfo: md_str8_list_copy__ainfo,        default: md_assert_generic_sel_fail) md_generic_call(allocator, list)
+#define md_str8_list_push(allocator, list, string)           _Generic(allocator, MD_Arena*: md_str8_list_push__arena,        MD_AllocatorInfo: md_str8_list_push__ainfo,        default: md_assert_generic_sel_fail) md_generic_call(allocator, list, string)
+#define md_str8_list_push_front(allocator, list, string)     _Generic(allocator, MD_Arena*: md_str8_list_push_front__arena,  MD_AllocatorInfo: md_str8_list_push_front__ainfo,  default: md_assert_generic_sel_fail) md_generic_call(allocator, list, string)
+#define md_str8_list_pushf(allocator, list, fmt, ...)        _Generic(allocator, MD_Arena*: md_str8_list_pushf__arena,       MD_AllocatorInfo: md_str8_list_pushf__ainfo,       default: md_assert_generic_sel_fail) md_generic_call(allocator, list, fmt, __VA_ARGS__)
+#define md_str8_list_push_frontf(allocaotr, list, fmt, ...)  _Generic(allocator, MD_Arena*: md_str8_list_push_frontf__arena, MD_AllocatorInfo: md_str8_list_push_frontf__ainfo, default: md_assert_generic_sel_fail) md_generic_call(allocator, list, fmt, __VA_ARGS__)
 
 md_force_inline MD_String8Node* md_str8_list_ligner__arena    (MD_Arena* arena, MD_String8List* list, MD_U64 md_min, MD_U64 align) { return md_str8_list_aligner__ainfo   (md_arena_allocator(arena), list, md_min, align); }
-md_force_inline MD_String8List  md_str8_list_copy__arena      (MD_Arena* arena, MD_String8List* list)                     { return md_str8_list_copy__ainfo      (md_arena_allocator(arena), list); }
-md_force_inline MD_String8Node* md_str8_list_push__arena      (MD_Arena* arena, MD_String8List* list, MD_String8 string)     { return md_str8_list_push__ainfo      (md_arena_allocator(arena), list, string); }
-md_force_inline MD_String8Node* md_str8_list_push_front__arena(MD_Arena* arena, MD_String8List* list, MD_String8 string)     { return md_str8_list_push_front__ainfo(md_arena_allocator(arena), list, string); }
+md_force_inline MD_String8List  md_str8_list_copy__arena      (MD_Arena* arena, MD_String8List* list)                              { return md_str8_list_copy__ainfo      (md_arena_allocator(arena), list); }
+md_force_inline MD_String8Node* md_str8_list_push__arena      (MD_Arena* arena, MD_String8List* list, MD_String8 string)           { return md_str8_list_push__ainfo      (md_arena_allocator(arena), list, string); }
+md_force_inline MD_String8Node* md_str8_list_push_front__arena(MD_Arena* arena, MD_String8List* list, MD_String8 string)           { return md_str8_list_push_front__ainfo(md_arena_allocator(arena), list, string); }
 
 inline MD_String8Node*
 md_str8_list_pushf__arena(MD_Arena *arena, MD_String8List *list, char *fmt, ...) {
@@ -740,8 +740,8 @@ MD_String8List  md_str8_split_by_string_chars__ainfo     (MD_AllocatorInfo ainfo
 MD_String8List  md_str8_list_split_by_string_chars__arena(MD_Arena*        arena, MD_String8List  list,   MD_String8 split_chars, MD_StringSplitFlags flags);
 MD_String8List  md_str8_list_split_by_string_chars__ainfo(MD_AllocatorInfo ainfo, MD_String8List  list,   MD_String8 split_chars, MD_StringSplitFlags flags);
 
-       MD_String8 md_str8_list_join__arena      (MD_Arena*        arena, MD_String8List* list, MD_StringJoin* optional_params);
-MD_API MD_String8 md_str8_list_join__ainfo      (MD_AllocatorInfo ainfo, MD_String8List* list, MD_StringJoin* optional_params);
+       MD_String8 md_str8_list_join__arena   (MD_Arena*        arena, MD_String8List* list, MD_StringJoin* optional_params);
+MD_API MD_String8 md_str8_list_join__ainfo   (MD_AllocatorInfo ainfo, MD_String8List* list, MD_StringJoin* optional_params);
        void    md_str8_list_from_flags__arena(MD_Arena*        arena, MD_String8List* list, MD_U32 flags, MD_String8* flag_string_table, MD_U32 flag_string_count);
        void    md_str8_list_from_flags__ainfo(MD_AllocatorInfo ainfo, MD_String8List* list, MD_U32 flags, MD_String8* flag_string_table, MD_U32 flag_string_count);
 
@@ -751,10 +751,10 @@ MD_API MD_String8 md_str8_list_join__ainfo      (MD_AllocatorInfo ainfo, MD_Stri
 #define md_str8_list_join(allocator, list, params)                              _Generic(allocator, MD_Arena*: md_str8_list_join__arena,                  MD_AllocatorInfo: md_str8_list_join__ainfo,                  default: md_assert_generic_sel_fail) md_generic_call(allocator, list, params )
 
 md_force_inline MD_String8List md_str8_split__arena                     (MD_Arena* arena, MD_String8 string,    MD_U8*     split_chars, MD_U64 split_char_count, MD_StringSplitFlags flags) { return md_str8_split__ainfo                      (md_arena_allocator(arena), string, split_chars, split_char_count, flags); }
-md_force_inline MD_String8List md_str8_split_by_string_chars__arena     (MD_Arena* arena, MD_String8 string,    MD_String8 split_chars, MD_StringSplitFlags flags)                       { return md_str8_split_by_string_chars__ainfo      (md_arena_allocator(arena), string, split_chars, flags); }
-md_force_inline MD_String8List md_str8_list_split_by_string_chars__arena(MD_Arena* arena, MD_String8List  list, MD_String8 split_chars, MD_StringSplitFlags flags)                       { return md_str8_list_split_by_string_chars__ainfo (md_arena_allocator(arena), list,   split_chars, flags); }
-md_force_inline void        md_str8_list_from_flags__arena           (MD_Arena* arena, MD_String8List* list, MD_U32 flags, MD_String8* flag_string_table, MD_U32 flag_string_count)      {        md_str8_list_from_flags__ainfo            (md_arena_allocator(arena), list, flags, flag_string_table, flag_string_count); }
-md_force_inline MD_String8     md_str8_list_join__arena                 (MD_Arena* arena, MD_String8List* list, MD_StringJoin* optional_params)                                       { return md_str8_list_join__ainfo                  (md_arena_allocator(arena), list, optional_params); }
+md_force_inline MD_String8List md_str8_split_by_string_chars__arena     (MD_Arena* arena, MD_String8 string,    MD_String8 split_chars, MD_StringSplitFlags flags)                          { return md_str8_split_by_string_chars__ainfo      (md_arena_allocator(arena), string, split_chars, flags); }
+md_force_inline MD_String8List md_str8_list_split_by_string_chars__arena(MD_Arena* arena, MD_String8List  list, MD_String8 split_chars, MD_StringSplitFlags flags)                          { return md_str8_list_split_by_string_chars__ainfo (md_arena_allocator(arena), list,   split_chars, flags); }
+md_force_inline void        md_str8_list_from_flags__arena              (MD_Arena* arena, MD_String8List* list, MD_U32 flags, MD_String8* flag_string_table, MD_U32 flag_string_count)      {        md_str8_list_from_flags__ainfo            (md_arena_allocator(arena), list, flags, flag_string_table, flag_string_count); }
+md_force_inline MD_String8     md_str8_list_join__arena                 (MD_Arena* arena, MD_String8List* list, MD_StringJoin* optional_params)                                             { return md_str8_list_join__ainfo                  (md_arena_allocator(arena), list, optional_params); }
 
 inline MD_String8List
 md_str8_split_by_string_chars__ainfo(MD_AllocatorInfo ainfo, MD_String8 string, MD_String8 split_chars, MD_StringSplitFlags flags) {
@@ -1011,9 +1011,9 @@ MD_API MD_String8 md_date_time_string__ainfo          (MD_AllocatorInfo ainfo, M
 MD_API MD_String8 md_file_name_date_time_string__ainfo(MD_AllocatorInfo ainfo, MD_DateTime* date_time);
 MD_API MD_String8 md_string_from_elapsed_time__ainfo  (MD_AllocatorInfo ainfo, MD_DateTime  date_time);
 
-#define md_date_time_string(allocator, date_time)           _Generic(allocator, MD_Arena*: md_date_time_string__arena,           MD_AllocatorInfo: md_date_time_string__ainfo,           default: md_assert_generic_sel_fail) md_generic_call(allocator, date_time)
-#define file_name_date_time_string(allocator, date_time) _Generic(allocator, MD_Arena*: md_file_name_date_time_string__arena, MD_AllocatorInfo: md_file_name_date_time_string__ainfo, default: md_assert_generic_sel_fail) md_generic_call(allocator, date_time)
-#define md_string_from_elapsed_time(allocator, date_time)   _Generic(allocator, MD_Arena*: md_string_from_elapsed_time__arena,   MD_AllocatorInfo: md_string_from_elapsed_time__ainfo,   default: md_assert_generic_sel_fail) md_generic_call(allocator, date_time)
+#define md_date_time_string(allocator, date_time)         _Generic(allocator, MD_Arena*: md_date_time_string__arena,           MD_AllocatorInfo: md_date_time_string__ainfo,           default: md_assert_generic_sel_fail) md_generic_call(allocator, date_time)
+#define file_name_date_time_string(allocator, date_time)  _Generic(allocator, MD_Arena*: md_file_name_date_time_string__arena, MD_AllocatorInfo: md_file_name_date_time_string__ainfo, default: md_assert_generic_sel_fail) md_generic_call(allocator, date_time)
+#define md_string_from_elapsed_time(allocator, date_time) _Generic(allocator, MD_Arena*: md_string_from_elapsed_time__arena,   MD_AllocatorInfo: md_string_from_elapsed_time__ainfo,   default: md_assert_generic_sel_fail) md_generic_call(allocator, date_time)
 
 md_force_inline MD_String8 md_push_date_time_string__arena          (MD_Arena* arena, MD_DateTime* date_time) { return md_date_time_string__ainfo          (md_arena_allocator(arena), date_time); }
 md_force_inline MD_String8 md_push_file_name_date_time_string__arena(MD_Arena* arena, MD_DateTime* date_time) { return md_file_name_date_time_string__ainfo(md_arena_allocator(arena), date_time); }
@@ -1084,10 +1084,10 @@ MD_API MD_String8 md_escaped_from_raw_str8__ainfo(MD_AllocatorInfo ainfo, MD_Str
        MD_String8 md_raw_from__escaped_str8__arena(MD_Arena*        arena, MD_String8 string);
 MD_API MD_String8 md_raw_from__escaped_str8__ainfo(MD_AllocatorInfo ainfo, MD_String8 string);
 
-#define md_escaped_from_raw_str8(allocator, string) _Generic(allocator, MD_Arena*: md_escaped_from_raw_str8__arena, MD_AllocatorInfo: md_escaped_from_raw_str8__ainfo(, default): md_assert_generic_sel_fail) md_generic_call(allocator, string)
-#define md_raw_from__escaped_str8(allocator, string) _Generic(allocator, MD_Arena*: md_raw_from__escaped_str8__arena, MD_AllocatorInfo: md_raw_from__escaped_str8__ainfo(, default): md_assert_generic_sel_fail) md_generic_call(allocator, string)
+#define md_escaped_from_raw_str8(allocator, string)  _Generic(allocator, MD_Arena*: md_escaped_from_raw_str8__arena,  MD_AllocatorInfo: md_escaped_from_raw_str8__ainfo,  default: md_assert_generic_sel_fail) md_generic_call(allocator, string)
+#define md_raw_from__escaped_str8(allocator, string) _Generic(allocator, MD_Arena*: md_raw_from__escaped_str8__arena, MD_AllocatorInfo: md_raw_from__escaped_str8__ainfo, default: md_assert_generic_sel_fail) md_generic_call(allocator, string)
 
-md_force_inline MD_String8 md_escaped_from_raw_str8__arena(MD_Arena* arena, MD_String8 string) { return md_escaped_from_raw_str8__ainfo(md_arena_allocator(arena), string); }
+md_force_inline MD_String8 md_escaped_from_raw_str8__arena (MD_Arena* arena, MD_String8 string) { return md_escaped_from_raw_str8__ainfo (md_arena_allocator(arena), string); }
 md_force_inline MD_String8 md_raw_from__escaped_str8__arena(MD_Arena* arena, MD_String8 string) { return md_raw_from__escaped_str8__ainfo(md_arena_allocator(arena), string); }
 
 ////////////////////////////////
@@ -1099,7 +1099,8 @@ MD_API MD_String8List md_wrapped_lines_from_string__ainfo(MD_AllocatorInfo ainfo
 #define md_wrapped_lines_from_string(allocator, string, first_line_max_width, max_width, wrap_indent) \
 _Generic(allocator, MD_Arena*: md_wrapped_lines_from_string__arena, MD_AllocatorInfo: md_wrapped_lines_from_string__ainfo, default: md_assert_generic_sel_fail) md_generic_call(allocator, string, first_line_max_width, max_width, wrap_indent)
 
-md_force_inline MD_String8List md_wrapped_lines_from_string__arena(MD_Arena* arena, MD_String8 string, MD_U64 first_line_max_width, MD_U64 max_width, MD_U64 wrap_indent) { return md_wrapped_lines_from_string__ainfo(md_arena_allocator(arena), string, first_line_max_width, max_width, wrap_indent); }
+md_force_inline MD_String8List md_wrapped_lines_from_string__arena(MD_Arena* arena, MD_String8 string, MD_U64 first_line_max_width, MD_U64 max_width, MD_U64 wrap_indent) 
+{ return md_wrapped_lines_from_string__ainfo(md_arena_allocator(arena), string, first_line_max_width, max_width, wrap_indent); }
 
 ////////////////////////////////
 //~ rjf: String <-> Color
@@ -1123,7 +1124,7 @@ MD_API MD_FuzzyMatchRangeList md_fuzzy_match_range_list_copy__ainfo(MD_Allocator
 #define md_fuzzy_match_range_list_copy(allocator, src)   _Generic(allocator, MD_Arena*: md_fuzzy_match_range_list_copy__arena, MD_AllocatorInfo: md_fuzzy_match_range_list_copy__ainfo) md_generic_call(allocator, src)
 
 md_force_inline MD_FuzzyMatchRangeList md_fuzzy_match_find__arena           (MD_Arena *arena, MD_String8 needle, MD_String8 haystack) { return md_fuzzy_match_find__ainfo           (md_arena_allocator(arena), needle, haystack); }
-md_force_inline MD_FuzzyMatchRangeList md_fuzzy_match_range_list_copy__arena(MD_Arena* arena, MD_FuzzyMatchRangeList* src)         { return md_fuzzy_match_range_list_copy__ainfo(md_arena_allocator(arena), src); }
+md_force_inline MD_FuzzyMatchRangeList md_fuzzy_match_range_list_copy__arena(MD_Arena* arena, MD_FuzzyMatchRangeList* src)            s{ return md_fuzzy_match_range_list_copy__ainfo(md_arena_allocator(arena), src); }
 
 ////////////////////////////////
 //~ NOTE(allen): Serialization Helpers
@@ -1142,31 +1143,31 @@ md_str8_serial_write_to_dst(MD_String8List* srl, void* out) {
 	}
 }
 
-void    md_str8_serial_begin__arena         (MD_Arena* arena, MD_String8List* srl);
+void       md_str8_serial_begin__arena         (MD_Arena* arena, MD_String8List* srl);
 MD_String8 md_str8_serial_end__arena           (MD_Arena* arena, MD_String8List* srl);
 MD_U64     md_str8_serial_push_align__arena    (MD_Arena* arena, MD_String8List* srl, MD_U64 align);
-void*   md_str8_serial_push_size__arena     (MD_Arena* arena, MD_String8List* srl, MD_U64 size);
-void*   md_str8_serial_push_data__arena     (MD_Arena* arena, MD_String8List* srl, void* data, MD_U64 size);
-void    md_str8_serial_push_data_list__arena(MD_Arena* arena, MD_String8List* srl, MD_String8Node* first);
-void    md_str8_serial_push_u64__arena      (MD_Arena* arena, MD_String8List* srl, MD_U64 x);
-void    md_str8_serial_push_u32__arena      (MD_Arena* arena, MD_String8List* srl, MD_U32 x);
-void    md_str8_serial_push_u16__arena      (MD_Arena* arena, MD_String8List* srl, MD_U16 x);
-void    md_str8_serial_push_u8__arena       (MD_Arena* arena, MD_String8List* srl, MD_U8 x);
-void    md_str8_serial_push_cstr__arena     (MD_Arena* arena, MD_String8List* srl, MD_String8 str);
-void    md_str8_serial_push_string__arena   (MD_Arena* arena, MD_String8List* srl, MD_String8 str);
+void*      md_str8_serial_push_size__arena     (MD_Arena* arena, MD_String8List* srl, MD_U64 size);
+void*      md_str8_serial_push_data__arena     (MD_Arena* arena, MD_String8List* srl, void* data, MD_U64 size);
+void       md_str8_serial_push_data_list__arena(MD_Arena* arena, MD_String8List* srl, MD_String8Node* first);
+void       md_str8_serial_push_u64__arena      (MD_Arena* arena, MD_String8List* srl, MD_U64 x);
+void       md_str8_serial_push_u32__arena      (MD_Arena* arena, MD_String8List* srl, MD_U32 x);
+void       md_str8_serial_push_u16__arena      (MD_Arena* arena, MD_String8List* srl, MD_U16 x);
+void       md_str8_serial_push_u8__arena       (MD_Arena* arena, MD_String8List* srl, MD_U8 x);
+void       md_str8_serial_push_cstr__arena     (MD_Arena* arena, MD_String8List* srl, MD_String8 str);
+void       md_str8_serial_push_string__arena   (MD_Arena* arena, MD_String8List* srl, MD_String8 str);
 
-       void    md_str8_serial_begin__ainfo         (MD_AllocatorInfo ainfo, MD_String8List* srl);
+       void       md_str8_serial_begin__ainfo         (MD_AllocatorInfo ainfo, MD_String8List* srl);
        MD_String8 md_str8_serial_end__ainfo           (MD_AllocatorInfo ainfo, MD_String8List* srl);
 MD_API MD_U64     md_str8_serial_push_align__ainfo    (MD_AllocatorInfo ainfo, MD_String8List* srl, MD_U64 align);
-MD_API void*   md_str8_serial_push_size__ainfo     (MD_AllocatorInfo ainfo, MD_String8List* srl, MD_U64 size);
-       void*   md_str8_serial_push_data__ainfo     (MD_AllocatorInfo ainfo, MD_String8List* srl, void* data, MD_U64 size);
-       void    md_str8_serial_push_data_list__ainfo(MD_AllocatorInfo ainfo, MD_String8List* srl, MD_String8Node* first);
-MD_API void    md_str8_serial_push_u64__ainfo      (MD_AllocatorInfo ainfo, MD_String8List* srl, MD_U64 x);
-MD_API void    md_str8_serial_push_u32__ainfo      (MD_AllocatorInfo ainfo, MD_String8List* srl, MD_U32 x);
-       void    md_str8_serial_push_u16__ainfo      (MD_AllocatorInfo ainfo, MD_String8List* srl, MD_U16 x);
-       void    md_str8_serial_push_u8__ainfo       (MD_AllocatorInfo ainfo, MD_String8List* srl, MD_U8 x);
-       void    md_str8_serial_push_cstr__ainfo     (MD_AllocatorInfo ainfo, MD_String8List* srl, MD_String8 str);
-       void    md_str8_serial_push_string__ainfo   (MD_AllocatorInfo ainfo, MD_String8List* srl, MD_String8 str);
+MD_API void*      md_str8_serial_push_size__ainfo     (MD_AllocatorInfo ainfo, MD_String8List* srl, MD_U64 size);
+       void*      md_str8_serial_push_data__ainfo     (MD_AllocatorInfo ainfo, MD_String8List* srl, void* data, MD_U64 size);
+       void       md_str8_serial_push_data_list__ainfo(MD_AllocatorInfo ainfo, MD_String8List* srl, MD_String8Node* first);
+MD_API void       md_str8_serial_push_u64__ainfo      (MD_AllocatorInfo ainfo, MD_String8List* srl, MD_U64 x);
+MD_API void       md_str8_serial_push_u32__ainfo      (MD_AllocatorInfo ainfo, MD_String8List* srl, MD_U32 x);
+       void       md_str8_serial_push_u16__ainfo      (MD_AllocatorInfo ainfo, MD_String8List* srl, MD_U16 x);
+       void       md_str8_serial_push_u8__ainfo       (MD_AllocatorInfo ainfo, MD_String8List* srl, MD_U8 x);
+       void       md_str8_serial_push_cstr__ainfo     (MD_AllocatorInfo ainfo, MD_String8List* srl, MD_String8 str);
+       void       md_str8_serial_push_string__ainfo   (MD_AllocatorInfo ainfo, MD_String8List* srl, MD_String8 str);
 
 #define md_str8_serial_begin(allocator, srl)                  _Generic(allocator, MD_Arena*: md_str8_serial_begin__arena,          MD_AllocatorInfo: md_str8_serial_begin__ainfo,          default: md_assert_generic_sel_fail) md_generic_call(allocator, srl)
 #define md_str8_serial_end(allocator, srl)                    _Generic(allocator, MD_Arena*: md_str8_serial_end__arena,            MD_AllocatorInfo: md_str8_serial_end__ainfo,            default: md_assert_generic_sel_fail) md_generic_call(allocator, srl)
@@ -1181,12 +1182,12 @@ MD_API void    md_str8_serial_push_u32__ainfo      (MD_AllocatorInfo ainfo, MD_S
 #define md_str8_serial_push_cstr(allocator, srl, str)         _Generic(allocator, MD_Arena*: md_str8_serial_push_cstr__arena,      MD_AllocatorInfo: md_str8_serial_push_cstr__ainfo,      default: md_assert_generic_sel_fail) md_generic_call(allocator, srl, str)
 #define md_str8_serial_push_string(allocator, slr, str)       _Generic(allocator, MD_Arena*: md_str8_serial_push_string__arena,    MD_AllocatorInfo: md_str8_serial_push_string__ainfo,    default: md_assert_generic_sel_fail) md_generic_call(allocator, srl, str)
 
-md_force_inline MD_U64   md_str8_serial_push_align__arena(MD_Arena* arena, MD_String8List* srl, MD_U64 align) { return md_str8_serial_push_align__ainfo(md_arena_allocator(arena), srl, align); }
-md_force_inline void* md_str8_serial_push_size__arena (MD_Arena* arena, MD_String8List* srl, MD_U64 size)  { return md_str8_serial_push_size__ainfo (md_arena_allocator(arena), srl, size); }
-md_force_inline void  md_str8_serial_push_u64__arena  (MD_Arena* arena, MD_String8List* srl, MD_U64 x)     {        md_str8_serial_push_u64__ainfo  (md_arena_allocator(arena), srl, x); }
-md_force_inline void  md_str8_serial_push_u32__arena  (MD_Arena* arena, MD_String8List* srl, MD_U32 x)     {        md_str8_serial_push_u32__ainfo  (md_arena_allocator(arena), srl, x); }
+md_force_inline MD_U64 md_str8_serial_push_align__arena(MD_Arena* arena, MD_String8List* srl, MD_U64 align) { return md_str8_serial_push_align__ainfo(md_arena_allocator(arena), srl, align); }
+md_force_inline void*  md_str8_serial_push_size__arena (MD_Arena* arena, MD_String8List* srl, MD_U64 size)  { return md_str8_serial_push_size__ainfo (md_arena_allocator(arena), srl, size); }
+md_force_inline void   md_str8_serial_push_u64__arena  (MD_Arena* arena, MD_String8List* srl, MD_U64 x)     {        md_str8_serial_push_u64__ainfo  (md_arena_allocator(arena), srl, x); }
+md_force_inline void   md_str8_serial_push_u32__arena  (MD_Arena* arena, MD_String8List* srl, MD_U32 x)     {        md_str8_serial_push_u32__ainfo  (md_arena_allocator(arena), srl, x); }
 
-md_force_inline void    md_str8_serial_begin__arena(MD_Arena* arena, MD_String8List* srl) {        md_str8_serial_begin__ainfo(md_arena_allocator(arena), srl); }
+md_force_inline void       md_str8_serial_begin__arena(MD_Arena* arena, MD_String8List* srl) {        md_str8_serial_begin__ainfo(md_arena_allocator(arena), srl); }
 md_force_inline MD_String8 md_str8_serial_end__arena  (MD_Arena* arena, MD_String8List* srl) { return md_str8_serial_end__ainfo  (md_arena_allocator(arena), srl); }
 
 md_force_inline void md_str8_serial_push_u16__arena   (MD_Arena* arena, MD_String8List* srl, MD_U16     x)   { md_str8_serial_push_data__arena(arena, srl, &x, sizeof(x)); }
@@ -1257,32 +1258,32 @@ md_str8_serial_push_data_list__ainfo(MD_AllocatorInfo ainfo, MD_String8List* srl
 
 MD_API MD_U64   md_str8_deserial_read                       (MD_String8 string, MD_U64 off, void* read_dst, MD_U64 read_size, MD_U64 granularity);
 MD_API MD_U64   md_str8_deserial_find_first_match           (MD_String8 string, MD_U64 off, MD_U16 scan_val);
-       void* md_str8_deserial_get_raw_ptr                (MD_String8 string, MD_U64 off, MD_U64 size);
+       void* md_str8_deserial_get_raw_ptr                   (MD_String8 string, MD_U64 off, MD_U64 size);
 MD_API MD_U64   md_str8_deserial_read_cstr                  (MD_String8 string, MD_U64 off, MD_String8* cstr_out);
 MD_API MD_U64   md_str8_deserial_read_windows_utf16_string16(MD_String8 string, MD_U64 off, MD_String16* md_str_out);
        MD_U64   md_str8_deserial_read_block                 (MD_String8 string, MD_U64 off, MD_U64 size, MD_String8* block_out);
 MD_API MD_U64   md_str8_deserial_read_uleb128               (MD_String8 string, MD_U64 off, MD_U64* value_out);
 MD_API MD_U64   md_str8_deserial_read_sleb128               (MD_String8 string, MD_U64 off, MD_S64* value_out);
 
-inline void* md_str8_deserial_get_raw_ptr(MD_String8 string, MD_U64 off, MD_U64 size)                      { void* raw_ptr = 0; if (off + size <= string.size) { raw_ptr = string.str + off; }   return raw_ptr; }
-inline MD_U64   md_str8_deserial_read_block (MD_String8 string, MD_U64 off, MD_U64 size, MD_String8* block_out)  { MD_Rng1U64 range = md_rng_1u64(off, off + size); *block_out = md_str8_substr(string, range); return block_out->size; }
+inline void*  md_str8_deserial_get_raw_ptr(MD_String8 string, MD_U64 off, MD_U64 size)                        { void* raw_ptr = 0; if (off + size <= string.size) { raw_ptr = string.str + off; }   return raw_ptr; }
+inline MD_U64 md_str8_deserial_read_block (MD_String8 string, MD_U64 off, MD_U64 size, MD_String8* block_out) { MD_Rng1U64 range = md_rng_1u64(off, off + size); *block_out = md_str8_substr(string, range); return block_out->size; }
 
 ////////////////////////////////
 // Second-order Generic Selectors
 
-#define md_str8_from(allocator, in)                                                                                                                        \
-_Generic((in),                                                                                                                                          \
+#define md_str8_from(allocator, in) \
+_Generic((in),                      \
     MD_SSIZE   : _Generic(allocator, MD_Arena*: md_str8_from_memory_size__arena, MD_AllocatorInfo: md_str8_from_memory_size__ainfo, default: md_assert_generic_sel_fail), \
-_Generic_L2((in),                                                                                                                           \
+_Generic_L2((in),                                                                                                                                             \
 	MD_String16: _Generic(allocator, MD_Arena*: md_str8_from_str16__arena, MD_AllocatorInfo: md_str8_from_str16__ainfo, default: md_assert_generic_sel_fail), \
 	MD_String32: _Generic(allocator, MD_Arena*: md_str8_from_str32__arena, MD_AllocatorInfo: md_str8_from_str32__ainfo, default: md_assert_generic_sel_fail), \
 	MD_U64     : _Generic(allocator, MD_Arena*: md_str8_from_u64__arena,   MD_AllocatorInfo: md_str8_from_u64__ainfo,   default: md_assert_generic_sel_fail), \
 	MD_S64     : _Generic(allocator, MD_Arena*: md_str8_from_s64__arena,   MD_AllocatorInfo: md_str8_from_s64__ainfo,   default: md_assert_generic_sel_fail), \
-	default : md_assert_generic_sel_fail)                                                                                                      \
+	default : md_assert_generic_sel_fail)                                                                                                                     \
 ) md_generic_call(allocator, in)
 
-#define md_str16_from(allocator, in)                                                                                                           \
-_Generic(in,                                                                                                                                \
+#define md_str16_from(allocator, in) \
+_Generic(in,                         \
 	MD_String8: _Generic(allocator, MD_Arena*: md_str16_from_str8__arena, MD_AllocatorInfo: md_str16_from_str8__ainfo,  default: md_assert_generic_sel_fail), \
-	default:  md_assert_generic_sel_fail                                                                                                       \
+	default:  md_assert_generic_sel_fail \
 ) md_generic_call(allocator, in)

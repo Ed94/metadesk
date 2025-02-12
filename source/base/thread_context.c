@@ -40,8 +40,7 @@ md_tctx_init_and_equip_alloc(MD_TCTX* md_tctx, MD_AllocatorInfo ainfo)
 	MD_Arena** md_arena_ptr = md_tctx->arenas;
 	for (MD_U64 i = 0; i < md_array_count(md_tctx->arenas); i += 1, md_arena_ptr += 1)
 	{
-		if (*md_arena_ptr == md_nullptr)
-		{
+		if (*md_arena_ptr == md_nullptr) {
 			*md_arena_ptr = md_arena_alloc(.backing = ainfo);
 		}
 	}
@@ -65,7 +64,7 @@ md_tctx_get_scratch(MD_Arena** conflicts, MD_U64 count)
 {
 	MD_TCTX* md_tctx = md_tctx_get_equipped();
 
-	MD_Arena*  result    = 0;
+	MD_Arena*  result       = 0;
 	MD_Arena** md_arena_ptr = md_tctx->arenas;
 	for (MD_U64 i = 0; i < md_array_count(md_tctx->arenas); i += 1, md_arena_ptr += 1)
 	{

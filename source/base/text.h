@@ -101,6 +101,6 @@ md_txt_rng_union(MD_TxtRng a, MD_TxtRng b)
 
 inline MD_B32
 md_txt_rng_contains(MD_TxtRng r, MD_TxtPt pt) {
-	MD_B32    result = ((md_txt_pt_less_than(r.md_min, pt) || md_txt_pt_match(r.md_min, pt)) && md_txt_pt_less_than(pt, r.md_max));
+	MD_B32 result = ((md_txt_pt_less_than(r.md_min, pt) || md_txt_pt_match(r.md_min, pt)) && md_txt_pt_less_than(pt, r.md_max));
 	return result;
 }

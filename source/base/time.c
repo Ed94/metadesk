@@ -10,7 +10,7 @@ md_date_time_from_unix_time(MD_U64 unix_time)
 	date.year = 1970;
 	date.day  = 1 +  (unix_time / 86400);
 	date.sec  = (MD_U32) unix_time % 60;
-	date.md_min  = (MD_U32)(unix_time / 60)   % 60;
+	date.min  = (MD_U32)(unix_time / 60)   % 60;
 	date.hour = (MD_U32)(unix_time / 3600) % 24;
 
 	for(;;)

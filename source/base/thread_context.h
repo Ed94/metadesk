@@ -25,14 +25,14 @@ struct MD_TCTX
 ////////////////////////////////
 // NOTE(allen): Thread MD_Context Functions
 
-MD_API void  md_tctx_init_and_equip      (MD_TCTX* md_tctx);
-MD_API void  md_tctx_init_and_equip_alloc(MD_TCTX* md_tctx, MD_AllocatorInfo ainfo);
-MD_API void  md_tctx_release             (void);
+MD_API void     md_tctx_init_and_equip      (MD_TCTX* md_tctx);
+MD_API void     md_tctx_init_and_equip_alloc(MD_TCTX* md_tctx, MD_AllocatorInfo ainfo);
+MD_API void     md_tctx_release             (void);
 MD_API MD_TCTX* md_tctx_get_equipped        (void);
 
 MD_API MD_Arena* md_tctx_get_scratch(MD_Arena** conflicts, MD_U64 count);
 
-void    md_tctx_set_thread_name(MD_String8 name);
+void       md_tctx_set_thread_name(MD_String8 name);
 MD_String8 md_tctx_get_thread_name(void);
 
 void    md_tctx_write_srcloc(char*  file_name, MD_U64  line_number);
@@ -50,12 +50,12 @@ md_scratch_begin__ainfo(MD_AllocatorInfo ainfo, Opt_ScratchBegin opt) {
 
 md_force_inline MD_TempArena md_scratch_begin__arena(MD_Arena** arena, Opt_ScratchBegin opt) { MD_TempArena scratch = md_temp_begin(md_tctx_get_scratch(arena, opt.count)); return scratch; }
 
-#define md_scratch_begin(conflicts, ...)        \
-_Generic(conflicts,                          \
-	int          : md_scratch_begin__arena,     \
-	MD_Arena**      : md_scratch_begin__arena,     \
-	MD_AllocatorInfo: md_scratch_begin__ainfo,     \
-	default      : md_assert_generic_sel_fail \
+#define md_scratch_begin(conflicts, ...)       \
+_Generic(conflicts,                            \
+	int          : md_scratch_begin__arena,    \
+	MD_Arena**      : md_scratch_begin__arena, \
+	MD_AllocatorInfo: md_scratch_begin__ainfo, \
+	default      : md_assert_generic_sel_fail  \
 ) md_generic_call(conflicts, (Opt_ScratchBegin){__VA_ARGS__})
 
 #define scratch_end(scratch) md_temp_end(scratch)

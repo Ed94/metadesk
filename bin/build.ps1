@@ -44,6 +44,8 @@ $release      = $null
 [bool] $compile_sanity  = $false
 [bool] $gen_c11         = $false
 [bool] $tests           = $false
+[bool] $c11_sanity      = $false
+[bool] $sanity_tests    = $false
 
 [array] $vendors = @( "clang", "msvc" )
 
@@ -59,6 +61,8 @@ if ( $args ) { $args | ForEach-Object {
 		"compile_sanity"    { $compile_sanity = $true }
 		"gen_c11"           { $gen_c11        = $true }
 		"tests"             { $tests          = $true }
+		"c11_sanity"        { $c11_sanity     = $true }
+		"sanity_tests"      { $sanity_tests   = $true }
 		}
 	}
 }
@@ -89,6 +93,8 @@ $cannot_build =                    $code_sanity    -eq $false
 $cannot_build = $cannot_build -and $compile_sanity -eq $false
 $cannot_build = $cannot_build -and $gen_c11        -eq $false
 $cannot_build = $cannot_build -and $test           -eq $false
+$cannot_build = $cannot_build -and $c11_sanity     -eq $false
+$cannot_build = $cannot_build -and $sanity_tests   -eq $false
 if ( $cannot_build ) {
 	Pop-Location
 	throw "No build target specified. One must be specified, this script will not assume one"
@@ -183,7 +189,7 @@ if ($gen_c11)
 
 	Push-Location $path_root
 		if ( Test-Path( $executable ) ) {
-			write-host "`nRunninggen_c11/gen_c11.exe"
+			write-host "`nRunning gen_c11/gen_c11.exe"
 			$time_taken = Measure-Command { & $executable
 					| ForEach-Object {
 						write-host `t $_ -ForegroundColor Green
@@ -194,10 +200,9 @@ if ($gen_c11)
 	Pop-Location
 }
 
-
-if ($tests)
+if ($c11_sanity)
 {
-	write-host " Bulding tests/c11_sanity.c"
+	write-host " Building tests/c11_sanity.c"
 
 	$compiler_args = @()
 	$compiler_args += $flag_all_c
@@ -241,7 +246,57 @@ if ($tests)
 			}
 		write-host "`ntest/code_sanity completed in $($time_taken.TotalMilliseconds) ms"
 	}
-Pop-Location
+	Pop-Location
 }
+
+if ($cpp17_sanity)
+{
+
+}
+
+if ($sanity_tests)
+{
+	write-host " Building tests/sanity_tests.c"
+
+	$compiler_args = @()
+	$compiler_args += $flag_all_c
+	$compiler_args += $flag_updated_cpp_macro
+	$compiler_args += $flag_c11
+
+	$linker_args = @()
+	$linker_args += $flag_link_win_subsystem_console
+
+	$path_gen = join-path $path_gen_c11 'gen'
+
+	$includes   = @( $path_gen, $path_root )
+	$unit       = join-path $path_tests  'sanity_tests.c'
+	$executable = join-path $path_build  'sanity_tests.exe'
+
+	$result = build-simple $path_build $includes $compiler_args $linker_args $unit $executable
+
+	Push-Location $path_root
+		if ( Test-Path( $executable ) ) {
+			write-host "`nRunning gen_c11/sanity_tests.exe"
+			$time_taken = Measure-Command { & $executable
+					| ForEach-Object {
+						write-host `t $_ -ForegroundColor Green
+					}
+				}
+			write-host "`ntest/sanity_tests completed in $($time_taken.TotalMilliseconds) ms"
+		}
+	Pop-Location
+}
+
+if ($unicode_test)
+{
+
+}
+
+if ($expression_tests)
+{
+
+}
+
+
 
 Pop-Location # $path_root

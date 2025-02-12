@@ -1,6 +1,6 @@
-# Metadesk (RADDBG Standalone Fork)
+# Metadesk: RAD Debugger's Standalone Fork
 
-**Note: This repo is under heavy WIP. I'm currently getting the code from RAD's (Epic Games) Debugger over to a standalone state while at the same time studying it.**
+**Note: This repo is under heavy WIP. Currently getting the code from RAD's (Epic Games) Debugger over to a standalone state while at the same time studying it.**
 
 This is a fork that aims to make the latest version of metadesk available from the [RAD Debugger](https://github.com/EpicGamesExt/raddebugger) accessible as a standalone library.
 

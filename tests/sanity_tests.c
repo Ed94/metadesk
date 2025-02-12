@@ -12,7 +12,7 @@ static struct
 test_ctx;
 
 static void
-BeginTest(char* name)
+begin_test(char* name)
 {
     MD_U64 length = md_cstring_length((MD_U8*)name);
     MD_U64 spaces = 25 - length;
@@ -26,7 +26,7 @@ BeginTest(char* name)
 }
 
 static void
-TestResult(MD_B32 result)
+test_result(MD_B32 result)
 {
     test_ctx.number_of_tests += 1;
     test_ctx.number_passed += !!result;
@@ -41,7 +41,7 @@ TestResult(MD_B32 result)
 }
 
 static void
-EndTest(void)
+end_test(void)
 {
     int spaces = 20 - test_ctx.number_of_tests;
     if(spaces < 0) { spaces = 0; }
@@ -60,246 +60,234 @@ EndTest(void)
     printf("\n");
 }
 
-#define Test(name) for(int _i_ = (BeginTest(name), 0); !_i_; _i_ += 1, EndTest())
+#define test(name) for(int _i_ = (begin_test(name), 0); !_i_; _i_ += 1, end_test())
 
 static MD_Node*
-MakeTestNode(MD_NodeKind kind, MD_String8 string)
+make_test_node(MD_NodeKind kind, MD_String8 string)
 {
     return MD_MakeNode(arena, kind, string, string, 0);
 }
 
 static MD_B32
-MatchParsedWithNode(MD_Arena* arena, MD_String8 string, MD_Node* tree)
+match_parsed_with_node(MD_Arena* arena, MD_String8 string, MD_Node* tree)
 {
 	MD_TokenizeResult lexed  = md_tokenize_from_text(arena, string);
-	MD_ParseResult    parsed = md_parse_from_text_tokens(arena, str8_lit("MatchParsedWithNode"), string, lexed.tokens);
+	MD_ParseResult    parsed = md_parse_from_text_tokens(arena, md_str8_lit("match_parsed_with_node"), string, lexed.tokens);
 	return md_node_match(tree, parsed.root, 0);
 }
 
 static MD_B32
-TokenMatch(MD_Token token, MD_String8 string, MD_TokenFlags flags)
+token_match(MD_String8 text, MD_Token token, MD_String8 string, MD_TokenFlags flags)
 {
-	return md_str8_match(string, md_token, 0) &&& token.flags == flags
-    return MD_S8Match(string, token.string, 0) && token.kind == kind;
+	return md_str8_match(string, md_str8_substr(text, token.range), 0) &&& token.flags == flags
+    // return MD_S8Match(string, token.string, 0) && token.kind == kind;
 }
 
 int main(void)
 {
-    arena = MD_ArenaAlloc();
+    arena = md_arena_alloc(0);
     
-    Test("Lexer")
+    test("Lexer")
     {
-        MD_String8 string = md_str8_lit("abc def 123 456 123_456 abc123 123abc +-*");
+        MD_String8 text = md_str8_lit("abc def 123 456 123_456 abc123 123abc +-*");
         MD_Token tokens[100];
         
-        MD_Token* token     = tokens;
-        MD_Token* token_opl = md_token;
-        MD_U64 pos = 0;
-        for (; pos < string.size && token < token_opl; )
-        {
-			
-            *token = MD_TokenFromString(MD_S8Skip(string, pos));
-            pos += md_dim_1u64(token->range);
-            token += 1;
-        }
+		MD_TokenizeResult lexed =  md_tokenize_from_text(arena, text);
         
-        TestResult(TokenMatch(tokens[0], MD_S8Lit("abc"), MD_TokenKind_Identifier));
-        TestResult(TokenMatch(tokens[1], MD_S8Lit(" "), MD_TokenKind_Whitespace));
-        TestResult(TokenMatch(tokens[2], MD_S8Lit("def"), MD_TokenKind_Identifier));
-        TestResult(TokenMatch(tokens[3], MD_S8Lit(" "), MD_TokenKind_Whitespace));
-        TestResult(TokenMatch(tokens[4], MD_S8Lit("123"), MD_TokenKind_Numeric));
-        TestResult(TokenMatch(tokens[5], MD_S8Lit(" "), MD_TokenKind_Whitespace));
-        TestResult(TokenMatch(tokens[6], MD_S8Lit("456"), MD_TokenKind_Numeric));
-        TestResult(TokenMatch(tokens[7], MD_S8Lit(" "), MD_TokenKind_Whitespace));
-        TestResult(TokenMatch(tokens[8], MD_S8Lit("123_456"), MD_TokenKind_Numeric));
-        TestResult(TokenMatch(tokens[9], MD_S8Lit(" "), MD_TokenKind_Whitespace));
-        TestResult(TokenMatch(tokens[10], MD_S8Lit("abc123"), MD_TokenKind_Identifier));
-        TestResult(TokenMatch(tokens[11], MD_S8Lit(" "), MD_TokenKind_Whitespace));
-        TestResult(TokenMatch(tokens[12], MD_S8Lit("123abc"), MD_TokenKind_Numeric));
-        TestResult(TokenMatch(tokens[13], MD_S8Lit(" "), MD_TokenKind_Whitespace));
-        TestResult(TokenMatch(tokens[14], MD_S8Lit("+-*"), MD_TokenKind_Symbol));
+        test_result(token_match(text, tokens[0],  md_str8_lit("abc"),     MD_TokenFlag_Identifier));
+        test_result(token_match(text, tokens[1],  md_str8_lit(" "),       MD_TokenFlag_Whitespace));
+        test_result(token_match(text, tokens[2],  md_str8_lit("def"),     MD_TokenFlag_Identifier));
+        test_result(token_match(text, tokens[3],  md_str8_lit(" "),       MD_TokenFlag_Whitespace));
+        test_result(token_match(text, tokens[4],  md_str8_lit("123"),     MD_TokenFlag_Numeric));
+        test_result(token_match(text, tokens[5],  md_str8_lit(" "),       MD_TokenFlag_Whitespace));
+        test_result(token_match(text, tokens[6],  md_str8_lit("456"),     MD_TokenFlag_Numeric));
+        test_result(token_match(text, tokens[7],  md_str8_lit(" "),       MD_TokenFlag_Whitespace));
+        test_result(token_match(text, tokens[8],  md_str8_lit("123_456"), MD_TokenFlag_Numeric));
+        test_result(token_match(text, tokens[9],  md_str8_lit(" "),       MD_TokenFlag_Whitespace));
+        test_result(token_match(text, tokens[10], md_str8_lit("abc123"),  MD_TokenFlag_Identifier));
+        test_result(token_match(text, tokens[11], md_str8_lit(" "),       MD_TokenFlag_Whitespace));
+        test_result(token_match(text, tokens[12], md_str8_lit("123abc"),  MD_TokenFlag_Numeric));
+        test_result(token_match(text, tokens[13], md_str8_lit(" "),       MD_TokenFlag_Whitespace));
+        test_result(token_match(text, tokens[14], md_str8_lit("+-*"),     MD_TokenFlag_Symbol));
     }
     
-    Test("Empty Sets")
+    test("Empty Sets")
     {
-        TestResult(MatchParsedWithNode(MD_S8Lit("{}"), MakeTestNode(NodeKind_Main, MD_S8Lit(""))));
-        TestResult(MatchParsedWithNode(MD_S8Lit("()"), MakeTestNode(NodeKind_Main, MD_S8Lit(""))));
-        TestResult(MatchParsedWithNode(MD_S8Lit("[]"), MakeTestNode(NodeKind_Main, MD_S8Lit(""))));
-        TestResult(MatchParsedWithNode(MD_S8Lit("[)"), MakeTestNode(NodeKind_Main, MD_S8Lit(""))));
-        TestResult(MatchParsedWithNode(MD_S8Lit("(]"), MakeTestNode(NodeKind_Main, MD_S8Lit(""))));
+        test_result(matched_parsed_with_node(md_str8_lit("{}"), make_test_node(MD_NodeKind_Main, md_str8_lit(""))));
+        test_result(matched_parsed_with_node(md_str8_lit("()"), make_test_node(MD_NodeKind_Main, md_str8_lit(""))));
+        test_result(matched_parsed_with_node(md_str8_lit("[]"), make_test_node(MD_NodeKind_Main, md_str8_lit(""))));
+        test_result(matched_parsed_with_node(md_str8_lit("[)"), make_test_node(MD_NodeKind_Main, md_str8_lit(""))));
+        test_result(matched_parsed_with_node(md_str8_lit("(]"), make_test_node(MD_NodeKind_Main, md_str8_lit(""))));
     }
     
-    Test("Simple Unnamed Sets")
+    test("Simple Unnamed Sets")
     {
         {
-            MD_String8 string = MD_S8Lit("{a, b, c}");
-            Node *tree = MakeTestNode(NodeKind_Main, MD_S8Lit(""));
-            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("a")));
-            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("b")));
-            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("c")));
-            TestResult(MatchParsedWithNode(string, tree));
+            MD_String8 string = md_str8_lit("{a, b, c}");
+            MD_Node*   tree   = make_test_node(MD_NodeKind_Main, md_str8_lit(""));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("a")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("b")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("c")));
+            test_result(matched_parsed_with_node(string, tree));
         }
         {
-            MD_String8 string = MD_S8Lit("(1 2 3 4 5)");
-            Node *tree = MakeTestNode(NodeKind_Main, MD_S8Lit(""));
-            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("1")));
-            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("2")));
-            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("3")));
-            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("4")));
-            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("5")));
-            TestResult(MatchParsedWithNode(string, tree));
+            MD_String8 string = md_str8_lit("(1 2 3 4 5)");
+            MD_Node *tree = make_test_node(MD_NodeKind_Main, md_str8_lit(""));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("1")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("2")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("3")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("4")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("5")));
+            test_result(matched_parsed_with_node(string, tree));
         }
         {
-            MD_String8 string = MD_S8Lit("{a}");
-            Node *tree = MakeTestNode(NodeKind_Main, MD_S8Lit(""));
-            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("a")));
-            TestResult(MatchParsedWithNode(string, tree));
+            MD_String8 string = md_str8_lit("{a}");
+            MD_Node* tree = make_test_node(MD_NodeKind_Main, md_str8_lit(""));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("a")));
+            test_result(matched_parsed_with_node(string, tree));
         }
     }
     
-    Test("Simple Named Sets")
+    test("Simple Named Sets")
     {
-        MD_String8 string = MD_S8Lit("simple_set: {a, b, c}");
-        Node *tree = MakeTestNode(NodeKind_Main, MD_S8Lit("simple_set"));
-        MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("a")));
-        MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("b")));
-        MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("c")));
-        TestResult(MatchParsedWithNode(string, tree));
+        MD_String8 string = md_str8_lit("simple_set: {a, b, c}");
+        MD_Node* tree = make_test_node(MD_NodeKind_Main, md_str8_lit("simple_set"));
+        md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("a")));
+        md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("b")));
+        md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("c")));
+        test_result(matched_parsed_with_node(string, tree));
     }
     
-    Test("Nested Sets")
+    test("Nested Sets")
     {
         {
-            MD_String8 string = MD_S8Lit("{a b:{1 2 3} c}");
-            Node *tree = MakeTestNode(NodeKind_Main, MD_S8Lit(""));
-            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("a")));
+            MD_String8 string = md_str8_lit("{a b:{1 2 3} c}");
+            MD_Node* tree = make_test_node(MD_NodeKind_Main, md_str8_lit(""));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("a")));
             {
-                Node *sub = MakeTestNode(NodeKind_Main, MD_S8Lit("b"));
-                MD_PushChild(sub, MakeTestNode(NodeKind_Main, MD_S8Lit("1")));
-                MD_PushChild(sub, MakeTestNode(NodeKind_Main, MD_S8Lit("2")));
-                MD_PushChild(sub, MakeTestNode(NodeKind_Main, MD_S8Lit("3")));
-                MD_PushChild(tree, sub);
+                MD_Node* sub = make_test_node(MD_NodeKind_Main, md_str8_lit("b"));
+                md_node_push_child(sub, make_test_node(MD_NodeKind_Main, md_str8_lit("1")));
+                md_node_push_child(sub, make_test_node(MD_NodeKind_Main, md_str8_lit("2")));
+                md_node_push_child(sub, make_test_node(MD_NodeKind_Main, md_str8_lit("3")));
+                md_node_push_child(tree, sub);
             }
-            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("c")));
-            TestResult(MatchParsedWithNode(string, tree));
+            MD_PushChild(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("c")));
+            test_result(matched_parsed_with_node(string, tree));
         }
         
         {
-            MD_String8 string = MD_S8Lit("foo: { (size: u64) -> *void }");
-            Node *tree = MakeTestNode(NodeKind_Main, MD_S8Lit("foo"));
-            Node *params = MakeTestNode(NodeKind_Main, MD_S8Lit(""));
-            Node *size = MakeTestNode(NodeKind_Main, MD_S8Lit("size"));
-            MD_PushChild(size, MakeTestNode(NodeKind_Main, MD_S8Lit("u64")));
-            MD_PushChild(params, size);
-            MD_PushChild(tree, params);
-            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("->")));
-            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("*")));
-            MD_PushChild(tree, MakeTestNode(NodeKind_Main, MD_S8Lit("void")));
-            TestResult(MatchParsedWithNode(string, tree));
+            MD_String8 string = md_str8_lit("foo: { (size: u64) -> *void }");
+            MD_Node* tree   = make_test_node(MD_NodeKind_Main, md_str8_lit("foo"));
+            MD_Node* params = make_test_node(MD_NodeKind_Main, md_str8_lit(""));
+            MD_Node* size   = make_test_node(MD_NodeKind_Main, md_str8_lit("size"));
+            md_node_push_child(size, make_test_node(MD_NodeKind_Main, md_str8_lit("u64")));
+            md_node_push_child(params, size);
+            md_node_push_child(tree, params);
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("->")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("*")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("void")));
+            test_result(matched_parsed_with_node(string, tree));
         }
     }
     
-    Test("Non-Sets")
+    test("Non-Sets")
     {
-        TestResult(MatchParsedWithNode(MD_S8Lit("foo"), MakeTestNode(NodeKind_Main, MD_S8Lit("foo"))));
-        TestResult(MatchParsedWithNode(MD_S8Lit("123"), MakeTestNode(NodeKind_Main, MD_S8Lit("123"))));
-        TestResult(MatchParsedWithNode(MD_S8Lit("+"),   MakeTestNode(NodeKind_Main, MD_S8Lit("+"))));
+        test_result(matched_parsed_with_node(md_str8_lit("foo"), make_test_node(MD_NodeKind_Main, md_str8_lit("foo"))));
+        test_result(matched_parsed_with_node(md_str8_lit("123"), make_test_node(MD_NodeKind_Main, md_str8_lit("123"))));
+        test_result(matched_parsed_with_node(md_str8_lit("+"),   make_test_node(MD_NodeKind_Main, md_str8_lit("+"))));
     }
     
-    Test("Set Border Flags")
+    test("Set Border Flags")
     {
         {
-            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(0, 100)"), 0);
-            TestResult(parse.node->flags & NodeFlag_HasParenLeft &&
-                       parse.node->flags & NodeFlag_HasParenRight);
+            MD_ParseResult parse = MD_ParseOneNode(arena, md_str8_lit("(0, 100)"), 0);
+            test_result(parse.root->flags & MD_NodeFlag_HasParenLeft &&
+                        parse.root->flags & MD_NodeFlag_HasParenRight);
         }
         
         {
-            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(0, 100]"), 0);
-            TestResult(parse.node->flags & NodeFlag_HasParenLeft &&
-                       parse.node->flags & NodeFlag_HasBracketRight);
+            MD_ParseResult parse = MD_ParseOneNode(arena, md_str8_lit("(0, 100]"), 0);
+            test_result(parse.root->flags & MD_NodeFlag_HasParenLeft &&
+                        parse.root->flags & MD_NodeFlag_HasBracketRight);
         }
         
         {
-            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("[0, 100)"), 0);
-            TestResult(parse.node->flags & NodeFlag_HasBracketLeft &&
-                       parse.node->flags & NodeFlag_HasParenRight);
+            MD_ParseResult parse = MD_ParseOneNode(arena, md_str8_lit("[0, 100)"), 0);
+            test_result(parse.root->flags & MD_NodeFlag_HasBracketLeft &&
+                        parse.root->flags & MD_NodeFlag_HasParenRight);
         }
         
         {
-            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("[0, 100]"), 0);
-            TestResult(parse.node->flags & NodeFlag_HasBracketLeft &&
-                       parse.node->flags & NodeFlag_HasBracketRight);
+            MD_ParseResult parse = MD_ParseOneNode(arena, md_str8_lit("[0, 100]"), 0);
+            test_result(parse.root->flags & MD_NodeFlag_HasBracketLeft &&
+                        parse.root->flags & MD_NodeFlag_HasBracketRight);
         }
         
         {
-            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("{0, 100}"), 0);
-            TestResult(parse.node->flags & NodeFlag_HasBraceLeft &&
-                       parse.node->flags & NodeFlag_HasBraceRight);
+            MD_ParseResult parse = MD_ParseOneNode(arena, md_str8_lit("{0, 100}"), 0);
+            test_result(parse.root->flags & MD_NodeFlag_HasBraceLeft &&
+                        parse.root->flags & MD_NodeFlag_HasBraceRight);
         }
     }
     
-    Test("Node Separator Flags")
+    test("Node Separator Flags")
     {
         {
-            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a, b)"), 0);
-            TestResult(parse.node->first_child->flags & NodeFlag_IsBeforeComma);
-            TestResult(parse.node->first_child->next->flags & NodeFlag_IsAfterComma);
+            MD_ParseResult parse = MD_ParseOneNode(arena, md_str8_lit("(a, b)"), 0);
+            test_result(parse.root->first_child->flags       & MD_NodeFlag_IsBeforeComma);
+            test_result(parse.root->first_child->next->flags & MD_NodeFlag_IsAfterComma);
         }
         {
-            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a; b)"), 0);
-            TestResult(parse.node->first_child->flags & NodeFlag_IsBeforeSemicolon);
-            TestResult(parse.node->first_child->next->flags & NodeFlag_IsAfterSemicolon);
+            MD_ParseResult parse = MD_ParseOneNode(arena, md_str8_lit("(a; b)"), 0);
+            test_result(parse.root->first_child->flags       & MD_NodeFlag_IsBeforeSemicolon);
+            test_result(parse.root->first_child->next->flags & MD_NodeFlag_IsAfterSemicolon);
         }
     }
     
-    Test("Node Text Flags")
+    test("Node Text Flags")
     {
-        TestResult(MD_ParseOneNode(arena, MD_S8Lit("123"), 0).node->flags &
-                   NodeFlag_Numeric);
-        TestResult(MD_ParseOneNode(arena, MD_S8Lit("123_456_789"), 0).node->flags &
-                   NodeFlag_Numeric);
-        TestResult(MD_ParseOneNode(arena, MD_S8Lit("abc"), 0).node->flags &
-                   NodeFlag_Identifier);
+        TestResult(MD_ParseOneNode(arena, md_str8_lit("123"),         0).node->flags &MD_NodeFlag_Numeric);
+        TestResult(MD_ParseOneNode(arena, md_str8_lit("123_456_789"), 0).node->flags &MD_NodeFlag_Numeric);
+        TestResult(MD_ParseOneNode(arena, md_str8_lit("abc"),         0).node->flags &MD_NodeFlag_Identifier);
         {
-            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("\"foo\""), 0);
-            TestResult(parse.node->flags & NodeFlag_StringLiteral &&
-                       parse.node->flags & NodeFlag_StringDoubleQuote);
+            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("\"foo\""), 0);
+            TestResult(parse.root->flags & MD_NodeFlag_StringLiteral &&
+                       parse.root->flags & MD_NodeFlag_StringDoubleQuote);
         }
         {
-            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("'foo'"), 0);
-            TestResult(parse.node->flags & NodeFlag_StringLiteral &&
-                       parse.node->flags & NodeFlag_StringSingleQuote);
+            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("'foo'"), 0);
+            TestResult(parse.root->flags & NodeFlag_StringLiteral &&
+                       parse.root->flags & NodeFlag_StringSingleQuote);
         }
         {
-            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("`foo`"), 0);
-            TestResult(parse.node->flags & NodeFlag_StringLiteral &&
-                       parse.node->flags & NodeFlag_StringTick);
+            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("`foo`"), 0);
+            TestResult(parse.root->flags & NodeFlag_StringLiteral &&
+                       parse.root->flags & NodeFlag_StringTick);
         }
         {
-            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("\"\"\"foo\"\"\""), 0);
-            TestResult(parse.node->flags & NodeFlag_StringLiteral &&
-                       parse.node->flags & NodeFlag_StringDoubleQuote &&
-                       parse.node->flags & NodeFlag_StringTriplet);
+            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("\"\"\"foo\"\"\""), 0);
+            TestResult(parse.root->flags & NodeFlag_StringLiteral &&
+                       parse.root->flags & NodeFlag_StringDoubleQuote &&
+                       parse.root->flags & NodeFlag_StringTriplet);
         }
         {
-            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("'''foo'''"), 0);
-            TestResult(parse.node->flags & NodeFlag_StringLiteral &&
-                       parse.node->flags & NodeFlag_StringSingleQuote &&
-                       parse.node->flags & NodeFlag_StringTriplet);
+            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("'''foo'''"), 0);
+            TestResult(parse.root->flags & NodeFlag_StringLiteral &&
+                       parse.root->flags & NodeFlag_StringSingleQuote &&
+                       parse.root->flags & NodeFlag_StringTriplet);
         }
         {
-            ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("```foo```"), 0);
-            TestResult(parse.node->flags & NodeFlag_StringLiteral &&
-                       parse.node->flags & NodeFlag_StringTick &&
-                       parse.node->flags & NodeFlag_StringTriplet);
+            MD_ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("```foo```"), 0);
+            TestResult(parse.root->flags & NodeFlag_StringLiteral &&
+                       parse.root->flags & NodeFlag_StringTick &&
+                       parse.root->flags & NodeFlag_StringTriplet);
         }
     }
     
-    Test("Style Strings")
+    test("Style Strings")
     {
         {
-            MD_String8 str = MD_S8Stylize(arena, MD_S8Lit("THIS_IS_A_TEST"),
+            MD_String8 str = md_str8_style(arena, MD_S8Lit("THIS_IS_A_TEST"),
                                           MD_IdentifierStyle_UpperCamelCase, MD_S8Lit(" "));
             TestResult(MD_S8Match(str, MD_S8Lit("This Is A Test"), 0));
         }
@@ -320,20 +308,20 @@ int main(void)
         }
     }
     
-    Test("Enum Strings")
+    test("Enum Strings")
     {
-        TestResult(MD_S8Match(MD_StringFromNodeKind(NodeKind_Main), MD_S8Lit("Main"), 0));
-        TestResult(MD_S8Match(MD_StringFromNodeKind(NodeKind_Main), MD_S8Lit("Main"), 0));
+        TestResult(MD_S8Match(MD_StringFromNodeKind(MD_NodeKind_Main), MD_S8Lit("Main"), 0));
+        TestResult(MD_S8Match(MD_StringFromNodeKind(MD_NodeKind_Main), MD_S8Lit("Main"), 0));
         MD_String8List list = MD_StringListFromNodeFlags(arena, 
-                                                         NodeFlag_StringLiteral |
-                                                         NodeFlag_HasParenLeft |
-                                                         NodeFlag_IsBeforeSemicolon);
-        MD_b32 match = 1;
+                                                         MD_NodeFlag_StringLiteral |
+                                                         MD_NodeFlag_HasParenLeft |
+                                                         MD_NodeFlag_IsBeforeSemicolon);
+        MD_B32 match = 1;
         for(MD_String8Node *node = list.first; node; node = node->next)
-        {
-            if(!MD_S8Match(node->string, MD_S8Lit("StringLiteral"), 0)     &&
-               !MD_S8Match(node->string, MD_S8Lit("HasParenLeft"), 0)       &&
-               !MD_S8Match(node->string, MD_S8Lit("IsBeforeSemicolon"), 0))
+        md_str8_lit
+            if(!md_str8_match(node->string, md_str8_lit("StringLiteral"), 0)     &&
+               !md_str8_match(node->string, md_str8_lit("HasParenLeft"), 0)       &&
+               !md_str8_match(node->string, md_str8_lit("IsBeforeSemicolon"), 0))
             {
                 match = 0;
                 break;
@@ -342,7 +330,7 @@ int main(void)
         TestResult(match);
     }
     
-    Test("Node Comments")
+    test("Node Comments")
     {
         
         // NOTE(rjf): Pre-Comments:
@@ -389,7 +377,7 @@ int main(void)
         }
     }
     
-    Test("Errors")
+    test("Errors")
     {
         struct { char *s; MD_u64 columns[2]; } tests[] = {
             {"{", {1}},
@@ -436,7 +424,7 @@ int main(void)
         
     }
     
-    Test("Hash maps")
+    test("Hash maps")
     {
         MD_String8 key_strings[] = 
         {
@@ -478,7 +466,7 @@ int main(void)
         }
     }
     
-    Test("String Inner & Outer")
+    test("String Inner & Outer")
     {
         MD_String8 samples[6] = {
             MD_S8LitComp("'foo-bar'"),
@@ -511,7 +499,7 @@ int main(void)
         TestResult(MD_S8Match(nodes[5]->raw_string, samples[5], 0));
     }
     
-    Test("String escaping")
+    test("String escaping")
     {
         {
             ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("`\\``"), 0);
@@ -553,7 +541,7 @@ int main(void)
         }
     }
     
-    Test("Node-With-Flags Seeking")
+    test("Node-With-Flags Seeking")
     {
         
         {
@@ -606,7 +594,7 @@ int main(void)
         
     }
     
-    Test("Unscoped Subtleties")
+    test("Unscoped Subtleties")
     {
         MD_String8 file_name = MD_S8Lit("raw_text");
         
@@ -678,7 +666,7 @@ int main(void)
         }
     }
     
-    Test("Tags")
+    test("Tags")
     {
         MD_String8 file_name = MD_S8Lit("raw_text");
         
@@ -700,7 +688,7 @@ int main(void)
         }
     }
     
-    Test("Tagged & Unlabeled")
+    test("Tagged & Unlabeled")
     {
         MD_String8 file_name = MD_S8Lit("raw_text");
         
@@ -731,7 +719,7 @@ int main(void)
         }
     }
     
-    Test("Integer Lexing")
+    test("Integer Lexing")
     {
         MD_String8 file_name = MD_S8Lit("raw_text");
         
@@ -752,7 +740,7 @@ int main(void)
         }
     }
     
-    Test("Float Lexing")
+    test("Float Lexing")
     {
         MD_String8 file_name = MD_S8Lit("raw_text");
         
@@ -778,7 +766,7 @@ int main(void)
         }
     }
     
-    Test("Labels are Not Reserved")
+    test("Labels are Not Reserved")
     {
         MD_String8 file_name = MD_S8Lit("raw_text");
         
@@ -808,7 +796,7 @@ int main(void)
         }
     }
     
-    Test("Debug Strings")
+    test("Debug Strings")
     {
         {
             MD_String8 code     = MD_S8Lit("@foo @bar @baz a: { b c d e f }");

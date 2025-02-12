@@ -48,10 +48,10 @@ struct ArenaParams
 typedef struct Arena Arena;
 struct Arena
 {
-	Arena*        prev;    // previous arena in chain
-	Arena*        current; // current arena in chain
+	Arena*        prev;     // Previous arena in chain
+	Arena*        current;  // Current arena in chain
 	AllocatorInfo backing;
-	SSIZE         base_pos;
+	SSIZE         base_pos; // Tracks how main arenas have been chained
 	SSIZE         pos;
 	SSIZE         block_size;
 	ArenaFlags    flags;

@@ -11,9 +11,9 @@
 │     88     `8'     88   `"Ybbd8"'    "Y888  `"8bbdP"Y8   `"8bbdP"Y8   `"Ybbd8"'  `"YbbdP"'  88   `Y8a      │
 │                                                                                                            │
 ╚────────────────────────────────────────────────────────────────────────────────────────────────────────────╝
-/ \-------------------------, 
-\_,|                        | 
-   |    Single-header C11   | 
-   |  ,-----------------------
-   \_/______________________/ 
+/ \-------------------------,  Metadesk: RAD Debugger's Standalone Fork (https://github.com/Ed94/metadesk)
+\_,|                        |  This is a fork that aims to make the latest version of metadesk available
+   |    Single-header C11   |  from the RAD Debugger accessible as a standalone library.
+   |  ,----------------------- 
+   \_/______________________/  VERSION: 0.0.0
 */

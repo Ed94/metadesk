@@ -229,7 +229,7 @@ STBSP__PUBLICDEC void STB_SPRINTF_DECORATE(set_separators)(char comma, char peri
 
 #ifdef STB_SPRINTF_IMPLEMENTATION
 
-// NOTE(Ed): Modifying because I don't want to introduce this kind of mess to the gencpp parser
+// NOTE(Ed): Modifying these typedef defines to typedefs because I don't want to introduce this kind of mess to the gencpp parser
 
 // #define stbsp__uint32 unsigned int
 // #define stbsp__int32  signed   int
@@ -259,6 +259,8 @@ typedef unsigned short stbsp__uint16;
 			typedef stbsp__uint32 stbsp__uintptr;
 #	endif
 #endif
+
+// NOTE(Ed) - END OF: Modifying these typedef defines to typedefs because I don't want to introduce this kind of mess to the gencpp parser
 
 #ifndef STB_SPRINTF_MSVC_MODE // used for MSVC2013 and earlier (MSVC2015 matches GCC)
 #	if defined(_MSC_VER) && (_MSC_VER < 1900)

@@ -65,10 +65,9 @@ os_string_from_file_range__arena(Arena* arena, OS_Handle file, Rng1U64 range)
 	U64 pre_pos = arena_pos(arena);
 	String8 result;
 	result.size = dim_1u64(range);
-	result.str = push_array_no_zero(arena, U8, result.size);
+	result.str  = push_array_no_zero(arena, U8, result.size);
 	U64 actual_read_size = os_file_read(file, range, result.str);
-	if(actual_read_size < result.size)
-	{
+	if(actual_read_size < result.size) {
 		arena_pop_to(arena, pre_pos + actual_read_size);
 		result.size = actual_read_size;
 	}
@@ -82,7 +81,7 @@ os_string_from_file_range__ainfo(AllocatorInfo ainfo, OS_Handle file, Rng1U64 ra
 	result.str  = alloc_array_no_zero(ainfo, U8, result.size);
 	U64 actual_read_size = os_file_read(file, range, result.str);
 	if ((allocator_query_support(ainfo) & AllocatorQuery_ResizeShrink) && actual_read_size < result.size) {
-		resize(ainfo, result.str, result.size, scast(U64, result.str) + actual_read_size);
+		resize(ainfo, result.str, result.size, actual_read_size);
 		result.size = actual_read_size;
 	}
 	return result;

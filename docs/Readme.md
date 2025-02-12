@@ -190,6 +190,7 @@ This provides the user a way to control startup of the libary.
 ### Additional Info
 
 * [Zig's Allocator Interface](https://github.com/ziglang/zig/blob/master/lib/std/mem/Allocator.zig) is similar but not exactly the same.
+* [Johnathan Blow's original video](https://youtu.be/ciGQCP6HgqI?t=380) introducing this kind of allocator interface.
 
 ## Notes
 

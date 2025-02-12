@@ -3,7 +3,7 @@
 **Note: This repo is under heavy WIP. Currently getting the code from RAD's (Epic Games) Debugger over to a standalone state while at the same time studying it.**
 
 **Update:**
-This will contain just the minimal lib. Extra additions or the ability to generate variants will be in another repo (Currently removing excess).
+This will contain just the minimal lib. Extra additions or the ability to generate variants will be in another repo (Currently removing [excess](https://github.com/Ed94/metadesk_lib_gen)).
 
 This is a fork that aims to make the latest version of metadesk available from the [RAD Debugger](https://github.com/EpicGamesExt/raddebugger) accessible as a library.
 

@@ -9,39 +9,39 @@
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
 
-void main_thread_base_entry_point(MainThread_EntryPointProc* entry_point, char** arguments, U64 arguments_count)
+void md_main_thread_base_entry_point(MD_MainThread_EntryPointProc* md_entry_point, char** arguments, MD_U64 arguments_count)
 {
-#if PROFILE_TELEMETRY
-	local_persist U8 tm_data[MB(64)];
+#if MD_PROFILE_TELEMETRY
+	md_local_persist MD_U8 tm_data[MD_MB(64)];
 	tmLoadLibrary(TM_RELEASE);
 	tmSetMaxThreadCount(256);
 	tmInitialize(sizeof(tm_data), (char *)tm_data);
 #endif
-	thread_namef("[main thread]");
+	md_thread_namef("[main thread]");
 
-	TempArena   scratch = scratch_begin(0, 0);
+	MD_TempArena   scratch = md_scratch_begin(0, 0);
 
-	String8List command_line_argument_strings = os_string_list_from_argcv(scratch.arena, (int)arguments_count, arguments);
-	CmdLine     cmdline                       = cmd_line_from_string_list(scratch.arena, command_line_argument_strings);
-	B32         capture                       = cmd_line_has_flag(&cmdline, str8_lit("capture"));
+	MD_String8List command_line_argument_strings = md_os_string_list_from_argcv(scratch.arena, (int)arguments_count, arguments);
+	MD_CmdLine     cmdline                       = md_cmd_line_from_string_list(scratch.arena, command_line_argument_strings);
+	MD_B32         capture                       = md_cmd_line_has_flag(&cmdline, md_str8_lit("capture"));
 	if (capture) {
-		prof_begin_capture(arguments[0]);
+		md_prof_begin_capture(arguments[0]);
 	}
 
-	entry_point(&cmdline);
+	md_entry_point(&cmdline);
 
 	if (capture) {
-		prof_end_capture();
+		md_prof_end_capture();
 	}
 
 	scratch_end(scratch);
 }
 
 void 
-supplement_thread_base_entry_point(SupplementThread_EntryPointProc* entry_point, void*  params)
+md_supplement_thread_base_entry_point(MD_SupplementThread_EntryPointProc* md_entry_point, void*  params)
 {
-	TCTX tctx;
-	tctx_init_and_equip(&tctx);
-	entry_point(params);
-	tctx_release();
+	MD_TCTX md_tctx;
+	md_tctx_init_and_equip(&md_tctx);
+	md_entry_point(params);
+	md_tctx_release();
 }

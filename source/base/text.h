@@ -6,54 +6,54 @@
 ////////////////////////////////
 //~ rjf: Text 2D Coordinates & Ranges
 
-typedef struct TxtPt TxtPt;
-struct TxtPt
+typedef struct MD_TxtPt MD_TxtPt;
+struct MD_TxtPt
 {
-	S64 line;
-	S64 column;
+	MD_S64 line;
+	MD_S64 column;
 };
 
-typedef struct TxtRng TxtRng;
-struct TxtRng
+typedef struct MD_TxtRng MD_TxtRng;
+struct MD_TxtRng
 {
-	TxtPt min;
-	TxtPt max;
+	MD_TxtPt md_min;
+	MD_TxtPt md_max;
 };
 
 ////////////////////////////////
 //~ rjf: String Pair Types
 
-typedef struct String8TxtPtPair String8TxtPtPair;
-struct String8TxtPtPair
+typedef struct MD_String8TxtPtPair MD_String8TxtPtPair;
+struct MD_String8TxtPtPair
 {
-	String8 string;
-	TxtPt   pt;
+	MD_String8 string;
+	MD_TxtPt   pt;
 };
 
 ////////////////////////////////
 //~ rjf: Text Path Helpers
 
-MD_API String8TxtPtPair str8_txt_pt_pair_from_string(String8 string);
+MD_API MD_String8TxtPtPair md_str8_txt_pt_pair_from_string(MD_String8 string);
 
 ////////////////////////////////
 //~ rjf: Text 2D Coordinate/Range Functions
 
-inline TxtPt txt_pt(S64 line, S64 column) { TxtPt p  = { line, column }; return p; }
+inline MD_TxtPt md_txt_pt(MD_S64 line, MD_S64 column) { MD_TxtPt p  = { line, column }; return p; }
 
-inline B32   txt_pt_match(TxtPt a, TxtPt b) { return a.line == b.line && a.column == b.column; }
-inline TxtPt txt_pt_min  (TxtPt a, TxtPt b) { TxtPt result = b; if (txt_pt_less_than(a, b)) { result = a; } return result; }
-inline TxtPt txt_pt_max  (TxtPt a, TxtPt b) { TxtPt result = a; if (txt_pt_less_than(a, b)) { result = b; } return result; }
+inline MD_B32   md_txt_pt_match(MD_TxtPt a, MD_TxtPt b) { return a.line == b.line && a.column == b.column; }
+inline MD_TxtPt md_txt_pt_min  (MD_TxtPt a, MD_TxtPt b) { MD_TxtPt result = b; if (md_txt_pt_less_than(a, b)) { result = a; } return result; }
+inline MD_TxtPt md_txt_pt_max  (MD_TxtPt a, MD_TxtPt b) { MD_TxtPt result = a; if (md_txt_pt_less_than(a, b)) { result = b; } return result; }
 
-B32    txt_pt_less_than (TxtPt  a,   TxtPt  b);
-TxtRng txt_rng          (TxtPt  min, TxtPt  max);
-TxtRng txt_rng_intersect(TxtRng a,   TxtRng b);
-TxtRng txt_rng_union    (TxtRng a,   TxtRng b);
-B32    txt_rng_contains (TxtRng r,   TxtPt  pt);
+MD_B32    md_txt_pt_less_than (MD_TxtPt  a,   MD_TxtPt  b);
+MD_TxtRng md_txt_rng          (MD_TxtPt  md_min, MD_TxtPt  md_max);
+MD_TxtRng md_txt_rng_intersect(MD_TxtRng a,   MD_TxtRng b);
+MD_TxtRng md_txt_rng_union    (MD_TxtRng a,   MD_TxtRng b);
+MD_B32    md_txt_rng_contains (MD_TxtRng r,   MD_TxtPt  pt);
 
-inline B32
-txt_pt_less_than(TxtPt a, TxtPt b)
+inline MD_B32
+md_txt_pt_less_than(MD_TxtPt a, MD_TxtPt b)
 {
-	B32 result = 0;
+	MD_B32 result = 0;
 	if (a.line < b.line) {
 		result = 1;
 	}
@@ -63,44 +63,44 @@ txt_pt_less_than(TxtPt a, TxtPt b)
 	return result;
 }
 
-inline TxtRng
-txt_rng(TxtPt min, TxtPt max)
+inline MD_TxtRng
+md_txt_rng(MD_TxtPt md_min, MD_TxtPt md_max)
 {
-	TxtRng range = {0};
-	if(txt_pt_less_than(min, max)) {
-		range.min = min;
-		range.max = max;
+	MD_TxtRng range = {0};
+	if(md_txt_pt_less_than(md_min, md_max)) {
+		range.md_min = md_min;
+		range.md_max = md_max;
 	}
 	else {
-		range.min = max;
-		range.max = min;
+		range.md_min = md_max;
+		range.md_max = md_min;
 	}
 	return range;
 }
 
-inline TxtRng
-txt_rng_intersect(TxtRng a, TxtRng b)
+inline MD_TxtRng
+md_txt_rng_intersect(MD_TxtRng a, MD_TxtRng b)
 {
-	TxtRng result = {0};
-	result.min = txt_pt_max(a.min, b.min);
-	result.max = txt_pt_min(a.max, b.max);
-	if (txt_pt_less_than(result.max, result.min)) {
+	MD_TxtRng result = {0};
+	result.md_min = md_txt_pt_max(a.md_min, b.md_min);
+	result.md_max = md_txt_pt_min(a.md_max, b.md_max);
+	if (md_txt_pt_less_than(result.md_max, result.md_min)) {
 		MemoryZeroStruct(&result);
 	}
 	return result;
 }
 
-inline TxtRng
-txt_rng_union(TxtRng a, TxtRng b)
+inline MD_TxtRng
+md_txt_rng_union(MD_TxtRng a, MD_TxtRng b)
 {
-	TxtRng result = {0};
-	result.min = txt_pt_min(a.min, b.min);
-	result.max = txt_pt_max(a.max, b.max);
+	MD_TxtRng result = {0};
+	result.md_min = md_txt_pt_min(a.md_min, b.md_min);
+	result.md_max = md_txt_pt_max(a.md_max, b.md_max);
 	return result;
 }
 
-inline B32
-txt_rng_contains(TxtRng r, TxtPt pt) {
-	B32    result = ((txt_pt_less_than(r.min, pt) || txt_pt_match(r.min, pt)) && txt_pt_less_than(pt, r.max));
+inline MD_B32
+md_txt_rng_contains(MD_TxtRng r, MD_TxtPt pt) {
+	MD_B32    result = ((md_txt_pt_less_than(r.md_min, pt) || md_txt_pt_match(r.md_min, pt)) && md_txt_pt_less_than(pt, r.md_max));
 	return result;
 }

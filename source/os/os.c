@@ -1,6 +1,3 @@
-#ifdef INTELLISENSE_DIRECTIVES
-#	include "os.h"
-#endif
 
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
@@ -8,80 +5,80 @@
 ////////////////////////////////
 //~ rjf: Filesystem Helpers (Helpers, Implemented Once)
 
-B32
-os_write_data_to_file_path(String8 path, String8 data)
+MD_B32
+md_os_write_data_to_file_path(MD_String8 path, MD_String8 data)
 {
-	B32       good = 0;
-	OS_Handle file = os_file_open(OS_AccessFlag_Write, path);
-	if(! os_handle_match(file, os_handle_zero()))
+	MD_B32       good = 0;
+	MD_OS_Handle file = md_os_file_open(MD_OS_AccessFlag_Write, path);
+	if(! md_os_handle_match(file, md_os_handle_zero()))
 	{
 		good = 1;
-		os_file_write(file, r1u64(0, data.size), data.str);
-		os_file_close(file);
+		md_os_file_write(file, md_r1u64(0, data.size), data.str);
+		md_os_file_close(file);
 	}
 	return good;
 }
 
-B32
-os_write_data_list_to_file_path(String8 path, String8List list)
+MD_B32
+md_os_write_data_list_to_file_path(MD_String8 path, MD_String8List list)
 {
-	B32       good = 0;
-	OS_Handle file = os_file_open(OS_AccessFlag_Write, path);
-	if( ! os_handle_match(file, os_handle_zero()))
+	MD_B32       good = 0;
+	MD_OS_Handle file = md_os_file_open(MD_OS_AccessFlag_Write, path);
+	if( ! md_os_handle_match(file, md_os_handle_zero()))
 	{
 		    good = 1;
-		U64 off  = 0;
-		for(String8Node* n = list.first; n != 0; n = n->next)
+		MD_U64 off  = 0;
+		for(MD_String8Node* n = list.first; n != 0; n = n->next)
 		{
-			os_file_write(file, r1u64(off, off+n->string.size), n->string.str);
+			md_os_file_write(file, md_r1u64(off, off+n->string.size), n->string.str);
 			off += n->string.size;
 		}
-		os_file_close(file);
+		md_os_file_close(file);
 	}
 	return good;
 }
 
-B32
-os_append_data_to_file_path(String8 path, String8 data)
+MD_B32
+md_os_append_data_to_file_path(MD_String8 path, MD_String8 data)
 {
-	B32 good = 0;
+	MD_B32 good = 0;
 	if(data.size != 0)
 	{
-		OS_Handle file = os_file_open(OS_AccessFlag_Write|OS_AccessFlag_Append, path);
-		if( ! os_handle_match(file, os_handle_zero()))
+		MD_OS_Handle file = md_os_file_open(MD_OS_AccessFlag_Write|MD_OS_AccessFlag_Append, path);
+		if( ! md_os_handle_match(file, md_os_handle_zero()))
 		{
 			good = 1;
-			U64 pos = os_properties_from_file(file).size;
-			os_file_write(file, r1u64(pos, pos+data.size), data.str);
-			os_file_close(file);
+			MD_U64 pos = md_os_properties_from_file(file).size;
+			md_os_file_write(file, md_r1u64(pos, pos+data.size), data.str);
+			md_os_file_close(file);
 		}
 	}
 	return good;
 }
 
-String8
-os_string_from_file_range__arena(Arena* arena, OS_Handle file, Rng1U64 range)
+MD_String8
+md_os_string_from_file_range__arena(MD_Arena* arena, MD_OS_Handle file, MD_Rng1U64 range)
 {
-	U64 pre_pos = arena_pos(arena);
-	String8 result;
-	result.size = dim_1u64(range);
-	result.str  = push_array_no_zero(arena, U8, result.size);
-	U64 actual_read_size = os_file_read(file, range, result.str);
+	MD_U64 pre_pos = md_arena_pos(arena);
+	MD_String8 result;
+	result.size = md_dim_1u64(range);
+	result.str  = md_push_array__no_zero(arena, MD_U8, result.size);
+	MD_U64 actual_read_size = md_os_file_read(file, range, result.str);
 	if(actual_read_size < result.size) {
-		arena_pop_to(arena, pre_pos + actual_read_size);
+		md_arena_pop_to(arena, pre_pos + actual_read_size);
 		result.size = actual_read_size;
 	}
 	return result;
 }
 
-String8
-os_string_from_file_range__ainfo(AllocatorInfo ainfo, OS_Handle file, Rng1U64 range) {
-	String8 result;
-	result.size = dim_1u64(range);
-	result.str  = alloc_array_no_zero(ainfo, U8, result.size);
-	U64 actual_read_size = os_file_read(file, range, result.str);
-	if ((allocator_query_support(ainfo) & AllocatorQuery_ResizeShrink) && actual_read_size < result.size) {
-		resize(ainfo, result.str, result.size, actual_read_size);
+MD_String8
+md_os_string_from_file_range__ainfo(MD_AllocatorInfo ainfo, MD_OS_Handle file, MD_Rng1U64 range) {
+	MD_String8 result;
+	result.size = md_dim_1u64(range);
+	result.str  = md_alloc_array_no_zero(ainfo, MD_U8, result.size);
+	MD_U64 actual_read_size = md_os_file_read(file, range, result.str);
+	if ((md_allocator_query_support(ainfo) & MD_AllocatorQuery_ResizeShrink) && actual_read_size < result.size) {
+		md_resize(ainfo, result.str, result.size, actual_read_size);
 		result.size = actual_read_size;
 	}
 	return result;

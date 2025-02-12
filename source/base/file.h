@@ -7,17 +7,17 @@
 ////////////////////////////////
 //~ allen: Files
 
-typedef U32 FilePropertyFlags;
+typedef MD_U32 MD_FilePropertyFlags;
 enum
 {
-	FilePropertyFlag_IsFolder = (1 << 0),
+	MD_FilePropertyFlag_IsFolder = (1 << 0),
 };
 
-typedef struct FileProperties FileProperties;
-struct FileProperties
+typedef struct MD_FileProperties MD_FileProperties;
+struct MD_FileProperties
 {
-	U64               size;
-	DenseTime         modified;
-	DenseTime         created;
-	FilePropertyFlags flags;
+	MD_U64               size;
+	MD_DenseTime         modified;
+	MD_DenseTime         created;
+	MD_FilePropertyFlags flags;
 };

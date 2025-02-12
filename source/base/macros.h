@@ -7,71 +7,71 @@
 ////////////////////////////////
 //~ rjf: Branch Predictor Hints
 
-#if COMPILER_CLANG
-# define expect(expr, val) __builtin_expect((expr), (val))
+#if MD_COMPILER_CLANG
+# define md_expect(expr, val) __builtin_expect((expr), (val))
 #else
-# define expect(expr, val) (expr)
+# define md_expect(expr, val) (expr)
 #endif
 
-#define likely(expr)   expect(expr, 1)
-#define unlikely(expr) expect(expr, 0)
+#define md_likely(expr)   md_expect(expr, 1)
+#define md_unlikely(expr) md_expect(expr, 0)
 
 ////////////////////////////////
 //~ erg: type casting
 
-#if LANG_CPP
-#	ifndef ccast
-#	define ccast( type, value ) ( const_cast< type >( (value) ) )
+#if MD_LANG_CPP
+#	ifndef md_ccast
+#	define md_ccast( type, value ) ( const_cast< type >( (value) ) )
 #	endif
-#	ifndef pcast
-#	define pcast( type, value ) ( * reinterpret_cast< type* >( & ( value ) ) )
+#	ifndef md_pcast
+#	define md_pcast( type, value ) ( * reinterpret_cast< type* >( & ( value ) ) )
 #	endif
-#	ifndef rcast
-#	define rcast( type, value ) reinterpret_cast< type >( value )
+#	ifndef md_rcast
+#	define md_rcast( type, value ) reinterpret_cast< type >( value )
 #	endif
-#	ifndef scast
-#	define scast( type, value ) static_cast< type >( value )
+#	ifndef md_scast
+#	define md_scast( type, value ) static_cast< type >( value )
 #	endif
 #else
-#	ifndef ccast
-#	define ccast( type, value ) ( (type)(value) )
+#	ifndef md_ccast
+#	define md_ccast( type, value ) ( (type)(value) )
 #	endif
-#	ifndef pcast
-#	define pcast( type, value ) ( * (type*)(& value) )
+#	ifndef md_pcast
+#	define md_pcast( type, value ) ( * (type*)(& value) )
 #	endif
-#	ifndef rcast
-#	define rcast( type, value ) ( (type)(value) )
+#	ifndef md_rcast
+#	define md_rcast( type, value ) ( (type)(value) )
 #	endif
-#	ifndef scast
-#	define scast( type, value ) ( (type)(value) )
+#	ifndef md_scast
+#	define md_scast( type, value ) ( (type)(value) )
 #	endif
 #endif
 
-#if ! defined(typeof) && ( ! LANG_C || __STDC_VERSION__ < 202311L)
-#	if ! LANG_C
+#if ! defined(typeof) && ( ! MD_LANG_C || __STDC_VERSION__ < 202311L)
+#	if ! MD_LANG_C
 #		define typeof decltype
 #	elif defined(_MSC_VER)
 #		define typeof __typeof__
 #	elif defined(__GNUC__) || defined(__clang__)
 #		define typeof __typeof__
 #	else
-#		error "Compiler not supported"
+#		error "MD_Compiler not supported"
 #	endif
 #endif
 
-#if LANG_C
+#if MD_LANG_C
 #	if __STDC_VERSION__ >= 202311L
-#		define enum_underlying(type) : type
+#		define md_enum_underlying(type) : type
 #	else
-#		define enum_underlying(type)
+#		define md_enum_underlying(type)
 #   endif
 #else
-#	define enum_underlying(type) : type
+#	define md_enum_underlying(type) : type
 #endif
 
-#if LANG_C
-#	ifndef nullptr
-#		define nullptr NULL
+#if MD_LANG_C
+#	ifndef md_nullptr
+#		define md_nullptr NULL
 #	endif
 
 #	ifndef MD_REMOVE_PTR
@@ -79,13 +79,13 @@
 #	endif
 #endif
 
-#if ! defined(PARAM_DEFAULT) && LANG_CPP
-#	define PARAM_DEFAULT = {}
+#if ! defined(MD_PARAM_DEFAULT) && MD_LANG_CPP
+#	define MD_PARAM_DEFAULT = {}
 #else
-#	define PARAM_DEFAULT
+#	define MD_PARAM_DEFAULT
 #endif
 
-#if LANG_C
+#if MD_LANG_C
 #	ifndef static_assert
 #	undef  static_assert
 #		if __STDC_VERSION__ >= 201112L
@@ -96,86 +96,86 @@
 #	endif
 #endif
 
-#ifndef        force_inline
-#	if COMPILER_MSVC
-#		define force_inline __forceinline
-#	elif COMPILER_GCC
-#		define force_inline inline __attribute__((__always_inline__))
-#	elif COMPILER_CLANG
+#ifndef        md_force_inline
+#	if MD_COMPILER_MSVC
+#		define md_force_inline __forceinline
+#	elif MD_COMPILER_GCC
+#		define md_force_inline inline __attribute__((__always_inline__))
+#	elif MD_COMPILER_CLANG
 #		if __has_attribute(__always_inline__)
-#			define force_inline inline __attribute__((__always_inline__))
+#			define md_force_inline inline __attribute__((__always_inline__))
 #		else
-#			define force_inline
+#			define md_force_inline
 #		endif
 #	else
-#		define force_inline
+#		define md_force_inline
 #	endif
 #endif
 
-#ifndef        never_inline
-#	if COMPILER_MSVC
-#		define never_inline __declspec( noinline )
-#	elif COMPILER_GCC
-#		define never_inline __attribute__( ( __noinline__ ) )
-#	elif COMPILER_CLANG
+#ifndef        md_never_inline
+#	if MD_COMPILER_MSVC
+#		define md_never_inline __declspec( noinline )
+#	elif MD_COMPILER_GCC
+#		define md_never_inline __attribute__( ( __noinline__ ) )
+#	elif MD_COMPILER_CLANG
 #		if __has_attribute(__always_inline__)
-#			define never_inline __attribute__( ( __noinline__ ) )
+#			define md_never_inline __attribute__( ( __noinline__ ) )
 #		else
-#			define never_inline
+#			define md_never_inline
 #		endif
 #	else
-#		define never_inline
+#		define md_never_inline
 #	endif
 #endif
 
 ////////////////////////////////
 //~ rjf: For-Loop Construct Macros
 
-#ifndef defer_loop
-#define defer_loop(begin, end)           for (int _i_ = ((begin), 0); ! _i_; _i_ += 1, (end))
+#ifndef md_defer_loop
+#define md_defer_loop(begin, end)           for (int _i_ = ((begin), 0); ! _i_; _i_ += 1, (end))
 #endif
-#ifndef defer_loop_checked
-#define defer_loop_checked(begin, end)   for (int _i_ = 2 * ! (begin); (_i_ == 2 ? ((end), 0) : !_i_); _i_ += 1, (end))
-#endif
-
-#ifndef each_enum_val
-#define each_enum_val(type, it)          type it = (type) 0; it < type ## _COUNT; it = (type)( it + 1 )
-#endif
-#ifndef each_non_zero_enum_val
-#define each_non_zero_enum_val(type, it) type it = (type) 1; it < type ## _COUNT; it = (type)( it + 1 )
+#ifndef md_defer_loop_checked
+#define md_defer_loop_checked(begin, end)   for (int _i_ = 2 * ! (begin); (_i_ == 2 ? ((end), 0) : !_i_); _i_ += 1, (end))
 #endif
 
-#ifndef stringify
-#define stringify_(S) #S
-#define stringify(S)  stringify_(S)
+#ifndef md_each_enum_val
+#define md_each_enum_val(type, it)          type it = (type) 0; it < type ## _COUNT; it = (type)( it + 1 )
+#endif
+#ifndef md_each_non_zero_enum_val
+#define md_each_non_zero_enum_val(type, it) type it = (type) 1; it < type ## _COUNT; it = (type)( it + 1 )
 #endif
 
-#ifndef glue
-#define glue_(A, B) A ## B
-#define glue(A, B)  glue_(A,B)
+#ifndef md_stringify
+#define md_stringify_(S) #S
+#define md_stringify(S)  md_stringify_(S)
 #endif
 
-#define src_line_str stringify(__LINE__)
+#ifndef md_glue
+#define md_glue_(A, B) A ## B
+#define md_glue(A, B)  md_glue_(A,B)
+#endif
 
-#ifndef do_once
-#define do_once()                                                                            \
-	local_persist int __do_once_counter_##src_line_str  = 0;                                 \
-    for(;      __do_once_counter_##src_line_str != 1; __do_once_counter_##src_line_str = 1 ) \
+#define md_src_line_str md_stringify(__LINE__)
 
-#define do_once_defer( expression )                                                                 \
-    local_persist int __do_once_counter_##src_line_str  = 0;                                        \
-    for(;__do_once_counter_##src_line_str != 1; __do_once_counter_##src_line_str = 1, (expression)) \
+#ifndef md_do_once
+#define md_do_once()                                                                            \
+	md_local_persist int __do_once_counter_##md_src_line_str  = 0;                                 \
+    for(;      __do_once_counter_##md_src_line_str != 1; __do_once_counter_##md_src_line_str = 1 ) \
 
-#define do_once_start      \
+#define md_do_once_defer( expression )                                                                 \
+    md_local_persist int __do_once_counter_##md_src_line_str  = 0;                                        \
+    for(;__do_once_counter_##md_src_line_str != 1; __do_once_counter_##md_src_line_str = 1, (expression)) \
+
+#define md_do_once_start      \
 	do                     \
 	{                      \
-		local_persist      \
+		md_local_persist      \
 		bool done = false; \
 		if ( done )        \
 			break;         \
 		done = true;
 
-#define do_once_end        \
+#define md_do_once_end        \
 	}                      \
 	while(0);
 #endif

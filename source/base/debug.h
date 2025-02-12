@@ -11,53 +11,53 @@
 ////////////////////////////////
 //~ rjf: Asserts
 
-#ifndef trap
-#	if COMPILER_MSVC
+#ifndef md_trap
+#	if MD_COMPILER_MSVC
 #		if _MSC_VER < 1300
-#			define trap() __asm int 3 /* Trap to debugger! */
+#			define md_trap() __asm int 3 /* Trap to debugger! */
 #		else
-#			define trap() __debugbreak()
+#			define md_trap() __debugbreak()
 #		endif
-#	elif COMPILER_CLANG || COMPILER_GCC
-#		define trap() __builtin_trap()
+#	elif MD_COMPILER_CLANG || MD_COMPILER_GCC
+#		define md_trap() __builtin_trap()
 #	else
-#		error Unknown trap intrinsic for this compiler.
+#		error Unknown md_trap intrinsic for this compiler.
 #	endif
 #endif
 
-#define assert_msg( cond, msg, ... )                                                                 \
+#define md_assert_msg( cond, msg, ... )                                                                 \
 	do                                                                                               \
 	{                                                                                                \
 		if ( ! ( cond ) )                                                                            \
 		{                                                                                            \
-			assert_handler( #cond, __FILE__, __func__, scast( S64, __LINE__ ), msg, ##__VA_ARGS__ ); \
-			trap();                                                                         \
+			md_assert_handler( #cond, __FILE__, __func__, md_scast( MD_S64, __LINE__ ), msg, ##__VA_ARGS__ ); \
+			md_trap();                                                                         \
 		}                                                                                            \
 	} while ( 0 )
 
-#ifndef assert_always
-#define assert_always(x) do { if ( !(x) ) { trap(); } } while(0)
+#ifndef md_assert_always
+#define md_assert_always(x) do { if ( !(x) ) { md_trap(); } } while(0)
 #endif
 
-#ifndef assert
-#	if BUILD_DEBUG
-#		define assert(x) assert_always(x)
+#ifndef md_assert
+#	if MD_BUILD_DEBUG
+#		define md_assert(x) md_assert_always(x)
 #	else
-#		define assert(x) (void)(x)
+#		define md_assert(x) (void)(x)
 #	endif
 #endif
 
-#ifndef invalid_path
-#define invalid_path            assert( ! "Invalid Path!")
+#ifndef md_invalid_path
+#define md_invalid_path            md_assert( ! "Invalid Path!")
 #endif
-#ifndef not_implemented
-#define not_implemented         assert( ! "Not Implemented!")
+#ifndef md_not_implemented
+#define md_not_implemented         md_assert( ! "Not Implemented!")
 #endif
-#ifndef no_op
-#define no_op                   ((void)0)
+#ifndef md_no_op
+#define md_no_op                   ((void)0)
 #endif
 #ifndef md_static_assert
-#define md_static_assert(C, ID) global U8 glue(ID, __LINE__)[ (C) ? 1 : -1 ]
+#define md_static_assert(C, ID) md_global MD_U8 md_glue(ID, __LINE__)[ (C) ? 1 : -1 ]
 #endif
 
-MD_API void assert_handler( char const* condition, char const* file, char const* function, S32 line, char const* msg, ... );
+MD_API void md_assert_handler( char const* condition, char const* file, char const* function, MD_S32 line, char const* msg, ... );

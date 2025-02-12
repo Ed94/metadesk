@@ -5,15 +5,15 @@
 #endif
 
 void*
-default_resize_align( AllocatorInfo a, void* old_memory, SSIZE old_size, SSIZE new_size, SSIZE alignment )
+md_default_resize_align( MD_AllocatorInfo a, void* old_memory, MD_SSIZE old_size, MD_SSIZE new_size, MD_SSIZE alignment )
 {
 	if ( ! old_memory )
-		return alloc_align( a, new_size, alignment );
+		return md_alloc_align( a, new_size, alignment );
 
 	if ( new_size == 0 )
 	{
-		alloc_free( a, old_memory );
-		return nullptr;
+		md_alloc_free( a, old_memory );
+		return md_nullptr;
 	}
 
 	if ( new_size < old_size )
@@ -25,12 +25,12 @@ default_resize_align( AllocatorInfo a, void* old_memory, SSIZE old_size, SSIZE n
 	}
 	else
 	{
-		void*  new_memory = alloc_align( a, new_size, alignment );
+		void*  new_memory = md_alloc_align( a, new_size, alignment );
 		if ( ! new_memory )
-			return nullptr;
+			return md_nullptr;
 
-		mem_move( new_memory, old_memory, md_min( new_size, old_size ) );
-		alloc_free( a, old_memory );
+		md_mem_move( new_memory, old_memory, md_min( new_size, old_size ) );
+		md_alloc_free( a, old_memory );
 		return new_memory;
 	}
 }
@@ -41,73 +41,73 @@ default_resize_align( AllocatorInfo a, void* old_memory, SSIZE old_size, SSIZE n
 typedef struct _heap_stats _heap_stats;
 struct _heap_stats
 {
-	U32   magic;
-	SSIZE used_memory;
-	SSIZE alloc_count;
+	MD_U32   magic;
+	MD_SSIZE used_memory;
+	MD_SSIZE md_alloc_count;
 };
 
-global _heap_stats _heap_stats_info;
+md_global _heap_stats _heap_stats_info;
 
 void
-heap_stats_init( void )
+md_heap_stats_init( void )
 {
-	memory_zero_struct( &_heap_stats_info );
+	md_memory_zero_struct( &_heap_stats_info );
 	_heap_stats_info.magic = GEN_HEAP_STATS_MAGIC;
 }
 
-SSIZE
+MD_SSIZE
 heap_stats_used_memory( void )
 {
-	assert_msg( _heap_stats_info.magic == GEN_HEAP_STATS_MAGIC, "heap_stats is not initialised yet, call heap_stats_init first!" );
+	md_assert_msg( _heap_stats_info.magic == GEN_HEAP_STATS_MAGIC, "heap_stats is not initialised yet, call md_heap_stats_init first!" );
 	return _heap_stats_info.used_memory;
 }
 
-SSIZE
-heap_stats_alloc_count( void )
+MD_SSIZE
+md_heap_stats_alloc_count( void )
 {
-	assert_msg( _heap_stats_info.magic == GEN_HEAP_STATS_MAGIC, "heap_stats is not initialised yet, call heap_stats_init first!" );
-	return _heap_stats_info.alloc_count;
+	md_assert_msg( _heap_stats_info.magic == GEN_HEAP_STATS_MAGIC, "heap_stats is not initialised yet, call md_heap_stats_init first!" );
+	return _heap_stats_info.md_alloc_count;
 }
 
 void
-heap_stats_check( void )
+md_heap_stats_check( void )
 {
-	assert_msg( _heap_stats_info.magic == GEN_HEAP_STATS_MAGIC, "heap_stats is not initialised yet, call heap_stats_init first!" );
-	assert( _heap_stats_info.used_memory == 0 );
-	assert( _heap_stats_info.alloc_count == 0 );
+	md_assert_msg( _heap_stats_info.magic == GEN_HEAP_STATS_MAGIC, "heap_stats is not initialised yet, call md_heap_stats_init first!" );
+	md_assert( _heap_stats_info.used_memory == 0 );
+	md_assert( _heap_stats_info.md_alloc_count == 0 );
 }
 
 typedef struct _heap_alloc_info _heap_alloc_info;
 struct _heap_alloc_info
 {
-	SSIZE size;
+	MD_SSIZE size;
 	void* physical_start;
 };
 #endif
 
 void*
-heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags )
+md_heap_allocator_proc( void* allocator_data, MD_AllocatorMode mode, MD_SSIZE size, MD_SSIZE alignment, void* old_memory, MD_SSIZE old_size, MD_U64 flags )
 {
-	void* ptr = nullptr;
+	void* ptr = md_nullptr;
 	// unused( allocator_data );
 	// unused( old_size );
 	if ( ! alignment )
 		alignment = MD_DEFAULT_MEMORY_ALIGNMENT;
 
 #ifdef MD_HEAP_ANALYSIS
-	ssize alloc_info_size      = size_of( _heap_alloc_info );
-	ssize alloc_info_remainder = ( alloc_info_size % alignment );
-	ssize track_size           = max( alloc_info_size, alignment ) + alloc_info_remainder;
+	ssize md_alloc_info_size      = size_of( _heap_alloc_info );
+	ssize md_alloc_info_remainder = ( md_alloc_info_size % alignment );
+	ssize track_size           = md_max( md_alloc_info_size, alignment ) + md_alloc_info_remainder;
 	switch ( type )
 	{
 		case EAllocatorMode_FREE :
 			{
 				if ( ! old_memory )
 					break;
-				_heap_alloc_info* alloc_info  = rcast( _heap_alloc_info*, old_memory) - 1;
-				_heap_stats_info.used_memory -= alloc_info->size;
-				_heap_stats_info.alloc_count--;
-				old_memory = alloc_info->physical_start;
+				_heap_alloc_info* md_alloc_info  = md_rcast( _heap_alloc_info*, old_memory) - 1;
+				_heap_stats_info.used_memory -= md_alloc_info->size;
+				_heap_stats_info.md_alloc_count--;
+				old_memory = md_alloc_info->physical_start;
 			}
 			break;
 		case EAllocatorMode_ALLOC :
@@ -122,27 +122,27 @@ heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE
 
 	switch ( mode )
 	{
-	#if defined( COMPILER_MSVC ) || ( defined( COMPILER_GCC ) && defined( OS_WINDOWS ) ) || ( defined( COMPILER_TINYC ) && defined( OS_WINDOWS ) )
-		case AllocatorMode_Alloc:
+	#if defined( MD_COMPILER_MSVC ) || ( defined( MD_COMPILER_GCC ) && defined( MD_OS_WINDOWS ) ) || ( defined( MD_COMPILER_TINYC ) && defined( MD_OS_WINDOWS ) )
+		case MD_AllocatorMode_Alloc:
 		{
 			ptr = _aligned_malloc( size, alignment );
-			if ( flags & ALLOCATOR_FLAG_CLEAR_TO_ZERO )
-				memory_zero( ptr, size );
+			if ( flags & MD_ALLOCATOR_FLAG_CLEAR_TO_ZERO )
+				md_memory_zero( ptr, size );
 		}
 		break;
 
-		case AllocatorMode_Free:
+		case MD_AllocatorMode_Free:
 			_aligned_free( old_memory );
 		break;
 
-		case AllocatorMode_Resize:
+		case MD_AllocatorMode_Resize:
 		{
-			AllocatorInfo a = heap();
-			ptr             = default_resize_align( a, old_memory, old_size, size, alignment );
+			MD_AllocatorInfo a = md_heap();
+			ptr             = md_default_resize_align( a, old_memory, old_size, size, alignment );
 		}
 		break;
 
-	#elif defined( OS_LINUX ) && ! defined( CPU_ARM ) && ! defined( COMPILER_TINYC )
+	#elif defined( MD_OS_LINUX ) && ! defined( CPU_ARM ) && ! defined( MD_COMPILER_TINYC )
 		case EAllocation_ALLOC :
 		{
 			ptr = aligned_alloc( alignment, ( size + alignment - 1 ) & ~( alignment - 1 ) );
@@ -162,8 +162,8 @@ heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE
 
 		case EAllocation_RESIZE :
 		{
-			AllocatorInfo a = heap();
-			ptr             = default_resize_align( a, old_memory, old_size, size, alignment );
+			MD_AllocatorInfo a = md_heap();
+			ptr             = md_default_resize_align( a, old_memory, old_size, size, alignment );
 		}
 		break;
 	#else
@@ -171,7 +171,7 @@ heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE
 		{
 			posix_memalign( &ptr, alignment, size );
 
-			if ( flags & ALLOCATOR_FLAG_CLEAR_TO_ZERO )
+			if ( flags & MD_ALLOCATOR_FLAG_CLEAR_TO_ZERO )
 			{
 				zero_size( ptr, size );
 			}
@@ -186,89 +186,89 @@ heap_allocator_proc( void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE
 
 		case EAllocType_RESIZE :
 		{
-			AllocatorInfo a = heap();
-			ptr             = default_resize_align( a, old_memory, old_size, size, alignment );
+			MD_AllocatorInfo a = md_heap();
+			ptr             = md_default_resize_align( a, old_memory, old_size, size, alignment );
 		}
 		break;
 	#endif
 
-		case AllocatorMode_FreeAll:
+		case MD_AllocatorMode_FreeAll:
 			break;
 
-		case AllocatorMode_QueryType:
-			return (void*) AllocatorType_Heap;
+		case MD_AllocatorMode_QueryType:
+			return (void*) MD_AllocatorType_Heap;
 
-		case AllocatorMode_QuerySupport:
+		case MD_AllocatorMode_QuerySupport:
 			return (void*) (
-				AllocatorQuery_Alloc | AllocatorQuery_Free | AllocatorQuery_Resize | AllocatorQuery_ResizeGrow | AllocatorQuery_ResizeShrink
+				MD_AllocatorQuery_Alloc | MD_AllocatorQuery_Free | MD_AllocatorQuery_Resize | MD_AllocatorQuery_ResizeGrow | MD_AllocatorQuery_ResizeShrink
 			);
 	}
 
 #ifdef GEN_HEAP_ANALYSIS
-	if ( type == AllocatorMode_Alloc )
+	if ( type == MD_AllocatorMode_Alloc )
 	{
-		_heap_alloc_info* alloc_info = rcast( _heap_alloc_info*, rcast( char*, ptr) + alloc_info_remainder );
-		zero_item( alloc_info );
-		alloc_info->size              = size - track_size;
-		alloc_info->physical_start    = ptr;
-		ptr                           = rcast( void*, alloc_info + 1 );
-		_heap_stats_info.used_memory += alloc_info->size;
-		_heap_stats_info.alloc_count++;
+		_heap_alloc_info* md_alloc_info = md_rcast( _heap_alloc_info*, md_rcast( char*, ptr) + md_alloc_info_remainder );
+		zero_item( md_alloc_info );
+		md_alloc_info->size              = size - track_size;
+		md_alloc_info->physical_start    = ptr;
+		ptr                           = md_rcast( void*, md_alloc_info + 1 );
+		_heap_stats_info.used_memory += md_alloc_info->size;
+		_heap_stats_info.md_alloc_count++;
 	}
 #endif
 
 	return ptr;
 }
 
-VArena*
-varena__alloc(VArenaParams params)
+MD_VArena*
+md_varena__alloc(MD_VArenaParams params)
 {
 	if (params.reserve_size == 0) {
-		params.reserve_size = VARENA_DEFAULT_RESERVE;
+		params.reserve_size = MD_VARENA_DEFAULT_RESERVE;
 	}
 	if (params.commit_size == 0) {
-		params.commit_size = VARENA_DEFAULT_COMMIT;
+		params.commit_size = MD_VARENA_DEFAULT_COMMIT;
 	}
 
 	// rjf: round up reserve/commit sizes
-	U64 reserve_size = params.reserve_size;
-	U64 commit_size  = params.commit_size;
+	MD_U64 reserve_size = params.reserve_size;
+	MD_U64 commit_size  = params.commit_size;
 
-	void* base = nullptr;
-	if (params.flags & VArenaFlag_LargePages)
+	void* base = md_nullptr;
+	if (params.flags & MD_VArenaFlag_LargePages)
 	{
-		reserve_size = align_pow2(reserve_size, os_get_system_info()->large_page_size);
-		commit_size  = align_pow2(commit_size,  os_get_system_info()->large_page_size);
+		reserve_size = md_align_pow2(reserve_size, md_os_get_system_info()->large_page_size);
+		commit_size  = md_align_pow2(commit_size,  md_os_get_system_info()->large_page_size);
 
-		base = os_reserve_large(reserve_size);
-		os_commit_large(base, commit_size);
-		asan_poison_memory_region(base, params.commit_size);
+		base = md_os_reserve_large(reserve_size);
+		md_os_commit_large(base, commit_size);
+		md_asan_poison_memory_region(base, params.commit_size);
 	}
 	else
 	{
-		reserve_size = align_pow2(reserve_size, os_get_system_info()->page_size);
-		commit_size  = align_pow2(commit_size,  os_get_system_info()->page_size);
+		reserve_size = md_align_pow2(reserve_size, md_os_get_system_info()->page_size);
+		commit_size  = md_align_pow2(commit_size,  md_os_get_system_info()->page_size);
 
-		    base          = os_reserve(reserve_size);
-		B32 commit_result = os_commit(base, commit_size);
-		assert(commit_result == 1);
-		asan_poison_memory_region(base, params.commit_size);
+		    base          = md_os_reserve(reserve_size);
+		MD_B32 commit_result = md_os_commit(base, commit_size);
+		md_assert(commit_result == 1);
+		md_asan_poison_memory_region(base, params.commit_size);
 	}
 
 	// NOTE(Ed): Panic on varena creation failure
-	#if OS_FEATURE_GRAPHICAL
-		if(unlikely(base == 0))
+	#if MD_OS_FEATURE_GRAPHICAL
+		if(md_unlikely(base == 0))
 		{
-			os_graphical_message(1, str8_lit("Fatal Allocation Failure"), str8_lit("Unexpected memory allocation failure."));
-			os_abort(1);
+			md_os_graphical_message(1, md_str8_lit("Fatal Allocation Failure"), md_str8_lit("Unexpected memory allocation failure."));
+			md_os_abort(1);
 		}
 	#endif
 
-	SPTR header_size = align_pow2(size_of(VArena), MD_DEFAULT_MEMORY_ALIGNMENT);
-	asan_unpoison_memory_region(base, header_size);
+	MD_SPTR header_size = md_align_pow2(size_of(MD_VArena), MD_DEFAULT_MEMORY_ALIGNMENT);
+	md_asan_unpoison_memory_region(base, header_size);
 
-	VArena* vm        = rcast(VArena*, base);
-	vm->reserve_start = rcast(SPTR,    base) + header_size;
+	MD_VArena* vm        = md_rcast(MD_VArena*, base);
+	vm->reserve_start = md_rcast(MD_SPTR,    base) + header_size;
 	vm->reserve       = reserve_size;
 	vm->commit_size   = params.commit_size;
 	vm->committed     = commit_size;
@@ -278,50 +278,50 @@ varena__alloc(VArenaParams params)
 }
 
 void
-varena_release(VArena* arena)
+md_varena_release(MD_VArena* arena)
 {
-	os_release(arena, arena->reserve);
-	arena = nullptr;
+	md_os_release(arena, arena->reserve);
+	arena = md_nullptr;
 }
 
 void*
-varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags)
+md_varena_allocator_proc(void* allocator_data, MD_AllocatorMode mode, MD_SSIZE requested_size, MD_SSIZE alignment, void* old_memory, MD_SSIZE old_size, MD_U64 flags)
 {
-	OS_SystemInfo const* info = os_get_system_info();
+	MD_OS_SystemInfo const* info = md_os_get_system_info();
 
-	VArena* vm = rcast(VArena*, allocator_data);
+	MD_VArena* vm = md_rcast(MD_VArena*, allocator_data);
 
-	void* allocated_mem = nullptr;
+	void* allocated_mem = md_nullptr;
 	switch (mode)
 	{
-		case AllocatorMode_Alloc:
+		case MD_AllocatorMode_Alloc:
 		{
-			assert_msg(requested_size != 0, "requested_size is 0");
+			md_assert_msg(requested_size != 0, "requested_size is 0");
 
-			requested_size = align_pow2(requested_size, alignment);
+			requested_size = md_align_pow2(requested_size, alignment);
 
-			UPTR current_offset   = vm->reserve_start + vm->commit_used;
-			UPTR size_to_allocate = requested_size;
-			UPTR to_be_used       = vm->commit_used + size_to_allocate;
-			SPTR reserve_left     = vm->reserve - vm->committed;
-			assert(to_be_used < reserve_left);
+			MD_UPTR current_offset   = vm->reserve_start + vm->commit_used;
+			MD_UPTR size_to_allocate = requested_size;
+			MD_UPTR to_be_used       = vm->commit_used + size_to_allocate;
+			MD_SPTR reserve_left     = vm->reserve - vm->committed;
+			md_assert(to_be_used < reserve_left);
 
-			UPTR header_offset = vm->reserve_start - scast(UPTR, vm);
+			MD_UPTR header_offset = vm->reserve_start - md_scast(MD_UPTR, vm);
 
-			UPTR commit_left         = vm->committed - vm->commit_used - header_offset;
-			B32  needs_more_commited = commit_left < size_to_allocate;
+			MD_UPTR commit_left         = vm->committed - vm->commit_used - header_offset;
+			MD_B32  needs_more_commited = commit_left < size_to_allocate;
 			if (needs_more_commited) 
 			{
-				UPTR next_commit_size;
-				if (vm->flags & VArenaFlag_LargePages) {
-					next_commit_size = reserve_left > 0 ? md_max(vm->commit_size, size_to_allocate) : scast(UPTR, align_pow2( abs(reserve_left), os_get_system_info()->large_page_size));
+				MD_UPTR next_commit_size;
+				if (vm->flags & MD_VArenaFlag_LargePages) {
+					next_commit_size = reserve_left > 0 ? md_max(vm->commit_size, size_to_allocate) : md_scast(MD_UPTR, md_align_pow2( abs(reserve_left), md_os_get_system_info()->large_page_size));
 				}
 				else {
-					next_commit_size = reserve_left > 0 ? md_max(vm->commit_size, size_to_allocate) : scast(UPTR, align_pow2(abs(reserve_left), os_get_system_info()->page_size));
+					next_commit_size = reserve_left > 0 ? md_max(vm->commit_size, size_to_allocate) : md_scast(MD_UPTR, md_align_pow2(abs(reserve_left), md_os_get_system_info()->page_size));
 				} 	 
 				if (next_commit_size) {
-					void* next_commit_start = rcast(void*, rcast(UPTR, vm) + vm->committed);
-					B32   commit_result     = os_commit(next_commit_start, next_commit_size);
+					void* next_commit_start = md_rcast(void*, md_rcast(MD_UPTR, vm) + vm->committed);
+					MD_B32   commit_result     = md_os_commit(next_commit_start, next_commit_size);
 					if (commit_result == false) {
 						break;
 					}
@@ -329,60 +329,60 @@ varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_
 				}
 			}
 
-			allocated_mem    = rcast(void*, current_offset);
+			allocated_mem    = md_rcast(void*, current_offset);
 			vm->commit_used += size_to_allocate;
 		}
 		break;
 
-		case AllocatorMode_Free:
+		case MD_AllocatorMode_Free:
 		{
 		}
 		break;
 
-		case AllocatorMode_FreeAll:
+		case MD_AllocatorMode_FreeAll:
 		{
 			vm->commit_used = 0;
 		}
 		break;
 
-		case AllocatorMode_Resize:
+		case MD_AllocatorMode_Resize:
 		{
-			assert(old_memory != nullptr);
-			assert(old_size > 0);
-			assert_msg(old_size == requested_size, "Requested resize when none needed");
+			md_assert(old_memory != md_nullptr);
+			md_assert(old_size > 0);
+			md_assert_msg(old_size == requested_size, "Requested md_resize when none needed");
 
-			requested_size = align_pow2(requested_size, alignment);
-			old_size       = align_pow2(old_size, alignment);
+			requested_size = md_align_pow2(requested_size, alignment);
+			old_size       = md_align_pow2(old_size, alignment);
 
-			UPTR old_memory_offset = scast(UPTR, old_memory)        + scast(UPTR, old_size);
-			UPTR current_offset    = scast(UPTR, vm->reserve_start) + scast(UPTR, vm->commit_used);
+			MD_UPTR old_memory_offset = md_scast(MD_UPTR, old_memory)        + md_scast(MD_UPTR, old_size);
+			MD_UPTR current_offset    = md_scast(MD_UPTR, vm->reserve_start) + md_scast(MD_UPTR, vm->commit_used);
 
-			assert_msg(old_memory_offset == current_offset, "Cannot resize existing allocation in VArena unless it was the last allocated");
+			md_assert_msg(old_memory_offset == current_offset, "Cannot md_resize existing allocation in MD_VArena unless it was the last allocated");
 
-			B32 requested_shrink = requested_size >= old_size;
+			MD_B32 requested_shrink = requested_size >= old_size;
 			if (requested_shrink) {
-				vm->commit_used -= rcast(UPTR, align_pow2(requested_size, alignment));
+				vm->commit_used -= md_rcast(MD_UPTR, md_align_pow2(requested_size, alignment));
 				allocated_mem    = old_memory;
 				break;
 			}
 
-			UPTR size_to_allocate = requested_size - old_size, alignment;
+			MD_UPTR size_to_allocate = requested_size - old_size, alignment;
 
-			UPTR header_offset       = vm->reserve_start - scast(UPTR, vm);
-			UPTR commit_left         = vm->committed - vm->commit_used - header_offset;
-			B32  needs_more_commited = commit_left < size_to_allocate;
+			MD_UPTR header_offset       = vm->reserve_start - md_scast(MD_UPTR, vm);
+			MD_UPTR commit_left         = vm->committed - vm->commit_used - header_offset;
+			MD_B32  needs_more_commited = commit_left < size_to_allocate;
 			if (needs_more_commited) 
 			{
-				SPTR reserve_left     = vm->reserve - vm->committed;
-				UPTR next_commit_size;
-				if (vm->flags & VArenaFlag_LargePages) {
-					next_commit_size = reserve_left > 0 ? vm->commit_size : scast(UPTR, align_pow2( -reserve_left, os_get_system_info()->large_page_size));
+				MD_SPTR reserve_left     = vm->reserve - vm->committed;
+				MD_UPTR next_commit_size;
+				if (vm->flags & MD_VArenaFlag_LargePages) {
+					next_commit_size = reserve_left > 0 ? vm->commit_size : md_scast(MD_UPTR, md_align_pow2( -reserve_left, md_os_get_system_info()->large_page_size));
 				}
 				else {
-					next_commit_size = reserve_left > 0 ? vm->commit_size : scast(UPTR, align_pow2(abs(reserve_left), os_get_system_info()->page_size));
+					next_commit_size = reserve_left > 0 ? vm->commit_size : md_scast(MD_UPTR, md_align_pow2(abs(reserve_left), md_os_get_system_info()->page_size));
 				}
 				if (next_commit_size) {
-					B32 commit_result = os_commit(vm, next_commit_size);
+					MD_B32 commit_result = md_os_commit(vm, next_commit_size);
 					if (commit_result == false) {
 						break;
 					}
@@ -394,16 +394,16 @@ varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_
 		}
 		break;
 
-		case AllocatorMode_QueryType:
+		case MD_AllocatorMode_QueryType:
 		{
-			return (void*) AllocatorType_VArena;
+			return (void*) MD_AllocatorType_VArena;
 		}
 		break;
 
-		case AllocatorMode_QuerySupport:
+		case MD_AllocatorMode_QuerySupport:
 		{
 			return (void*) (
-				AllocatorQuery_Alloc | AllocatorQuery_FreeAll | AllocatorQuery_Resize | AllocatorQuery_ResizeGrow | AllocatorQuery_ResizeShrink
+				MD_AllocatorQuery_Alloc | MD_AllocatorQuery_FreeAll | MD_AllocatorQuery_Resize | MD_AllocatorQuery_ResizeGrow | MD_AllocatorQuery_ResizeShrink
 			);
 		}
 		break;
@@ -412,54 +412,54 @@ varena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE requested_
 }
 
 void*
-farena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZE alignment, void* old_memory, SSIZE old_size, U64 flags)
+farena_allocator_proc(void* allocator_data, MD_AllocatorMode mode, MD_SSIZE size, MD_SSIZE alignment, void* old_memory, MD_SSIZE old_size, MD_U64 flags)
 {
-	FArena* arena = rcast(FArena*, allocator_data);
+	MD_FArena* arena = md_rcast(MD_FArena*, allocator_data);
 
-	void* allocated_mem = nullptr;
+	void* allocated_mem = md_nullptr;
 	switch (mode)
 	{
-		case AllocatorMode_Alloc:
+		case MD_AllocatorMode_Alloc:
 		{
-			SPTR  end        = scast(SPTR, arena->slice.data) + arena->used;
-			SSIZE total_size = align_pow2(size, alignment);
+			MD_SPTR  end        = md_scast(MD_SPTR, arena->slice.data) + arena->used;
+			MD_SSIZE total_size = md_align_pow2(size, alignment);
 
 			if (arena->used + total_size > arena->slice.len ) {
 				// Out of memory
 				return allocated_mem;
 			}
 
-			allocated_mem = scast(void*, end);
+			allocated_mem = md_scast(void*, end);
 			arena->used  += total_size;
 		}
 		break;
 
-		case AllocatorMode_Free:
+		case MD_AllocatorMode_Free:
 		{
 		}
 		break;
 
-		case AllocatorMode_FreeAll:
+		case MD_AllocatorMode_FreeAll:
 		{
 			arena->used = 0;
 		}
 		break;
 
-		case AllocatorMode_Resize:
+		case MD_AllocatorMode_Resize:
 		{
-			assert(old_memory != nullptr);
-			assert(old_size > 0);
-			assert_msg(old_size == size, "Requested resize when none needed");
+			md_assert(old_memory != md_nullptr);
+			md_assert(old_size > 0);
+			md_assert_msg(old_size == size, "Requested md_resize when none needed");
 
-			size     = align_pow2(size, alignment);
-			old_size = align_pow2(size, alignment);
+			size     = md_align_pow2(size, alignment);
+			old_size = md_align_pow2(size, alignment);
 
-			SPTR old_memory_offset = scast(SPTR, old_memory)        + old_size;
-			SPTR current_offset    = scast(SPTR, arena->slice.data) + arena->used;
+			MD_SPTR old_memory_offset = md_scast(MD_SPTR, old_memory)        + old_size;
+			MD_SPTR current_offset    = md_scast(MD_SPTR, arena->slice.data) + arena->used;
 
-			assert_msg(old_memory_offset == current_offset, "Cannot resize existing allocation in VArena unless it was the last allocated");
+			md_assert_msg(old_memory_offset == current_offset, "Cannot md_resize existing allocation in MD_VArena unless it was the last allocated");
 
-			B32 requested_shrink = size >= old_size;
+			MD_B32 requested_shrink = size >= old_size;
 			if (requested_shrink) {
 
 				arena->used    -= size;
@@ -472,13 +472,13 @@ farena_allocator_proc(void* allocator_data, AllocatorMode mode, SSIZE size, SSIZ
 		}
 		break;
 
-		case AllocatorMode_QueryType:
-			return (void*) AllocatorType_FArena;
+		case MD_AllocatorMode_QueryType:
+			return (void*) MD_AllocatorType_FArena;
 		break;
 
-		case AllocatorMode_QuerySupport:
+		case MD_AllocatorMode_QuerySupport:
 			return (void*) (
-				AllocatorQuery_Alloc | AllocatorQuery_FreeAll | AllocatorQuery_Resize | AllocatorQuery_ResizeGrow | AllocatorQuery_ResizeShrink
+				MD_AllocatorQuery_Alloc | MD_AllocatorQuery_FreeAll | MD_AllocatorQuery_Resize | MD_AllocatorQuery_ResizeGrow | MD_AllocatorQuery_ResizeShrink
 			);
 		break;
 	}

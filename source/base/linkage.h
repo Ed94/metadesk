@@ -4,9 +4,9 @@
 #endif
 
 #ifndef MD_API
-#if COMPILER_MSVC
-#	if BUILD_DYANMIC
-#		if BUILD_API_EXPORT
+#if MD_COMPILER_MSVC
+#	if MD_BUILD_DYANMIC
+#		if MD_BUILD_API_EXPORT
 #			define MD_API __declspec(dllexport)
 #		else
 #			define MD_API __declspec(dllimport)
@@ -15,7 +15,7 @@
 #		define MD_API  // Empty for static builds
 #	endif
 #else
-#	ifdef BUILD_DYANMIC
+#	ifdef MD_BUILD_DYANMIC
 #		define MD_API __attribute__((visibility("default")))
 #	else
 #		define MD_API  // Empty for static builds
@@ -24,7 +24,7 @@
 #endif // GEN_API
 
 #ifndef MD_API_C_BEGIN
-#	if LANG_C
+#	if MD_LANG_C
 #		define MD_API_C_BEGIN
 #		define MD_API_C_END
 #		define MD_API_C
@@ -35,15 +35,15 @@
 #	endif
 #endif
 
-#ifndef global // Global variables
-#	if BUILD_API_EXPORT || BUILD_STATIC
-#		define global         
+#ifndef md_global // Global variables
+#	if MD_BUILD_API_EXPORT || MD_BUILD_STATIC
+#		define md_global         
 #	else
-#		define global static
+#		define md_global static
 #	endif
 #endif
 
 // Internal Linkage
-#ifndef internal
-#define internal static
+#ifndef md_internal
+#define md_internal static
 #endif

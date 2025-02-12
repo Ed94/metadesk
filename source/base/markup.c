@@ -4,7 +4,7 @@
 #endif
 
 inline void
-set_thread_name(String8 string) {
-	prof_thread_name("%.*s", str8_varg(string));
-	os_set_thread_name(string);
+md_set_thread_name(MD_String8 string) {
+	md_prof_thread_name("%.*s", md_str8_varg(string));
+	md_os_set_thread_name(string);
 }

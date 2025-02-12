@@ -666,9 +666,9 @@ STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(vsprintfcb)(STBSP_SPRINTFCB *callback,
 			//
 			case 'S':
 			{
-				String8 string = va_arg(va, String8);
+				MD_String8 string = va_arg(va, MD_String8);
 				s       = (char *)string.str;
-				l       = (U32)string.size;
+				l       = (MD_U32)string.size;
 				lead[0] = 0;
 				tail[0] = 0;
 				pr      = 0;
@@ -680,21 +680,21 @@ STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(vsprintfcb)(STBSP_SPRINTFCB *callback,
 			case 'm':
 			case 'M':
 			{
-				static const U64 one_kib = 1ull * 1024;
-				static const U64 one_mib = 1ull * 1024 * 1024;
-				static const U64 one_gib = 1ull * 1024 * 1024 * 1024;
-				static const U64 one_tib = 1ull * 1024 * 1024 * 1024 * 1024;
+				static const MD_U64 one_kib = 1ull * 1024;
+				static const MD_U64 one_mib = 1ull * 1024 * 1024;
+				static const MD_U64 one_gib = 1ull * 1024 * 1024 * 1024;
+				static const MD_U64 one_tib = 1ull * 1024 * 1024 * 1024 * 1024;
 
-				U64 size;
+				MD_U64 size;
 				if (f[0] == 'M') {
-					size = va_arg(va, U64);
+					size = va_arg(va, MD_U64);
 				}
 				else {
-					size = va_arg(va, U32);
+					size = va_arg(va, MD_U32);
 				}
 
-				U64 lo = 0;
-				U64 hi = 0;
+				MD_U64 lo = 0;
+				MD_U64 hi = 0;
 				char* units = "";
 
 				if (size < one_kib) {
@@ -718,7 +718,7 @@ STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(vsprintfcb)(STBSP_SPRINTFCB *callback,
 					units = "GiB";
 				}
 				else {
-					assert(size <= MAX_U64 / 100ull);
+					md_assert(size <= MD_MAX_U64 / 100ull);
 					hi    = size / one_tib;
 					lo    = ((size * 100) / one_tib) % 100;
 					units = "TiB";
@@ -728,12 +728,12 @@ STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(vsprintfcb)(STBSP_SPRINTFCB *callback,
 				if (hi > 0)
 				{
 					s = num;
-					for (U64 n = hi; n > 0; n /= 10ull)
+					for (MD_U64 n = hi; n > 0; n /= 10ull)
 					{
 						*s = (char)(n % 10ull) + '0';
 						++s;
 					}
-					for (S64 i = (S64)(s-num)-1; i >= 0; --i)
+					for (MD_S64 i = (MD_S64)(s-num)-1; i >= 0; --i)
 					{
 						*bf = num[i];
 						++ bf;
@@ -752,18 +752,18 @@ STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(vsprintfcb)(STBSP_SPRINTFCB *callback,
 					++ bf;
 
 					s = num;
-					for (U64 n = lo; n > 0; n /= 10ull) {
+					for (MD_U64 n = lo; n > 0; n /= 10ull) {
 						*s = (char)(n % 10ull) + '0';
 						++ s;
 					}
 
-					U64 lead_zero_count = 3 - (U64)(s-num);
-					for (U64 i = 1; i < lead_zero_count; ++i) {
+					MD_U64 lead_zero_count = 3 - (MD_U64)(s-num);
+					for (MD_U64 i = 1; i < lead_zero_count; ++i) {
 						*bf = '0';
 						++ bf;
 					}
 
-					for (S64 i = (S64)(s-num)-1; i >= 0; --i) {
+					for (MD_S64 i = (MD_S64)(s-num)-1; i >= 0; --i) {
 						*bf = num[i];
 						++ bf;
 					}
@@ -773,7 +773,7 @@ STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(vsprintfcb)(STBSP_SPRINTFCB *callback,
 				++ bf;
 
 				// copy units
-				for(U64 i = 0; units[i] != 0; ++i) {
+				for(MD_U64 i = 0; units[i] != 0; ++i) {
 					*bf = units[i];
 					++ bf;
 				}

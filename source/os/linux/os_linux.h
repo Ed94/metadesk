@@ -19,54 +19,54 @@ typedef struct timespec timespec;
 ////////////////////////////////
 //~ rjf: File Iterator
 
-typedef struct OS_LNX_FileIter OS_LNX_FileIter;
-struct OS_LNX_FileIter
+typedef struct MD_OS_LNX_FileIter MD_OS_LNX_FileIter;
+struct MD_OS_LNX_FileIter
 {
 	DIR*           dir;
 	struct dirent* dp;
-	String8        path;
+	MD_String8        path;
 };
-md_assert(sizeof(Member(OS_FileIter, memory)) >= sizeof(OS_LNX_FileIter), os_lnx_file_iter_size_check);
+md_assert(sizeof(Member(MD_OS_FileIter, memory)) >= sizeof(MD_OS_LNX_FileIter), md_os_lnx_file_iter_size_check);
 
 ////////////////////////////////
 //~ rjf: Safe Call Handler Chain
 
-typedef struct OS_LNX_SafeCallChain OS_LNX_SafeCallChain;
-struct OS_LNX_SafeCallChain
+typedef struct MD_OS_LNX_SafeCallChain MD_OS_LNX_SafeCallChain;
+struct MD_OS_LNX_SafeCallChain
 {
-	OS_LNX_SafeCallChain*  next;
-	OS_ThreadFunctionType* fail_handler;
+	MD_OS_LNX_SafeCallChain*  next;
+	MD_OS_ThreadFunctionType* fail_handler;
 	void *ptr;
 };
 
 ////////////////////////////////
 //~ rjf: Entities
 
-typedef enum OS_LNX_EntityKind OS_LNX_EntityKind
-enum OS_LNX_EntityKind
+typedef enum MD_OS_LNX_EntityKind MD_OS_LNX_EntityKind
+enum MD_OS_LNX_EntityKind
 {
-	OS_LNX_EntityKind_Thread,
-	OS_LNX_EntityKind_Mutex,
-	OS_LNX_EntityKind_RWMutex,
-	OS_LNX_EntityKind_ConditionVariable,
+	MD_OS_LNX_EntityKind_Thread,
+	MD_OS_LNX_EntityKind_Mutex,
+	MD_OS_LNX_EntityKind_RWMutex,
+	MD_OS_LNX_EntityKind_ConditionVariable,
 };
 
-typedef struct OS_LNX_EntityThread OS_LNX_EntityThread;
-struct OS_LNX_EntityThread
+typedef struct MD_OS_LNX_EntityThread MD_OS_LNX_EntityThread;
+struct MD_OS_LNX_EntityThread
 {
 	pthread_t              handle;
-	OS_ThreadFunctionType* func;
+	MD_OS_ThreadFunctionType* func;
 	void*                  ptr;
 };
 
-typedef struct OS_LNX_Entity OS_LNX_Entity;
-struct OS_LNX_Entity
+typedef struct MD_OS_LNX_Entity MD_OS_LNX_Entity;
+struct MD_OS_LNX_Entity
 {
-	OS_LNX_Entity*    next;
-	OS_LNX_EntityKind kind;
+	MD_OS_LNX_Entity*    next;
+	MD_OS_LNX_EntityKind kind;
 	union
 	{
-		OS_LNX_EntityThread thread;
+		MD_OS_LNX_EntityThread thread;
 		pthread_mutex_t  mutex_handle;
 		pthread_rwlock_t rwmutex_handle;
 		struct {
@@ -79,33 +79,33 @@ struct OS_LNX_Entity
 ////////////////////////////////
 //~ rjf: State
 
-typedef struct OS_LNX_State OS_LNX_State;
-struct OS_LNX_State
+typedef struct MD_OS_LNX_State MD_OS_LNX_State;
+struct MD_OS_LNX_State
 {
-	Arena*          arena;
-	OS_SystemInfo   system_info;
-	OS_ProcessInfo  process_info;
+	MD_Arena*          arena;
+	MD_OS_SystemInfo   system_info;
+	MD_OS_ProcessInfo  process_info;
 	pthread_mutex_t entity_mutex;
-	Arena*          entity_arena;
-	OS_LNX_Entity*  entity_free;
+	MD_Arena*          entity_arena;
+	MD_OS_LNX_Entity*  entity_free;
 };
 
 
 ////////////////////////////////
 //~ rjf: Helpers
 
-DateTime       os_lnx_date_time_from_tm        (tm in, U32 msec);
-tm             os_lnx_tm_from_date_time        (DateTime dt);
-timespec       os_lnx_timespec_from_date_time  (DateTime dt);
-DenseTime      os_lnx_dense_time_from_timespec (timespec in);
-FileProperties os_lnx_file_properties_from_stat(struct stat* s);
-void           os_lnx_safe_call_sig_handler    (int x);
+MD_DateTime       md_os_lnx_date_time_from_tm        (tm in, MD_U32 msec);
+tm             md_os_lnx_tm_from_date_time        (MD_DateTime dt);
+timespec       md_os_lnx_timespec_from_date_time  (MD_DateTime dt);
+MD_DenseTime      md_os_lnx_dense_time_from_timespec (timespec in);
+MD_FileProperties md_os_lnx_file_properties_from_stat(struct stat* s);
+void           md_os_lnx_safe_call_sig_handler    (int x);
 
-inline DateTime
-os_lnx_date_time_from_tm(tm in, U32 msec) {
-	DateTime dt = {0};
+inline MD_DateTime
+md_os_lnx_date_time_from_tm(tm in, MD_U32 msec) {
+	MD_DateTime dt = {0};
 	dt.sec  = in.tm_sec;
-	dt.min  = in.tm_min;
+	dt.md_min  = in.tm_min;
 	dt.hour = in.tm_hour;
 
 	dt.day  = in.tm_mday-1;
@@ -116,10 +116,10 @@ os_lnx_date_time_from_tm(tm in, U32 msec) {
 }
 
 inline tm
-os_lnx_tm_from_date_time(DateTime dt) {
+md_os_lnx_tm_from_date_time(MD_DateTime dt) {
   tm result = {0};
   result.tm_sec = dt.sec;
-  result.tm_min = dt.min;
+  result.tm_min = dt.md_min;
   result.tm_hour= dt.hour;
 
   result.tm_mday= dt.day+1;
@@ -129,40 +129,40 @@ os_lnx_tm_from_date_time(DateTime dt) {
 }
 
 inline timespec
-os_lnx_timespec_from_date_time(DateTime dt) {
-  tm tm_val = os_lnx_tm_from_date_time(dt);
+md_os_lnx_timespec_from_date_time(MD_DateTime dt) {
+  tm tm_val = md_os_lnx_tm_from_date_time(dt);
   time_t seconds = timegm(&tm_val);
   timespec result = {0};
   result.tv_sec = seconds;
   return result;
 }
 
-inline DenseTime
-os_lnx_dense_time_from_timespec(timespec in) {
-  DenseTime result = 0; {
+inline MD_DenseTime
+md_os_lnx_dense_time_from_timespec(timespec in) {
+  MD_DenseTime result = 0; {
     struct tm tm_time = {0};
     gmtime_r(&in.tv_sec, &tm_time);
-    DateTime date_time = os_lnx_date_time_from_tm(tm_time, in.tv_nsec/Million(1));
-    result = dense_time_from_date_time(date_time);
+    MD_DateTime date_time = md_os_lnx_date_time_from_tm(tm_time, in.tv_nsec/Million(1));
+    result = md_dense_time_from_date_time(date_time);
   }
   return result;
 }
 
-inline FileProperties
-os_lnx_file_properties_from_stat(struct stat* s) {
-	FileProperties props = {0};
+inline MD_FileProperties
+md_os_lnx_file_properties_from_stat(struct stat* s) {
+	MD_FileProperties props = {0};
 	props.size     = s->st_size;
-	props.created  = os_lnx_dense_time_from_timespec(s->st_ctim);
-	props.modified = os_lnx_dense_time_from_timespec(s->st_mtim);
+	props.created  = md_os_lnx_dense_time_from_timespec(s->st_ctim);
+	props.modified = md_os_lnx_dense_time_from_timespec(s->st_mtim);
 	if (s->st_mode & S_IFDIR) {
-		props.flags |= FilePropertyFlag_IsFolder;
+		props.flags |= MD_FilePropertyFlag_IsFolder;
 	}
 	return props;
 }
 
 inline void
-os_lnx_safe_call_sig_handler(int x) {
-	OS_LNX_SafeCallChain* chain = os_lnx_safe_call_chain;
+md_os_lnx_safe_call_sig_handler(int x) {
+	MD_OS_LNX_SafeCallChain* chain = md_os_lnx_safe_call_chain;
 	if (chain != 0 && chain->fail_handler != 0) {
 		chain->fail_handler(chain->ptr);
 	}
@@ -172,45 +172,45 @@ os_lnx_safe_call_sig_handler(int x) {
 ////////////////////////////////
 //~ rjf: Entities
 
-MD_API OS_LNX_Entity* os_lnx_entity_alloc  (OS_LNX_EntityKind kind);
-MD_API void           os_lnx_entity_release(OS_LNX_Entity*    entity);
+MD_API MD_OS_LNX_Entity* md_os_lnx_entity_alloc  (MD_OS_LNX_EntityKind kind);
+MD_API void           md_os_lnx_entity_release(MD_OS_LNX_Entity*    entity);
 
 ////////////////////////////////
 //~ rjf: Thread Entry Point
 
-MD_API void* os_lnx_thread_entry_point(void* ptr);
+MD_API void* md_os_lnx_thread_entry_point(void* ptr);
 
 ////////////////////////////////
-//~ rjf: @os_hooks System/Process Info (Implemented Per-OS)
+//~ rjf: @md_os_hooks System/Process Info (Implemented Per-OS)
 
-inline String8
-os_get_current_path__ainfo(AllocatorInfo ainfo) {
+inline MD_String8
+md_os_get_current_path__ainfo(MD_AllocatorInfo ainfo) {
 	char*   cwdir  = getcwd(0, 0);
-	String8 string = str8_copy(ainfo, str8_cstring(cwdir));
+	MD_String8 string = md_str8_copy(ainfo, md_str8_cstring(cwdir));
 	return  string;
 }
 
 ////////////////////////////////
-//~ rjf: @os_hooks Memory Allocation (Implemented Per-OS)
+//~ rjf: @md_os_hooks Memory Allocation (Implemented Per-OS)
 
 //- rjf: basic
 
-inline void* os_reserve (           U64 size) { void* result = mmap(0, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0); return result; }
-inline B32   os_commit  (void *ptr, U64 size) { mprotect(ptr, size, PROT_READ | PROT_WRITE);                                 return 1; }
-inline void  os_decommit(void *ptr, U64 size) { madvise(ptr, size, MADV_DONTNEED); mprotect(ptr, size, PROT_NONE); }
-inline void  os_release (void *ptr, U64 size) { munmap(ptr, size); } 
+inline void* md_os_reserve (           MD_U64 size) { void* result = mmap(0, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0); return result; }
+inline MD_B32   md_os_commit  (void *ptr, MD_U64 size) { mprotect(ptr, size, PROT_READ | PROT_WRITE);                                 return 1; }
+inline void  md_os_decommit(void *ptr, MD_U64 size) { madvise(ptr, size, MADV_DONTNEED); mprotect(ptr, size, PROT_NONE); }
+inline void  md_os_release (void *ptr, MD_U64 size) { munmap(ptr, size); } 
 
 //- rjf: large pages
 
-inline void* os_reserve_large(           U64 size) { void* result = mmap(0, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0); return result; }
-inline B32   os_commit_large (void *ptr, U64 size) { mprotect(ptr, size, PROT_READ | PROT_WRITE);                                               return 1; }
+inline void* md_os_reserve_large(           MD_U64 size) { void* result = mmap(0, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0); return result; }
+inline MD_B32   md_os_commit_large (void *ptr, MD_U64 size) { mprotect(ptr, size, PROT_READ | PROT_WRITE);                                               return 1; }
 
 ////////////////////////////////
-//~ rjf: @os_hooks Thread Info (Implemented Per-OS)
+//~ rjf: @md_os_hooks Thread Info (Implemented Per-OS)
 
-inline U32
-os_tid(void) {
-	U32 result = 0;
+inline MD_U32
+md_os_tid(void) {
+	MD_U32 result = 0;
 #if defined(SYS_gettid)
 	result = syscall(SYS_gettid);
 #else

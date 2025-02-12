@@ -3,25 +3,25 @@
 #	include "time.h"
 #endif
 
-DateTime
-date_time_from_unix_time(U64 unix_time)
+MD_DateTime
+md_date_time_from_unix_time(MD_U64 unix_time)
 {
-	DateTime date = {0};
+	MD_DateTime date = {0};
 	date.year = 1970;
 	date.day  = 1 +  (unix_time / 86400);
-	date.sec  = (U32) unix_time % 60;
-	date.min  = (U32)(unix_time / 60)   % 60;
-	date.hour = (U32)(unix_time / 3600) % 24;
+	date.sec  = (MD_U32) unix_time % 60;
+	date.md_min  = (MD_U32)(unix_time / 60)   % 60;
+	date.hour = (MD_U32)(unix_time / 3600) % 24;
 
 	for(;;)
 	{
 		for(date.month = 0; date.month < 12; ++date.month)
 		{
-			U64 c = 0;
+			MD_U64 c = 0;
 			switch(date.month)
 			{
-				case Month_Jan: c = 31; break;
-				case Month_Feb:
+				case MD_Month_Jan: c = 31; break;
+				case MD_Month_Feb:
 				{
 					if((date.year % 4 == 0) && ((date.year % 100) != 0 || (date.year % 400) == 0))
 					{
@@ -32,17 +32,17 @@ date_time_from_unix_time(U64 unix_time)
 						c = 28;
 					}
 				} break;
-				case Month_Mar: c = 31; break;
-				case Month_Apr: c = 30; break;
-				case Month_May: c = 31; break;
-				case Month_Jun: c = 30; break;
-				case Month_Jul: c = 31; break;
-				case Month_Aug: c = 31; break;
-				case Month_Sep: c = 30; break;
-				case Month_Oct: c = 31; break;
-				case Month_Nov: c = 30; break;
-				case Month_Dec: c = 31; break;
-				default: invalid_path;
+				case MD_Month_Mar: c = 31; break;
+				case MD_Month_Apr: c = 30; break;
+				case MD_Month_May: c = 31; break;
+				case MD_Month_Jun: c = 30; break;
+				case MD_Month_Jul: c = 31; break;
+				case MD_Month_Aug: c = 31; break;
+				case MD_Month_Sep: c = 30; break;
+				case MD_Month_Oct: c = 31; break;
+				case MD_Month_Nov: c = 30; break;
+				case MD_Month_Dec: c = 31; break;
+				default: md_invalid_path;
 			}
 			if(date.day <= c)
 			{

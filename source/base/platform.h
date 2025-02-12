@@ -6,13 +6,13 @@
 #include <stdarg.h>
 #include <stddef.h>
 
-#if defined( OS_WINDOWS )
+#if defined( MD_OS_WINDOWS )
 #	include <intrin.h>
 #	include <tmmintrin.h>
 #	include <wmmintrin.h>
 #endif
 
-#if LANG_C
+#if MD_LANG_C
 #	include <assert.h>
 #	include <stdbool.h>
 #endif

@@ -9,40 +9,40 @@
 ////////////////////////////////
 //~ rjf: Globals/Thread-Locals
 
-MD_API_C thread_static Log* log_active;
-#if !BUILD_SUPPLEMENTARY_UNIT
-MD_API_C thread_static Log* log_active = 0;
+MD_API_C md_thread_static MD_Log* md_log_active;
+#if !MD_BUILD_SUPPLEMENTARY_UNIT
+MD_API_C md_thread_static MD_Log* md_log_active = 0;
 #endif
 
 ////////////////////////////////
-//~ rjf: Log Creation/Selection
+//~ rjf: MD_Log Creation/Selection
 
 void
-log_select(Log* log) {
-	log_active = log;
+md_log_select(MD_Log* log) {
+	md_log_active = log;
 }
 
 ////////////////////////////////
-//~ rjf: Log Building
+//~ rjf: MD_Log Building
 
 void
-log_msg(LogMsgKind kind, String8 string) {
-	if(log_active != 0 && log_active->top_scope != 0) {
-		String8 string_copy = str8_copy(log_active->arena, string);
-		str8_list_push(log_active->arena, &log_active->top_scope->strings[kind], string_copy);
+md_log_msg(MD_LogMsgKind kind, MD_String8 string) {
+	if(md_log_active != 0 && md_log_active->top_scope != 0) {
+		MD_String8 md_string_copy = md_str8_copy(md_log_active->arena, string);
+		md_str8_list_push(md_log_active->arena, &md_log_active->top_scope->strings[kind], md_string_copy);
 	}
 }
 
 void
-log_msgf(LogMsgKind kind, char *fmt, ...) {
-	if(log_active != 0) 
+md_log_msgf(MD_LogMsgKind kind, char *fmt, ...) {
+	if(md_log_active != 0) 
 	{
-		TempArena scratch = scratch_begin(0, 0);
+		MD_TempArena scratch = md_scratch_begin(0, 0);
 
 		va_list args;
 		va_start(args, fmt);
-		String8 string = str8fv(scratch.arena, fmt, args);
-		log_msg(kind, string);
+		MD_String8 string = md_str8fv(scratch.arena, fmt, args);
+		md_log_msg(kind, string);
 		va_end(args);
 
 		scratch_end(scratch);
@@ -50,39 +50,39 @@ log_msgf(LogMsgKind kind, char *fmt, ...) {
 }
 
 ////////////////////////////////
-//~ rjf: Log Scopes
+//~ rjf: MD_Log Scopes
 
 void
-log_scope_begin(void) {
-	if (log_active != 0) {
-		U64       pos   = arena_pos(log_active->arena);
-		LogScope* scope = push_array(log_active->arena, LogScope, 1);
+md_log_scope_begin(void) {
+	if (md_log_active != 0) {
+		MD_U64       pos   = md_arena_pos(md_log_active->arena);
+		MD_LogScope* scope = md_push_array_(md_log_active->arena, MD_LogScope, 1);
 		scope->pos = pos;
-		sll_stack_push(log_active->top_scope, scope);
+		md_sll_stack_push(md_log_active->top_scope, scope);
 	}
 }
 
-LogScopeResult
-log_scope_end(Arena *arena)
+MD_LogScopeResult
+md_log_scope_end(MD_Arena *arena)
 {
-	LogScopeResult result = {0};
-	if(log_active != 0)
+	MD_LogScopeResult result = {0};
+	if(md_log_active != 0)
 	{
-		LogScope* scope = log_active->top_scope;
+		MD_LogScope* scope = md_log_active->top_scope;
 		if(scope != 0)
 		{
-			sll_stack_pop(log_active->top_scope);
+			md_sll_stack_pop(md_log_active->top_scope);
 			if(arena != 0)
 			{
-				for (each_enum_val(LogMsgKind, kind)) {
-					TempArena scratch = scratch_begin(&arena, 1);
-					String8   
-					result_unindented    = str8_list_join(scratch.arena, &scope->strings[kind], 0);
-					result.strings[kind] = indented_from_string(arena, result_unindented);
+				for (md_each_enum_val(MD_LogMsgKind, kind)) {
+					MD_TempArena scratch = md_scratch_begin(&arena, 1);
+					MD_String8   
+					result_unindented    = md_str8_list_join(scratch.arena, &scope->strings[kind], 0);
+					result.strings[kind] = md_indented_from_string(arena, result_unindented);
 					scratch_end(scratch);
 				}
 			}
-			arena_pop_to(log_active->arena, scope->pos);
+			md_arena_pop_to(md_log_active->arena, scope->pos);
 		}
 	}
 	return result;

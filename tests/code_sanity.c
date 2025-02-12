@@ -40,5 +40,8 @@ int main()
 		}
 	}
 
+	SSIZE what = 54;
+	String8 test = str8_from(arena, what);
+
 	deinit(& ctx);
 }

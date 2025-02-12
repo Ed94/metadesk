@@ -1,7 +1,6 @@
 //$ exe //
 
-#include "md.h"
-#include "md.c"
+#include "metadesk.c"
 
 MD_Arena *arena = 0;
 
@@ -13,10 +12,10 @@ static struct
 test_ctx;
 
 static void
-BeginTest(char *name)
+BeginTest(char* name)
 {
-    MD_u64 length = MD_CalculateCStringLength(name);
-    MD_u64 spaces = 25 - length;
+    MD_U64 length = md_cstring_length((MD_U8*)name);
+    MD_U64 spaces = 25 - length;
     if(spaces < 0)
     {
         spaces = 0;
@@ -27,7 +26,7 @@ BeginTest(char *name)
 }
 
 static void
-TestResult(MD_b32 result)
+TestResult(MD_B32 result)
 {
     test_ctx.number_of_tests += 1;
     test_ctx.number_passed += !!result;
@@ -63,22 +62,24 @@ EndTest(void)
 
 #define Test(name) for(int _i_ = (BeginTest(name), 0); !_i_; _i_ += 1, EndTest())
 
-static Node *
-MakeTestNode(NodeKind kind, MD_String8 string)
+static MD_Node*
+MakeTestNode(MD_NodeKind kind, MD_String8 string)
 {
     return MD_MakeNode(arena, kind, string, string, 0);
 }
 
-static MD_b32
-MatchParsedWithNode(MD_String8 string, Node *tree)
+static MD_B32
+MatchParsedWithNode(MD_Arena* arena, MD_String8 string, MD_Node* tree)
 {
-    ParseResult parse = MD_ParseOneNode(arena, string, 0);
-    return MD_NodeDeepMatch(tree, parse.node, MD_NodeMatchFlag_Tags | MD_NodeMatchFlag_TagArguments);
+	MD_TokenizeResult lexed  = md_tokenize_from_text(arena, string);
+	MD_ParseResult    parsed = md_parse_from_text_tokens(arena, str8_lit("MatchParsedWithNode"), string, lexed.tokens);
+	return md_node_match(tree, parsed.root, 0);
 }
 
-static MD_b32
-TokenMatch(Token token, MD_String8 string, MD_TokenKind kind)
+static MD_B32
+TokenMatch(MD_Token token, MD_String8 string, MD_TokenFlags flags)
 {
+	return md_str8_match(string, md_token, 0) &&& token.flags == flags
     return MD_S8Match(string, token.string, 0) && token.kind == kind;
 }
 
@@ -88,16 +89,17 @@ int main(void)
     
     Test("Lexer")
     {
-        MD_String8 string = MD_S8Lit("abc def 123 456 123_456 abc123 123abc +-*");
-        Token tokens[100];
+        MD_String8 string = md_str8_lit("abc def 123 456 123_456 abc123 123abc +-*");
+        MD_Token tokens[100];
         
-        Token *token = tokens;
-        Token *token_opl = tokens + MD_ArrayCount(tokens);
-        MD_u64 pos = 0;
+        MD_Token* token     = tokens;
+        MD_Token* token_opl = md_token;
+        MD_U64 pos = 0;
         for (; pos < string.size && token < token_opl; )
         {
+			
             *token = MD_TokenFromString(MD_S8Skip(string, pos));
-            pos += token->raw_string.size;
+            pos += md_dim_1u64(token->range);
             token += 1;
         }
         

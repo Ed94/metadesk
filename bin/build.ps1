@@ -116,7 +116,7 @@ verify-path $path_build
 
 if ($compile_sanity)
 {
-	write-host "Building code/metadesk.c (sanity compile) with $vendor"
+	write-host "Building source/metadesk.c (sanity compile) with $vendor"
 
 	$compiler_args = @()
 	$compiler_args += $flag_all_c
@@ -166,94 +166,6 @@ if ($code_sanity)
 	Pop-Location
 }
 
-if ($gen_c11)
-{
-	write-host "Building gen_c11/gen_c11.c"
-
-	$compiler_args = @()
-	$compiler_args += $flag_all_c
-	$compiler_args += $flag_updated_cpp_macro
-	$compiler_args += $flag_c11
-
-	$linker_args = @()
-	$linker_args += $flag_link_win_subsystem_console
-
-	$includes   = @( $path_gen_c11, $path_root )
-	$unit       = join-path $path_gen_c11 'gen_c11.c'
-	$executable = join-path $path_build   'gen_c11.exe'
-
-	$result = build-simple $path_build $includes $compiler_args $linker_args $unit $executable
-
-	$path_gen = join-path $path_gen_c11 'gen'
-	verify-path $path_gen
-
-	Push-Location $path_root
-		if ( Test-Path( $executable ) ) {
-			write-host "`nRunning gen_c11/gen_c11.exe"
-			$time_taken = Measure-Command { & $executable
-					| ForEach-Object {
-						write-host `t $_ -ForegroundColor Green
-					}
-				}
-			write-host "`ntest/code_sanity completed in $($time_taken.TotalMilliseconds) ms"
-		}
-	Pop-Location
-}
-
-if ($c11_sanity)
-{
-	write-host " Building tests/c11_sanity.c"
-
-	$compiler_args = @()
-	$compiler_args += $flag_all_c
-	$compiler_args += $flag_updated_cpp_macro
-	$compiler_args += $flag_c11
-
-	$linker_args = @()
-	$linker_args += $flag_link_win_subsystem_console
-
-	$path_gen = join-path $path_gen_c11 'gen'
-
-	$includes   = @( $path_gen, $path_root )
-	$unit       = join-path $path_tests  'c11_sanity.c'
-	$executable = join-path $path_build  'c11_sanity.exe'
-
-	$result = build-simple $path_build $includes $compiler_args $linker_args $unit $executable
-
-	Push-Location $path_root
-		if ( Test-Path( $executable ) ) {
-			write-host "`nRunning tests/c11_sanity_segregated.exe (segregated)"
-			$time_taken = Measure-Command { & $executable
-					| ForEach-Object {
-						write-host `t $_ -ForegroundColor Green
-					}
-				}
-			write-host "`ntest/code_sanity completed in $($time_taken.TotalMilliseconds) ms"
-		}
-	Pop-Location
-
-	$compiler_args += ($flag_define + "TEST_SINGLEHEADER")
-
-	$result = build-simple $path_build $includes $compiler_args $linker_args $unit $executable
-
-	Push-Location $path_root
-	if ( Test-Path( $executable ) ) {
-		write-host "`nRunning tests/c11_sanity.exe (single header)"
-		$time_taken = Measure-Command { & $executable
-				| ForEach-Object {
-					write-host `t $_ -ForegroundColor Green
-				}
-			}
-		write-host "`ntest/code_sanity completed in $($time_taken.TotalMilliseconds) ms"
-	}
-	Pop-Location
-}
-
-if ($cpp17_sanity)
-{
-
-}
-
 if ($sanity_tests)
 {
 	write-host " Building tests/sanity_tests.c"
@@ -296,7 +208,5 @@ if ($expression_tests)
 {
 
 }
-
-
 
 Pop-Location # $path_root

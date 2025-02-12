@@ -193,8 +193,6 @@ This provides the user a way to control startup of the libary.
 
 ## Notes
 
-
-
 [Handmade Network Project Page](https://metadesk.handmade.network)
 
 [Original Repo](https://github.com/ryanfleury/metadesk)

@@ -58,7 +58,7 @@ md_log_alloc(MD_AllocatorInfo ainfo, MD_U64 md_arena_block_size) {
 		md_arena_block_size = MD_LOG_DEFAULT_ARENA_BLOCK_SIZE;
 	}
 	MD_Arena* arena = md_arena_alloc(.backing = ainfo, .block_size = md_arena_block_size);
-	MD_Log*   log   = md_push_array_(arena, MD_Log, 1);
+	MD_Log*   log   = md_push_array(arena, MD_Log, 1);
 	log->arena   = arena;
   return log;
 }

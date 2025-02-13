@@ -56,7 +56,7 @@ void
 md_log_scope_begin(void) {
 	if (md_log_active != 0) {
 		MD_U64       pos   = md_arena_pos(md_log_active->arena);
-		MD_LogScope* scope = md_push_array_(md_log_active->arena, MD_LogScope, 1);
+		MD_LogScope* scope = md_push_array(md_log_active->arena, MD_LogScope, 1);
 		scope->pos = pos;
 		md_sll_stack_push(md_log_active->top_scope, scope);
 	}

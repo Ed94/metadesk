@@ -616,7 +616,7 @@ void         md_str8_list_concat_in_place              (MD_String8List* list, MD
 inline MD_String8Node*
 md_str8_list_push_node(MD_String8List* list, MD_String8Node* node) {
 	md_sll_queue_push(list->first, list->last, node);
-	list->md_node_count += 1;
+	list->node_count += 1;
 	list->total_size += node->string.size;
 	return(node);
 }
@@ -624,7 +624,7 @@ md_str8_list_push_node(MD_String8List* list, MD_String8Node* node) {
 inline MD_String8Node*
 md_str8_list_push_node_set_string(MD_String8List* list, MD_String8Node* node, MD_String8 string) {
 	md_sll_queue_push(list->first, list->last, node);
-	list->md_node_count += 1;
+	list->node_count += 1;
 	list->total_size += string.size;
 	node->string      = string;
 	return(node);
@@ -633,7 +633,7 @@ md_str8_list_push_node_set_string(MD_String8List* list, MD_String8Node* node, MD
 inline MD_String8Node*
 md_str8_list_push_node_front(MD_String8List* list, MD_String8Node* node) {
 	md_sll_queue_push_front(list->first, list->last, node);
-	list->md_node_count += 1;
+	list->node_count += 1;
 	list->total_size += node->string.size;
 	return(node);
 }
@@ -641,7 +641,7 @@ md_str8_list_push_node_front(MD_String8List* list, MD_String8Node* node) {
 inline MD_String8Node*
 md_str8_list_push_node_front_set_string(MD_String8List* list, MD_String8Node* node, MD_String8 string) {
 	md_sll_queue_push_front(list->first, list->last, node);
-	list->md_node_count += 1;
+	list->node_count += 1;
 	list->total_size += string.size;
 	node->string = string;
 	return(node);
@@ -791,7 +791,7 @@ md_str8_list_from_flags__ainfo(MD_AllocatorInfo ainfo, MD_String8List* list, MD_
 inline MD_String8Array
 md_str8_array_from_list__ainfo(MD_AllocatorInfo ainfo, MD_String8List* list) {
 	MD_String8Array array;
-	array.count = list->md_node_count;
+	array.count = list->node_count;
 	array.v     = md_alloc_array_no_zero(ainfo, MD_String8, array.count);
 	MD_U64 idx = 0;
 	for(MD_String8Node *n = list->first; n != 0; n = n->next, idx += 1) {
@@ -1124,7 +1124,7 @@ MD_API MD_FuzzyMatchRangeList md_fuzzy_match_range_list_copy__ainfo(MD_Allocator
 #define md_fuzzy_match_range_list_copy(allocator, src)   _Generic(allocator, MD_Arena*: md_fuzzy_match_range_list_copy__arena, MD_AllocatorInfo: md_fuzzy_match_range_list_copy__ainfo) md_generic_call(allocator, src)
 
 md_force_inline MD_FuzzyMatchRangeList md_fuzzy_match_find__arena           (MD_Arena *arena, MD_String8 needle, MD_String8 haystack) { return md_fuzzy_match_find__ainfo           (md_arena_allocator(arena), needle, haystack); }
-md_force_inline MD_FuzzyMatchRangeList md_fuzzy_match_range_list_copy__arena(MD_Arena* arena, MD_FuzzyMatchRangeList* src)            s{ return md_fuzzy_match_range_list_copy__ainfo(md_arena_allocator(arena), src); }
+md_force_inline MD_FuzzyMatchRangeList md_fuzzy_match_range_list_copy__arena(MD_Arena* arena, MD_FuzzyMatchRangeList* src)            { return md_fuzzy_match_range_list_copy__ainfo(md_arena_allocator(arena), src); }
 
 ////////////////////////////////
 //~ NOTE(allen): Serialization Helpers
@@ -1221,7 +1221,7 @@ md_str8_serial_begin__ainfo(MD_AllocatorInfo ainfo, MD_String8List* srl) {
 	MD_String8Node* node = md_alloc_array(ainfo, MD_String8Node, 1);
 	node->string.str = md_alloc_array_no_zero(ainfo, MD_U8, 0);
 	srl->first       = srl->last = node;
-	srl->md_node_count  = 1;
+	srl->node_count  = 1;
 	srl->total_size  = 0;
 }
 

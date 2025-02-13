@@ -672,7 +672,7 @@ md_str8_path_list_resolve_dots_in_place(MD_String8List* path, MD_PathStyle style
 		
 		eliminate_stack_top:
 		{
-			path->md_node_count -= 1;
+			path->node_count -= 1;
 			path->total_size -= stack->node->string.size;
 
 			md_sll_stack_pop(stack);
@@ -1377,7 +1377,7 @@ md_fuzzy_match_find__ainfo(MD_AllocatorInfo ainfo, MD_String8 needle, MD_String8
 		}
 		if (find_pos < haystack.size) {
 			MD_Rng1U64             range = md_r1u64(find_pos, find_pos+needle_n->string.size);
-			MD_FuzzyMatchRangeNode* n    = md_push_array_(scratch.arena, MD_FuzzyMatchRangeNode, 1);
+			MD_FuzzyMatchRangeNode* n    = md_push_array(scratch.arena, MD_FuzzyMatchRangeNode, 1);
 			n->range = range;
 			md_sll_queue_push(result.first, result.last, n);
 			result.count     += 1;

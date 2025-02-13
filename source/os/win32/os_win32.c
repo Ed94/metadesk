@@ -1,3 +1,6 @@
+#ifdef INTELLISENSE_DIRECTIVES
+#	include "os_win32.h"
+#endif
 
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
@@ -786,7 +789,7 @@ md_os_process_launch(MD_OS_ProcessLaunchParams* params)
 		MD_String8List all_opts = params->env;
 		if (params->inherit_env != 0)
 		{
-			if (all_opts.md_node_count != 0)
+			if (all_opts.node_count != 0)
 			{
 				md_memory_zero_struct(&all_opts);
 				for (MD_String8Node *n = params->env.first; n != 0; n = n->next) {
@@ -1486,7 +1489,7 @@ w32_entry_point_caller(int argc, WCHAR** wargv)
   
 	//- rjf: extract arguments
 	MD_Arena*  args_arena = md_arena_alloc(.backing = md_varena_alloc(.reserve_size = MD_MB(1), .commit_size = MD_KB(32)));
-	char**  argv       = md_push_array_(args_arena, char*, argc);
+	char**  argv       = md_push_array(args_arena, char*, argc);
 	for (int i = 0; i < argc; i += 1)
 	{
 		MD_String16 arg16 = md_str16_cstring((MD_U16 *)wargv[i]);

@@ -1,11 +1,6 @@
-# Metadesk Library: RAD Debugger's Standalone Fork
+# Metadesk Library
 
-This is a fork that aims to make the latest version of metadesk available from the [RAD Debugger](https://github.com/EpicGamesExt/raddebugger) accessible as a library.
-
-**Note: This repo is under heavy WIP. Currently getting the code from RAD's (Epic Games) Debugger over to a standalone state while at the same time studying it.**  
-**Update:** This will contain just the minimal lib. Extra additions or the ability to generate variants are available at: [metadesk_libgen](https://github.com/Ed94/metadesk_libgen)
-
-docs will be updated referencing content procued by Ryan Fleury and content based on studying or resolving this library for this repo.
+WIP: This hosts the raddbg's verion of mdesk module lifeted for use as a library. Intent is to get it working with tests & examples as the original was able to, then reduce the surface area of the base & os mdoules that it originally was dependent on to a minimal size. Before dependencies removal the modules will be hosted on a separate repo as a frozen state of their "libification".
 
 ## Documentation
 

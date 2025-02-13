@@ -37,7 +37,7 @@
 #endif
 
 #ifndef md_thousand
-#define thousand(n)   ((n) * 1000)
+#define md_thousand(n)   ((n) * 1000)
 #endif
 #ifndef md_million
 #define md_million(n)    ((n) * 1000000)
@@ -801,9 +801,9 @@ md_sll__queue_pop_nz(void* nil, void** f, void* f_next, void** l)
 
 #ifndef md_zero_struct
 #	if MD_LANG_CPP
-#		define md_zero_struct {}
+#		define md_zero_struct() {}
 #	else
-#		define md_zero_struct {0}
+#		define md_zero_struct() {0}
 #	endif
 #endif
 

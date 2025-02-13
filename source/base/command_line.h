@@ -85,7 +85,7 @@ md_force_inline MD_CmdLine     md_cmd_line_from_string_list__arena(MD_Arena* are
 
 inline MD_CmdLineOpt* md_cmd_line_opt_from_string(MD_CmdLine *cmd_line, MD_String8 name) { return md_cmd_line_opt_from_slot(md_cmd_line_slot_from_string(cmd_line, name), name); }
 inline MD_B32         md_cmd_line_has_flag       (MD_CmdLine *cmd_line, MD_String8 name) { MD_CmdLineOpt *var = md_cmd_line_opt_from_string(cmd_line, name); return(var != 0); }
-inline MD_B32         md_cmd_line_has_argument   (MD_CmdLine *cmd_line, MD_String8 name) { MD_CmdLineOpt *var = md_cmd_line_opt_from_string(cmd_line, name); return(var != 0 && var->value_strings.md_node_count > 0); }
+inline MD_B32         md_cmd_line_has_argument   (MD_CmdLine *cmd_line, MD_String8 name) { MD_CmdLineOpt *var = md_cmd_line_opt_from_string(cmd_line, name); return(var != 0 && var->value_strings.node_count > 0); }
 
 inline MD_String8List 
 md_cmd_line_strings(MD_CmdLine *cmd_line, MD_String8 name) {

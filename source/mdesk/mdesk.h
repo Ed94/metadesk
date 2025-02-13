@@ -6,6 +6,18 @@
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
 
+// String Identifier Style
+typedef enum MD_IdentifierStyle MD_IdentifierStyle;
+enum MD_IdentifierStyle
+{
+    MD_IdentifierStyle_UpperCamelCase,
+    MD_IdentifierStyle_LowerCamelCase,
+    MD_IdentifierStyle_UpperCase,
+    MD_IdentifierStyle_LowerCase,
+};
+
+MD_API MD_String8 md_str8_stylize(MD_Arena* arena, MD_String8 string, MD_IdentifierStyle style, MD_String8 separator);
+
 ////////////////////////////////
 //~ rjf: Messages
 
@@ -325,9 +337,9 @@ MD_API MD_TokenArray  md_token_array_from_chunk_list__ainfo (MD_AllocatorInfo ai
 #define md_token_chunk_list_push(allocator, list, cap, token) _Generic(allocator, MD_Arena*: md_token_chunk_list_push__arena,        MD_AllocatorInfo: md_token_chunk_list_push__ainfo,        default: md_assert_generic_sel_fail) md_generic_call(allocator, list, cap, token)
 #define md_token_array_from_chunk_list(allocator, chunks)     _Generic(allocator, MD_Arena*: md_token_array_from_chunk_list__arena,  MD_AllocatorInfo: md_token_array_from_chunk_list__ainfo,  default: md_assert_generic_sel_fail) md_generic_call(allocator, chunks)
 
-md_force_inline MD_String8List md_string_list_from_token_flags__arena(MD_Arena* arena, MD_TokenFlags flags)                           { return md_string_list_from_token_flags__ainfo(md_arena_allocator(arena), flags); }
-md_force_inline void        md_token_chunk_list_push__arena       (MD_Arena* arena, MD_TokenChunkList* list, MD_U64 cap, MD_Token token) { md_token_chunk_list_push__ainfo(md_arena_allocator(arena), list, cap, token); }
-md_force_inline MD_TokenArray  md_token_array_from_chunk_list__arena (MD_Arena* arena, MD_TokenChunkList* chunks)                     { return md_token_array_from_chunk_list__ainfo(md_arena_allocator(arena), chunks); }
+md_force_inline MD_String8List md_string_list_from_token_flags__arena(MD_Arena* arena, MD_TokenFlags flags)                                 { return md_string_list_from_token_flags__ainfo(md_arena_allocator(arena), flags); }
+md_force_inline void           md_token_chunk_list_push__arena       (MD_Arena* arena, MD_TokenChunkList* list, MD_U64 cap, MD_Token token) { md_token_chunk_list_push__ainfo(md_arena_allocator(arena), list, cap, token); }
+md_force_inline MD_TokenArray  md_token_array_from_chunk_list__arena (MD_Arena* arena, MD_TokenChunkList* chunks)                           { return md_token_array_from_chunk_list__ainfo(md_arena_allocator(arena), chunks); }
 
 inline MD_Token
 md_token_make(MD_Rng1U64 range, MD_TokenFlags flags) {
@@ -593,7 +605,7 @@ MD_API MD_ParseResult md_parse_from_text__arena(MD_Arena*        arena, MD_Strin
 MD_API MD_ParseResult md_parse_from_text__ainfo(MD_AllocatorInfo ainfo, MD_String8 filename, MD_String8 text);
 
 #define md_parse_from_text(allocator, filename, text) _Generic(allocator, MD_Arena*: md_parse_from_text__arena, MD_AllocatorInfo: md_parse_from_text__ainfo, default: md_assert_generic_sel_fail) md_generic_call(allocator, filename, text)
-#define tree_from_string(allocator, string)       (md_parse_from_text((allocator), md_str8_zero(), (string)).root)
+#define md_tree_from_string(allocator, string)        (md_parse_from_text((allocator), md_str8_zero(), (string)).root)
 
 md_force_inline MD_ParseResult md_parse_from_text__arena(MD_Arena* arena, MD_String8 filename, MD_String8 text) { return md_parse_from_text__ainfo(md_arena_allocator(arena), filename, text); }
 

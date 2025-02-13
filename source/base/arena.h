@@ -106,11 +106,11 @@ void         temp_arena_end(MD_TempArena temp);
 
 //- rjf: push helper macros
 
-#ifndef md_push_array_
+#ifndef md_push_array
 #define md_push_array__no_zero_aligned(a, T, c, align) (T *)md_arena_push((a), sizeof(T) * (c), (align))
 #define md_push_array__aligned(a, T, c, align)         (T *)md_memory_zero(md_push_array__no_zero_aligned(a, T, c, align), sizeof(T) * (c))
 #define md_push_array__no_zero(a, T, c)                     md_push_array__no_zero_aligned(a, T, c, md_max(8, md_align_of(T)))
-#define md_push_array_(a, T, c)                             md_push_array__aligned        (a, T, c, md_max(8, md_align_of(T)))
+#define md_push_array(a, T, c)                              md_push_array__aligned        (a, T, c, md_max(8, md_align_of(T)))
 #endif
 
 // Inlines

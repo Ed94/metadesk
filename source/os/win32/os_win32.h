@@ -17,9 +17,9 @@ struct MD_OS_W32_FileIter
 {
 	HANDLE           handle;
 	WIN32_FIND_DATAW find_data;
-	MD_B32              is_volume_iter;
-	MD_String8Array     drive_strings;
-	MD_U64              drive_strings_iter_idx;
+	MD_B32           is_volume_iter;
+	MD_String8Array  drive_strings;
+	MD_U64           drive_strings_iter_idx;
 };
 md_static_assert(sizeof(md_member(MD_OS_FileIter, memory)) >= sizeof(MD_OS_W32_FileIter), file_iter_memory_size);
 
@@ -40,9 +40,9 @@ typedef struct MD_OS_W32_EntityThread MD_OS_W32_EntityThread;
 struct MD_OS_W32_EntityThread
 {
 	MD_OS_ThreadFunctionType* func;
-	void*                  ptr;
-	HANDLE                 handle;
-	DWORD                  tid;
+	void*                     ptr;
+	HANDLE                    handle;
+	DWORD                     tid;
 };
 
 typedef struct MD_OS_W32_Entity MD_OS_W32_Entity;
@@ -53,9 +53,9 @@ struct MD_OS_W32_Entity
 	union
 	{
 		MD_OS_W32_EntityThread thread;
-		CRITICAL_SECTION    mutex;
-		SRWLOCK             rw_mutex;
-		CONDITION_VARIABLE  cv;
+		CRITICAL_SECTION       mutex;
+		SRWLOCK                rw_mutex;
+		CONDITION_VARIABLE     cv;
 	};
 };
 
@@ -73,9 +73,9 @@ struct MD_OS_W32_State
 	MD_U64 microsecond_resolution;
 	
 	// rjf: entity storage
-	CRITICAL_SECTION entity_mutex;
-	MD_Arena*           entity_arena;
-	MD_OS_W32_Entity*   entity_free;
+	CRITICAL_SECTION  entity_mutex;
+	MD_Arena*         entity_arena;
+	MD_OS_W32_Entity* entity_free;
 };
 
 ////////////////////////////////
@@ -87,10 +87,10 @@ MD_API extern MD_OS_W32_State md_os_w32_state;
 ////////////////////////////////
 //~ rjf: Time Conversion Helpers
 
-       void md_os_w32_date_time_from_system_time(MD_DateTime*   out, SYSTEMTIME* in);
-       void md_os_w32_system_time_from_date_time(SYSTEMTIME* out, MD_DateTime*   in);
-       void md_os_w32_dense_time_from_file_time (MD_DenseTime*  out, FILETIME*   in);
-MD_API MD_U32  md_os_w32_sleep_ms_from_endt_us(MD_U64 endt_us);
+       void   md_os_w32_date_time_from_system_time(MD_DateTime*   out, SYSTEMTIME*  in);
+       void   md_os_w32_system_time_from_date_time(SYSTEMTIME*    out, MD_DateTime* in);
+       void   md_os_w32_dense_time_from_file_time (MD_DenseTime*  out, FILETIME*    in);
+MD_API MD_U32 md_os_w32_sleep_ms_from_endt_us(MD_U64 endt_us);
 
 inline void
 md_os_w32_date_time_from_system_time(MD_DateTime* out, SYSTEMTIME* in)
@@ -101,7 +101,7 @@ md_os_w32_date_time_from_system_time(MD_DateTime* out, SYSTEMTIME* in)
 	out->day     = in->wDay;
 
 	out->hour    = in->wHour;
-	out->md_min     = in->wMinute;
+	out->min     = in->wMinute;
 	out->sec     = in->wSecond;
 	out->msec    = in->wMilliseconds;
 }
@@ -114,7 +114,7 @@ md_os_w32_system_time_from_date_time(SYSTEMTIME* out, MD_DateTime* in)
 	out->wDay          = in->day;
 
 	out->wHour         = in->hour;
-	out->wMinute       = in->md_min;
+	out->wMinute       = in->min;
 	out->wSecond       = in->sec;
 	out->wMilliseconds = in->msec;
 }
@@ -169,7 +169,7 @@ md_os_get_current_path__ainfo(MD_AllocatorInfo ainfo) {
 	MD_TempArena scratch = md_scratch_begin(ainfo);
 	{
 		DWORD   length  = GetCurrentDirectoryW(0, 0);
-		MD_U16*    memory  = md_push_array__no_zero(scratch.arena, MD_U16, length + 1);
+		MD_U16* memory  = md_push_array__no_zero(scratch.arena, MD_U16, length + 1);
 				length  = GetCurrentDirectoryW(length + 1, (WCHAR*)memory);
 		        name    = md_str8_from(ainfo, md_str16(memory, length));
 	}
@@ -182,9 +182,9 @@ md_os_get_current_path__ainfo(MD_AllocatorInfo ainfo) {
 
 //- rjf: basic
 
-inline void* md_os_reserve (           MD_U64 size) { void* result =  VirtualAlloc(  0, size, MEM_RESERVE, PAGE_READWRITE);       return result; }
-inline MD_B32   md_os_commit  (void* ptr, MD_U64 size) { MD_B32   result = (VirtualAlloc(ptr, size, MEM_COMMIT,  PAGE_READWRITE) != 0); return result; }
-inline void  md_os_decommit(void* ptr, MD_U64 size) {                 VirtualFree (ptr, size, MEM_DECOMMIT); }
+inline void*  md_os_reserve (           MD_U64 size) { void*  result =  VirtualAlloc(  0, size, MEM_RESERVE, PAGE_READWRITE);       return result; }
+inline MD_B32 md_os_commit  (void* ptr, MD_U64 size) { MD_B32 result = (VirtualAlloc(ptr, size, MEM_COMMIT,  PAGE_READWRITE) != 0); return result; }
+inline void   md_os_decommit(void* ptr, MD_U64 size) {                  VirtualFree (ptr, size, MEM_DECOMMIT); }
 
 inline void
 md_os_release(void* ptr, MD_U64 size) { 

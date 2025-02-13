@@ -6,6 +6,128 @@
 // Copyright (c) 2024 Epic Games Tools
 // Licensed under the MIT license (https://opensource.org/license/mit/)
 
+MD_String8
+md_str8_stylize(MD_Arena* arena, MD_String8 string, MD_IdentifierStyle word_style, MD_String8 separator)
+{
+    MD_String8    result = md_zero_struct();
+    MD_String8List words = md_zero_struct();
+
+    MD_B32 break_on_uppercase = 0;
+    {
+        break_on_uppercase = 1;
+        for (MD_U64 i = 0; i < string.size; i += 1)
+        {
+            if ( ! md_char_is_alpha(string.str[i]) && ! md_char_is_digit(string.str[i])) {
+                break_on_uppercase = 0;
+                break;
+            }
+        }
+    }
+    
+    MD_B32     making_word = 0;
+    MD_String8 word        = md_zero_struct();
+    for (MD_U64 i = 0; i < string.size;)
+    {
+        if (making_word)
+        {
+			
+            if ( (break_on_uppercase && md_char_is_upper(string.str[i])) || string.str[i] == '_' || md_char_is_space(string.str[i]) || i == string.size - 1)
+            {
+                if (i == string.size - 1) {
+                    word.size += 1;
+                }
+                making_word = 0;
+				md_str8_list_push(arena, &words, word);
+            }
+            else
+            {
+                word.size += 1;
+                i         += 1;
+            }
+        }
+        else
+        {
+            if(md_char_is_alpha(string.str[i]))
+            {
+                making_word = 1;
+                word.str    = string.str + i;
+                word.size   = 1;
+            }
+            i += 1;
+        }
+    }
+    
+    result.size = words.total_size;
+    if (words.node_count > 1) {
+        result.size += separator.size*(words.node_count-1);
+    }
+    result.str = md_push_array(arena, MD_U8*, result.size);
+    {
+        MD_U64 write_pos = 0;
+        for(MD_String8Node *node = words.first; node; node = node->next)
+        {
+            
+            // NOTE(rjf): Write word string to result.
+            {
+                MD_MemoryCopy(result.str + write_pos, node->string.str, node->string.size);
+                
+                // NOTE(rjf): Transform string based on word style.
+                switch(word_style)
+                {
+                    case MD_IdentifierStyle_UpperCamelCase:
+                    {
+                        result.str[write_pos] = MD_CharToUpper(result.str[write_pos]);
+                        for(MD_u64 i = write_pos+1; i < write_pos + node->string.size; i += 1)
+                        {
+                            result.str[i] = MD_CharToLower(result.str[i]);
+                        }
+                    }break;
+                    
+                    case MD_IdentifierStyle_LowerCamelCase:
+                    {
+                        MD_b32 is_first = (node == words.first);
+                        result.str[write_pos] = (is_first ?
+                                                 MD_CharToLower(result.str[write_pos]) :
+                                                 MD_CharToUpper(result.str[write_pos]));
+                        for(MD_u64 i = write_pos+1; i < write_pos + node->string.size; i += 1)
+                        {
+                            result.str[i] = MD_CharToLower(result.str[i]);
+                        }
+                    }break;
+                    
+                    case MD_IdentifierStyle_UpperCase:
+                    {
+                        for(MD_u64 i = write_pos; i < write_pos + node->string.size; i += 1)
+                        {
+                            result.str[i] = MD_CharToUpper(result.str[i]);
+                        }
+                    }break;
+                    
+                    case MD_IdentifierStyle_LowerCase:
+                    {
+                        for(MD_u64 i = write_pos; i < write_pos + node->string.size; i += 1)
+                        {
+                            result.str[i] = MD_CharToLower(result.str[i]);
+                        }
+                    }break;
+                    
+                    default: break;
+                }
+                
+                write_pos += node->string.size;
+            }
+            
+            if(node->next)
+            {
+                MD_MemoryCopy(result.str + write_pos, separator.str, separator.size);
+                write_pos += separator.size;
+            }
+        }
+    }
+    
+    return result;
+}
+
 ////////////////////////////////
 // MD_Context
 
@@ -648,7 +770,7 @@ void md_parse__work_push(MD_ParseWorkKind work_kind, MD_Node* work_parent, MD_Pa
 {
 	MD_ParseWorkNode* work_node = work_free;
 	if (work_node == 0) {
-		work_node = md_push_array_(scratch->arena, MD_ParseWorkNode, 1);
+		work_node = md_push_array(scratch->arena, MD_ParseWorkNode, 1);
 	}
 	else {
 		md_sll_stack_pop(work_free);

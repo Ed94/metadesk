@@ -50,7 +50,7 @@ md_os_lnx_thread_entry_point(void *ptr)
 {
 	MD_OS_LNX_Entity*         entity     = (MD_OS_LNX_Entity *)ptr;
 	MD_OS_ThreadFunctionType* func       = entity->thread.func;
-	void*                  thread_ptr = entity->thread.ptr;
+	void*                     thread_ptr = entity->thread.ptr;
 
 	MD_TCTX md_tctx_;
 	md_tctx_init_and_equip(&md_tctx_);
@@ -80,8 +80,8 @@ md_os_set_thread_name(MD_String8 name)
 {
 	MD_TempArena scratch = md_scratch_begin(0, 0);
 	{
-		MD_String8   name_copy      = md_push_str8_copy(scratch.arena, name);
-		pthread_t current_thread = pthread_self();
+		MD_String8 name_copy      = md_push_str8_copy(scratch.arena, name);
+		pthread_t  current_thread = pthread_self();
 		pthread_setname_np(current_thread, (char *)name_copy.str);
 	}
 	scratch_end(scratch);
@@ -102,14 +102,14 @@ md_os_file_open(MD_OS_AccessFlags flags, MD_String8 path)
 {
 	MD_TempArena scratch = md_scratch_begin(0, 0);
 	{
-		MD_String8   path_copy = md_push_str8_copy(scratch.arena, path);
-		int       lnx_flags = 0;
+		MD_String8 path_copy = md_push_str8_copy(scratch.arena, path);
+		int        lnx_flags = 0;
 		if      (flags & (MD_OS_AccessFlag_Read | MD_OS_AccessFlag_Write)) { lnx_flags  = O_RDWR; }
-		else if (flags & MD_OS_AccessFlag_Write)                        { lnx_flags  = O_WRONLY; }
-		else if (flags & MD_OS_AccessFlag_Read)                         { lnx_flags  = O_RDONLY; }
-		if      (flags & MD_OS_AccessFlag_Append)                       { lnx_flags |= O_APPEND; }
+		else if (flags & MD_OS_AccessFlag_Write)                           { lnx_flags  = O_WRONLY; }
+		else if (flags & MD_OS_AccessFlag_Read)                            { lnx_flags  = O_RDONLY; }
+		if      (flags & MD_OS_AccessFlag_Append)                          { lnx_flags |= O_APPEND; }
 
-		int       fd     = open((char *)path_copy.str, lnx_flags);
+		int          fd     = open((char *)path_copy.str, lnx_flags);
 		MD_OS_Handle handle = {0};
 		if (fd != -1) {
 			handle.u64[0] = fd;
@@ -156,8 +156,8 @@ md_os_file_read(MD_OS_Handle file, MD_Rng1U64 rng, void* out_data)
 MD_U64
 md_os_file_write(MD_OS_Handle file, MD_Rng1U64 rng, void *data)
 {
-	if(md_os_handle_match(file, md_os_handle_zero())) { return 0; }
-
+	if (md_os_handle_match(file, md_os_handle_zero())) { return 0; }
+ 
 	int fd = (int)file.u64[0];
 	if (rng.md_min != 0) {
 		lseek(fd, rng.md_min, SEEK_SET);
@@ -183,20 +183,20 @@ md_os_file_write(MD_OS_Handle file, MD_Rng1U64 rng, void *data)
 MD_B32
 md_os_file_set_times(MD_OS_Handle file, MD_DateTime date_time)
 {
-	if(md_os_handle_match(file, md_os_handle_zero())) { return 0; }
+	if (md_os_handle_match(file, md_os_handle_zero())) { return 0; }
 	int fd = (int)file.u64[0];
 
 	timespec time            = md_os_lnx_timespec_from_date_time(date_time);
 	timespec times[2]        = {time, time};
 	int      futimens_result = futimens(fd, times);
-	MD_B32      good            = (futimens_result != -1);
+	MD_B32      good         = (futimens_result != -1);
 	return good;
 }
 
 MD_FileProperties
 md_os_properties_from_file(MD_OS_Handle file)
 {
-	if(md_os_handle_match(file, md_os_handle_zero())) { return (MD_FileProperties){0}; }
+	if (md_os_handle_match(file, md_os_handle_zero())) { return (MD_FileProperties){0}; }
 
 	int         fd           = (int)file.u64[0];
 	struct stat fd_stat      = {0};
@@ -216,7 +216,7 @@ md_os_id_from_file(MD_OS_Handle file)
 	struct stat fd_stat      = {0};
 	int         fstat_result = fstat(fd, &fd_stat);
 	MD_OS_FileID id = {0};
-	if(fstat_result != -1) {
+	if (fstat_result != -1) {
 		id.v[0] = fd_stat.st_dev;
 		id.v[1] = fd_stat.st_ino;
 	}
@@ -304,8 +304,8 @@ md_internal MD_FileProperties
 md_os_properties_from_file_path(MD_String8 path)
 {
 	MD_FileProperties props = {0};
-	MD_TempArena   scratch   = md_scratch_begin(0, 0);
-	MD_String8     path_copy = md_push_str8_copy(scratch.arena, path);
+	MD_TempArena scratch   = md_scratch_begin(0, 0);
+	MD_String8   path_copy = md_push_str8_copy(scratch.arena, path);
 	struct stat f_stat    = {0};
 	int stat_result       = stat((char *)path_copy.str, &f_stat);
 	if (stat_result != -1) {
@@ -445,7 +445,7 @@ md_os_shared_memory_alloc(MD_U64 size, MD_String8 name)
 {
 	MD_TempArena scratch   = md_scratch_begin(0, 0);
 	MD_String8   name_copy = md_push_str8_copy(scratch.arena, name);
-	int       id        = shm_open((char *)name_copy.str, O_RDWR, 0);
+	int          id        = shm_open((char *)name_copy.str, O_RDWR, 0);
 	ftruncate(id, size);
 	scratch_end(scratch);
 	MD_OS_Handle result = {(MD_U64)id};
@@ -457,7 +457,7 @@ md_os_shared_memory_open(MD_String8 name)
 {
 	MD_TempArena scratch   = md_scratch_begin(0, 0);
 	MD_String8   name_copy = md_push_str8_copy(scratch.arena, name);
-	int       id        = shm_open((char *)name_copy.str, O_RDWR, 0);
+	int          id        = shm_open((char *)name_copy.str, O_RDWR, 0);
 	scratch_end(scratch);
 	MD_OS_Handle result = {(MD_U64)id};
 	return result;
@@ -491,7 +491,7 @@ MD_U64
 md_os_now_microseconds(void) {
 	struct timespec t;
 	clock_gettime(CLOCK_MONOTONIC, &t);
-	MD_U64 result = t.tv_sec * md_million(1) + (t.tv_nsec / thousand(1));
+	MD_U64 result = t.tv_sec * md_million(1) + (t.tv_nsec / md_thousand(1));
 	return result;
 }
 
@@ -544,7 +544,7 @@ md_os_local_time_from_universal(MD_DateTime* date_time)
 
 void
 md_os_sleep_milliseconds(MD_U32 msec) {
-	usleep(msec * thousand(1));
+	usleep(msec * md_thousand(1));
 }
 
 ////////////////////////////////
@@ -598,7 +598,7 @@ md_os_thread_join(MD_OS_Handle handle, MD_U64 endt_us)
 {
 	if (md_os_handle_match(handle, md_os_handle_zero())) { return 0; }
 	MD_OS_LNX_Entity* entity      = (MD_OS_LNX_Entity*)handle.u64[0];
-	int            join_result = pthread_join(entity->thread.handle, 0);
+	int               join_result = pthread_join(entity->thread.handle, 0);
 	MD_B32            result      = (join_result == 0);
 	md_os_lnx_entity_release(entity);
 	return result;
@@ -753,10 +753,10 @@ md_os_condition_variable_wait(MD_OS_Handle cv, MD_OS_Handle mutex, MD_U64 endt_u
 
 	struct timespec endt_timespec;
 	endt_timespec.tv_sec  = endt_us / md_million(1);
-	endt_timespec.tv_nsec = thousand(1) * (endt_us - (endt_us / md_million(1)) * md_million(1));
+	endt_timespec.tv_nsec = md_thousand(1) * (endt_us - (endt_us / md_million(1)) * md_million(1));
 
 	int    wait_result = pthread_cond_timedwait(&cv_entity->cv.cond_handle, &mutex_entity->mutex_handle, &endt_timespec);
-	MD_B32    result      = (wait_result != ETIMEDOUT);
+	MD_B32 result      = (wait_result != ETIMEDOUT);
 	return result;
 }
 
@@ -767,15 +767,15 @@ md_os_condition_variable_wait_rw_r(MD_OS_Handle cv, MD_OS_Handle mutex_rw, MD_U6
 	// this together, but this would probably just be a lot better if we just
 	// implemented the primitives ourselves with e.g. futexes
 	//
-	if(md_os_handle_match(cv, md_os_handle_zero())) { return 0; }
-	if(md_os_handle_match(mutex_rw, md_os_handle_zero())) { return 0; }
+	if (md_os_handle_match(cv, md_os_handle_zero()))       { return 0; }
+	if (md_os_handle_match(mutex_rw, md_os_handle_zero())) { return 0; }
 
 	MD_OS_LNX_Entity* cv_entity       = (MD_OS_LNX_Entity*)cv.u64[0];
 	MD_OS_LNX_Entity* rw_mutex_entity = (MD_OS_LNX_Entity*)mutex_rw.u64[0];
 
 	struct timespec endt_timespec;
 	endt_timespec.tv_sec  = endt_us / md_million(1);
-	endt_timespec.tv_nsec = thousand(1) * (endt_us - (endt_us / md_million(1)) * md_million(1));
+	endt_timespec.tv_nsec = md_thousand(1) * (endt_us - (endt_us / md_million(1)) * md_million(1));
 
 	MD_B32 result = 0;
 	for(;;)
@@ -814,7 +814,7 @@ md_os_condition_variable_wait_rw_w(MD_OS_Handle cv, MD_OS_Handle mutex_rw, MD_U6
 
 	struct timespec endt_timespec;
 	endt_timespec.tv_sec  = endt_us / md_million(1);
-	endt_timespec.tv_nsec = thousand(1) * (endt_us - (endt_us / md_million(1)) * md_million(1));
+	endt_timespec.tv_nsec = md_thousand(1) * (endt_us - (endt_us / md_million(1)) * md_million(1));
 
 	MD_B32 result = 0;
 	for(;;)
@@ -896,8 +896,8 @@ md_os_semaphore_drop(MD_OS_Handle semaphore)
 MD_OS_Handle
 md_os_library_open(MD_String8 path) {
 	MD_TempArena scratch = md_scratch_begin(0, 0);
-	char*     path_cstr = (char *)md_push_str8_copy(scratch.arena, path).str;
-	void*     so        = dlopen(path_cstr, RTLD_LAZY);
+	char*        path_cstr = (char *)md_push_str8_copy(scratch.arena, path).str;
+	void*        so        = dlopen(path_cstr, RTLD_LAZY);
 	MD_OS_Handle lib       = { (MD_U64)so };
 	scratch_end(scratch);
 	return lib;
@@ -906,8 +906,8 @@ md_os_library_open(MD_String8 path) {
 MD_VoidProc*
 md_os_library_load_proc(MD_OS_Handle lib, MD_String8 name) {
 	MD_TempArena scratch = md_scratch_begin(0, 0);
-	void*     so        = (void*)lib.u64;
-	char*     name_cstr = (char*)md_push_str8_copy(scratch.arena, name).str;
+	void*        so        = (void*)lib.u64;
+	char*        name_cstr = (char*)md_push_str8_copy(scratch.arena, name).str;
 	MD_VoidProc* proc      = (MD_VoidProc*)dlsym(so, name_cstr);
 	scratch_end(scratch);
 	return proc;
@@ -927,7 +927,7 @@ md_os_safe_call(MD_OS_ThreadFunctionType* func, MD_OS_ThreadFunctionType* fail_h
 {
 	// rjf: push handler to chain
 	MD_OS_LNX_SafeCallChain chain = {0};
-	SLLStackPush(md_os_lnx_safe_call_chain, &chain);
+	sll_stack_push(md_os_lnx_safe_call_chain, &chain);
 	chain.fail_handler = fail_handler;
 	chain.ptr          = ptr;
   
@@ -1000,7 +1000,7 @@ main(int argc, char **argv)
 		md_tctx_init_and_equip(&md_tctx);
     
 		//- rjf: set up dynamically allocated state
-		md_os_lnx_state.arena = md_arena_alloc();
+		md_os_lnx_state.arena        = md_arena_alloc();
 		md_os_lnx_state.entity_arena = md_arena_alloc();
 		pthread_mutex_init(&md_os_lnx_state.entity_mutex, 0);
     
@@ -1012,7 +1012,7 @@ main(int argc, char **argv)
 			// rjf: get machine name
 			MD_B32 got_final_result = 0;
 			MD_U8* buffer           = 0;
-			int size             = 0;
+			int size                = 0;
 			for (MD_S64 cap = 4096, r = 0; r < 4; cap *= 2, r += 1)
 			{
 				scratch_end(scratch);
@@ -1030,7 +1030,7 @@ main(int argc, char **argv)
 			{
 				info->machine_name.size = size;
 				info->machine_name.str  = md_push_array__no_zero(md_os_lnx_state.arena, MD_U8, info->machine_name.size + 1);
-				MemoryCopy(info->machine_name.str, buffer, info->machine_name.size);
+				memory_copy(info->machine_name.str, buffer, info->machine_name.size);
 				info->machine_name.str[info->machine_name.size] = 0;
 			}
       
@@ -1065,7 +1065,7 @@ main(int argc, char **argv)
 				{
 					MD_String8 full_name    = md_str8(buffer, size);
 					MD_String8 name_chopped = md_str8_chop_last_slash(full_name);
-					info->binary_path    = md_push_str8_copy(md_os_lnx_state.arena, name_chopped);
+					info->binary_path       = md_push_str8_copy(md_os_lnx_state.arena, name_chopped);
 				}
 			}
       

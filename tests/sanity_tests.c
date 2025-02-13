@@ -217,7 +217,7 @@ int main(void)
         {
 			MD_String8        str   = md_str8_lit("[0, 100)");
 			MD_TokenizeResult lexed = md_tokenize_from_text(arena, str);
-            MD_ParseResult    parse = md_parse_from_text_tokens(arena, fmd_str8_zero(), str, lexed.tokens);
+            MD_ParseResult    parse = md_parse_from_text_tokens(arena, md_str8_zero(), str, lexed.tokens);
             test_result(parse.root->flags & MD_NodeFlag_HasBracketLeft &&
                         parse.root->flags & MD_NodeFlag_HasParenRight);
         }
@@ -272,54 +272,56 @@ int main(void)
                         root->flags & MD_NodeFlag_StringSingleQuote);
         }
         {
-            MD_Node* root = md_tree_from_string(arena, md_str8_lit("`foo`"), 0);
+            MD_Node* root = md_tree_from_string(arena, md_str8_lit("`foo`"));
             test_result(root->flags & MD_NodeFlag_StringLiteral &&
                         root->flags & MD_NodeFlag_StringTick);
         }
         {
-            MD_Node* root = md_tree_from_string(arena, md_str8_lit("\"\"\"foo\"\"\""), 0);
-            test_result(parse.root->flags & MD_NodeFlag_StringLiteral     &&
-                        parse.root->flags & MD_NodeFlag_StringDoubleQuote &&
-                        parse.root->flags & MD_NodeFlag_StringTriplet);
+            MD_Node* root = md_tree_from_string(arena, md_str8_lit("\"\"\"foo\"\"\""));
+            test_result(root->flags & MD_NodeFlag_StringLiteral     &&
+                        root->flags & MD_NodeFlag_StringDoubleQuote &&
+                        root->flags & MD_NodeFlag_StringTriplet);
         }
         {
-            MD_Node* root = md_tree_from_string(arena, md_str8_lit("'''foo'''"), 0);
-            test_result(parse.root->flags & MD_NodeFlag_StringLiteral     &&
-                        parse.root->flags & MD_NodeFlag_StringSingleQuote &&
-                        parse.root->flags & MD_NodeFlag_StringTriplet);
+            MD_Node* root = md_tree_from_string(arena, md_str8_lit("'''foo'''"));
+            test_result(root->flags & MD_NodeFlag_StringLiteral     &&
+                        root->flags & MD_NodeFlag_StringSingleQuote &&
+                        root->flags & MD_NodeFlag_StringTriplet);
         }
         {
-            MD_Node* root = md_tree_from_string(arena, md_str8_lit("```foo```"), 0);
-            test_result(parse.root->flags & MD_NodeFlag_StringLiteral &&
-                        parse.root->flags & MD_NodeFlag_StringTick    &&
-                        parse.root->flags & MD_NodeFlag_StringTriplet);
+            MD_Node* root = md_tree_from_string(arena, md_str8_lit("```foo```"));
+            test_result(root->flags & MD_NodeFlag_StringLiteral &&
+                        root->flags & MD_NodeFlag_StringTick    &&
+                        root->flags & MD_NodeFlag_StringTriplet);
         }
     }
     
     test("Style Strings")
     {
         {
-            MD_String8 str = md_str8_style(arena, MD_S8Lit("THIS_IS_A_TEST"), MD_IdentifierStyle_UpperCamelCase, MD_S8Lit(" "));
-            test_result(MD_S8Match(str, MD_S8Lit("This Is A Test"), 0));
+            MD_String8 str = md_str8_stylize(arena, md_str8_lit("THIS_IS_A_TEST"), MD_IdentifierStyle_UpperCamelCase, md_str8_lit(" "));
+            test_result(md_str8_match(str, md_str8_lit("This Is A Test"), 0));
         }
         {
-            MD_String8 str = MD_S8Stylize(arena, MD_S8Lit("this_is_a_test"), MD_IdentifierStyle_UpperCamelCase, MD_S8Lit(" "));
-            test_result(MD_S8Match(str, MD_S8Lit("This Is A Test"), 0));
+            MD_String8 str = md_str8_stylize(arena, md_str8_lit("this_is_a_test"), MD_IdentifierStyle_UpperCamelCase, md_str8_lit(" "));
+            test_result(md_str8_match(str, md_str8_lit("This Is A Test"), 0));
         }
         {
-            MD_String8 str = MD_S8Stylize(arena, MD_S8Lit("ThisIsATest"), MD_IdentifierStyle_UpperCamelCase, MD_S8Lit(" "));
-            test_result(MD_S8Match(str, MD_S8Lit("This Is A Test"), 0));
+            MD_String8 str = md_str8_stylize(arena, md_str8_lit("ThisIsATest"), MD_IdentifierStyle_UpperCamelCase, md_str8_lit(" "));
+            test_result(md_str8_match(str, md_str8_lit("This Is A Test"), 0));
         }
         {
-            MD_String8 str = MD_S8Stylize(arena, MD_S8Lit("Here is another test."), MD_IdentifierStyle_UpperCamelCase, MD_S8Lit(""));
-            test_result(MD_S8Match(str, MD_S8Lit("HereIsAnotherTest."), 0));
+            MD_String8 str = md_str8_stylize(arena, md_str8_lit("Here is another test."), MD_IdentifierStyle_UpperCamelCase, md_str8_lit(""));
+            test_result(md_str8_match(str, md_str8_lit("HereIsAnotherTest."), 0));
         }
     }
     
+	// TODO(Ed): Add back in node kind to string.
+	#if 0
     test("Enum Strings")
     {
-        test_result(MD_S8Match(MD_StringFromNodeKind(MD_NodeKind_Main), MD_S8Lit("Main"), 0));
-        test_result(MD_S8Match(MD_StringFromNodeKind(MD_NodeKind_Main), MD_S8Lit("Main"), 0));
+        test_result(md_str8_match(MD_StringFromNodeKind(MD_NodeKind_Main), md_str8_lit("Main"), 0));
+        test_result(md_str8_match(MD_StringFromNodeKind(MD_NodeKind_Main), md_str8_lit("Main"), 0));
         MD_String8List list = MD_StringListFromNodeFlags(arena, 
                                                          MD_NodeFlag_StringLiteral |
                                                          MD_NodeFlag_HasParenLeft |
@@ -336,57 +338,55 @@ int main(void)
         }
         test_result(match);
     }
+	#endif
     
+	// TODO(Ed): Review, these nodes are no longer present, add back support if not retreviable ergonomically from current def.
+	#if 0
     test("Node Comments")
     {
         
         // NOTE(rjf): Pre-Comments:
         {
             {
-                ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("/*foobar*/ (a b c)"), 0);
-                test_result(parse.node->kind == NodeKind_Main &&
-                           MD_S8Match(parse.node->prev_comment, MD_S8Lit("foobar"), 0));
+				MD_Node* root = md_tree_from_string(arena, md_str8_lit("/*foobar*/ (a b c)"));
+                test_result(root->kind == MD_NodeKind_Main && md_str8_match(root->prev_comment, md_str8_lit("foobar"), 0));
             }
             {
-                ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("// foobar\n(a b c)"), 0);
-                test_result(parse.node->kind == NodeKind_Main &&
-                           MD_S8Match(parse.node->prev_comment, MD_S8Lit(" foobar"), 0));
+				MD_Node* root = md_tree_from_string(arena, md_str8_lit("// foobar\n(a b c)"));
+                test_result(root->kind == MD_NodeKind_Main && md_str8_match(root->prev_comment, md_str8_lit(" foobar"), 0));
             }
             {
-                ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("// foobar\n\n(a b c)"), 0);
-                test_result(parse.node->kind == NodeKind_Main &&
-                           MD_S8Match(parse.node->prev_comment, MD_S8Lit(""), 0));
+				MD_Node* root = md_tree_from_string(arena, md_str8_lit("// foobar\n\n(a b c)"));
+                test_result(root->kind == MD_NodeKind_Main && md_str8_match(root->prev_comment, md_str8_lit(""), 0));
             }
         }
         
         // NOTE(rjf): Post-Comments:
         {
             {
-                ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a b c) /*foobar*/"), 0);
-                test_result(parse.node->kind == NodeKind_Main &&
-                           MD_S8Match(parse.node->next_comment, MD_S8Lit("foobar"), 0));
+                MD_Node* root = md_tree_from_string(arena, md_str8_lit("(a b c) /*foobar*/"));
+                test_result(root->kind == MD_NodeKind_Main && md_str8_match(root->next_comment, md_str8_lit("foobar"), 0));
             }
             {
-                ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a b c) // foobar"), 0);
-                test_result(parse.node->kind == NodeKind_Main &&
-                           MD_S8Match(parse.node->next_comment, MD_S8Lit(" foobar"), 0));
+				MD_Node* root = md_tree_from_string(arena, md_str8_lit("(a b c) // foobar"));
+                test_result(root->kind == MD_NodeKind_Main && md_str8_match(root->next_comment, md_str8_lit(" foobar"), 0));
             }
             {
-                ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a b c)\n// foobar"), 0);
-                test_result(parse.node->kind == NodeKind_Main &&
-                           MD_S8Match(parse.node->next_comment, MD_S8Lit(""), 0));
+				MD_Node* root = md_tree_from_string(arena, md_str8_lit("(a b c)\n// foobar"));
+                test_result(root->kind == MD_NodeKind_Main && md_str8_match(root->next_comment, md_str8_lit(""), 0));
             }
             {
-                ParseResult parse = MD_ParseOneNode(arena, MD_S8Lit("(a b c)\n\n// foobar"), 0);
-                test_result(parse.node->kind == NodeKind_Main &&
-                           MD_S8Match(parse.node->next_comment, MD_S8Lit(""), 0));
+				MD_Node* root = md_tree_from_string(arena, md_str8_lit("(a b c)\n\n// foobar"));
+                test_result(root->kind == MD_NodeKind_Main && md_str8_match(root->next_comment, md_str8_lit(""), 0));
             }
         }
     }
+	#endif
     
     test("Errors")
     {
-        struct { char *s; MD_u64 columns[2]; } tests[] = {
+        struct { char *s; MD_U64 columns[2]; } tests[] = 
+		{
             {"{", {1}},
             {"}", {1}},
             {"'", {1}},
@@ -397,18 +397,19 @@ int main(void)
             {"foo""\x80""bar", {4}},
         };
         
-        int max_error_count = MD_ArrayCount(tests[0].columns);
+        int max_error_count = md_array_count(tests[0].columns);
         
-        for(int i_test = 0; i_test < MD_ArrayCount(tests); ++i_test)
+        for(int i_test = 0; i_test < md_array_count(tests); ++i_test)
         {
-            ParseResult parse = MD_ParseWholeString(arena, MD_S8Lit("test.mdesk"), MD_S8CString(tests[i_test].s));
+            MD_ParseResult parse = md_parse_from_text(arena, md_str8_lit("test.mdesk"), md_str8_cstring(tests[i_test].s));
             
-            MD_b32 columns_match = 1;
+            MD_B32 columns_match = 1;
             {
-                MD_Message *e = parse.errors.first;
+                MD_Msg* e = parse.msgs.first;
                 for(int i_error = 0; i_error < max_error_count && tests[i_test].columns[i_error]; ++i_error)
                 {
-                    if(!e || MD_CodeLocFromNode(e->node).column != tests[i_test].columns[i_error])
+					// TODO(Ed): Add back md_code_loc_from_node
+                    if(!e || md_code_loc_from_node(e->node).column != tests[i_test].columns[i_error])
                     {
                         columns_match = 0;
                         break;
@@ -424,9 +425,10 @@ int main(void)
             test_result(columns_match);
         }
         
+		// TODO(Ed): This no longer exists (parsing file no present in raddbg mdesk. Its done manually by the user)
         {
-            ParseResult parse = MD_ParseWholeFile(arena, MD_S8Lit("__does_not_exist.mdesk"));
-            test_result(parse.node->kind == NodeKind_File && parse.errors.first != 0);
+            // MD_ParseResult parse = MD_ParseWholeFile(arena, MD_S8Lit("__does_not_exist.mdesk"));
+            // test_result(parse.node->kind == NodeKind_File && parse.errors.first != 0);
         }
         
     }

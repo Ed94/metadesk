@@ -17,7 +17,7 @@ md_str8_stylize(MD_Arena* arena, MD_String8 string, MD_IdentifierStyle word_styl
         break_on_uppercase = 1;
         for (MD_U64 i = 0; i < string.size; i += 1)
         {
-            if ( ! md_char_is_alpha(string.str[i]) && ! md_char_is_digit(string.str[i])) {
+            if ( ! md_char_is_alpha(string.str[i]) && ! md_char_is_digit(string.str[i], 10) ) {
                 break_on_uppercase = 0;
                 break;
             }
@@ -47,7 +47,7 @@ md_str8_stylize(MD_Arena* arena, MD_String8 string, MD_IdentifierStyle word_styl
         }
         else
         {
-            if(md_char_is_alpha(string.str[i]))
+            if (md_char_is_alpha(string.str[i]))
             {
                 making_word = 1;
                 word.str    = string.str + i;
@@ -61,53 +61,53 @@ md_str8_stylize(MD_Arena* arena, MD_String8 string, MD_IdentifierStyle word_styl
     if (words.node_count > 1) {
         result.size += separator.size*(words.node_count-1);
     }
-    result.str = md_push_array(arena, MD_U8*, result.size);
+    result.str = md_push_array(arena, MD_U8, result.size);
     {
         MD_U64 write_pos = 0;
-        for(MD_String8Node *node = words.first; node; node = node->next)
+        for (MD_String8Node* node = words.first; node; node = node->next)
         {
             
             // NOTE(rjf): Write word string to result.
             {
-                MD_MemoryCopy(result.str + write_pos, node->string.str, node->string.size);
+                md_memory_copy(result.str + write_pos, node->string.str, node->string.size);
                 
                 // NOTE(rjf): Transform string based on word style.
                 switch(word_style)
                 {
                     case MD_IdentifierStyle_UpperCamelCase:
                     {
-                        result.str[write_pos] = MD_CharToUpper(result.str[write_pos]);
-                        for(MD_u64 i = write_pos+1; i < write_pos + node->string.size; i += 1)
+                        result.str[write_pos] = md_char_to_upper(result.str[write_pos]);
+                        for (MD_U64 i = write_pos+1; i < write_pos + node->string.size; i += 1)
                         {
-                            result.str[i] = MD_CharToLower(result.str[i]);
+                            result.str[i] = md_char_to_lower(result.str[i]);
                         }
                     }break;
                     
                     case MD_IdentifierStyle_LowerCamelCase:
                     {
-                        MD_b32 is_first = (node == words.first);
+                        MD_B32 is_first = (node == words.first);
                         result.str[write_pos] = (is_first ?
-                                                 MD_CharToLower(result.str[write_pos]) :
-                                                 MD_CharToUpper(result.str[write_pos]));
-                        for(MD_u64 i = write_pos+1; i < write_pos + node->string.size; i += 1)
+                                                 md_char_to_lower(result.str[write_pos]) :
+                                                 md_char_to_upper(result.str[write_pos]));
+                        for (MD_U64 i = write_pos+1; i < write_pos + node->string.size; i += 1)
                         {
-                            result.str[i] = MD_CharToLower(result.str[i]);
+                            result.str[i] = md_char_to_lower(result.str[i]);
                         }
                     }break;
                     
                     case MD_IdentifierStyle_UpperCase:
                     {
-                        for(MD_u64 i = write_pos; i < write_pos + node->string.size; i += 1)
+                        for (MD_U64 i = write_pos; i < write_pos + node->string.size; i += 1)
                         {
-                            result.str[i] = MD_CharToUpper(result.str[i]);
+                            result.str[i] = md_char_to_upper(result.str[i]);
                         }
                     }break;
                     
                     case MD_IdentifierStyle_LowerCase:
                     {
-                        for(MD_u64 i = write_pos; i < write_pos + node->string.size; i += 1)
+                        for (MD_U64 i = write_pos; i < write_pos + node->string.size; i += 1)
                         {
-                            result.str[i] = MD_CharToLower(result.str[i]);
+                            result.str[i] = md_char_to_lower(result.str[i]);
                         }
                     }break;
                     
@@ -119,7 +119,7 @@ md_str8_stylize(MD_Arena* arena, MD_String8 string, MD_IdentifierStyle word_styl
             
             if(node->next)
             {
-                MD_MemoryCopy(result.str + write_pos, separator.str, separator.size);
+                md_memory_copy(result.str + write_pos, separator.str, separator.size);
                 write_pos += separator.size;
             }
         }

@@ -63,9 +63,9 @@ end_test(void)
 #define test(name) for(int _i_ = (begin_test(name), 0); !_i_; _i_ += 1, end_test())
 
 static MD_Node*
-make_test_node(MD_NodeKind kind, MD_String8 string)
+make_test_node(MD_NodeKind kind, MD_NodeFlags flags, MD_String8 string)
 {
-    return MD_MakeNode(arena, kind, string, string, 0);
+    return md_push_node(arena, kind, flags, string, string, 0);
 }
 
 static MD_B32
@@ -79,7 +79,7 @@ match_parsed_with_node(MD_Arena* arena, MD_String8 string, MD_Node* tree)
 static MD_B32
 token_match(MD_String8 text, MD_Token token, MD_String8 string, MD_TokenFlags flags)
 {
-	return md_str8_match(string, md_str8_substr(text, token.range), 0) &&& token.flags == flags
+	return md_str8_match(string, md_str8_substr(text, token.range), 0) &&& token.flags == flags;
     // return MD_S8Match(string, token.string, 0) && token.kind == kind;
 }
 
@@ -113,37 +113,37 @@ int main(void)
     
     test("Empty Sets")
     {
-        test_result(matched_parsed_with_node(md_str8_lit("{}"), make_test_node(MD_NodeKind_Main, md_str8_lit(""))));
-        test_result(matched_parsed_with_node(md_str8_lit("()"), make_test_node(MD_NodeKind_Main, md_str8_lit(""))));
-        test_result(matched_parsed_with_node(md_str8_lit("[]"), make_test_node(MD_NodeKind_Main, md_str8_lit(""))));
-        test_result(matched_parsed_with_node(md_str8_lit("[)"), make_test_node(MD_NodeKind_Main, md_str8_lit(""))));
-        test_result(matched_parsed_with_node(md_str8_lit("(]"), make_test_node(MD_NodeKind_Main, md_str8_lit(""))));
+        test_result(matched_parsed_with_node(md_str8_lit("{}"), make_test_node(MD_NodeKind_Main, 0, md_str8_lit(""))));
+        test_result(matched_parsed_with_node(md_str8_lit("()"), make_test_node(MD_NodeKind_Main, 0, md_str8_lit(""))));
+        test_result(matched_parsed_with_node(md_str8_lit("[]"), make_test_node(MD_NodeKind_Main, 0, md_str8_lit(""))));
+        test_result(matched_parsed_with_node(md_str8_lit("[)"), make_test_node(MD_NodeKind_Main, 0, md_str8_lit(""))));
+        test_result(matched_parsed_with_node(md_str8_lit("(]"), make_test_node(MD_NodeKind_Main, 0, md_str8_lit(""))));
     }
     
     test("Simple Unnamed Sets")
     {
         {
             MD_String8 string = md_str8_lit("{a, b, c}");
-            MD_Node*   tree   = make_test_node(MD_NodeKind_Main, md_str8_lit(""));
-            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("a")));
-            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("b")));
-            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("c")));
+            MD_Node*   tree   = make_test_node(MD_NodeKind_Main, 0, md_str8_lit(""));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("a")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("b")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("c")));
             test_result(matched_parsed_with_node(string, tree));
         }
         {
             MD_String8 string = md_str8_lit("(1 2 3 4 5)");
-            MD_Node *tree = make_test_node(MD_NodeKind_Main, md_str8_lit(""));
-            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("1")));
-            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("2")));
-            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("3")));
-            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("4")));
-            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("5")));
+            MD_Node*   tree = make_test_node(MD_NodeKind_Main, 0, md_str8_lit(""));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("1")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("2")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("3")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("4")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("5")));
             test_result(matched_parsed_with_node(string, tree));
         }
         {
             MD_String8 string = md_str8_lit("{a}");
-            MD_Node* tree = make_test_node(MD_NodeKind_Main, md_str8_lit(""));
-            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("a")));
+            MD_Node* tree = make_test_node(MD_NodeKind_Main, 0, md_str8_lit(""));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("a")));
             test_result(matched_parsed_with_node(string, tree));
         }
     }
@@ -151,10 +151,10 @@ int main(void)
     test("Simple Named Sets")
     {
         MD_String8 string = md_str8_lit("simple_set: {a, b, c}");
-        MD_Node* tree = make_test_node(MD_NodeKind_Main, md_str8_lit("simple_set"));
-        md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("a")));
-        md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("b")));
-        md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("c")));
+        MD_Node* tree = make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("simple_set"));
+        md_node_push_child(tree, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("a")));
+        md_node_push_child(tree, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("b")));
+        md_node_push_child(tree, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("c")));
         test_result(matched_parsed_with_node(string, tree));
     }
     
@@ -162,13 +162,13 @@ int main(void)
     {
         {
             MD_String8 string = md_str8_lit("{a b:{1 2 3} c}");
-            MD_Node* tree = make_test_node(MD_NodeKind_Main, md_str8_lit(""));
-            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("a")));
+            MD_Node* tree = make_test_node(MD_NodeKind_Main, 0, md_str8_lit(""));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("a")));
             {
-                MD_Node* sub = make_test_node(MD_NodeKind_Main, md_str8_lit("b"));
-                md_node_push_child(sub, make_test_node(MD_NodeKind_Main, md_str8_lit("1")));
-                md_node_push_child(sub, make_test_node(MD_NodeKind_Main, md_str8_lit("2")));
-                md_node_push_child(sub, make_test_node(MD_NodeKind_Main, md_str8_lit("3")));
+                MD_Node* sub = make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("b"));
+                md_node_push_child(sub, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("1")));
+                md_node_push_child(sub, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("2")));
+                md_node_push_child(sub, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("3")));
                 md_node_push_child(tree, sub);
             }
             MD_PushChild(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("c")));
@@ -177,30 +177,31 @@ int main(void)
         
         {
             MD_String8 string = md_str8_lit("foo: { (size: u64) -> *void }");
-            MD_Node* tree   = make_test_node(MD_NodeKind_Main, md_str8_lit("foo"));
-            MD_Node* params = make_test_node(MD_NodeKind_Main, md_str8_lit(""));
-            MD_Node* size   = make_test_node(MD_NodeKind_Main, md_str8_lit("size"));
-            md_node_push_child(size, make_test_node(MD_NodeKind_Main, md_str8_lit("u64")));
+            MD_Node* tree   = make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("foo"));
+            MD_Node* params = make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit(""));
+            MD_Node* size   = make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("size"));
+            md_node_push_child(size, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier md_str8_lit("u64")));
             md_node_push_child(params, size);
             md_node_push_child(tree, params);
-            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("->")));
-            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("*")));
-            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, md_str8_lit("void")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("->")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("*")));
+            md_node_push_child(tree, make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("void")));
             test_result(matched_parsed_with_node(string, tree));
         }
     }
     
     test("Non-Sets")
     {
-        test_result(matched_parsed_with_node(md_str8_lit("foo"), make_test_node(MD_NodeKind_Main, md_str8_lit("foo"))));
-        test_result(matched_parsed_with_node(md_str8_lit("123"), make_test_node(MD_NodeKind_Main, md_str8_lit("123"))));
-        test_result(matched_parsed_with_node(md_str8_lit("+"),   make_test_node(MD_NodeKind_Main, md_str8_lit("+"))));
+        test_result(matched_parsed_with_node(md_str8_lit("foo"), make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("foo"))));
+        test_result(matched_parsed_with_node(md_str8_lit("123"), make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("123"))));
+        test_result(matched_parsed_with_node(md_str8_lit("+"),   make_test_node(MD_NodeKind_Main, MD_NodeFlag_Identifier, md_str8_lit("+"))));
     }
     
     test("Set Border Flags")
     {
         {
-            MD_ParseResult parse = MD_ParseOneNode(arena, md_str8_lit("(0, 100)"), 0);
+			MD_TokenizeResult lexed = md_token_array_from_chunk_list()
+            MD_ParseResult parse = md_parse MD_ParseOneNode(arena, md_str8_lit("(0, 100)"), 0);
             test_result(parse.root->flags & MD_NodeFlag_HasParenLeft &&
                         parse.root->flags & MD_NodeFlag_HasParenRight);
         }

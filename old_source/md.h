@@ -570,7 +570,7 @@ typedef enum NodeKind
 }
 NodeKind;
 
-typedef MD_u64 NodeFlags;
+typedef MD_u64 MD_NodeFlags;
 #define NodeFlag_AfterFromBefore(f) ((f) << 1)
 enum
 {
@@ -629,7 +629,7 @@ struct Node
     
     // Node info.
     NodeKind kind;
-    NodeFlags flags;
+    MD_NodeFlags flags;
     MD_String8 string;
     MD_String8 raw_string;
     
@@ -729,7 +729,7 @@ typedef struct Token Token;
 struct Token
 {
     MD_TokenKind kind;
-    NodeFlags node_flags;
+    MD_NodeFlags node_flags;
     MD_String8 string;
     MD_String8 raw_string;
 };
@@ -852,7 +852,7 @@ struct MD_ExprParseCtx
     struct
     {
         MD_ExprOpr *postfix_set_ops[MD_POSTFIX_SETLIKE_OP_COUNT];
-        NodeFlags postfix_set_flags[MD_POSTFIX_SETLIKE_OP_COUNT];
+        MD_NodeFlags postfix_set_flags[MD_POSTFIX_SETLIKE_OP_COUNT];
     } accel;
 #undef MD_POSTFIX_SETLIKE_OP_COUNT
     
@@ -1061,7 +1061,7 @@ MD_FUNCTION MD_String8 MD_CStyleHexStringFromU64(MD_Arena *arena, MD_u64 x, MD_b
 //~ Enum/Flag Strings
 
 MD_FUNCTION MD_String8     MD_StringFromNodeKind(NodeKind kind);
-MD_FUNCTION MD_String8List MD_StringListFromNodeFlags(MD_Arena *arena, NodeFlags flags);
+MD_FUNCTION MD_String8List MD_StringListFromNodeFlags(MD_Arena *arena, MD_NodeFlags flags);
 
 //~ Map Table Data Structure
 
@@ -1129,7 +1129,7 @@ MD_FUNCTION Node *MD_PushNewReference(MD_Arena *arena, Node *list, Node *target)
 
 MD_FUNCTION Node *  MD_FirstNodeWithString(Node *first, MD_String8 string, MD_MatchFlags flags);
 MD_FUNCTION Node *  MD_NodeAtIndex(Node *first, int n);
-MD_FUNCTION Node *  MD_FirstNodeWithFlags(Node *first, NodeFlags flags);
+MD_FUNCTION Node *  MD_FirstNodeWithFlags(Node *first, MD_NodeFlags flags);
 MD_FUNCTION int        MD_IndexFromNode(Node *node);
 MD_FUNCTION Node *  MD_RootFromNode(Node *node);
 MD_FUNCTION Node *  MD_ChildFromString(Node *node, MD_String8 child_string, MD_MatchFlags flags);

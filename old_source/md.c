@@ -1881,9 +1881,9 @@ MD_StringFromNodeKind(NodeKind kind)
 }
 
 MD_FUNCTION MD_String8List
-MD_StringListFromNodeFlags(MD_Arena *arena, NodeFlags flags)
+MD_StringListFromNodeFlags(MD_Arena *arena, MD_NodeFlags flags)
 {
-    // NOTE(rjf): @maintenance Must be kept in sync with NodeFlags enum.
+    // NOTE(rjf): @maintenance Must be kept in sync with MD_NodeFlags enum.
     static char *flag_cstrs[] =
     {
         "HasParenLeft",
@@ -2375,7 +2375,7 @@ MD_ParseNodeSet(MD_Arena *arena, MD_String8 string, MD_u64 offset, Node *parent,
     //- rjf: fill data from set opener
     Token initial_token = MD_TokenFromString(MD_S8Skip(string, offset));
     MD_u8 set_opener = 0;
-    NodeFlags set_opener_flags = 0;
+    MD_NodeFlags set_opener_flags = 0;
     MD_b32 close_with_brace = 0;
     MD_b32 close_with_paren = 0;
     MD_b32 close_with_separator = 0;
@@ -2441,7 +2441,7 @@ MD_ParseNodeSet(MD_Arena *arena, MD_String8 string, MD_u64 offset, Node *parent,
     MD_u64 parsed_child_count = 0;
     if(set_opener != 0 || close_with_separator || parse_all)
     {
-        NodeFlags next_child_flags = 0;
+        MD_NodeFlags next_child_flags = 0;
         for(;off < string.size;)
         {
             
@@ -2571,7 +2571,7 @@ MD_ParseNodeSet(MD_Arena *arena, MD_String8 string, MD_u64 offset, Node *parent,
             }
             
             //- rjf: check trailing separator
-            NodeFlags trailing_separator_flags = 0;
+            MD_NodeFlags trailing_separator_flags = 0;
             if(!close_with_separator)
             {
                 off += MD_LexAdvanceFromSkips(MD_S8Skip(string, off), TokenFlagGroup_Irregular);
@@ -3157,7 +3157,7 @@ MD_NodeAtIndex(Node *first, int n)
 }
 
 MD_FUNCTION Node *
-MD_FirstNodeWithFlags(Node *first, NodeFlags flags)
+MD_FirstNodeWithFlags(Node *first, MD_NodeFlags flags)
 {
     Node *result = MD_NilNode();
     for(Node *n = first; !MD_NodeIsNil(n); n = n->next)

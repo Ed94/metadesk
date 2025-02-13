@@ -639,7 +639,7 @@ struct MD_ParseWorkNode
 	MD_Node*          parent;
 	MD_Node*          first_gathered_tag;
 	MD_Node*          last_gathered_tag;
-	NodeFlags      gathered_node_flags;
+	MD_NodeFlags      gathered_node_flags;
 	MD_S32            counted_newlines;
 };
 
@@ -734,7 +734,7 @@ md_parse_from_text_tokens__ainfo(MD_AllocatorInfo ainfo, MD_String8 filename, MD
 
 		MD_B32 reserved_token  = token->flags & MD_TokenFlag_Reserved;
 
-		NodeFlags separator = (
+		MD_NodeFlags separator = (
 			MD_NodeFlag_IsBeforeComma     *!! md_str8_match(md_token_string, md_str8_lit(","), 0) |
 			MD_NodeFlag_IsBeforeSemicolon *!! md_str8_match(md_token_string, md_str8_lit(";"), 0)
 		);
@@ -819,7 +819,7 @@ md_parse_from_text_tokens__ainfo(MD_AllocatorInfo ainfo, MD_String8 filename, MD
 		{
 			MD_String8   md_node_string_raw = md_token_string;
 			MD_String8   md_node_string     = content_string_from_token_flags_str8(token->flags, md_node_string_raw);
-			NodeFlags flags           = md_node_flags_from_token_flags(token->flags)|work_top->gathered_node_flags;
+			MD_NodeFlags flags              = md_node_flags_from_token_flags(token->flags)|work_top->gathered_node_flags;
 
 			work_top->gathered_node_flags = 0;
 
@@ -837,7 +837,7 @@ md_parse_from_text_tokens__ainfo(MD_AllocatorInfo ainfo, MD_String8 filename, MD
 			goto end_consume;
 		}
 
-		NodeFlags opening_delimiter = (
+		MD_NodeFlags opening_delimiter = (
 			MD_NodeFlag_HasBraceLeft   *!! md_str8_match(md_token_string, md_str8_lit("{"), 0) |
 			MD_NodeFlag_HasBracketLeft *!! md_str8_match(md_token_string, md_str8_lit("["), 0) |
 			MD_NodeFlag_HasParenLeft   *!! md_str8_match(md_token_string, md_str8_lit("("), 0)
@@ -847,7 +847,7 @@ md_parse_from_text_tokens__ainfo(MD_AllocatorInfo ainfo, MD_String8 filename, MD
 		//- rjf: [main] {s, [s, and (s -> create new main
 		if (work_top->kind == ParseWorkKind_Main && found_opening_delimiter)
 		{
-			NodeFlags 
+			MD_NodeFlags 
 			flags  = md_node_flags_from_token_flags(token->flags) | work_top->gathered_node_flags;
 			flags |= opening_delimiter;
 
@@ -923,7 +923,7 @@ md_parse_from_text_tokens__ainfo(MD_AllocatorInfo ainfo, MD_String8 filename, MD
 			goto end_consume;
 		}
 
-		NodeFlags closing_delimiter = (
+		MD_NodeFlags closing_delimiter = (
 			MD_NodeFlag_HasBraceRight   *!! md_str8_match(md_token_string, md_str8_lit("}"), 0) | 
 			MD_NodeFlag_HasBracketRight *!! md_str8_match(md_token_string, md_str8_lit("]"), 0) |
 			MD_NodeFlag_HasParenRight   *!! md_str8_match(md_token_string, md_str8_lit(")"), 0)

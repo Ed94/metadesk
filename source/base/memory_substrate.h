@@ -135,16 +135,6 @@ MD_API void* md_heap_allocator_proc( void* allocator_data, MD_AllocatorMode mode
 #define md_heap() (MD_AllocatorInfo){ md_heap_allocator_proc, md_nullptr }
 #endif
 
-#ifndef md_malloc
-// Helper to allocate memory using md_heap allocator.
-#define md_malloc( sz ) md_alloc( md_heap(), sz )
-#endif
-
-#ifndef md_free
-// Helper to free memory allocated by md_heap allocator.
-#define md_free( ptr ) md_alloc_free( md_heap(), ptr )
-#endif
-
 /* Virtual Memory MD_Arena
 	This is separate from the composite arena used by HMH/Casey Muratori/RJF
 	This arena stricly manages one reservation of the process's virtual address space.

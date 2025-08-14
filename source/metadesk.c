@@ -25,9 +25,9 @@ MD_NS_BEGIN
 #include "base/entry_point.c"
 #include "base/time.c"
 
-#if OS_WINDOWS
+#if MD_OS_WINDOWS
 #	include "os/win32/os_win32.c"
-#elif OS_LINUX
+#elif MD_OS_LINUX
 #	include "os/win32/os_win32.c"
 #endif
 

@@ -208,7 +208,7 @@ md_force_inline MD_String8List md_os_string_list_from_argcv__arena(MD_Arena* are
 
 //- rjf: files
 MD_API MD_OS_Handle      md_os_file_open                 (MD_OS_AccessFlags flags, MD_String8 path);
-MD_API void           md_os_file_close                (MD_OS_Handle file);
+MD_API void              md_os_file_close                (MD_OS_Handle file);
 MD_API MD_U64            md_os_file_read                 (MD_OS_Handle file, MD_Rng1U64 rng, void *out_data);
 MD_API MD_U64            md_os_file_write                (MD_OS_Handle file, MD_Rng1U64 rng, void *data);
 MD_API MD_B32            md_os_file_set_times            (MD_OS_Handle file, MD_DateTime time);
@@ -227,10 +227,10 @@ md_force_inline MD_String8 md_os_full_path_from_path__arena(MD_Arena* arena, MD_
 
 //- rjf: file maps
 MD_API MD_OS_Handle md_os_file_map_open      (MD_OS_AccessFlags flags, MD_OS_Handle file);
-MD_API void      md_os_file_map_close     (MD_OS_Handle map);
-MD_API void*     md_os_file_map_view_open (MD_OS_Handle map, MD_OS_AccessFlags flags, MD_Rng1U64 range);
-MD_API void      md_os_file_map_view_close(MD_OS_Handle map, void* ptr, MD_Rng1U64 range);
-
+MD_API void         md_os_file_map_close     (MD_OS_Handle map);
+MD_API void*        md_os_file_map_view_open (MD_OS_Handle map, MD_OS_AccessFlags flags, MD_Rng1U64 range);
+MD_API void         md_os_file_map_view_close(MD_OS_Handle map, void* ptr, MD_Rng1U64 range);
+   
 //- rjf: directory iteration
        MD_OS_FileIter* md_os_file_iter_begin__arena(MD_Arena*        arena, MD_String8      path, MD_OS_FileIterFlags flags);
 MD_API MD_OS_FileIter* md_os_file_iter_begin__ainfo(MD_AllocatorInfo ainfo, MD_String8      path, MD_OS_FileIterFlags flags);

@@ -3,22 +3,22 @@
 #	include "base/namespace.h"
 #endif
 
-#if !defined(OS_FEATURE_GRAPHICAL)
-#	define OS_FEATURE_GRAPHICAL 0
+#if !defined(MD_OS_FEATURE_GRAPHICAL)
+#	define MD_OS_FEATURE_GRAPHICAL 0
 #endif
 
-#if !defined(OS_GFX_STUB)
-#	define OS_GFX_STUB 0
+#if !defined(MD_OS_GFX_STUB)
+#	define MD_OS_GFX_STUB 0
 #endif
 
-#if OS_WINDOWS
+#if MD_OS_WINDOWS
 #	include "os/win32/os_win32_includes.h"
 
 	MD_NS_BEGIN
 #	include "os/win32/os_win32.h"
 	MD_NS_END
 
-#elif OS_LINUX
+#elif MD_OS_LINUX
 #	include "os/linux/os_linux_includes.h"
 
 	MD_NS_BEGIN

@@ -902,7 +902,7 @@ md_str32_from_str8__arena(MD_Arena* arena, MD_String8 in){
 	}
 	str[size] = 0;
 	md_arena_pop(arena, (cap - size)*4);
-	return(str32(str, size));
+	return(md_str32(str, size));
 }
 
 MD_String8
@@ -977,7 +977,7 @@ md_str32_from_str8__ainfo(MD_AllocatorInfo ainfo, MD_String8 in){
 	if (md_allocator_query_support(ainfo) & MD_AllocatorQuery_ResizeShrink) {
 		md_resize(ainfo, str, cap + 1, (cap - size));
 	}
-	return(str32(str, size));
+	return(md_str32(str, size));
 }
 
 ////////////////////////////////
@@ -1030,7 +1030,7 @@ md_date_time_string__ainfo(MD_AllocatorInfo ainfo, MD_DateTime* date_time) {
 	MD_String8 result = md_str8f(ainfo, 
 		"%d %s %d, %02d:%02d:%02d %s",
 		date_time->day, mon_str, date_time->year,
-		adjusted_hour, date_time->md_min, date_time->sec, ampm
+		adjusted_hour, date_time->min, date_time->sec, ampm
 	);
 	return(result);
 }
@@ -1042,7 +1042,7 @@ md_file_name_date_time_string__ainfo(MD_AllocatorInfo ainfo, MD_DateTime* date_t
 	MD_String8 result = md_str8f(ainfo, 
 		"%d-%s-%0d--%02d-%02d-%02d",
 		date_time->year, mon_str, date_time->day,
-		date_time->hour, date_time->md_min, date_time->sec
+		date_time->hour, date_time->min, date_time->sec
 	);
 	return(result);
 }
@@ -1062,7 +1062,7 @@ md_string_from_elapsed_time__ainfo(MD_AllocatorInfo ainfo, MD_DateTime dt) {
 	} else if (dt.day) {
 		md_str8_list_pushf(scratch.arena, &list, "%ud", dt.day);
 	}
-	md_str8_list_pushf(scratch.arena, &list, "%u:%u:%u:%u ms", dt.hour, dt.md_min, dt.sec, dt.msec);
+	md_str8_list_pushf(scratch.arena, &list, "%u:%u:%u:%u ms", dt.hour, dt.min, dt.sec, dt.msec);
 
 	MD_StringJoin join   = { md_str8_lit_comp(""), md_str8_lit_comp(" "), md_str8_lit_comp("") };
 	MD_String8    result = md_str8_list_join(ainfo, &list, &join);
